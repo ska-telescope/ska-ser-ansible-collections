@@ -1,0 +1,18 @@
+---
+stack_data_dir: /var/lib/stack-data
+
+# container logging options
+log_driver: json-file
+log_options:
+  max-size: "10m"
+  max-file: "3"
+  labels: "org.ska.app.group"
+  # env: "some_var"
+
+# labelling on container runtime
+container_labels:
+  org.ska.app.group: monitoring
+
+eexporter_name: elasticsearch_exporter
+
+elasticsearch_memory: 16G

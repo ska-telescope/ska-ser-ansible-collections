@@ -1,0 +1,43 @@
+---
+
+# # Common tasks
+# - name: Install packages required for docker (apt)
+#   apt:
+#     # name: ['python-pip', 'python3-pip']
+#     name: ['python3-pip']
+#     state: present
+#   when: ansible_os_family == "Debian"
+
+# - name: Ensure dnf installed
+#   yum:
+#     name: "dnf"
+#     state: present
+#   when: ansible_distribution == "CentOS"
+
+# - name: Install packages required for docker (dnf)
+#   dnf:
+#     name: ['python-pip', 'python3-pip']
+#     state: present
+#   when: ansible_os_family == "RedHat"
+
+# - name: uninstall docker dependencies
+#   pip:
+#     name: ['docker-py', 'docker-pycreds']
+#     executable: pip3
+#     state: absent
+
+# - name: install docker dependencies
+#   pip:
+#     executable: pip3
+#     name: docker
+
+# - name: Remove journald entry
+#   lineinfile:
+#     line: "OPTIONS='--selinux-enabled --signature-verification=false'"
+#     regexp: '^OPTIONS='
+#     dest: /etc/sysconfig/docker
+#   when: ansible_os_family == "RedHat"
+#   ignore_errors: true
+#   notify: restart docker
+
+# - meta: flush_handlers

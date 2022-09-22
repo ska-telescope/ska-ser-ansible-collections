@@ -1,0 +1,65 @@
+# Ansible Shade uses OpenStack clients running locally
+[openstack]
+localhost ansible_connection=local ansible_python_interpreter=python3
+
+# hack because of jinja2 scoping in loops
+{% set countr = [55] %}
+
+{% for output in cluster_stack.stack.outputs %}
+{% if output.output_key == "cluster_group" %}
+[cluster:children]
+{% for group_data in output.output_value %}
+{{ cluster_stack.stack.stack_name.replace('-', '_')}}_{{ group_data.group }}
+{% endfor %}
+
+{% for group_data in output.output_value %}
+[{{ cluster_stack.stack.stack_name.replace('-', '_')}}_{{ group_data.group }}]
+{% for node_data in group_data.nodes %}
+{% if group_data.nodes|length > 1 %}{{node_data.name.replace('_', '-')}}{% else %}{{ group_data.group }}{% endif %} ansible_host={% if node_data.floatingip %}{{ node_data.floatingip }}{% else %}{{ node_data.ip }}{% endif %} docker_vol_diskid="{{ node_data.docker_vol[:20] }}" data_vol_diskid="{% if 'data_vol' in node_data and node_data['data_vol'] %}{{ node_data.data_vol[:20] }}{% else %}{% if 'data_vol_snap' in node_data and node_data['data_vol_snap'] %}{{ node_data.data_vol_snap[:20] }}{% endif %}{% endif %}"  data2_vol_diskid="{% if 'data2_vol' in node_data and node_data['data2_vol'] %}{{ node_data.data2_vol[:20] }}{% endif %}"
+{% endfor %}
+
+{% if cluster_groups_indexed.get(group_data.group) %}
+[{{ cluster_stack.stack.stack_name.replace('-', '_')}}_{{ group_data.group }}:vars]
+calc_create_data_vol={% if ('create_data_vol' in cluster_groups_indexed[group_data.group] and cluster_groups_indexed[group_data.group].create_data_vol) or (not 'create_data_vol' in cluster_groups_indexed[group_data.group] and create_data_vol) %}true{% else %}false{% endif %}
+
+calc_mount_data_vol={% if ('mount_data_vol' in cluster_groups_indexed[group_data.group] and cluster_groups_indexed[group_data.group].mount_data_vol) or (not 'mount_data_vol' in cluster_groups_indexed[group_data.group] and mount_data_vol) %}true{% else %}false{% endif %}
+
+calc_create_data2_vol={% if ('create_data2_vol' in cluster_groups_indexed[group_data.group] and cluster_groups_indexed[group_data.group].create_data2_vol) or (not 'create_data2_vol' in cluster_groups_indexed[group_data.group] and create_data2_vol) %}true{% else %}false{% endif %}
+
+calc_mount_data2_vol={% if ('mount_data2_vol' in cluster_groups_indexed[group_data.group] and cluster_groups_indexed[group_data.group].mount_data2_vol) or (not 'mount_data2_vol' in cluster_groups_indexed[group_data.group] and mount_data2_vol) %}true{% else %}false{% endif %}
+
+
+{% endif %}
+
+{% endfor %}
+{% endif %}
+{% endfor %}
+# Specific roles for cluster deployment assignments
+{% for role in cluster_roles %}
+[cluster_{{ role.name.replace('-', '_') }}:children]
+{% for group in role.groups %}
+{{ cluster_stack.stack.stack_name.replace('-', '_')}}_{{ group.name }}
+{% endfor %}
+
+{% endfor %}
+
+
+# Specific roles for cluster deployment assignments without prefix and vars
+{% for role in cluster_roles %}
+[{{ role.name.replace('-', '_') }}:children]
+{% for group in role.groups %}
+{{ cluster_stack.stack.stack_name.replace('-', '_')}}_{{ group.name }}
+{% endfor %}
+
+{% endfor %}
+
+# Cluster wide vars
+{% for group, group_vars in cluster_group_vars.items() %}
+[{{ group.replace('-', '_') }}:vars]
+{% for var_name, var_value in group_vars.items() %}
+{{ var_name }}={{ var_value }}
+{% endfor %}
+
+{% endfor %}
+
+{{ cluster_inventory_append }}

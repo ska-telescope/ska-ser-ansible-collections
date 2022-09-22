@@ -1,0 +1,69 @@
+# from https://github.com/geerlingguy/docker-ubuntu1804-ansible
+
+{% if item.registry is defined %}
+FROM {{ item.registry.url }}/{{ item.image }}
+{% else %}
+FROM {{ item.image }}
+{% endif %}
+
+ENV container docker
+ENV LC_ALL C
+ENV DEBIAN_FRONTEND noninteractive
+ENV pip_packages "ansible-core==2.11.5 ansible==4.6.0 "
+
+RUN apt-get update && apt-get install -y python3 sudo bash ca-certificates iproute2 python3-apt aptitude  \
+    && apt-get install -y --no-install-recommends \
+       apt-utils \
+       locales \
+       python3-setuptools rustc build-essential libssl-dev libffi-dev cargo python3-dev \
+       python3-pip \
+       software-properties-common \
+       rsyslog systemd systemd-cron sudo iproute2 \
+    && apt-get clean \
+    && rm -Rf /var/lib/apt/lists/* \
+    && rm -Rf /usr/share/doc && rm -Rf /usr/share/man \
+    && apt-get clean
+RUN sed -i 's/^\($ModLoad imklog\)/#\1/' /etc/rsyslog.conf
+
+# Fix potential UTF-8 errors with ansible-test.
+RUN locale-gen en_US.UTF-8
+
+RUN   echo '#!/bin/sh' > /initctl_faker && \
+echo 'ALIAS_CMD="$(echo ""$0"" | sed -e \\'s?/sbin/??\\')"' >> /initctl_faker && \
+echo '' >> /initctl_faker && \
+echo 'case "$ALIAS_CMD" in' >> /initctl_faker && \
+echo '    start|stop|restart|reload|status)' >> /initctl_faker && \
+echo '        exec service $1 $ALIAS_CMD' >> /initctl_faker && \
+echo '        ;;' >> /initctl_faker && \
+echo 'esac' >> /initctl_faker && \
+echo '' >> /initctl_faker && \
+echo 'case "$1" in' >> /initctl_faker && \
+echo '    list )' >> /initctl_faker && \
+echo '        exec service --status-all' >> /initctl_faker && \
+echo '        ;;' >> /initctl_faker && \
+echo '    reload-configuration )' >> /initctl_faker && \
+echo '        exec service $2 restart' >> /initctl_faker && \
+echo '        ;;' >> /initctl_faker && \
+echo '    start|stop|restart|reload|status)' >> /initctl_faker && \
+echo '        exec service $2 $1' >> /initctl_faker && \
+echo '        ;;' >> /initctl_faker && \
+echo '    \?)' >> /initctl_faker && \
+echo '        exit 0' >> /initctl_faker && \
+echo '        ;;' >> /initctl_faker && \
+echo 'esac' >> /initctl_faker
+RUN chmod +x /initctl_faker && rm -fr /sbin/initctl && ln -s /initctl_faker /sbin/initctl
+
+# Install Ansible via Pip.
+RUN pip3 install setuptools_rust && pip3 install $pip_packages
+
+# Install Ansible inventory file.
+RUN mkdir -p /etc/ansible
+RUN echo "[local]\nlocalhost ansible_connection=local" > /etc/ansible/hosts
+
+# Remove unnecessary getty and udev targets that result in high CPU usage when using
+# multiple containers with Molecule (https://github.com/ansible/molecule/issues/1104)
+RUN rm -f /lib/systemd/system/systemd*udev* \
+  && rm -f /lib/systemd/system/getty.target
+
+VOLUME ["/sys/fs/cgroup", "/tmp", "/run"]
+CMD ["/lib/systemd/systemd"]

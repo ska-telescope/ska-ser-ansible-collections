@@ -1,0 +1,169 @@
+---
+- name: Set a fact containing the original python interpreter
+  set_fact:
+    old_python_interpreter: "{{ ansible_python_interpreter | default('/usr/bin/python') }}"
+  when: cluster_venv != None
+
+- name: Set a fact to use the python interpreter in the virtualenv
+  set_fact:
+    ansible_python_interpreter: "{{ cluster_venv }}/bin/python"
+  when: cluster_venv != None
+
+- name: Concatenate who gets the volumes
+  set_fact:
+    datavol: ",{% for g in cluster_params['cluster_groups'] %}{%
+      if ('create_data_vol' in g and g.create_data_vol) or (not 'create_data_vol' in g and create_data_vol)
+      %}{{ g.name }}{% endif %},{% endfor %}"  # noqa 204
+    datavol2: ",{% for g in cluster_params['cluster_groups'] %}{%
+      if ('create_data2_vol' in g and g.create_data2_vol) or (not 'create_data2_vol' in g and create_data2_vol)
+      %}{{ g.name }}{% endif %},{% endfor %}"  # noqa 204
+    allocate_floating_ip: ",{% for g in cluster_params['cluster_groups'] %}{%
+       if ('create_floating_ip' in g and g.create_floating_ip) or (not 'create_floating_ip' in g and create_floating_ip)
+       %}{{ g.name }}{% endif %},{% endfor %}"  # noqa 204
+
+- name: Recast the vars create_data_vol, create_data2_vol, create_floating_ip
+  set_fact:
+    cluster_params_extended: "{{
+      cluster_params | combine({'create_data_vol': datavol, 'create_data2_vol': datavol2, 'create_floating_ip': allocate_floating_ip}) }}"  # noqa 204
+    cluster_groups_indexed: {}
+
+- name: index cluster_groups
+  set_fact:
+    cluster_groups_indexed: "{{ cluster_groups_indexed | combine({item.name: item}) }}"
+  with_items: "{{ cluster_params_extended['cluster_groups'] }}"
+
+- name: "Show cluster_groups_indexed"
+  debug: var=cluster_groups_indexed
+  when: debug
+
+- name: Orchestrate OpenStack infrastructure
+  register: cluster_stack
+  os_stack:
+    auth_type: "{{ cluster_auth_type or omit }}"
+    auth: "{{ cluster_auth or omit }}"
+    name: "{{ cluster_name }}"
+    state: "{{ cluster_state }}"
+    environment: "{{ cluster_environment }}"
+    template: "{{ cluster_template }}"
+    parameters: "{{ cluster_params_extended }}"
+
+- name: Reset the python interpreter
+  set_fact:
+    ansible_python_interpreter: "{{ old_python_interpreter }}"
+  when: cluster_venv != None
+
+- name: "Show cluster_stack"
+  debug: var=cluster_stack
+  when: debug
+
+- block:
+    - name: Write inventory file for new cluster
+      template:
+        src: cluster_inventory.j2
+        dest: "{{ cluster_inventory }}"
+        mode: "0644"
+
+    - name: Extract node groups
+      set_fact:
+        cluster_group: "{{ cluster_stack.stack.outputs | selectattr('output_key', 'equalto', 'cluster_group') | first }}"
+
+    - name: Extract node objects
+      set_fact:
+        cluster_nodes: "{{ cluster_group.output_value | map(attribute='nodes') | list }}"
+
+    # - name: "Show host info"
+    #   debug: var=hostvars[inventory_hostname]
+
+
+    # - name: "Show cluster_nodes"
+    #   debug: var=hostvars[cluster_nodes]
+
+    - name: "Show jump_host"
+      debug: var=jump_host
+
+    - name: "Show fixed_ip"
+      debug: var=fixed_ip
+
+    - name: test
+      set_fact:
+        test: "{% if fixed_ip %}{{ fixed_ip }}{% else %}{% if item.floatingip %}{{ item.floatingip }}{% else %}{{ item.ip }}{% endif %}{% endif %}"
+      with_flattened:
+        - "{{ cluster_nodes }}"
+
+    - name: test
+      set_fact:
+        shell_test: "ssh {{ jump_host }} nc -v -w2 -i2 {{ item.ip }} 22 2>&1 | grep -E 'Idle timeout|succeeded'"
+      with_flattened:
+        - "{{ cluster_nodes }}"
+
+    - name: "Show shell_test"
+      debug: var=shell_test
+
+    - name: Wait for SSH access to the nodes
+      wait_for:
+        host: "{% if fixed_ip %}{{ fixed_ip }}{% else %}{% if item.floatingip %}{{ item.floatingip }}{% else %}{{ item.ip }}{% endif %}{% endif %}"
+        port: 22
+        state: started
+        timeout: "{{ cluster_ssh_timeout }}"
+      with_flattened:
+        - "{{ cluster_nodes }}"
+      delegate_to: localhost
+      when: "not jump_host"
+
+    - name: "Show test"
+      debug: var=test
+
+    - name: Wait for SSH to come up on instances [jump]
+      shell: "ssh {{ jump_host }} nc -v -w2 -i2 {{ item.ip }} 22 2>&1 | grep -E 'Idle timeout|succeeded'"
+      register: ping
+      until: ping is success
+      retries: 10
+      delay: 30
+      with_flattened:
+        - "{{ cluster_nodes }}"
+      delegate_to: localhost
+      when: "jump_host"
+
+    - name: Remove hosts from local ~/.ssh/config  # noqa ignore-errors
+      blockinfile:
+        dest: "{{ lookup('env', 'HOME') }}/.ssh/config"
+        state: absent
+        marker: "# {mark} ANSIBLE MANAGED BLOCK for {{ item.name }} compute node"
+      with_flattened:
+        - "{{ cluster_nodes }}"
+      ignore_errors: true
+      delegate_to: localhost
+
+    - name: remove old host/ip keys
+      known_hosts:
+        path: ~/ssh/ssh_known_hosts
+        name: "{{ item.ip }}"
+        state: absent
+      with_flattened:
+        - "{{ cluster_nodes }}"
+      delegate_to: localhost
+
+    - name: remove old host/ip keys
+      known_hosts:
+        path: ~/ssh/ssh_known_hosts
+        name: "{% if item.floatingip %}{{ item.floatingip }}{% else %}{{ item.ip }}{% endif %}"
+        state: absent
+      with_flattened:
+        - "{{ cluster_nodes }}"
+      delegate_to: localhost
+
+    # Crude hack - CentOS8 does not have python3 on it by default
+    - name: "Install {{ ansible_python_interpreter }} on compute instances"
+      command: "ssh -o ControlPersist=30m -o StrictHostKeyChecking=no {{ bootstrap_user }}@{%
+         if item.floatingip %}{{ item.floatingip }}{% else
+         %}{{ item.ip }}{% endif %} sudo  yum install {{ ansible_python_interpreter }} -y"  # noqa 204
+      with_flattened:
+        - "{{ cluster_nodes }}"
+      register: ssh_result
+      until: ssh_result.rc
+      retries: "10"
+      delay: "30"
+      ignore_errors: true
+      when: bootstrap_user == 'centos'
+
+  when: cluster_state == 'present'

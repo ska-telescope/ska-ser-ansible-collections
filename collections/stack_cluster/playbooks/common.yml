@@ -1,0 +1,24 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: "Ensure that the apt repositories are updated - old image issues"
+  hosts:
+    - cluster
+  become: true
+  tasks:
+    - name: Ensure that the apt cache is updated
+      apt:
+        update_cache: true
+      register: apt_res
+      retries: 30
+      delay: 30
+      until: apt_res is success
+      when: ansible_os_family == "Debian"
+
+- name: "Apply the common role to docker nodes"
+  hosts:
+    - cluster
+  become: true
+  become_method: sudo
+  roles:
+    - ska_cicd.stack_cluster.common

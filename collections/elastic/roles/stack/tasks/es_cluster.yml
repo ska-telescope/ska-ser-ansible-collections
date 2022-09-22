@@ -1,0 +1,256 @@
+---
+
+# https://www.digitalocean.com/community/tutorials/how-to-set-up-a-production-elasticsearch-cluster-on-ubuntu-14-04
+
+- name: Create List of nodes to be added into Cluster
+  set_fact:
+    seed_hosts_nodelist: "{% for host in groups['cluster'] %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}"
+    initial_master_nodelist: "{% for host in groups['cluster'] %}{{ host }}
+    {% if not loop.last %},{% endif %}{% endfor %}"
+    es_node_name: "{{ inventory_hostname }}"
+    network_mode: "bridge"
+
+- name: Define elasticsearch configuration
+  set_fact:
+    # fo initialising the cluster
+    master_initial_specific_vars:
+      cluster.initial_master_nodes: "{{ es_node_name }}"
+
+    # for normal operation
+    master_specific_vars:
+      # only required on initial boot
+      # cluster.initial_master_nodes: "{{ initial_master_nodelist }}"
+      discovery.seed_hosts: "{{ seed_hosts_nodelist }}"  # just the primary master
+      discovery.zen.minimum_master_nodes: "1"
+
+    # configuration for all cases
+    all_node_vars:
+      action.auto_create_index: "true"
+      bootstrap.memory_lock: "true"
+      cluster.name: "{{ elasticsearch_cluster_name }}"
+      discovery.type: "{{ discovery_type }}"
+      indices.cache.cleanup_interval: "1m"
+      # https://github.com/elastic/elasticsearch/issues/31478
+      # network.host: "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
+      network.bind_host: "0.0.0.0"
+      network.publish_host: "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
+      node.name: "{{ es_node_name }}"
+      node.data: "true"
+      node.ingest: "true"
+      node.master: "true"
+      # transport.host: "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
+      transport.bind_host: "0.0.0.0"
+      transport.publish_host: "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
+      # https://discuss.elastic.co/t/elasticsearch-6-8-in-docker-crashing-with-sigill-after-restart-corrupt-state/200452
+      ES_JAVA_OPTS: "-server -Xms{{ java_mem }} -Xmx{{ java_mem }} -Dlog4j2.formatMsgNoLookups=true"
+      ES_HEAP_SIZE: "{{ java_mem }}"
+      MAX_OPEN_FILES: "131070"
+
+# configuration for when the first master is bootstrapped
+- name: Set up master initial elasticsearch configuration
+  set_fact:
+    master_initial_vars: {}
+
+- name: Set up master initial elasticsearch configuration
+  set_fact:
+    master_initial_vars: "{{ master_initial_vars |combine({item.key: item.value}) }}"
+  when: "not (item.key == 'cluster.initial_master_nodes' and discovery_type == 'single-node')"
+  with_dict: "{{ master_initial_specific_vars | combine(all_node_vars) }}"
+
+  # configuration for all master joining or already joined
+- name: Set up master ongoing elasticsearch configuration
+  set_fact:
+    master_vars: {}
+
+- name: Set up master ongoing elasticsearch configuration
+  set_fact:
+    master_vars: "{{ master_vars |combine({item.key: item.value}) }}"
+  when: "not (item.key == 'cluster.initial_master_nodes' and discovery_type == 'single-node')"
+  with_dict: "{{ master_specific_vars | combine(all_node_vars) }}"
+
+- name: "Show discovery_type"
+  debug: var=discovery_type
+  when: debug
+
+- name: "Show network_mode"
+  debug: var=network_mode
+  when: debug
+
+- name: "Show master_initial_vars"
+  debug: var=master_initial_vars
+  when: debug
+
+- name: "Show master_vars"
+  debug: var=master_vars
+  when: debug
+
+- name: Create List of nodes to be added into Cluster
+  set_fact:
+    masters_etc_hosts: "{{ masters_etc_hosts|default({}) | combine( {item: hostvars[item].ansible_default_ipv4.address} ) }}"
+  with_items: "{{ groups['cluster'] }}"
+
+- name: "Show seed_hosts_nodelist"
+  debug: var=seed_hosts_nodelist
+  when: debug
+
+- name: "Show initial_master_nodelist"
+  debug: var=initial_master_nodelist
+  when: debug
+
+- name: "Show masters_etc_hosts"
+  debug: var=masters_etc_hosts
+  when: debug
+
+- name: "Show es_node_name"
+  debug: var=es_node_name
+  when: debug
+
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html
+- name: set vm.max_map_count
+  sysctl:
+    name: vm.max_map_count
+    value: "262144"
+    state: present
+  become: true
+
+# cannot add 1000 as ubuntu already takes it
+# - name: Add the elasticsearch user - mirrors container
+#   user:
+#     name: elasticsearch
+#     comment: Elasticsearch
+#     uid: 1000
+#     group: root
+
+# - name: clean {{ stack_data_dir }}/elasticsearch
+#   shell: "rm -rf {{ stack_data_dir }}/elasticsearch"
+
+- name: "Creates directory {{ stack_data_dir }}/elasticsearch"
+  file:
+    path: "{{ stack_data_dir }}/elasticsearch"
+    state: directory
+    owner: "{{ ansible_user }}"  # this maps to elasticsearch inside the container
+    group: root
+    mode: 0755
+
+- name: docker pull images
+  docker_image:
+    source: pull
+    name: "{{ item }}"
+  with_items:
+    - "{{ elasticsearch_image }}"
+    - "{{ kibana_image }}"
+    - "{{ elasticsearch_exporter_image }}"
+
+- name: elk remove containers
+  docker_container:
+    name: "{{ item }}"
+    state: absent
+    stop_timeout: 60
+    timeout: 120
+    force_kill: false
+  with_items:
+    - elk_elasticsearch
+    - elk_kibana
+
+- name: Check whether the cluster has started before
+  stat:
+    path: "{{ stack_data_dir }}/elasticsearch/nodes"
+  register: stat_result
+
+# Entry into elasticsearch container
+# entrypoint /usr/local/bin/docker-entrypoint.sh
+# cmd eswrapper
+
+- name: First time cluster startup
+  block:
+
+    - name: Startup initial master Elasticsearch
+      docker_container:
+        name: elk_elasticsearch
+        network_mode: "{{ network_mode }}"  # reverse DNS must work
+        privileged: "{{ 'yes' if network_mode == 'host' else 'no' }}"
+        user: elasticsearch
+        memory: "{{ elasticsearch_memory }}"
+        hostname: "{{ es_node_name }}"
+        etc_hosts: "{{ masters_etc_hosts }}"
+        restart_policy: false
+        image: "{{ elasticsearch_image }}"
+        state: started
+        ulimits:
+          - "memlock:-1:-1"
+          - "nofile:65536:65536"
+        labels: "{{ container_labels }}"
+        log_driver: "{{ log_driver }}"
+        log_options: "{{ log_options }}"
+        volumes:
+          - "{{ stack_data_dir }}/elasticsearch:/usr/share/elasticsearch/data"
+        ports:
+          - "9200:9200"
+          - "9300:9300"
+        env: "{{ master_initial_vars }}"
+      when: "inventory_hostname == groups['cluster'][0]"
+
+    - name: Waiting for initial master to bootstrap
+      pause:
+        seconds: 30
+        # prompt: "Waiting for master bootstrap"
+
+    - name: elk remove containers
+      docker_container:
+        name: elk_elasticsearch
+        state: absent
+      when: "inventory_hostname == groups['cluster'][0]"
+
+  when: not stat_result.stat.exists
+
+- name: Restart initial master Elasticsearch
+  docker_container:
+    name: elk_elasticsearch
+    network_mode: "{{ network_mode }}"  # reverse DNS must work
+    user: elasticsearch
+    memory: "{{ elasticsearch_memory }}"
+    privileged: "{{ 'yes' if network_mode == 'host' else 'no' }}"
+    hostname: "{{ es_node_name }}"
+    etc_hosts: "{{ masters_etc_hosts }}"
+    restart_policy: always
+    image: "{{ elasticsearch_image }}"
+    state: started
+    ulimits:
+      - "memlock:-1:-1"
+      - "nofile:65536:65536"
+    labels: "{{ container_labels }}"
+    log_driver: "{{ log_driver }}"
+    log_options: "{{ log_options }}"
+    volumes:
+      - "{{ stack_data_dir }}/elasticsearch:/usr/share/elasticsearch/data"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    env: "{{ master_vars }}"
+  when: "inventory_hostname == groups['cluster'][0]"
+
+- name: Restart rest of Elasticsearch
+  docker_container:
+    name: elk_elasticsearch
+    hostname: "{{ es_node_name }}"
+    user: elasticsearch
+    memory: "{{ elasticsearch_memory }}"
+    network_mode: "{{ network_mode }}"  # reverse DNS must work
+    privileged: "{{ 'yes' if network_mode == 'host' else 'no' }}"
+    etc_hosts: "{{ masters_etc_hosts }}"
+    restart_policy: always
+    image: "{{ elasticsearch_image }}"
+    state: started
+    ulimits:
+      - "memlock:-1:-1"
+      - "nofile:65536:65536"
+    labels: "{{ container_labels }}"
+    log_driver: "{{ log_driver }}"
+    log_options: "{{ log_options }}"
+    volumes:
+      - "{{ stack_data_dir }}/elasticsearch:/usr/share/elasticsearch/data"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    env: "{{ master_vars }}"
+  when: "not inventory_hostname == groups['cluster'][0]"

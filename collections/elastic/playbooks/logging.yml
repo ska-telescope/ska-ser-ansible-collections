@@ -1,0 +1,8 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: "Apply the logging role to the logging nodes"
+  hosts: logging
+  become: true
+  roles:
+    - logging

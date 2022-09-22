@@ -1,0 +1,42 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: "Show debug info"
+  hosts: cluster
+  become: yes
+  vars:
+    kubeconf_file: /etc/kubernetes/admin.conf
+    local_file: /tmp/admin.conf
+
+  tasks:
+    - name: "Show k8s nodes info"
+      debug: var=hostvars[inventory_hostname]
+      when: debug
+
+    - name: fetch KUBECONFIG
+      fetch:
+        src: "{{ kubeconf_file }}"
+        dest: "{{ local_file }}"
+        flat: yes
+      when: ansible_hostname == groups['masters'][0]
+
+    #- name: remove /etc/kubernetes
+    #  file:
+    #    path: /etc/kubernetes
+    #    state: absent
+    #  when: ansible_hostname in groups['workers']
+
+    - name: create /etc/kubernetes
+      file:
+        path: /etc/kubernetes
+        state: directory
+      when: ansible_hostname in groups['workers']
+
+    - name: Distribute KUBECONFIG
+      copy:
+        src: "{{ local_file }}"
+        dest: /etc/kubernetes/
+        owner: root
+        group: root
+        mode: '0644'
+      when: ansible_hostname in groups['workers']

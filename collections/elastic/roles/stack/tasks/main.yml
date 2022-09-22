@@ -1,0 +1,4 @@
+---
+- include: es_cluster.yml
+- include: kibana.yml
+- include: es_node_exporter.yml

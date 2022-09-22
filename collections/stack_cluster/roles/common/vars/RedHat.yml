@@ -1,0 +1,19 @@
+# change if required or override at runtime using --extra-vars
+
+common_packages:
+  - man-db
+  - vim
+  - sysstat
+  - lsof
+  - nc
+  - chrony
+  - iotop
+  - unzip
+  - curl
+  - wget
+  - rsyslog
+  - dnf
+
+ntp_service: chronyd
+ntp_sync: "/sbin/chronyd -q 'server 2.centos.pool.ntp.org iburst'"
+update_grub: grub2-mkconfig -o /boot/grub2/grub.cfg

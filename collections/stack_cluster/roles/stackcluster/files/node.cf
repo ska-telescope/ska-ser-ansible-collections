@@ -1,0 +1,52 @@
+#cloud-config
+
+# Set the hostname and FQDN
+#fqdn: datanode.local.net
+#manage_etc_hosts: true
+
+# Set the timezone to UTC (strongly recommended)
+timezone: UTC
+
+# Set the locale
+#locale: en_NZ.UTF-8
+
+# Run package update and upgrade on first boot
+package_upgrade: true
+
+resize_rootfs: true
+
+disk_setup:
+  /dev/sda:
+    table_type: mbr
+    layout:
+     - 25
+    overwrite: True
+fs_setup:
+ - device: /dev/sda1
+   filesystem: ext4
+   label: rootfs
+
+mounts:
+     - ["/dev/sda1", "/", auto]
+
+# Install packages
+packages:
+ - git
+ - tig
+ - sysstat
+ - htop
+ - wget
+ - curl
+ - openssl
+ - chrony
+ - dnsmasq
+ - openssh-server
+
+# Reboot when finished
+power_state:
+ mode: reboot
+ message: Rebooting to apply new settings
+
+# Log all cloud-init process output (info & errors) to a logfile
+output: {all: ">> /var/log/cloud-init-output.log"}
+

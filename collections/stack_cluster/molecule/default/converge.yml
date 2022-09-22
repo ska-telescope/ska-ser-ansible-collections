@@ -1,0 +1,27 @@
+---
+- name: Converge
+
+  collections:
+  - ska_cicd.docker_base
+
+  vars:
+    debug: true
+    docker_driver: vfs
+
+  hosts: all
+  tasks:
+
+    # - name: "Show host info"
+    #   debug: var=hostvars[inventory_hostname]
+
+    - name: debug
+      debug:
+        msg: var=ansible_default_ipv4
+
+    - name: "Include ska_cicd.docker_base.docker"
+      include_role:
+        name: "ska_cicd.docker_base.docker"
+
+    - name: "Include ska_cicd.docker_base.containerd"
+      include_role:
+        name: "ska_cicd.docker_base.containerd"

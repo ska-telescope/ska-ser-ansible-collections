@@ -1,0 +1,60 @@
+#jinja2:trim_blocks:False
+global
+  log 127.0.0.1 local0
+  log 127.0.0.1 local1 notice
+  maxconn 4096
+  #ssl-default-bind-ciphers kEECDH+aRSA+AES:kRSA+AES:+AES256:RC4-SHA:!kEDH:!LOW:!EXP:!MD5:!aNULL:!eNULL
+  tune.ssl.default-dh-param 2048 # not sure
+  ssl-default-bind-ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:!kEDH:!LOW:!EXP:!MD5:!aNULL:!eNULL
+  ssl-default-bind-options ssl-min-ver TLSv1.2 no-tls-tickets
+
+defaults
+  log	global
+  mode	http
+  option	httplog
+  option	dontlognull
+  timeout connect 5s
+  timeout client 1800s
+  timeout client-fin 50s
+  timeout server 1800s
+  timeout tunnel 1h
+
+frontend stats
+  bind *:{{haproxy_stats_port}}
+  mode http
+  stats enable
+  stats hide-version
+  stats realm Haproxy\ Statistics
+  stats uri /haproxy_stats
+  stats auth {{ haproxy_user }}:{{ haproxy_passwd }}
+  stats refresh 10s
+  stats admin if LOCALHOST
+
+
+#############################
+#  elasticsearch configs
+#############################
+
+frontend front-api-proxy
+  bind *:{{elasticsearch_port}}
+  mode tcp
+  option tcplog
+  option forwardfor
+  default_backend back-api-proxy
+  timeout client 1800s
+  timeout client-fin 50s
+
+backend back-api-proxy
+  mode tcp
+  option tcplog
+  balance roundrobin
+  option ssl-hello-chk
+  option log-health-checks
+  default-server inter 10s fall 2
+  {%- for item in groups['masters'] %}
+  server {{ item }} {{hostvars[item]["ansible_host"]}}:9200 check
+  {%- endfor %}
+  timeout connect 10s
+  timeout server 1800s
+  timeout tunnel 1800s
+

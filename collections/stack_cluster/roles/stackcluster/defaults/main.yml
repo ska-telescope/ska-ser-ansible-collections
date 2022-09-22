@@ -1,0 +1,111 @@
+---
+# Debug
+debug: false
+
+# Cluster infrastructure parameters
+# template control
+cluster_state: "present"
+cluster_venv:
+cluster_auth_type:
+cluster_auth:
+region: "{{ lookup('env','OS_REGION_NAME') }}"
+inventory_file: "./inventory_cluster"
+cluster_inventory: "{{ playbook_dir }}/../{{ inventory_file }}"
+cluster_ssh_timeout: 600
+cluster_environment: ["{{role_path }}/files/cluster-env.yaml"]
+cluster_template: "{{ role_path }}/files/cluster-infra.yaml"
+cluster_params: {}
+
+# This name is used for the Heat stack and as a prefix for the
+# cluster node hostnames.
+cluster_name: test_generic
+
+# This parameter should be set to the name of an RSA keypair you have
+# uplaoded to OpenStack.
+cluster_keypair: rsa_keypair
+
+image: "Ubuntu-18.04-x86_64"
+
+# user of the OS when initialising the stack
+bootstrap_user: ubuntu
+
+# Allocate a floating IP to nodes
+create_floating_ip: true
+
+# Use a jump host in ssh check
+jump_host:
+
+# Use a fixed IP in ssh check
+fixed_ip:
+
+# /var/lib/docker (/dev/vdb) volume size - GB
+docker_vol_size: 25
+
+# data_vol (/dev/vdc) size - GB
+data_vol_name: data_vol
+data_vol_size: 50
+data_vol_snapshot: ""
+# data_vol mount point
+data_filesystem: /data
+# activate data vol
+# create_data_vol is passed to the heat template conditional for creating and
+# attaching the data volume
+create_data_vol: true
+# determine whether the data volume should be mounted
+mount_data_vol: true
+
+# data2_vol (/dev/vdd) size - GB
+data2_vol_name: data2_vol
+data2_vol_size: 50
+# data2_vol mount point
+data2_filesystem: /data2
+# activate data2 vol
+# create_data2_vol is passed to the heat template conditional for creating and
+# attaching the data2 volume
+create_data2_vol: false
+# determine whether the data2 volume should be mounted
+mount_data2_vol: false
+
+# Site-specific network configuration.
+cluster_net:
+  - {net: "int_net", subnet: "subnet1", "floatingip_net_id": "1fea99f2-36ed-481d-b495-6e50453f5956"}
+
+secondary_net:
+  - {net: "xxx-bdn", subnet: "xxx-bdn"}
+
+# Multi-node application topology.  In this case we have a Dask
+# scheduler node (which also offers login services) and a number
+# of compute nodes, which mount the same filesystems but are not
+# intended to be interactive.
+cluster_groups:
+  - "{{ genericnode_master }}"
+  - "{{ genericnode_worker }}"
+
+genericnode_master:
+  name: "master"
+  flavor: "m1.medium"
+  image: "{{ image }}"
+  num_nodes: 1
+
+genericnode_worker:
+  name: "worker"
+  flavor: "m1.medium"
+  image: "{{ image }}"
+  num_nodes: 3
+
+# Node group assignments for cluster roles.
+# These group assignments are appended to the cluster inventory file.
+# The names of these roles are cross-referenced to groups referred to
+# in playbooks in the ansible/ directory.
+cluster_roles:
+  - name: "nodes"
+    groups: "{{ cluster_groups }}"
+    # - name: "login"
+    #   groups: [ "{{ genericnode_master }}", "{{ genericnode_worker }}" ]
+
+cluster_group_vars:
+  cluster:
+    ansible_user: ubuntu
+    ansible_python_interpreter: python3
+
+cluster_inventory_append: ""

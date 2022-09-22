@@ -1,0 +1,106 @@
+---
+heat_template_version: 2017-09-01
+
+description: >
+  Heat stack containing a group of Nova instances.
+
+parameters:
+  cluster_prefix:
+    type: string
+    label: Instance name prefix
+    default: "cluster"
+  cluster_groups:
+    type: json
+    label: List of dicts defining parameters for all node groups
+  cluster_keypair:
+    type: string
+    label: SSH key pair name
+  cluster_az:
+    type: string
+    label: Availability zone
+    default: nova
+  docker_vol_size:
+    type: number
+    label: Docker Volume size - GB
+  data_vol_size:
+    type: number
+    label: Data Volume size - GB
+  data_vol_snapshot:
+    type: string
+    label: Data Volume snapshot
+  data_vol_name:
+    type: string
+    label: Data Volume name prefix
+  create_data_vol:
+    type: string
+    label: Create data vol - list of applicable group names
+  data2_vol_size:
+    type: number
+    label: Data2 Volume size - GB
+  data2_vol_name:
+    type: string
+    label: Data2 Volume name prefix
+  create_data2_vol:
+    type: string
+    label: Create data2 vol - list of applicable group names
+  create_floating_ip:
+    type: string
+    label: Create floating IP - list of applicable group names
+  cluster_net:
+    type: json
+    label: Network names and subnets to which the nodes should be attached
+  secondary_net:
+    type: json
+    label: Network names and subnets to which the nodes should be attached
+  secgroup_id:
+    type: string
+    label: Security Group ID
+  group_idx:
+    type: number
+    label: Cluster group index
+
+resources:
+
+  node_group:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: [cluster_groups, {get_param: group_idx}, num_nodes] }
+      resource_def:
+        type: cluster-instance.yaml
+        properties:
+          name:
+            list_join:
+            - '-'
+            - [ { get_param: cluster_prefix },
+                { get_param: [cluster_groups, {get_param: group_idx}, name] },
+                '%index%' ]
+            # list_join:
+            # - '-'
+            # - [ { get_param: [cluster_groups, {get_param: group_idx}, name] },
+            #     '%index%' ]
+          num_nodes: { get_param: [cluster_groups, {get_param: group_idx}, num_nodes] }
+          groupname: { get_param: [cluster_groups, {get_param: group_idx}, name] }
+          flavor: { get_param: [cluster_groups, {get_param: group_idx}, flavor] }
+          image: { get_param: [cluster_groups, {get_param: group_idx}, image] }
+          key_name: { get_param: cluster_keypair }
+          availability_zone: { get_param: cluster_az }
+          docker_vol_size: { get_param: docker_vol_size }
+          data_vol_size: { get_param: data_vol_size }
+          data_vol_snapshot: { get_param: data_vol_snapshot }
+          data_vol_name: { get_param: data_vol_name }
+          create_data_vol: { get_param: create_data_vol }
+          data2_vol_size: { get_param: data2_vol_size }
+          data2_vol_name: { get_param: data2_vol_name }
+          create_data2_vol: { get_param: create_data2_vol }
+          cluster_net: { get_param: cluster_net }
+          secondary_net: { get_param: secondary_net }
+          secgroup_id: { get_param: secgroup_id }
+          create_floating_ip: { get_param: create_floating_ip }
+
+outputs:
+  group_data:
+    description: Instance data for nodes in this group
+    value:
+      group: { get_param: [cluster_groups, {get_param: group_idx}, name] }
+      nodes: { get_attr: [ node_group, instance_data ] }
+      # nodes2: { get_attr: [ node_group, secondary_instance_data ] }
