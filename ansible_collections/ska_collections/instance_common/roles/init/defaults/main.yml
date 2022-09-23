@@ -1,0 +1,31 @@
+---
+# determine whether hostnames should be changed
+change_hostnames: true
+
+common_packages:
+  - man-db
+  - vim
+  - sysstat
+  - lsof
+  - netcat
+  - chrony
+  - iotop
+  - unzip
+  - curl
+  - wget
+  - ifenslave
+  - xfsprogs
+  - rsyslog
+  - libssl-dev
+  - dnsutils
+  - iperf
+
+
+# # determine whether ntp tasks should run
+# ntp_apply: true
+# ntp_service: chrony
+# ntp_sync: "/usr/sbin/chronyd -q 'server 1.fedora.pool.ntp.org iburst'"
+
+# update_grub: "/usr/sbin/update-grub"
+
+

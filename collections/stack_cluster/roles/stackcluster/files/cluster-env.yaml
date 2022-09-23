@@ -1,4 +1,0 @@
----
-resource_registry:
-  Cluster::NodeNet: cluster-nodenet-1.yaml
-  # Cluster::SecondaryNodeNet: cluster-nodenet-2.yaml

@@ -27,13 +27,7 @@ PLAYBOOKS_HOSTS?=all
 
 vars:  ## Variables
 	@echo "Current variable settings:"
-	@echo "OUTPUT=$(OUTPUT)"
-	@echo "COLLECTION_DIR=$(COLLECTION_DIR)"
-	@echo "COLLECTIONS=$(COLLECTIONS)"
-	@echo "ENV=$(ENV)"
-	# @echo "VERSION=$(VERSION)"
-	# @echo "TAG=$(TAG)"
-	# @echo "RELEASE_TAG=$(RELEASE_TAG)"
+	@echo "ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS)"
 
 
 help:  ## show this help.
@@ -47,11 +41,11 @@ ping:  ## Ping
 
 # If the first argument is "elastic"...
 ifeq (elastic,$(firstword $(MAKECMDGOALS)))
-  # use the rest as arguments for "bifrost"
+  # use the rest as arguments for "elastic"
   TARGET_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   # ...and turn them into do-nothing targets
   $(eval $(TARGET_ARGS):;@:)
 endif
 
 elastic:
-	$(MAKE) $(TARGET_ARGS) -f ./jobs/elastic.mk
+	$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/elastic.mk

@@ -1,0 +1,58 @@
+---
+# container logging options
+log_kubernetes: false
+log_docker: false
+kubeconf_file: /etc/kubernetes/admin.conf
+
+# use Nexus as a repository mirror
+registry_mirror: "http://192.168.93.12:8181"
+engage_registry_mirror: "http://192.168.99.204:9082"
+
+log_max_size: "10m"
+log_max_file: "3"
+log_driver: k8s-file
+log_options:
+  max_size: "{{  log_max_size }}"
+  # tag: "org.ska.app.group"
+
+# labelling on container runtime
+container_labels:
+  org.ska.app.group: monitoring
+
+filebeat_name: filebeat
+# pipeline run in filebeat - default none
+filebeat_pipeline: ""
+filebeat_template_overwrite: false
+ska_environment: testing
+ska_service: elasticstack
+ska_deployment: core
+
+
+elasticsearch_image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+kibana_image: docker.elastic.co/kibana/kibana:7.17.0
+elasticsearch_exporter_image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.5.0
+filebeat_image: docker.elastic.co/beats/filebeat:7.17.0
+
+# insecure registry - stfc nexus
+docker_repo: 192.168.99.204:9082
+
+elasticsearch_cluster_name: ska-stfc1
+elasticsearch_address: "{{ ansible_default_ipv4.address }}"
+
+# all loggers point here
+logging_elasticsearch_addresses:
+  - http://192.168.99.131:9200
+  - http://192.168.99.22:9200
+  - http://192.168.99.183:9200
+
+java_mem: 8g
+
+stack_data_dir: "{{ data_filesystem }}"
+
+# determine whether this is single_node or not
+discovery_type: "{% if (genericnode_master.num_nodes + genericnode_worker.num_nodes) > 1 %}{% else %}single-node{% endif %}"
+
+# pipeline run in filebeat
+filebeat_pipeline: ska_log_parsing_pipeline
+
+podman_registry_mirror: dockerhub.stfc.ac.uk
