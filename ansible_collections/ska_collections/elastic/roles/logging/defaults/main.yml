@@ -28,15 +28,15 @@ ska_service: elasticstack
 ska_deployment: core
 
 
-elasticsearch_image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
-kibana_image: docker.elastic.co/kibana/kibana:7.17.0
-elasticsearch_exporter_image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.5.0
+# elasticsearch_image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+# kibana_image: docker.elastic.co/kibana/kibana:7.17.0
+# elasticsearch_exporter_image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.5.0
 filebeat_image: docker.elastic.co/beats/filebeat:7.17.0
 
 # insecure registry - stfc nexus
 docker_repo: 192.168.99.204:9082
 
-elasticsearch_cluster_name: ska-stfc1
+# elasticsearch_cluster_name: ska-stfc1
 elasticsearch_address: "{{ ansible_default_ipv4.address }}"
 
 # all loggers point here
@@ -50,7 +50,7 @@ java_mem: 8g
 stack_data_dir: "{{ data_filesystem }}"
 
 # determine whether this is single_node or not
-discovery_type: "{% if (genericnode_master.num_nodes + genericnode_worker.num_nodes) > 1 %}{% else %}single-node{% endif %}"
+discovery_type: "{% if groups[target_hosts] > 1 %}{% else %}single-node{% endif %}"
 
 # pipeline run in filebeat
 filebeat_pipeline: ska_log_parsing_pipeline

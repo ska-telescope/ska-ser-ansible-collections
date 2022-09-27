@@ -12,5 +12,6 @@
   hosts: "{{ target_hosts }}"
   become: true
   roles:
-    # - ska_collections.instance_common.init
+    - ska_collections.instance_common.init
+    - ska_collections.docker_base.docker
     - ska_collections.elastic.stack

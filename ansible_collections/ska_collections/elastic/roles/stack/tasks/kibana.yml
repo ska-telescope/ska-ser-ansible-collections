@@ -22,20 +22,3 @@
     ports:
       - "5602:5601"
   when: "inventory_hostname == groups[target_hosts][0]"
-
-# for internal connections
-- name: Restart a Kibana B
-  docker_container:
-    name: local_kibana
-    restart_policy: always
-    image: "{{ kibana_image }}"
-    command: "kibana -e https://{{ ansible_default_ipv4.address }}:9200"
-    state: started
-    labels: "{{ container_labels }}"
-    log_driver: "{{ log_driver }}"
-    log_options: "{{ log_options }}"
-    # volumes:
-    #   - /etc/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
-    ports:
-      - "5601:5601"
-  when: "inventory_hostname == groups[target_hosts][0]"

@@ -1,0 +1,82 @@
+---
+debug: false
+
+activate_nvidia: false
+ignore_nvidia_fail: false
+
+docker_driver: overlay2
+
+docker_repo: localhost:5000
+nexus_hosted_cache: 192.168.99.204:9080 # docker-internal
+
+docker_mtu: ""
+
+log_max_size: "10m"
+log_max_file: "3"
+log_driver: json-file
+
+# Nexus repository cache
+# registry_mirror: "https://registry-1.docker.io"
+registry_mirror: "http://192.168.99.204:9082"  # default to STFC Nexus Cache
+
+### Debian Section
+docker_deb_repo_url: "deb https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+docker_deb_repo_key_url: https://download.docker.com/linux/ubuntu/gpg
+docker_deb_repo_key_id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+
+docker_deb_uninstall_pkgs:
+  - docker
+  - docker-engine
+  - docker.io
+  - runc
+
+docker_deb_dependencies:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg-agent
+  - software-properties-common
+  - python3-pip
+
+docker_deb_version: 5:20.10.5~3-0~ubuntu-{{ ansible_distribution_release }}
+
+docker_deb_pkgs:
+  - "docker-ce={{ docker_deb_version }}"
+  - "docker-ce-cli={{ docker_deb_version }}"
+
+### RedHat section
+# change if required or override at runtime using --extra-vars
+
+docker_yum_repo_url: https://download.docker.com/linux/fedora/docker-ce.repo
+
+docker_rpm_uninstall_pkgs:
+  - docker
+  - docker-client
+  - docker-client-latest
+  - docker-common
+  - docker-latest
+  - docker-latest-logrotate
+  - docker-logrotate
+  - docker-selinux
+  - docker-engine-selinux
+  - docker-engine
+
+docker_rpm_dependencies:
+  - dnf-plugins-core
+  - yum-utils
+  - device-mapper-persistent-data
+  - lvm2
+  - python3-pip
+
+# docker_rpm_version: 3:19.03.8-3.el7
+# docker_rpm_cli_version: 1:19.03.8-3.el7
+
+docker_rpm_version: 3:19.03.9-3.el7
+docker_rpm_cli_version: 1:19.03.9-3.el7
+
+# containerd_rpm_dependency: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.13-3.2.el7.x86_64.rpm
+containerd_rpm_dependency: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.3.7-3.1.el7.x86_64.rpm
+
+docker_rpm_pkgs:
+  - "docker-ce-{{ docker_rpm_version }}"
+  - "docker-ce-cli-{{ docker_rpm_cli_version }}"

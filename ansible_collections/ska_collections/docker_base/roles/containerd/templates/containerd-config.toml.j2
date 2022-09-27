@@ -1,0 +1,103 @@
+root = "/var/lib/containerd"
+state = "/run/containerd"
+oom_score = 0
+version = 2
+
+[grpc]
+  address = "/run/containerd/containerd.sock"
+  uid = 0
+  gid = 0
+  max_recv_message_size = 16777216
+  max_send_message_size = 16777216
+
+[debug]
+  address = ""
+  uid = 0
+  gid = 0
+  level = ""
+
+[metrics]
+  address = ""
+  grpc_histogram = false
+
+[cgroup]
+  path = ""
+
+[plugins]
+  [plugins."io.containerd.grpc.v1.cri".cgroups]
+    no_prometheus = false
+  [plugins."io.containerd.grpc.v1.cri"]
+    stream_server_address = "127.0.0.1"
+    stream_server_port = "0"
+    enable_selinux = false
+    sandbox_image = "k8s.gcr.io/pause:3.1"
+    stats_collect_period = 10
+    systemd_cgroup = false
+    enable_tls_streaming = false
+    max_container_log_line_size = 16384
+    [plugins."io.containerd.grpc.v1.cri".containerd]
+      snapshotter = "overlayfs"
+      no_pivot = false
+      [plugins."io.containerd.grpc.v1.cri".containerd.default_runtime]
+        runtime_type = "io.containerd.runtime.v1.linux"
+        runtime_engine = ""
+        runtime_root = ""
+      [plugins."io.containerd.grpc.v1.cri".containerd.untrusted_workload_runtime]
+        runtime_type = ""
+        runtime_engine = ""
+        runtime_root = ""
+{% if activate_nvidia|bool and nvidia_driver_exists|bool %}
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia]
+        runtime_type = "io.containerd.runtime.v1.linux"
+        runtime_engine = "/usr/bin/nvidia-container-runtime"
+        runtime_root = ""
+{% endif %}
+    [plugins."io.containerd.grpc.v1.cri".cni]
+      bin_dir = "/opt/cni/bin"
+      conf_dir = "/etc/cni/net.d"
+      conf_template = ""
+    [plugins."io.containerd.grpc.v1.cri".registry]
+      [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+{% if docker_hub_mirror %}
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+          endpoint = ["{{ docker_hub_mirror }}"]
+        [plugins."io.containerd.grpc.v1.cri".registry.configs."docker.io".tls]
+          insecure_skip_verify = true
+{% endif %}
+{% if central_nexus_mirror %}
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."artefact.skao.int"]
+          endpoint = ["{{ central_nexus_mirror }}"]
+        [plugins."io.containerd.grpc.v1.cri".registry.configs."artefact.skao.int".tls]
+          insecure_skip_verify = true
+{% endif %}
+{% if gitlab_nexus_mirror %}
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.gitlab.com"]
+          endpoint = ["{{ gitlab_nexus_mirror }}"]
+        [plugins."io.containerd.grpc.v1.cri".registry.configs."registry.gitlab.com".tls]
+          insecure_skip_verify = true
+{% endif %}
+{% if nexus_hosted_cache and nexus_hosted_cache_url %}
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ nexus_hosted_cache }}"]
+          endpoint = ["{{ nexus_hosted_cache_url }}"]
+{% endif %}
+    [plugins."io.containerd.grpc.v1.cri".x509_key_pair_streaming]
+      tls_cert_file = ""
+      tls_key_file = ""
+  [plugins."io.containerd.grpc.v1.cri".diff-service]
+    default = ["walking"]
+  [plugins."io.containerd.grpc.v1.cri".linux]
+    shim = "containerd-shim"
+    runtime = "runc"
+    runtime_root = ""
+    no_shim = false
+    shim_debug = false
+  [plugins."io.containerd.grpc.v1.cri".opt]
+    path = "/opt/containerd"
+  [plugins."io.containerd.grpc.v1.cri".restart]
+    interval = "10s"
+  [plugins."io.containerd.grpc.v1.cri".scheduler]
+    pause_threshold = 0.02
+    deletion_threshold = 0
+    mutation_threshold = 100
+    schedule_delay = "0s"
+    startup_delay = "100ms"

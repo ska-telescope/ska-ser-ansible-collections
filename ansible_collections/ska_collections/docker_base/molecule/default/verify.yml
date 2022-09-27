@@ -1,0 +1,88 @@
+---
+# This is an example playbook to execute Ansible tests.
+
+- name: Verify
+  hosts: all
+  tasks:
+
+  - name: populate service facts
+    service_facts:
+
+  # - debug:
+  #     var: ansible_facts.services
+
+  # - name: Check Docker running
+  #   assert:
+  #     that:
+  #       - ansible_facts.services['docker.service'].state == "running"
+  #       - ansible_facts.services['docker.service'].status == "enabled"
+
+  - name: Check Containerd running
+    assert:
+      that:
+        - ansible_facts.services['containerd.service'].state == "running"
+        - ansible_facts.services['containerd.service'].status == "enabled"
+
+  # - name: Wait for Docker metrics
+  #   wait_for:
+  #     host: "{{ inventory_hostname }}"
+  #     port: 9323
+  #     state: started
+  #     timeout: 10
+  #   register: docker_metrics
+  #   ignore_errors: true
+
+  # - name: "Show docker_metrics"
+  #   debug: var=docker_metrics
+
+  # - name: Check Docker metrics are up
+  #   assert:
+  #     that:
+  #       - not docker_metrics.failed and docker_metrics.state == "started"
+
+  - name: Get containerd ps # noqa 301
+    command: "/usr/local/bin/crictl ps"
+    register: containerd_ps
+
+  - name: Check containerd healthy
+    assert:
+      that:
+        - containerd_ps.rc == 0
+
+  # - name: docker pull image for busybox
+  #   docker_image:
+  #     source: pull
+  #     name: "busybox:latest"
+  #   register: get_image
+
+  # # - name: "Show get_image"
+  # #   debug: var=get_image
+
+  # - name: Check image pull succeed
+  #   assert:
+  #     that:
+  #       - not get_image.failed
+
+  # - name: start container
+  #   docker_container:
+  #     name: busybox
+  #     state: present
+  #     image: busybox
+  #     command: sleep infinity
+  #   register: start_container
+
+  # - name: Check container start succeed
+  #   assert:
+  #     that:
+  #       - not start_container.failed
+
+  # - name: busybox remove containers
+  #   docker_container:
+  #     name: "busybox"
+  #     state: absent
+  #   register: remove_container
+
+  # - name: Check container remove succeed
+  #   assert:
+  #     that:
+  #       - not remove_container.failed

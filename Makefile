@@ -25,6 +25,11 @@ PLAYBOOKS_HOSTS?=all
 # DOCKERFILE ?= Dockerfile
 # EXECUTOR ?= docker
 
+check-env:
+ifndef ENVIRONMENT
+	$(error ENVIRONMENT is undefined)
+endif
+
 vars:  ## Variables
 	@echo "Current variable settings:"
 	@echo "ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS)"
@@ -36,7 +41,7 @@ help:  ## show this help.
 	@echo ""; echo "make vars (+defaults):"
 	@grep -E '^[0-9a-zA-Z_-]+ \?=.*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = " \\?= "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-ping:  ## Ping
+ping:  check-env ## Ping
 	ansible all -i $(PLAYBOOKS_ROOT_DIR)/inventory.yml -m ping -l $(PLAYBOOKS_HOSTS)
 
 # If the first argument is "elastic"...
@@ -47,5 +52,5 @@ ifeq (elastic,$(firstword $(MAKECMDGOALS)))
   $(eval $(TARGET_ARGS):;@:)
 endif
 
-elastic:
+elastic: check-env
 	$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/elastic.mk

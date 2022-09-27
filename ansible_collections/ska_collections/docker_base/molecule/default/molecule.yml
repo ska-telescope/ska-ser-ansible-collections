@@ -1,0 +1,64 @@
+---
+# dependency:
+#   name: galaxy
+#   options:
+#     ignore-certs: True
+#     ignore-errors: True
+#     requirements: molecule/default/collections.yml
+dependency:
+  name: shell
+  command: $PWD/molecule/default/deps.sh
+
+driver:
+  name: docker
+
+lint: |
+  set -e
+  yamllint .
+  ansible-lint ./playbooks/*.yml ./roles/*
+  flake8
+
+platforms:
+  - name: ubuntu2004
+    dockerfile: Dockerfile.j2
+    image: ubuntu:20.04
+    pre_build_image: false # we need it to be built
+    privileged: true
+    command: /lib/systemd/systemd
+    tmpfs:
+      - /run
+      - /tmp
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    capabilities:
+      - SYS_ADMIN
+      - SYS_TIME
+
+provisioner:
+  name: ansible
+  env:
+    ANSIBLE_COLLECTIONS_PATHS: "~/.ansible/collections"
+    ANSIBLE_COLLECTIONS_PATH: "~/.ansible/collections"
+    USER: root
+  inventory:
+    host_vars:
+      # setting for the platform instance named 'ubuntu2004'
+      ubuntu2004:
+        ansible_user: root
+
+verifier:
+  name: ansible
+
+scenario:
+  name: default
+  test_sequence:
+    - lint
+    - destroy
+    - dependency
+    - syntax
+    - create
+    - prepare
+    - converge
+    # - side_effect
+    - verify
+    - destroy
