@@ -1,0 +1,6 @@
+# Default Kibana configuration for docker target
+server.name: kibana
+server.host: "0"
+elasticsearch.hosts: [ "https://{{ ansible_default_ipv4.address }}:9200" ]
+server.basePath: "/kibana"
+#server.rewriteBasePath: true

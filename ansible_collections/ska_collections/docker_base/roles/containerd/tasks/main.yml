@@ -1,0 +1,239 @@
+---
+- name: Check if the nvidia driver is install
+  command: nvidia-smi --query
+  changed_when: false
+  register: nvidia_driver_check
+  ignore_errors: true
+
+- name: Nvidia check
+  debug: var=nvidia_driver_check.rc
+  when: debug|bool
+
+- name: Set the host grouping
+  set_fact:
+    host_grouping: "{% if 'masters' in groups and inventory_hostname in groups['masters'] %}master{% else %}worker{% endif %}"
+    nvidia_driver_exists: "{{ nvidia_driver_check.rc == 0 }}"
+
+- name: Check nvidia-driver installed when Nvidia support requested
+  fail:
+    msg: The Nvidia driver has not been found (nvidia-smi --query) - aborting.
+  when: activate_nvidia|bool and not ignore_nvidia_fail|bool and not nvidia_driver_exists|bool
+
+- name: Load containerd kernel drivers
+  modprobe:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - br_netfilter
+    - overlay
+
+- name: add containerd kernel drivers to startup
+  lineinfile:
+    line: "{{ item }}"
+    dest: /etc/modules-load.d/containerd.conf
+    create: true
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - overlay
+    - br_netfilter
+
+- name: Set net.bridge.bridge-nf-call-iptables to 1
+  sysctl: name=net.bridge.bridge-nf-call-iptables value=1 state=present ignoreerrors=true
+
+- name: Set net.bridge.bridge-nf-call-ip6tables to 1
+  sysctl: name=net.bridge.bridge-nf-call-ip6tables value=1 state=present ignoreerrors=true
+
+- name: Set net.bridge.bridge-nf-call-arptables to 1
+  sysctl: name=net.bridge.bridge-nf-call-arptables value=1 state=present ignoreerrors=true
+
+- name: Set net.ipv4.ip_forward to 1
+  sysctl: name=net.ipv4.ip_forward value=1 state=present ignoreerrors=true
+
+- name: Set user.max_inotify_instances to 1048576
+  sysctl: name=user.max_inotify_instances value=1048576 state=present ignoreerrors=true
+
+- name: Set fs.inotify.max_user_watches to 1048576
+  sysctl: name=fs.inotify.max_user_watches value=1048576 state=present ignoreerrors=true
+
+- name: Set net.netfilter.nf_conntrack_max to 1000000
+  sysctl: name=net.netfilter.nf_conntrack_max value=1000000 state=present ignoreerrors=true
+
+
+- name: add containerd cri sysctl vars
+  lineinfile:
+    line: "{{ item }}"
+    dest: /etc/sysctl.d/99-kubernetes-cri.conf
+    create: true
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - "net.bridge.bridge-nf-call-iptables  = 1"
+    - "net.ipv4.ip_forward                 = 1"
+    - "net.bridge.bridge-nf-call-ip6tables = 1"
+    - "net.bridge.bridge-nf-call-arptables = 1"
+    - "user.max_inotify_instances          = 1048576"
+    - "fs.inotify.max_user_watches         = 1048576"
+    - "net.netfilter.nf_conntrack_max      = 1000000"
+
+- name: Debian containerd install
+  block:
+    - name: Install packages required for containerd
+      apt:
+        name: "{{ debian_containerd_dependencies }}"
+        state: present
+
+    - name: Add dockerproject apt key
+      apt_key:
+        url: "{{ docker_deb_repo_key_url }}"
+        id: "{{ docker_deb_repo_key_id }}"
+        state: present
+
+    - name: Add dockerproject apt source
+      lineinfile:
+        line: "{{ docker_deb_repo_url }}"
+        dest: /etc/apt/sources.list.d/docker.list
+        create: true
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Update apt cache
+      apt:
+        update_cache: true
+
+    - name: Install containerd.io
+      apt:
+        name: "containerd.io={{ containerd_version }}"
+        force: true
+        state: present
+      notify:
+        - restart containerd
+        - restart docker
+
+    - name: pin containerd version
+      dpkg_selections:
+        name: "containerd.io"
+        selection: hold
+
+  when: ansible_os_family == "Debian"
+
+- name: RedHat containerd install
+  block:
+    - name: Install packages required for docker
+      dnf:
+        name: "{{ redhat_containerd_dependencies }}"
+        state: present
+
+    - name: add RedHat repository control
+      dnf:
+        name: "dnf-plugins-core"
+        state: present
+
+    - name: Add Docker Yum repository
+      become: true
+      get_url:
+        url: "{{ docker_yum_repo_url }}"
+        dest: "/etc/yum.repos.d/docker.repo"
+        mode: 0644
+      register: installedcontainerd
+
+    - name: Cgroups Exception For Fedora 31
+      command: 'grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"'
+      # TODO: implement this properly. Required by linter, but I don't have access to grubby.
+      changed_when: true
+
+    - name: Install containerd.io (dnf)
+      dnf:
+        name: "{{ redhat_containerd_dependency }}"
+        state: present
+        allow_downgrade: true
+      notify:
+        - restart containerd
+
+  when: ansible_os_family == "RedHat"
+
+- when: proxy_env is defined
+  block:
+    - name: create containerd unit file drop-in folder
+      ansible.builtin.file:
+        path: /etc/systemd/system/containerd.service.d
+        state: directory
+        mode: "0755"
+    - name: add proxy env vars to systemd drop-in
+      ansible.builtin.template:
+        src: proxy.conf.j2
+        dest: /etc/systemd/system/containerd.service.d/proxy.conf
+        mode: "0644"
+      notify:
+        - restart containerd
+
+- name: Configure containerd server
+  template:
+    src: containerd-config.toml.j2
+    dest: "/etc/containerd/config.toml"
+    mode: "0644"
+  notify:
+    - restart containerd
+    - restart docker
+
+- name: Check if crictl exists
+  stat:
+    path: /usr/local/bin/crictl
+  register: stat_crictl
+
+- name: Check if the crictl version
+  command: /usr/local/bin/crictl --version
+  changed_when: false
+  register: crictl_version_check
+  ignore_errors: true
+
+- name: crictl install
+  block:
+    - name: set crictl_archive fact
+      set_fact:
+        crictl_archive: "crictl-{{ crictl_version }}-linux-{{ debian_arch }}.tar.gz"
+
+    - name: Download crictl
+      get_url:
+        url: "https://github.com/kubernetes-sigs/cri-tools/releases/download/{{ crictl_version }}/{{ crictl_archive }}"
+        dest: "/tmp/{{ crictl_archive }}"
+        mode: "0755"
+        tmp_dest: "/tmp/"
+
+    - name: unpack crictl
+      unarchive:
+        src: "/tmp/{{ crictl_archive }}"
+        remote_src: true
+        dest: /usr/local/bin
+        mode: "0755"
+
+    - name: tidy up crictl download
+      file:
+        path: "/tmp/{{ crictl_archive }}"
+        state: absent
+
+  when: "not stat_crictl.stat.exists or
+    crictl_version_check.stdout.find(crictl_version) == -1"
+
+- name: configure crictl for containerd
+  template:
+    src: crictl.yaml.j2
+    dest: "/etc/crictl.yaml"
+    mode: "0644"
+
+# run the crictl system prune everyday
+- name: Add cron job for crictl system prune
+  lineinfile:
+    path: /etc/crontab
+    regexp: 'crictl rmi'
+    line: >-
+      45 */4     * * *   root    crictl rmi --prune
+  become: true
+  notify:
+    - restart cron
+
+- name: Flush those handlers
+  meta: flush_handlers

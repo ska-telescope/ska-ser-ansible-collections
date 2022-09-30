@@ -1,0 +1,82 @@
+---
+
+- name: Define dynamic elasticsearch configuration
+  block:
+    - name: yolo
+      set_fact:
+        master_specific_vars:
+          cluster.initial_master_nodes: "{%  for host in groups[target_hosts] %}{{ host }},{% endfor %}"
+          discovery.seed_hosts: "{% for host in groups[target_hosts] %}{% if host != inventory_hostname %}{{ host }},{% endif %}{% endfor %}"
+        
+        # configuration for all cases
+        all_node_vars:
+
+    - name: Add dynamic configs to configuration
+      set_fact:
+        master_vars: "{{ master_vars | combine({item.key: item.value}) }}"
+      # when: "not (item.key == 'cluster.initial_master_nodes' and discovery_type == 'single-node')"
+      with_dict: "{{ master_specific_vars | combine(all_node_vars) }}"
+
+    - name: "Show master_vars"
+      debug: var=master_vars
+      when: debug
+
+- name: Create List of nodes to be added into container's /etc/hosts file
+  set_fact:
+    masters_etc_hosts: "{{ masters_etc_hosts|default({}) | combine( {item: hostvars[item].ansible_default_ipv4.address} ) }}"
+  with_items: "{{ groups[target_hosts]}}"
+
+- name: "Show masters_etc_hosts"
+  debug: var=masters_etc_hosts
+  when: debug
+
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html
+- name: set vm.max_map_count
+  sysctl:
+    name: vm.max_map_count
+    value: "262144"
+    state: present
+  become: true
+
+- name: "Creates directory {{ stack_data_dir }}/elasticsearch"
+  file:
+    path: "{{ stack_data_dir }}/elasticsearch"
+    state: directory
+    owner: "{{ ansible_user }}"  # this maps to elasticsearch inside the container
+    group: root
+    mode: 0755
+
+- name: docker pull images
+  docker_image:
+    source: pull
+    name: "{{ item }}"
+  with_items:
+    - "{{ elasticsearch_image }}"
+    - "{{ kibana_image }}"
+    - "{{ elasticsearch_exporter_image }}"
+
+- name: Startup Elasticsearch containers
+  docker_container:
+    name: elk_elasticsearch
+    network_mode: "{{ network_mode }}"  # reverse DNS must work
+    privileged: "{{ 'yes' if network_mode == 'host' else 'no' }}"
+    user: elasticsearch
+    memory: "{{ elasticsearch_memory }}"
+    hostname: "{{ inventory_hostname }}"
+    etc_hosts: "{{ masters_etc_hosts }}"
+    restart_policy: false
+    image: "{{ elasticsearch_image }}"
+    state: started
+    ulimits:
+      - "memlock:-1:-1"
+      - "nofile:65536:65536"
+    labels: "{{ container_labels }}"
+    log_driver: "{{ log_driver }}"
+    log_options: "{{ log_options }}"
+    volumes:
+      - "{{ stack_data_dir }}/elasticsearch:/usr/share/elasticsearch/data"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    env: "{{ master_vars }}"
+    recreate: "{{ 'yes' if elastic_reinstall else 'no' }}"

@@ -1,0 +1,7 @@
+---
+collections:
+  - name: ../cicd_stack_cluster-0.1.0.tar.gz
+    version: 0.1.0
+
+  # - name: ../cicd_docker_base-0.1.0.tar.gz
+  #   version: 0.1.0

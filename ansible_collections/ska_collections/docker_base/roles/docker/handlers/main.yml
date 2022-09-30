@@ -1,0 +1,17 @@
+---
+- name: reload systemd
+  systemd:
+    daemon_reload: true
+    # when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
+
+- name: restart docker  # noqa ignore-errors
+  service: name=docker enabled=true state=restarted
+  ignore_errors: true
+
+- name: restart kubelet
+  service: name=kubelet state=restarted enabled=true
+  become: true
+
+- name: restart cron
+  service: name=cron state=restarted enabled=yes
+  become: true

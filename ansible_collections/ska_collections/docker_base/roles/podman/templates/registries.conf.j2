@@ -1,0 +1,9 @@
+unqualified-search-registries = ["docker.io"]
+
+[[registry]]
+location = "docker.io"
+insecure = false
+
+[[registry.mirror]]
+location = "{{ podman_registry_mirror }}"
+insecure = true

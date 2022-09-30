@@ -1,0 +1,40 @@
+---
+
+- name: "Begin volume mounting process"
+  debug:
+    msg: "{{ volume }}"
+
+- name: Check if volume is already mounted
+  command: /bin/mountpoint -q {{ volume.mount_point }}
+  ignore_errors: true
+  register: is_mounted
+  changed_when: "is_mounted.rc != 0"
+
+- name: Format and mount volume
+  block:
+    - name: Format volume
+      filesystem:
+        fstype: "{{ volume.file_system }}"
+        dev: "{{ volume.device }}"
+    
+    - name: Get volume UUID
+      ansible.builtin.command: lsblk {{ volume.device }} -no UUID
+      register: uuid
+      changed_when: false
+    
+    - name: Create mounting directory
+      file:
+        path: "{{ volume.mount_point }}"
+        state: directory
+        mode: "0755"
+
+    - name: Mount volume
+      mount:
+        name: "{{ volume.mount_point }}"
+        src: "UUID={{ uuid.stdout }}"
+        opts: defaults,noatime
+        dump: "0"
+        passno: "0"
+        fstype: "{{ volume.file_system }}"
+        state: mounted
+  when: is_mounted.rc != 0

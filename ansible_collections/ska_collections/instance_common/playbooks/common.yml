@@ -1,0 +1,10 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: "Apply the common role to docker nodes"
+  hosts:
+    - cluster
+  become: true
+  become_method: sudo
+  roles:
+    - ska_cicd.stack_cluster.init

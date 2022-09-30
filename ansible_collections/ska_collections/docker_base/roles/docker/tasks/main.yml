@@ -1,0 +1,194 @@
+---
+- name: Check if the nvidia driver is install
+  command: nvidia-smi --query
+  changed_when: false
+  register: nvidia_driver_check
+  ignore_errors: true
+
+- name: Nvidia check
+  debug: var=nvidia_driver_check.rc
+  when: debug|bool
+
+- name: Set the facts
+  set_fact:
+    host_grouping: "{% if 'masters' in groups and inventory_hostname in groups['masters'] %}master{% else %}worker{% endif %}"
+    nvidia_driver_exists: "{{ nvidia_driver_check.rc == 0 }}"
+    user_to_add: "{{ lookup('env','USER') }}"
+
+- name: Check nvidia-driver installed when Nvidia support requested
+  fail:
+    msg: The Nvidia driver has not been found (nvidia-smi --query) - aborting.
+  when: activate_nvidia|bool and not ignore_nvidia_fail|bool and not nvidia_driver_exists|bool
+
+- name: OS Family
+  debug: var=ansible_os_family
+
+- name: Debian Docker install
+  block:
+    - name: remove wrong packages for Docker
+      apt:
+        name: "{{ docker_deb_uninstall_pkgs }}"
+        force: true
+        state: absent
+
+    - name: Install packages required for docker
+      apt:
+        name: "{{ docker_deb_dependencies }}"
+        state: present
+
+    - name: Add dockerproject apt key
+      apt_key:
+        url: "{{ docker_deb_repo_key_url }}"
+        id: "{{ docker_deb_repo_key_id }}"
+        state: present
+
+    - name: Add dockerproject apt source
+      lineinfile:
+        line: "{{ docker_deb_repo_url }}"
+        dest: /etc/apt/sources.list.d/docker.list
+        create: true
+        owner: root
+        group: root
+        mode: 0644
+      register: installeddocker
+
+    - name: Update apt cache
+      apt:
+        update_cache: true
+
+    - name: Install docker CE (apt)
+      apt:
+        name: "{{ docker_deb_pkgs }}"
+        state: present
+        force: true
+      notify:
+        - restart docker
+
+  when: ansible_os_family == "Debian"
+
+- name: RedHat Docker install
+  block:
+    - name: remove wrong packages for Docker
+      dnf:
+        name: "{{ docker_rpm_uninstall_pkgs }}"
+        state: absent
+
+    - name: Install packages required for docker
+      dnf:
+        name: "{{ docker_rpm_dependencies }}"
+        state: present
+
+    - name: add RedHat repository control
+      dnf:
+        name: "dnf-plugins-core"
+        state: present
+
+    - name: Add Docker Yum repository
+      become: true
+      get_url:
+        url: "{{ docker_yum_repo_url }}"
+        dest: "/etc/yum.repos.d/docker.repo"
+        mode: 0644
+      register: installeddocker
+
+    - name: Install dependent containerd.io (dnf)
+      dnf:
+        name: "{{ containerd_rpm_dependency }}"
+        state: present
+      notify:
+        - restart docker
+
+    - name: Install docker CE (dnf)
+      dnf:
+        name: "{{ docker_rpm_pkgs }}"
+        state: present
+        skip_broken: true
+      notify:
+        - restart docker
+
+  when: ansible_os_family == "RedHat"
+
+- name: Add {{ ansible_user }} user to docker group
+  user:
+    name: "{{ ansible_user }}"
+    append: true
+    groups: docker
+
+- name: Add local user ({{ user_to_add }}) to docker group
+  user:
+    name: "{{ user_to_add }}"
+    append: true
+    groups: docker
+  when: "ansible_user != user_to_add"
+
+- name: ensure that pip is install (CentOS 7)
+  easy_install:
+    name: pip
+    state: present
+  when: ansible_distribution == "CentOS" and ansible_distribution_version is regex("^7\.")
+
+- name: uninstall docker dependencies pip3
+  pip:
+    name: ["docker-py", "docker-pycreds", "docker"]
+    executable: pip3
+    state: absent
+
+- name: uninstall docker dependencies pip - this may not exist!  # noqa ignore-errors
+  pip:
+    name: ["docker-py", "docker-pycreds", "docker"]
+    executable: pip
+    state: absent
+  ignore_errors: true
+
+- name: install docker dependencies pip3
+  pip:
+    executable: pip3
+    name: docker-py
+
+- name: Create /etc/systemd/system/docker.service.d
+  file:
+    path: "/etc/systemd/system/docker.service.d"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Configure docker server
+  template:
+    src: docker.conf.j2
+    dest: "/etc/systemd/system/docker.service.d/docker.conf"
+    mode: "0644"
+  notify:
+    - reload systemd
+    - restart docker
+
+- name: Create /etc/docker
+  file:
+    path: "/etc/docker"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Configure docker daemon
+  template:
+    src: daemon.json.j2
+    dest: "/etc/docker/daemon.json"
+    mode: "0644"
+  notify:
+    - reload systemd
+    - restart docker
+
+# run the docker system prune everyday
+- name: Add cron job for docker system prune
+  lineinfile:
+    path: /etc/crontab
+    regexp: 'docker system prune'
+    line: >-
+      30 */4     * * *   root    docker system prune -a --volumes -f
+  become: true
+  notify:
+    - restart cron
+
+- name: Flush those handlers
+  meta: flush_handlers

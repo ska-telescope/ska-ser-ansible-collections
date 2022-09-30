@@ -1,0 +1,33 @@
+---
+- name: Deploy the es exporter
+  block:
+    - name: docker pull image for es exporter
+      docker_image:
+        source: pull
+        name: "{{ elasticsearch_exporter_image }}"
+
+    - name: es exporter remove containers
+      docker_container:
+        name: "{{ item }}"
+        state: absent
+      with_items:
+        - "eexporter"  # remove legacy name
+        - "{{ eexporter_name }}"
+
+    # deploy exporter for ES monitoring
+    - name: Deploy Elasticsearch exporter
+      # hosts: all
+      docker_container:
+        name: "{{ eexporter_name }}"
+        image: "{{ elasticsearch_exporter_image }}"
+        restart_policy: always
+        labels: "{{ container_labels }}"
+        log_driver: "{{ log_driver }}"
+        log_options: "{{ log_options }}"
+        ports:
+          - "9114:9114"
+        env:
+          ES_URI: "https://{{ elasticsearch_address }}:9200"
+          # ES_ALL: "true"
+  when: "inventory_hostname in groups[target_hosts]"
+# may change this to be just masters in future

@@ -1,0 +1,22 @@
+---
+debug: false
+
+activate_nvidia: false
+ignore_nvidia_fail: false
+
+podman_repo: localhost:5000
+
+log_max_size: "10m"
+log_driver: json-file
+
+# Nexus repository cache
+# registry_mirror: "https://registry-1.docker.io"
+podman_registry_mirror: "192.168.99.204:9082"  # default to STFC Nexus Cache
+### Debian Section
+# change if required or override at runtime using --extra-vars
+podman_deb_repo_url: "deb http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_20.04/ /"
+podman_deb_repo_key_url: http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_20.04/Release.key
+podman_deb_pkgs:
+  - "podman=100:4.1.0-1"
+  - "buildah=100:1.26.4-1"
+  - "skopeo=100:1.8.0-1"
