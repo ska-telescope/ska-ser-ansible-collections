@@ -1,33 +1,14 @@
 # SKA Ansible Collections
 
-This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html),
-that can be reused around Systems activities such as installing standard application of tools such as Docker, ContainerD,
-Kubernetes, ElasticSearch.
+This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html), that can be reused to install and/or config toservices.
 
 
-| Collection      | Roles                                                                                                                       | Description                                                                                                                                                                                                                                                                                                                            |
-|-----------------|-----------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| oci             | containerd, <br> docker                                                                                                     | install specific OCI engine                                                                                                                                                                                                                                                                                                            |
-| instance_common | init                                                                                                                        | VM initialization (common packages, mount volumes, etc)                                                                                                                                                                                                                                                                                |
-| elastic         | stack                                                                                                                       | install Elasticsearch cluster (container based)                                                                                                                                                                                                                                                                                        |
-| k8s             | charts, <br> haproxy, <br> helm, <br> join, <br> k8s, <br> kubectl, <br> resources, <br> metallb ,<br> binderhub, <br> ping | default SKA helm charts <br> haproxy Kubernetes LoadBalancer <br> helm client <br> join node to HA cluster <br> Kubernetes packages <br> Kubernetes client <br> Create Namespaces and Apply Limits and Quotas <br> Load balancer for kubernetes <br> Service to share Jupyter notebooks in the cloud <br> Ping service to test ingress |
-
-## Publishing
-
-In order to run the publishing step, a git tag must be set.
-
-## Making a release
-
-When you are ready to publish a new version of one of the collections, you need to run `make update-x-release COLLECTION=<collection-name>`
-where `x` is either `patch`, `minor` or `major`.
-
-So if you want to update the patch version of `systems_k8s` collection, you just run `make update-patch-release COLLECTION=systems_k8s`.
-
-This will update the necessary version labels in `.release`, `galaxy.yml` files and will make a commit and tag it
-accordingly.
-
-Finally, run `make pushtag`.  Once the CI job has completed (https://gitlab.com/ska-telescope/sdi/ska-cicd-roles/-/pipelines),
-make sure you trigger the manual step on the tag ref for `publish`. 
+| Collection            | Roles                                 | Description                                               |
+| --------------------- | --------------------------------------| ----------------------------------------------------------|
+| oci                   | containerd <br> docker <br> podman    | install specific OCI engine                               |
+| instance_common       | init                                  | VM initialization (common packages, mount volumes, etc)   |
+| elastic               | stack                                 | install Elasticsearch cluster (container based)           |
+<!-- | k8s           | charts, <br> haproxy, <br> helm, <br> join, <br> k8s, <br> kubectl, <br> resources, <br> metallb ,<br> binderhub, <br> ping | default SKA helm charts <br> haproxy Kubernetes LoadBalancer <br> helm client <br> join node to HA cluster <br> Kubernetes packages <br> Kubernetes client <br> Create Namespaces and Apply Limits and Quotas <br> Load balancer for kubernetes <br> Service to share Jupyter notebooks in the cloud <br> Ping service to test ingress | -->
 
 ## Usage
 
@@ -53,9 +34,10 @@ project - umbrella repository
 └─── ...
 ```
 
-The ansible playbooks expect the *ansible.cfg* file ([example](https://gitlab.com/ska-telescope/sdi/ska-ser-infra-machinery/-/blob/e2531bfb5a4bc8600e29b2c2c00b024fcadb0794/environments/stfc-techops/installation/ssh.config)) 
-with all the ansible specific configurations, the ansible inventory and any playbook variables with different values
-than the default ones. Following the project structure above, it is recommended to create a directory for these files.
+The ansible playbooks expect the *ansible.cfg* file ([example](https://gitlab.com/ska-telescope/sdi/ska-ser-infra-machinery/-/blob/e2531bfb5a4bc8600e29b2c2c00b024fcadb0794/environments/stfc-techops/installation/ansible.cfg)) 
+with all the ansible specific configurations, the ansible inventory and any playbook 
+variables with different values than the default ones. 
+Following the project structure above, it is recommended to create a directory for these files.
 
 ```
 project - umbrella repository
