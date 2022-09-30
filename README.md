@@ -3,12 +3,12 @@
 This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html), that can be reused around Systems activities such as installing standard application of tools such as Docker, ContainerD, Kubernetes, ElasticSearch.
 
 
-| Collection            | Roles                                                                              | Description                                                                                                                                                |
-| --------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| oci   | containerd, <br> docker                                                            | install specific OCI engine                                                                                               |
-| instance_common | init                                                          | VM initialization (common packages, mount volumes, etc)                                                                               |
-| elastic | stack                                                          | install Elasticsearch cluster (container based)                                                                               |
-<!-- | k8s           | charts, <br> haproxy, <br> helm, <br> join, <br> k8s, <br> kubectl, <br> resources, <br> metallb ,<br> binderhub, <br> ping | default SKA helm charts <br> haproxy Kubernetes LoadBalancer <br> helm client <br> join node to HA cluster <br> Kubernetes packages <br> Kubernetes client <br> Create Namespaces and Apply Limits and Quotas <br> Load balancer for kubernetes <br> Service to share Jupyter notebooks in the cloud <br> Ping service to test ingress | -->
+| Collection      | Roles                   | Description                                                                                                                 |
+|-----------------|-------------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| oci             | containerd, <br> docker | install specific OCI engine                                                                                                 |
+| instance_common | init                    | VM initialization (common packages, mount volumes, etc)                                                                     |
+| elastic         | stack                   | install Elasticsearch cluster (container based)                                                                             |
+| <!--            | k8s                     | charts, <br> haproxy, <br> helm, <br> join, <br> k8s, <br> kubectl, <br> resources, <br> metallb ,<br> binderhub, <br> ping | default SKA helm charts <br> haproxy Kubernetes LoadBalancer <br> helm client <br> join node to HA cluster <br> Kubernetes packages <br> Kubernetes client <br> Create Namespaces and Apply Limits and Quotas <br> Load balancer for kubernetes <br> Service to share Jupyter notebooks in the cloud <br> Ping service to test ingress | -->
 
 <!-- ## Publishing
 
@@ -26,7 +26,7 @@ Finally, run `make pushtag`.  Once the CI job has completed (https://gitlab.com/
 
 ## Usage
 
-On this chapter, it will be explain how to use the existing collections on your local machine.
+This chapter, will explain how to use the existing collections on your local machine.
 
 ### Requirements
 
@@ -36,7 +36,7 @@ On this chapter, it will be explain how to use the existing collections on your 
 
 This repository is expected to be added as a submodule ([SKA Infra Machinery](https://gitlab.com/ska-telescope/sdi/ska-ser-infra-machinery) as example)
 or as a subdirectory of your workplace.
-With this design, we make sure that every commit/change on the playbooks are environment/cloud agnostic.
+With this design, we make sure that every commit/change on the playbooks are environment/cloud-agnostic.
 
 
 ```
@@ -73,11 +73,11 @@ Finally, this repo has make targets to run the desired collections with all the 
 
 The table bellow, iterates all the targets available on the main Makefile. 
 
-| Target     | Description                      | Mandatory Variables |
-| -----------| -------------------------------- |-----|
-| vars       | Print relevant shell variables         | |
-| help       | Help guide                             | |
-| ping       | ping all hosts on a specific inventory | PLAYBOOKS_ROOT_DIR <br> PLAYBOOKS_HOSTS <br> ANSIBLE_CONFIG                                                                            |
+| Target | Description                            | Mandatory Variables                                         |
+|--------|----------------------------------------|-------------------------------------------------------------|
+| vars   | Print relevant shell variables         |                                                             |
+| help   | Help guide                             |                                                             |
+| ping   | ping all hosts on a specific inventory | PLAYBOOKS_ROOT_DIR <br> PLAYBOOKS_HOSTS <br> ANSIBLE_CONFIG |
 
 All the targets specific to a collection such as ElasticSearch or OCI engine, 
 it will be separated on their own **.mk** file on **resources/jobs** folder.
@@ -91,13 +91,13 @@ make elastic *job*
 
 Following the same logic, we can run all the jobs bellow:
 
-| Collection    | Job           | Description                                                   | Role Dependency               |
-| --------------| --------------| --------------------------------------------------------------|-------------------------------|
-| elastic       | install       | Install ElasticSearch cluster via OCI containers              | common.init <br> oci.docker   |
-| oci           | docker        | Install Docker                                                |                               |
-| oci           | podman        | Install Podman                                                |                               |
-| oci           | containerd    | Install containerd                                            |                               |
-| common        | init          | Update APT <br> Install common packages <br> Mount volumes    |                               |
+| Collection | Job        | Description                                                | Role Dependency             |
+|------------|------------|------------------------------------------------------------|-----------------------------|
+| elastic    | install    | Install ElasticSearch cluster via OCI containers           | common.init <br> oci.docker |
+| oci        | docker     | Install Docker                                             |                             |
+| oci        | podman     | Install Podman                                             |                             |
+| oci        | containerd | Install containerd                                         |                             |
+| common     | init       | Update APT <br> Install common packages <br> Mount volumes |                             |
 
 ### Mandatory Environment Variables
 
