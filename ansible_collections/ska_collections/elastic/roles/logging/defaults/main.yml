@@ -20,6 +20,8 @@ container_labels:
   org.ska.app.group: monitoring
 
 filebeat_name: filebeat
+certificates_dir: "/etc/pki"
+client_cert_prefix: "{{ filebeat_name }}"
 # pipeline run in filebeat - default none
 filebeat_pipeline: ""
 filebeat_template_overwrite: false
