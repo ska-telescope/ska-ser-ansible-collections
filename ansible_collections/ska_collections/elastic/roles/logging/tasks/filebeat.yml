@@ -81,7 +81,7 @@
         content: "{{ certificate.certificate }}"
       when: pemfile_exists.stat.exists == False
 
-		- name: Check if CA pem file exists
+    - name: Check if CA pem file exists
       stat:
         path: "{{ certificates_dir }}/ca-certificate.pem"
       changed_when: false
@@ -101,8 +101,8 @@
         content: "{{ capemfile['content'] | b64decode }}"
         dest: "{{ certificates_dir }}/ca-certificate.pem"
       when: capemfile_exists.stat.exists == False
-    
-		- name: scope for update pipeline
+
+    - name: scope for update pipeline
       block:
         - name: Write ska_log_parsing_pipeline config
           template:
