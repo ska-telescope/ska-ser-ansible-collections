@@ -28,13 +28,81 @@
         dest: /etc/beat_policy.json
         mode: 0644
 
-    - name: Copy the certificates
-      ansible.builtin.copy:
-        src: "/tmp/certs/"
-        dest: /etc/pki/
-        mode: 0644
+    - name: Create certificates directory
+      ansible.builtin.file:
+        path: "{{ certificates_dir }}"
+        state: directory
+        mode: "0700"
 
-    - name: scope for update pipeline
+    - name: check if key file exists
+      stat:
+        path: "{{ certificates_dir }}/{{ client_cert_prefix }}.key"
+      register: keyfile_exists
+
+    - name: Create private key for new certificate
+      community.crypto.openssl_privatekey:
+        path: "{{ certificates_dir }}/{{ client_cert_prefix }}.key"
+        passphrase: "{{ ca_cert_pass }}"
+        cipher: auto
+      when: keyfile_exists.stat.exists == False
+
+    - name: check if pem file exists
+      stat:
+        path: "{{ certificates_dir }}/{{ client_cert_prefix }}.pem"
+      register: pemfile_exists
+
+    - name: Create certificate signing request (CSR) for new certificate
+      community.crypto.openssl_csr_pipe:
+        privatekey_path: "{{ certificates_dir }}/{{ client_cert_prefix }}.key"
+        privatekey_passphrase: "{{ ca_cert_pass }}"
+        common_name: "{{ ansible_hostname }}"
+        subject_alt_name: "DNS:{{ hostvars[host]['ansible_facts']['fqdn'] }}"
+        organization_name: "SKAO"
+      register: csr
+      changed_when: false
+      when: pemfile_exists.stat.exists == False
+
+    - name: Sign certificate with our CA
+      community.crypto.x509_certificate_pipe:
+        csr_content: "{{ csr.csr }}"
+        provider: ownca
+        ownca_path: "{{ certificates_dir }}/ca-certificate.pem"
+        ownca_privatekey_path: "{{ certificates_dir }}/ca-certificate.key"
+        ownca_privatekey_passphrase: "{{ ca_cert_pass }}"
+        ownca_not_after: +365d # valid for one year
+        ownca_not_before: "-1d" # valid since yesterday
+      delegate_to: terminus
+      register: certificate
+      when: pemfile_exists.stat.exists == False
+
+    - name: Write certificate file on client host
+      copy:
+        dest: "{{ certificates_dir }}/{{ client_cert_prefix }}.pem"
+        content: "{{ certificate.certificate }}"
+      when: pemfile_exists.stat.exists == False
+
+		- name: Check if CA pem file exists
+      stat:
+        path: "{{ certificates_dir }}/ca-certificate.pem"
+      changed_when: false
+      register: capemfile_exists
+
+    - name: Get CA certificate pem from Terminus
+      ansible.builtin.slurp:
+        src: "{{ certificates_dir }}/ca-certificate.pem"
+      delegate_to: terminus
+      register: capemfile
+      changed_when: false
+      run_once: true
+      when: capemfile_exists.stat.exists == False
+
+    - name: Write CA certificate file on client host
+      copy:
+        content: "{{ capemfile['content'] | b64decode }}"
+        dest: "{{ certificates_dir }}/ca-certificate.pem"
+      when: capemfile_exists.stat.exists == False
+    
+		- name: scope for update pipeline
       block:
         - name: Write ska_log_parsing_pipeline config
           template:
