@@ -76,9 +76,9 @@ output:
 {% for adr in logging_elasticsearch_addresses %}
       - {{ adr }}
 {% endfor %}
-    ssl.certificate_authorities: ["/etc/pki/elasticsearch-ca.pem"]
-    ssl.certificate: "/etc/pki/client/elasticsearch-cert.crt" # certificate for SSL client authentication to be copied from terminus
-    ssl.key: "/etc/pki/client/elasticsearch-cert.key" # client certificate key to be copied from terminus
+    ssl.certificate_authorities: ["{{ certificates_dir }}/ca-certificate.pem"]
+    ssl.certificate: "{{ certificates_dir }}/{{ client_cert_prefix }}.pem" # certificate for SSL client authentication to be copied from terminus
+    ssl.key: "{{ certificates_dir }}/{{ client_cert_prefix }}.key" # client certificate key to be copied from terminus
     loadbalance: true
     worker: 1
     # bulk_max_size: 100
