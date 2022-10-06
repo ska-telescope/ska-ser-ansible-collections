@@ -14,8 +14,8 @@ SLACK_API_URL ?= ******************
 SLACK_API_URL_MVP ?= ******************
 SLACK_CHANNEL ?= prometheus-alerts
 SLACK_CHANNEL_MVP ?= proj-mvp-messages
-PROMETHEUS_ALERTMANAGER_URL ?= http://192.168.93.26:9093
-PROMETHEUS_URL ?= https://alerts.engageska-portugal.pt
+PROMETHEUS_ALERTMANAGER_URL ?= http://monitoring.skao.stfc:9093
+PROMETHEUS_URL ?= http://monitoring.skao.stfc:9095
 PROM_CONFIGS_PATH ?= .
 
 ARCHIVER_PASSWORD ?= "mandatory"
@@ -65,11 +65,10 @@ lint: ## Lint playbooks
 	flake8 --exclude ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/openstack roles/*
 
 server: check_hosts ## Install Prometheus Server
-	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
-	ANSIBLE_COLLECTIONS_PATH=$(ANSIBLE_COLLECTIONS_PATHS) \
-	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/deploy_monitoring.yml \
-		--extra-vars "mode='server' slack_api_url='$(SLACK_API_URL)' slack_api_url_mvp='$(SLACK_API_URL_MVP)'" \
-		--extra-vars="azuread_client_id='$(AZUREAD_CLIENT_ID)' azuread_client_secret='$(AZUREAD_CLIENT_SECRET)' azuread_tenant_id='$(AZUREAD_TENANT_ID)'" \
+	ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
+		-i $(PLAYBOOKS_ROOT_DIR)/inventory.yml \
+		-e "mode='server' slack_api_url='$(SLACK_API_URL)' slack_api_url_mvp='$(SLACK_API_URL_MVP)'" \
+		-e "azuread_client_id='$(AZUREAD_CLIENT_ID)' azuread_client_secret='$(AZUREAD_CLIENT_SECRET)' azuread_tenant_id='$(AZUREAD_TENANT_ID)'" \
 		-e "slack_channel='$(SLACK_CHANNEL)'" \
 		-e "slack_channel_mvp='$(SLACK_CHANNEL_MVP)'" \
 		-e "prometheus_alertmanager_url='$(PROMETHEUS_ALERTMANAGER_URL)'" \
@@ -79,8 +78,10 @@ server: check_hosts ## Install Prometheus Server
 		-e "prometheus_url='$(PROMETHEUS_URL)'" $(PROMETHEUS_EXTRAVARS) \
 		-e "prometheus_gitlab_ci_pipelines_exporter_token=$(GITLAB_TOKEN)" \
 		-e "ca_cert_pass=$(CA_CERT_PASSWORD)" \
-		-i hosts \
+		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
+		-e @$(PROM_CONFIGS_PATH)/../environments/stfc-techops/installation/group_vars/prometheus.yml \
+		-e "target_hosts='$(PLAYBOOKS_HOSTS)'"
 		-e 'ansible_python_interpreter=/usr/bin/python3' $(V)
 
 thanos: check_hosts ## Install Thanos query and query front-end
@@ -91,7 +92,7 @@ thanos: check_hosts ## Install Thanos query and query front-end
 		-e "ca_cert_pass=$(CA_CERT_PASSWORD)" \
 		-e "project_name='$(OS_PROJECT_NAME)' project_id='$(OS_PROJECT_ID)' auth_url='$(OS_AUTH_URL)'" \
 		-e "username='$(OS_USERNAME)' password='$(OS_PASSWORD)'" \
-		-i hosts \
+		-i $(PLAYBOOKS_ROOT_DIR)/inventory.yml \
 		-e 'ansible_python_interpreter=/usr/bin/python3' $(V)
 
 node-exporter: check_hosts ## Install Prometheus node exporter - pass INVENTORY_FILE and NODES
