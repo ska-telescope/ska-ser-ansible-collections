@@ -3,6 +3,7 @@
   community.docker.docker_image:
     name: prom/blackbox-exporter
     tag: "{{ prometheus_blackbox_exporter_docker_tags }}"
+    source: pull
 
 - name: Stop blackbox exporter container
   community.docker.docker_container:

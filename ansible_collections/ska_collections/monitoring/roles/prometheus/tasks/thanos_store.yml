@@ -11,6 +11,7 @@
   community.docker.docker_image:
     name: thanosio/thanos
     tag: "{{ thanos_docker_tags }}"
+    source: pull
 
 - name: Stop thanos container
   community.docker.docker_container:

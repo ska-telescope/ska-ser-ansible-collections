@@ -311,6 +311,7 @@
   community.docker.docker_image:
     name: prom/prometheus
     tag: "{{ prometheus_docker_tags }}"
+    source: pull
 
 - name: Stop prometheus container
   community.docker.docker_container:

@@ -32,6 +32,7 @@
   community.docker.docker_image:
     name: grafana/grafana
     tag: "{{ grafana_docker_tags }}"
+    source: pull
 
 - name: Stop grafana container
   community.docker.docker_container:
