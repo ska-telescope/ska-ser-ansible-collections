@@ -1,0 +1,10 @@
+---
+- name: Export gitlab runners to prometheus
+  hosts: "{{ target_hosts }}"
+  vars:
+    mode: "runner"
+  become: true
+  become_method: sudo
+  become_flags: '-E -S -n'
+  roles:
+    - prometheus

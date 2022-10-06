@@ -1,0 +1,46 @@
+[elastic_system_core_master]
+elastic_system_core-master-0 ansible_host=192.168.93.94
+elastic_system_core-master-1 ansible_host=192.168.93.96
+elastic_system_core-master-2 ansible_host=192.168.93.112
+
+[ceph]
+ceph_system_core-master-0 ansible_host=192.168.93.103
+ceph_system_core-master-1 ansible_host=192.168.93.88
+ceph_system_core-master-2 ansible_host=192.168.93.107
+
+[k8s_syscore_loadbalancer]
+k8s-syscore-loadbalancer-0 ansible_host=192.168.93.102
+
+[k8s_syscore_master]
+k8s-syscore-master-0 ansible_host=192.168.93.110
+k8s-syscore-master-1 ansible_host=192.168.93.122
+k8s-syscore-master-2 ansible_host=192.168.93.99
+
+[k8s_syscore_worker]
+k8s-syscore-worker-0 ansible_host=192.168.93.109
+k8s-syscore-worker-1 ansible_host=192.168.93.118
+k8s-syscore-worker-2 ansible_host=192.168.93.123
+k8s-syscore-worker-3 ansible_host=192.168.93.108
+k8s-syscore-worker-4 ansible_host=192.168.93.92
+k8s-syscore-worker-5 ansible_host=192.168.93.13
+k8s-syscore-worker-6 ansible_host=192.168.93.44
+k8s-syscore-worker-7 ansible_host=192.168.93.114
+k8s-syscore-worker-8 ansible_host=192.168.93.74
+k8s-syscore-worker-9 ansible_host=192.168.93.134
+
+# Prometheus
+[prometheus]
+promserver ansible_host=192.168.93.26 ansible_user=ubuntu
+dev-promserver ansible_host=192.168.93.46 ansible_user=ubuntu
+
+[skawebsite]
+engageska-website ansible_host=192.168.93.45 ansible_user=centos
+
+[ingress]
+public-ingress ansible_host=192.168.93.42 ansible_user=centos
+
+[vpn]
+backup-vpn ansible_host=192.168.93.23 ansible_user=ubuntu
+
+[nexus]
+nexus3 ansible_host=192.168.93.12 ansible_port=8888 ansible_user=root

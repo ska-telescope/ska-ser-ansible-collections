@@ -1,0 +1,10 @@
+---
+- name: Deploy docker exporter
+  hosts: "{{ target_hosts }}"
+  vars:
+    mode: "docker"
+  become: true
+  become_method: sudo
+  become_flags: '-E -S -n'
+  roles:
+    - prometheus

@@ -1,0 +1,27 @@
+- name: Install cron
+  ansible.builtin.apt:
+    pkg:
+      - cron
+    state: present
+    update_cache: true
+
+- name: Copy create_filebeat_metrics to /usr/local/bin
+  ansible.builtin.copy:
+    src: "create_filebeat_metrics.sh"
+    dest: "/usr/local/bin/create_filebeat_metrics.sh"
+    mode: '0755'
+  become: true
+
+- name: Add cron job
+  ansible.builtin.cron:
+    name: "{{ item.name }}"
+    minute: "{{ item.minute }}"
+    hour: "{{ item.hour }}"
+    day: "{{ item.day }}"
+    month: "{{ item.month }}"
+    weekday: "{{ item.weekday }}"
+    user: "{{ item.user }}"
+    job: "{{ item.job }}"
+    cron_file: "{{ cron_file }}"
+  become: true
+  with_items: "{{ cron_job_lines }}"

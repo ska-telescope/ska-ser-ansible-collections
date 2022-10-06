@@ -1,3 +1,4 @@
+.DEFAULT_GOAL := help
 
 check_hosts:
 ifndef PLAYBOOKS_HOSTS

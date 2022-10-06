@@ -1,0 +1,50 @@
+---
+
+# common variables
+aptcachetime: 3600
+locale: "en_US.UTF-8"
+localuser: "{{ lookup('env','USER') }}"
+localhome: "{{ lookup('env','HOME') }}"
+
+oidc_issuer_url: 'https://gitlab.com'
+oidc_client_id: '417ea12283741e0d74b22778d2dd3f5d0dcee78828c6e9a8fd5e8589025b8d2f'
+oidc_username_claim: 'sub'
+
+prometheus_url: https://alerts.engageska-portugal.pt
+prometheus_docker_tags: 'v2.37.1'
+prometheus_title: SKA DevOps Prometheus Server
+prometheus_memory: 16384M
+prometheus_alertmanager_url: http://192.168.93.26:9093
+prometheus_alertmanager_docker_tags: 'v0.24.0'
+prometheus_blackbox_exporter_docker_tags: 'v0.21.0'
+cadvisor_docker_tags: 'v0.44.0'
+grafana_docker_tags: '9.0.0' 
+grafana_influxdb: 192.168.100.5
+grafana_influxdb_db: gitlab_metrics
+thanos_docker_tags: 'v0.28.0'
+
+kube_state_metrics: false
+
+swapfile_path: /swapfile
+swapfile_size: 1000
+swapfile_fallocate: true
+
+archiver_ip: "192.168.99.229"
+archiver_user: "eda_admin"
+archiver_password: "*************"
+archiver_default_db: "tango"
+grafana_host: "192.168.99.154"
+grafana_port: 3000
+grafana_user: "admin"
+grafana_admin_password: "*************"
+k8s_loadbalancer: "10.200.0.63"
+k8s_master: "192.168.99.184"
+tangodb_password: "*************"
+
+# kubectl vars
+kubectl_version: 'v1.18.2'
+kubectl_name: kubectl
+kubectl_install_dir: /usr/local/bin
+kubectl_platform: linux/amd64
+kubectl_mirror: https://storage.googleapis.com/kubernetes-release/release
+kubectl_url: '{{ kubectl_mirror }}/{{ kubectl_version }}/bin/{{ kubectl_platform }}/{{ kubectl_name }}'

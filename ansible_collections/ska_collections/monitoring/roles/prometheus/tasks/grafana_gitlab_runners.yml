@@ -1,0 +1,27 @@
+---
+- name: Gitlab-runners Make sure grafana configuration directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+  with_items:
+    - "/etc/grafana/provisioning/datasources"
+    - "/etc/grafana/provisioning/dashboards/gitlab-runners-dashboard"
+    - "/etc/grafana/provisioning/notifiers"
+
+- name: Gitlab-runners Copy up resource files
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/dashboards/gitlab-runners/{{ item }}"
+    dest: "/etc/grafana/provisioning/dashboards/gitlab-runners-dashboard/{{ item }}"
+    mode: 0640
+  with_items:
+    - gitlab-runner-simple.json
+    - gitlab-ci-pipelines-statuses_rev4.json
+    - gitlab-runner-monitoring.json
+    - pi-quality-metrics-influx.json
+
+- name: Gitlab-runners Write dashboards provisioning config file
+  ansible.builtin.template:
+    src: dashboards-gitlab-runners-dashboard.yml.j2
+    dest: /etc/grafana/provisioning/dashboards/gitlab-runners-dashboard.yml
+    mode: 0640

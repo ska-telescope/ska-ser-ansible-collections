@@ -1,0 +1,12 @@
+---
+
+- name: Deploy_node_exporter
+  hosts: all
+  vars:
+    mode: "exporter"
+  become: true
+  become_method: sudo
+  become_flags: '-E -S -n'
+  roles:
+    - node_exporter
+    - custom_metrics

@@ -1,0 +1,1085 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 49,
+  "iteration": 1645013023214,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 44,
+      "panels": [],
+      "title": "Main View",
+      "type": "row"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P6C1C26282086DCE4"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 12,
+        "w": 18,
+        "x": 0,
+        "y": 1
+      },
+      "hiddenSeries": false,
+      "id": 32,
+      "legend": {
+        "alignAsTable": false,
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.3.0",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P6C1C26282086DCE4"
+          },
+          "exemplar": true,
+          "expr": "device_attribute{name=~\"State|obsState|telescopeState|telescopeHealthState|pointingState\", device=~\"ska_mid/tm_subarray_node/1|mid_csp/elt/subarray_01|mid_sdp/elt/subarray_1|mid_d0001/elt/master|mid_d0002/elt/master|ska_mid/tm_central/central_node\", namespace=\"$target_namespace\"}",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{device}}/{{name}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeRegions": [],
+      "title": "State, obsState and pointing state",
+      "tooltip": {
+        "shared": false,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [],
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "decimals": 0,
+          "format": "none",
+          "label": "",
+          "logBase": 1,
+          "show": true
+        },
+        {
+          "format": "none",
+          "label": "",
+          "logBase": 1,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false
+      }
+    },
+    {
+      "gridPos": {
+        "h": 10,
+        "w": 3,
+        "x": 18,
+        "y": 1
+      },
+      "id": 36,
+      "options": {
+        "content": "<ul>\n<li>ON = 0</li>\n<li>OFF = 1</li>\n<li>CLOSE = 2</li>\n<li>OPEN = 3</li>\n<li>INSERT = 4</li>\n<li>EXTRACT = 5</li>\n<li>MOVING = 6</li>\n<li>STANDBY = 7</li>\n<li>FAULT = 8</li>\n<li>INIT = 9</li>\n<li>RUNNING = 10</li>\n<li>ALARM = 11</li>\n<li>DISABLE = 12</li>\n<li>UNKNOWN = 13</li>\n</ul>\n\n\n\n\n\n\n",
+        "mode": "html"
+      },
+      "pluginVersion": "8.3.0",
+      "title": "State",
+      "type": "text"
+    },
+    {
+      "gridPos": {
+        "h": 6,
+        "w": 3,
+        "x": 21,
+        "y": 1
+      },
+      "id": 34,
+      "options": {
+        "content": "<ul>\n<li>IDLE = 0</li>\n<li>CONFIGURING = 1</li>\n<li>READY = 2</li>\n<li>SCANNING = 3</li>\n<li>PAUSED = 4</li>\n<li>ABORTED = 5</li>\n<li>FAULT = 6</li>\n</ul>\n\n",
+        "mode": "html"
+      },
+      "pluginVersion": "8.3.0",
+      "title": "ObsState",
+      "type": "text"
+    },
+    {
+      "gridPos": {
+        "h": 6,
+        "w": 3,
+        "x": 21,
+        "y": 7
+      },
+      "id": 35,
+      "options": {
+        "content": "<ul>\n<li>READY = 0</li>\n<li>SLEW = 1</li>\n<li>TRACK = 2</li>\n<li>SCAN = 3</li>\n<li>RESERVED = 4</li>\n</ul>\n\n",
+        "mode": "html"
+      },
+      "pluginVersion": "8.3.0",
+      "title": "PointingState",
+      "type": "text"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": {
+        "type": "mysql",
+        "uid": "${archiver}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 12,
+        "w": 18,
+        "x": 0,
+        "y": 13
+      },
+      "hiddenSeries": false,
+      "id": 38,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "8.3.0",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${archiver}"
+          },
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "(  SELECT    data_time AS \"time\",    att_name,    value_r  \nFROM att_scalar_devenum_ro INNER JOIN att_conf ON att_conf.att_conf_id = att_scalar_devenum_ro.att_conf_id  \nWHERE    $__timeFilter(data_time)  ORDER BY data_time  )  union \n(  \nSELECT    data_time AS \"time\",    att_name,    value_r  \nFROM att_scalar_devenum_rw \nINNER JOIN att_conf ON att_conf.att_conf_id = att_scalar_devenum_rw.att_conf_id  \nWHERE    $__timeFilter(data_time)  \nORDER BY data_time  )\nunion  (  \nSELECT    data_time AS \"time\",    att_name,    value_r  \nFROM att_scalar_devstate_ro INNER JOIN att_conf ON att_conf.att_conf_id = att_scalar_devstate_ro.att_conf_id  \nWHERE    $__timeFilter(data_time)  \nORDER BY data_time  )",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeRegions": [],
+      "title": "State, obsState and pointing state (Archiver)",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [],
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "logBase": 1,
+          "show": true
+        },
+        {
+          "format": "short",
+          "logBase": 1,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
+      "id": 16,
+      "panels": [],
+      "title": "State Analysis",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P6C1C26282086DCE4"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 9,
+        "x": 0,
+        "y": 26
+      },
+      "id": 3,
+      "options": {
+        "dense": false,
+        "header": false,
+        "pagination": false,
+        "tablehead": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P6C1C26282086DCE4"
+          },
+          "exemplar": false,
+          "expr": "device_attribute{name=\"State\", device=~\"mid_csp/elt/subarray_01|mid_csp_cbf/fspsubarray/01_01|mid_csp_cbf/sub_elt/subarray_01|mid_csp_cbf/vcc/002|mid_csp_cbf/vcc/004|mid_sdp/elt/subarray_1|ska_mid/tm_subarray_node/1\", namespace=\"$target_namespace\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{device}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Device States",
+      "type": "ska-tango-attribute"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P6C1C26282086DCE4"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 9,
+        "x": 9,
+        "y": 26
+      },
+      "id": 2,
+      "options": {
+        "dense": false,
+        "header": false,
+        "pagination": false,
+        "tablehead": false
+      },
+      "targets": [
+        {
+          "expr": "device_attribute{name=\"obsState\", str_value!=\"IDLE\", namespace=\"$target_namespace\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{device}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Device with obsState not IDLE",
+      "type": "ska-tango-attribute"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "id": 20,
+      "panels": [],
+      "title": "Devices",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P6C1C26282086DCE4"
+      },
+      "description": "",
+      "gridPos": {
+        "h": 8,
+        "w": 9,
+        "x": 0,
+        "y": 39
+      },
+      "id": 8,
+      "options": {
+        "dense": false,
+        "header": false,
+        "pagination": false,
+        "tablehead": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P6C1C26282086DCE4"
+          },
+          "exemplar": false,
+          "expr": "device_attribute{device=\"ska_mid/tm_subarray_node/1\",name=~\"State|obsState|receptorIDList|activityMessage\", namespace=\"$target_namespace\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{device}}",
+          "refId": "A"
+        }
+      ],
+      "title": "TM Subarray 1",
+      "type": "ska-tango-attribute"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P6C1C26282086DCE4"
+      },
+      "description": "",
+      "gridPos": {
+        "h": 23,
+        "w": 9,
+        "x": 9,
+        "y": 39
+      },
+      "id": 37,
+      "options": {
+        "dense": false,
+        "header": false,
+        "pagination": false,
+        "tablehead": false
+      },
+      "targets": [
+        {
+          "expr": "device_attribute{device=\"ska_mid/tm_subarray_node/1\",name=~\"activityMessage\", namespace=\"$target_namespace\"}",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{device}}",
+          "refId": "A"
+        }
+      ],
+      "title": "TM Subarray 1 Activitiy messages",
+      "type": "ska-tango-attribute"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P6C1C26282086DCE4"
+      },
+      "description": "",
+      "gridPos": {
+        "h": 8,
+        "w": 9,
+        "x": 0,
+        "y": 47
+      },
+      "id": 25,
+      "options": {
+        "dense": false,
+        "header": false,
+        "pagination": false,
+        "tablehead": false
+      },
+      "targets": [
+        {
+          "expr": "device_attribute{device=~\"mid_csp/elt/subarray_01||mid_sdp/elt/subarray_1\",name=~\"State|obsState|receptorIDList|activityMessage\", namespace=\"$target_namespace\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{device}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Subarrays SDP/CSP",
+      "type": "ska-tango-attribute"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P6C1C26282086DCE4"
+      },
+      "description": "",
+      "gridPos": {
+        "h": 7,
+        "w": 9,
+        "x": 0,
+        "y": 55
+      },
+      "id": 24,
+      "options": {
+        "dense": false,
+        "header": false,
+        "pagination": false,
+        "tablehead": false
+      },
+      "targets": [
+        {
+          "expr": "device_attribute{device=~\"mid_d0001/elt/master|mid_d0002/elt/master\",name=~\"State|pointingState\", namespace=\"$target_namespace\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{device}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Dishes",
+      "type": "ska-tango-attribute"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 62
+      },
+      "id": 30,
+      "panels": [],
+      "title": "Logs",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "-vi-WhCGk"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "displayMode": "auto",
+            "filterable": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ska_log_message"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 305
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kubernetes.pod_name"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 199
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 179
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Message"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 755
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "message"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 189
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 23,
+        "x": 0,
+        "y": 63
+      },
+      "id": 28,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "8.3.0",
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "meta": {},
+              "pipelineVariables": [
+                {
+                  "name": "var1",
+                  "pipelineAgg": "select metric"
+                }
+              ],
+              "settings": {},
+              "type": "logs"
+            }
+          ],
+          "query": "kubernetes.namespace: $target_namespace AND ska_severity: ERROR",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Error logs",
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "@timestamp",
+                "ska.application",
+                "ska.deployment",
+                "ska.environment",
+                "ska.service",
+                "ska_function",
+                "ska_line_loc",
+                "ska_log_timestamp",
+                "ska_severity",
+                "ska_tags",
+                "ska_tags_field.tango-device",
+                "ska_thread_id",
+                "ska_version",
+                "ska_log_message"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "kubernetes.pod_name": true,
+              "kubernetes_namespace": true,
+              "ska_function": true,
+              "ska_line_loc": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "@timestamp": "Time",
+              "kubernetes.pod_name": "Pod",
+              "kubernetes_namespace": "namespace",
+              "ska_function": "",
+              "ska_log_message": "Message"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "elasticsearch",
+        "uid": "-vi-WhCGk"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "displayMode": "auto",
+            "filterable": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ska_log_message"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 305
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kubernetes.pod_name"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 199
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 179
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Message"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 755
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "message"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 189
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 23,
+        "x": 0,
+        "y": 73
+      },
+      "id": 48,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "8.3.0",
+      "targets": [
+        {
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "meta": {},
+              "pipelineVariables": [
+                {
+                  "name": "var1",
+                  "pipelineAgg": "select metric"
+                }
+              ],
+              "settings": {},
+              "type": "logs"
+            }
+          ],
+          "query": "kubernetes.namespace: $target_namespace",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "All logs",
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "@timestamp",
+                "ska.application",
+                "ska.deployment",
+                "ska.environment",
+                "ska.service",
+                "ska_function",
+                "ska_line_loc",
+                "ska_log_timestamp",
+                "ska_severity",
+                "ska_tags",
+                "ska_tags_field.tango-device",
+                "ska_thread_id",
+                "ska_version",
+                "ska_log_message"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "kubernetes.pod_name": true,
+              "kubernetes_namespace": true,
+              "ska_function": true,
+              "ska_line_loc": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "@timestamp": "Time",
+              "kubernetes.pod_name": "Pod",
+              "kubernetes_namespace": "namespace",
+              "ska_function": "",
+              "ska_log_message": "Message"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 83
+      },
+      "id": 18,
+      "panels": [],
+      "title": "TANGO Gql",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$source"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "displayMode": "auto",
+            "filterable": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 21,
+        "x": 1,
+        "y": 84
+      },
+      "id": 50,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "8.3.0",
+      "targets": [
+        {
+          "aliasBy": "",
+          "annotationTags": "",
+          "annotationText": "",
+          "annotationTitle": "",
+          "constant": 6.5,
+          "dataPath": "device.attributes",
+          "endTimePath": "endTime",
+          "groupBy": "",
+          "queryText": "query{device (name:\"sys/tg_test/1\") {\r\n  attributes (pattern:\"*scalar*\") {\r\n    name\r\n    device\r\n    datatype\r\n    dataformat\r\n    writable\r\n    label\r\n    unit\r\n    description\r\n    value\r\n    writevalue\r\n    quality\r\n    timestamp\r\n    displevel\r\n    minvalue\r\n    maxvalue\r\n    minalarm\r\n    maxalarm\r\n    enumLabels\r\n  }\r\n}\r\n}",
+          "refId": "A",
+          "timePath": "device.attributes.timestamp"
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 33,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "integration-mid",
+          "value": "integration-mid"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "P6C1C26282086DCE4"
+        },
+        "definition": "label_values(read_thread_time, namespace)",
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "target_namespace",
+        "options": [],
+        "query": {
+          "query": "label_values(read_thread_time, namespace)",
+          "refId": "SKAMPI internal prometheus-target_namespace-Variable-Query"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "TangoGQL (integration-mid)",
+          "value": "TangoGQL (integration-mid)"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "source",
+        "options": [],
+        "query": "fifemon-graphql-datasource",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "Archiver(1647629656_)",
+          "value": "Archiver(1647629656_)"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "archiver",
+        "options": [],
+        "query": "mysql",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "/^Archiver.*/",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "",
+  "title": "State analysis",
+  "uid": "rUM5nTAMz",
+  "version": 17,
+  "weekStart": ""
+}
