@@ -56,7 +56,7 @@
         privatekey_path: "{{ certificates_dir }}/{{ client_cert_prefix }}.key"
         privatekey_passphrase: "{{ ca_cert_pass }}"
         common_name: "{{ ansible_hostname }}"
-        subject_alt_name: "DNS:{{ hostvars[host]['ansible_facts']['fqdn'] }}"
+        subject_alt_name: "DNS:{{ ansible_fqdn }}"
         organization_name: "SKAO"
       register: csr
       changed_when: false
@@ -72,6 +72,7 @@
         ownca_not_after: +365d # valid for one year
         ownca_not_before: "-1d" # valid since yesterday
       delegate_to: terminus
+      remote_user: ubuntu
       register: certificate
       when: pemfile_exists.stat.exists == False
 
@@ -91,6 +92,7 @@
       ansible.builtin.slurp:
         src: "{{ certificates_dir }}/ca-certificate.pem"
       delegate_to: terminus
+      remote_user: ubuntu
       register: capemfile
       changed_when: false
       run_once: true
