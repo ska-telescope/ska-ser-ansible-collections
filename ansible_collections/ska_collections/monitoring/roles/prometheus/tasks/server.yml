@@ -308,7 +308,7 @@
     - kube-proxy.json
 
 - name: Pull prometheus image {{ prometheus_docker_tags }}
-  containers.podman.podman_image:
+  community.docker.docker_image:
     name: prom/prometheus
     tag: "{{ prometheus_docker_tags }}"
 

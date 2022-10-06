@@ -1,6 +1,6 @@
 ---
 - name: Pull blackbox exporter image {{ prometheus_blackbox_exporter_docker_tags }}
-  containers.podman.podman_image:
+  community.docker.docker_image:
     name: prom/blackbox-exporter
     tag: "{{ prometheus_blackbox_exporter_docker_tags }}"
 

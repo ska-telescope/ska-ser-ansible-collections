@@ -29,7 +29,7 @@
     mode: 0755
 
 - name: Pull grafana image {{ grafana_docker_tags }}
-  containers.podman.podman_image:
+  community.docker.docker_image:
     name: grafana/grafana
     tag: "{{ grafana_docker_tags }}"
 

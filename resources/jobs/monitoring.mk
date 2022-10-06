@@ -15,7 +15,7 @@ SLACK_API_URL_MVP ?= ******************
 SLACK_CHANNEL ?= prometheus-alerts
 SLACK_CHANNEL_MVP ?= proj-mvp-messages
 PROMETHEUS_ALERTMANAGER_URL ?= http://monitoring.skao.stfc:9093
-PROMETHEUS_URL ?= http://monitoring.skao.stfc:9095
+PROMETHEUS_URL ?= http://monitoring.skao.stfc:9090
 PROM_CONFIGS_PATH ?= .
 
 ARCHIVER_PASSWORD ?= "mandatory"

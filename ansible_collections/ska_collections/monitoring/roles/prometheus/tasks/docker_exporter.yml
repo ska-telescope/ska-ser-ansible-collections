@@ -82,7 +82,7 @@
         ansible_python_interpreter: "python3"
 
     - name: Pull cadvisor image {{ cadvisor_docker_tags }}
-      containers.podman.podman_image:
+      community.docker.docker_image:
         name: gcr.io/google-containers/cadvisor
         tag: "{{ cadvisor_docker_tags }}"
 

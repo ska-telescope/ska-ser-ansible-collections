@@ -8,7 +8,7 @@
   become: true
 
 - name: Pull thanos image {{ thanos_docker_tags }}
-  containers.podman.podman_image:
+  community.docker.docker_image:
     name: thanosio/thanos
     tag: "{{ thanos_docker_tags }}"
 
