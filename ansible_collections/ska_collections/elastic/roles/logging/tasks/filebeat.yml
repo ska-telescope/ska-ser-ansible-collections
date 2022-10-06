@@ -8,7 +8,7 @@
         state: present
         
     - name: podman pull image for filebeat
-      community.docker.docker_image:
+      containers.podman.podman_image:
         name: "{{ filebeat_image }}"
 
     - name: filebeat remove containers
