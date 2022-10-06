@@ -85,14 +85,14 @@ server: check_hosts ## Install Prometheus Server
 		-e 'ansible_python_interpreter=/usr/bin/python3' $(V)
 
 thanos: check_hosts ## Install Thanos query and query front-end
-	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
-	ANSIBLE_COLLECTIONS_PATH=$(ANSIBLE_COLLECTIONS_PATHS) \
-	ansible-playbook deploy_monitoring.yml \
+	ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
 		--extra-vars "mode='thanos'" \
 		-e "ca_cert_pass=$(CA_CERT_PASSWORD)" \
 		-e "project_name='$(OS_PROJECT_NAME)' project_id='$(OS_PROJECT_ID)' auth_url='$(OS_AUTH_URL)'" \
 		-e "username='$(OS_USERNAME)' password='$(OS_PASSWORD)'" \
 		-i $(PLAYBOOKS_ROOT_DIR)/inventory.yml \
+		-e @$(PROM_CONFIGS_PATH)/../environments/stfc-techops/installation/group_vars/prometheus.yml \
+		-e "target_hosts='$(PLAYBOOKS_HOSTS)'"
 		-e 'ansible_python_interpreter=/usr/bin/python3' $(V)
 
 node-exporter: check_hosts ## Install Prometheus node exporter - pass INVENTORY_FILE and NODES
