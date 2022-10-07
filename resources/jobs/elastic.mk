@@ -6,12 +6,12 @@ ifndef PLAYBOOKS_HOSTS
 endif
 
 install: check_hosts ## Install elastic
-	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/stack.yml \
+	@ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/stack.yml \
 	-i $(PLAYBOOKS_ROOT_DIR)/inventory.yml \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 	
 destroy: check_hosts ## Destroy elastic - only the containers
-	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/stack.yml \
+	@ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/stack.yml \
 	-i $(PLAYBOOKS_ROOT_DIR)/inventory.yml \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 

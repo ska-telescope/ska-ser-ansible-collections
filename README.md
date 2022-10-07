@@ -73,18 +73,54 @@ The make command must have a specific format to trigger the targets bellow.
 For example, for the ElasticSearch targets we must run:
 
 ```
-make elastic *job*
+$ make elastic
+
+ElasticSearch targets - make playbooks elastic <target>:
+destroy                        Destroy elastic - only the containers
+help                           Show Help
+install                        Install elastic
+
+make elastic install
+<output omitted>
+
 ```
 
-Following the same logic, we can run all the jobs bellow:
+```
+$ make oci
+OCI targets - make playbooks oci <target>:
+containerd                     Install containerd
+docker                         Install docker
+help                           Show Help
+podman                         Install podman
 
-| Collection | Job        | Description                                                | Role Dependency             |
-|------------|------------|------------------------------------------------------------|-----------------------------|
-| elastic    | install    | Install ElasticSearch cluster via OCI containers           | common.init <br> oci.docker |
-| oci        | docker     | Install Docker                                             |                             |
-| oci        | podman     | Install Podman                                             |                             |
-| oci        | containerd | Install containerd                                         |                             |
-| common     | init       | Update APT <br> Install common packages <br> Mount volumes |                             |
+make oci docker
+<output omitted>
+
+```
+
+```
+$ make monitoring
+Monitoring solution targets - make playbooks monitoring <target>:
+help                           Show Help
+lint                           Lint playbooks
+node-exporter                  Install Prometheus node exporter - pass INVENTORY_FILE and NODES
+server                         Install Prometheus Server
+thanos                         Install Thanos query and query front-end
+update_metadata                OpenStack metadata for node_exporters - pass INVENTORY_FILE all format should be OK
+update_scrapers                Force update of scrapers
+vars                           Variables
+
+$ make monitoring vars
+Current variable settings:
+PRIVATE_VARS=extra_vars.yml
+CLUSTER_KEYPAIR=
+INVENTORY_FILE=/home/matteo/ska-ser-infra-machinery/environments/stfc-techops/installation/inventory.yml 
+EXTRA_VARS=extra_vars.yml
+ANSIBLE_COLLECTIONS_PATHS=/home/matteo/ska-ser-infra-machinery/ska-ser-ansible-collections
+STACK_CLUSTER_PLAYBOOKS=
+DOCKER_PLAYBOOKS=
+
+```
 
 ### Mandatory Environment Variables
 

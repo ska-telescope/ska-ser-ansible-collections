@@ -47,7 +47,7 @@ ifeq (oci,$(firstword $(MAKECMDGOALS)))
 endif
 
 oci: check-env ## ElasticSearch targets
-	$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/oci.mk
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/oci.mk
 
 # If the first argument is "elastic"...
 ifeq (elastic,$(firstword $(MAKECMDGOALS)))
@@ -58,7 +58,7 @@ ifeq (elastic,$(firstword $(MAKECMDGOALS)))
 endif
 
 elastic: check-env ## ElasticSearch targets
-	$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/elastic.mk
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/elastic.mk
 
 # If the first argument is "monitoring"...
 ifeq (monitoring,$(firstword $(MAKECMDGOALS)))
@@ -69,7 +69,7 @@ ifeq (monitoring,$(firstword $(MAKECMDGOALS)))
 endif
 
 monitoring: check-env ## ElasticSearch targets
-	$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/monitoring.mk
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/monitoring.mk
 
 help: ## Show Help
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}';
