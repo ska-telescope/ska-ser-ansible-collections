@@ -105,8 +105,8 @@ thanos_config_dir: /etc/thanos
 thanos_store_data_dir: /etc/thanos/data/dir
 thanos_compactor_data_dir: /etc/thanos/thanos-compact
 thanos_query_endpoints:
-  - 192.168.99.16:10901
-  - 192.168.99.16:19090
+  - 192.168.99.154:10901
+  - 192.168.99.31:19090
 
 grafana_provisioning_config_dir: /etc/grafana/provisioning
 grafana_data: /var/lib/grafana
