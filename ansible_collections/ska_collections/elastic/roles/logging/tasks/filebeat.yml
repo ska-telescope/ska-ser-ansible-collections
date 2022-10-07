@@ -42,7 +42,6 @@
     - name: Create private key for new certificate
       community.crypto.openssl_privatekey:
         path: "{{ certificates_dir }}/{{ client_cert_prefix }}.key"
-        passphrase: "{{ ca_cert_pass }}"
         cipher: auto
       when: keyfile_exists.stat.exists == False
 
@@ -54,7 +53,6 @@
     - name: Create certificate signing request (CSR) for new certificate
       community.crypto.openssl_csr_pipe:
         privatekey_path: "{{ certificates_dir }}/{{ client_cert_prefix }}.key"
-        privatekey_passphrase: "{{ ca_cert_pass }}"
         common_name: "{{ ansible_hostname }}"
         subject_alt_name: "DNS:{{ ansible_fqdn }}"
         organization_name: "SKAO"
