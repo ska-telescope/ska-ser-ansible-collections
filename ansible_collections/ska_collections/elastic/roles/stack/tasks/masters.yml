@@ -38,6 +38,12 @@
     state: present
   become: true
 
+- name: "Cleans Elasticsearch volume"
+  file:
+    path: "{{ stack_data_dir }}/elasticsearch"
+    state: absent
+  when: elastic_clean_volume
+
 - name: "Creates directory {{ stack_data_dir }}/elasticsearch"
   file:
     path: "{{ stack_data_dir }}/elasticsearch"
@@ -46,14 +52,14 @@
     group: root
     mode: 0755
 
-- name: docker pull images
+- name: docker pull elastic image
   docker_image:
     source: pull
-    name: "{{ item }}"
-  with_items:
-    - "{{ elasticsearch_image }}"
-    - "{{ kibana_image }}"
-    - "{{ elasticsearch_exporter_image }}"
+    name: "{{ elasticsearch_image }}"
+  register: docker_pull_retry
+  until: "docker_pull_retry is not failed"
+  retries: 5
+  delay: 5
 
 - name: Startup Elasticsearch containers
   docker_container:
@@ -79,4 +85,4 @@
       - "9200:9200"
       - "9300:9300"
     env: "{{ master_vars }}"
-    recreate: "{{ 'yes' if elastic_reinstall else 'no' }}"
+    recreate: "{{ elastic_reinstall }}"

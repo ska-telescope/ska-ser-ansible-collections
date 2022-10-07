@@ -1,8 +1,12 @@
 ---
-elastic_reinstall: true
+elastic_reinstall: false
+kibana_reinstall: false
+elastic_clean_volume: false
 
-elasticsearch_image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
-kibana_image: docker.elastic.co/kibana/kibana:7.17.0
+kibana_on_master: false
+
+elasticsearch_image: docker.elastic.co/elasticsearch/elasticsearch:8.4.2
+kibana_image: docker.elastic.co/kibana/kibana:8.4.2
 elasticsearch_exporter_image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.5.0
 
 stack_data_dir: /var/lib/stack-data
@@ -22,14 +26,16 @@ container_labels:
 eexporter_name: elasticsearch_exporter
 
 elasticsearch_memory: 16G
+java_mem: 8g
 
 network_mode: "bridge"
 
 # determine whether this is single_node or multi_node=""
-discovery_type: "{% if (groups[target_hosts] | length) > 1 %}{% else %}single-node{% endif %}"
+discovery_type: "{% if (groups[target_hosts] | length) > 1 %}multi-node{% else %}single-node{% endif %}"
 
 #### Elastic Cluster Defaults
 master_vars:
+  xpack.security.enabled: "false" # TODO: just for testing
   action.auto_create_index: "true"
   bootstrap.memory_lock: "true"
   cluster.name: "ska-stfc1"
@@ -40,10 +46,11 @@ master_vars:
   network.bind_host: "0.0.0.0"
   network.publish_host: "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
   node.name: "{{ inventory_hostname }}"
+  # node.roles: "master"
   # transport.host: "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
   transport.bind_host: "0.0.0.0"
   transport.publish_host: "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
   # https://discuss.elastic.co/t/elasticsearch-6-8-in-docker-crashing-with-sigill-after-restart-corrupt-state/200452
-  # ES_JAVA_OPTS: "-server -Xms{{ java_mem }} -Xmx{{ java_mem }} -Dlog4j2.formatMsgNoLookups=true"
+  ES_JAVA_OPTS: "-server -Xms{{ java_mem }} -Xmx{{ java_mem }} -Dlog4j2.formatMsgNoLookups=true"
   ES_HEAP_SIZE: 8g
   MAX_OPEN_FILES: "131070"
