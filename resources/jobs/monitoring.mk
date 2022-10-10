@@ -6,7 +6,7 @@ V ?=
 PRIVATE_VARS ?= extra_vars.yml
 INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml 
 NODES ?= all
-PROMETHEUS_NODE ?= prometheus_podman
+PROMETHEUS_NODE ?= prometheus
 EXTRA_VARS ?= extra_vars.yml
 COLLECTIONS_PATHS ?= ./collections
 
@@ -109,7 +109,6 @@ update_metadata: check_hosts ## OpenStack metadata for node_exporters - pass INV
 
 update_scrapers: check_hosts ## Force update of scrapers
 	ansible -i $(INVENTORY_FILE) $(PROMETHEUS_NODE) -b -m shell -a 'export project_id=$(OS_PROJECT_ID) project_name=$(OS_PROJECT_NAME) auth_url=$(OS_AUTH_URL) username=$(OS_USERNAME) password=$(OS_PASSWORD) $(OPENSTACK_ENV_VARIABLES) && cd /etc/prometheus && python3 /usr/local/bin/prom_helper.py -g'
-	cd prometheus && scp -F ../ssh.config prometheus:/etc/prometheus/prometheus_node_metric_relabel_configs.yaml .
 
 help: ## Show Help
 	@echo "Monitoring solution targets - make playbooks monitoring <target>:"
