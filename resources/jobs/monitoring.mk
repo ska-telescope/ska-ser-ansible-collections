@@ -64,7 +64,7 @@ lint: ## Lint playbooks
 	cat ansible-lint-results.txt
 	flake8 --exclude ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/openstack roles/*
 
-server: check_hosts ## Install Prometheus Server
+prometheus: check_hosts ## Install Prometheus Server
 	ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
 		-i $(INVENTORY_FILE) \
 		-e "mode='server' slack_api_url='$(SLACK_API_URL)' slack_api_url_mvp='$(SLACK_API_URL_MVP)'" \

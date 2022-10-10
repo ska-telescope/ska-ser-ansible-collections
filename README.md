@@ -104,7 +104,7 @@ Monitoring solution targets - make playbooks monitoring <target>:
 help                           Show Help
 lint                           Lint playbooks
 node-exporter                  Install Prometheus node exporter - pass INVENTORY_FILE and NODES
-server                         Install Prometheus Server
+prometheus                     Install Prometheus Server
 thanos                         Install Thanos query and query front-end
 update_metadata                OpenStack metadata for node_exporters - pass INVENTORY_FILE all format should be OK
 update_scrapers                Force update of scrapers
