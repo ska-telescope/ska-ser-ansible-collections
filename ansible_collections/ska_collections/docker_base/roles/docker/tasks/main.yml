@@ -60,7 +60,7 @@
       apt:
         name: "{{ docker_deb_pkgs }}"
         state: present
-        force: true
+        allow_downgrade: true
       notify:
         - restart docker
 

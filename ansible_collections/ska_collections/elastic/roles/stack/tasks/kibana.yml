@@ -1,5 +1,4 @@
 ---
-
 - name: docker pull kibana image
   docker_image:
     source: pull
@@ -15,12 +14,12 @@
     dest: /etc/kibana.yml
     mode: 0644
 
-- name: Install Kibana Container on Master0
+- name: Install Kibana Container
   docker_container:
     name: elk_kibana
     restart_policy: always
     image: "{{ kibana_image }}"
-    command: "kibana -e http://{{ ansible_default_ipv4.address }}:9200"  # TODO: change this to point to the elastic cluster
+    command: "kibana -e http://{{ hostvars[groups[target_hosts + '-master'][0]].ip }}:9200"  
     state: started
     labels: "{{ container_labels }}"
     log_driver: "{{ log_driver }}"

@@ -48,11 +48,11 @@ backend back-api-proxy
   mode tcp
   option tcplog
   balance roundrobin
-  option ssl-hello-chk
+  # option ssl-hello-chk TODO: ssl config
   option log-health-checks
   default-server inter 10s fall 2
-  {%- for item in groups['masters'] %}
-  server {{ item }} {{hostvars[item]["ansible_host"]}}:9200 check
+  {%- for item in groups[target_hosts ~ '-master'] %}
+  server {{ item }} {{hostvars[item].ip}}:9200 check
   {%- endfor %}
   timeout connect 10s
   timeout server 1800s

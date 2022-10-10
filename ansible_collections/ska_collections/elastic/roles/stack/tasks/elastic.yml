@@ -1,35 +1,5 @@
 ---
 
-- name: Define dynamic elasticsearch configuration
-  block:
-    - name: yolo
-      set_fact:
-        master_specific_vars:
-          cluster.initial_master_nodes: "{%  for host in groups[target_hosts] %}{{ host }},{% endfor %}"
-          discovery.seed_hosts: "{% for host in groups[target_hosts] %}{% if host != inventory_hostname %}{{ host }},{% endif %}{% endfor %}"
-        
-        # configuration for all cases
-        all_node_vars:
-
-    - name: Add dynamic configs to configuration
-      set_fact:
-        master_vars: "{{ master_vars | combine({item.key: item.value}) }}"
-      # when: "not (item.key == 'cluster.initial_master_nodes' and discovery_type == 'single-node')"
-      with_dict: "{{ master_specific_vars | combine(all_node_vars) }}"
-
-    - name: "Show master_vars"
-      debug: var=master_vars
-      when: debug
-
-- name: Create List of nodes to be added into container's /etc/hosts file
-  set_fact:
-    masters_etc_hosts: "{{ masters_etc_hosts|default({}) | combine( {item: hostvars[item].ansible_default_ipv4.address} ) }}"
-  with_items: "{{ groups[target_hosts]}}"
-
-- name: "Show masters_etc_hosts"
-  debug: var=masters_etc_hosts
-  when: debug
-
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html
 - name: set vm.max_map_count
   sysctl:
@@ -38,11 +8,32 @@
     state: present
   become: true
 
-- name: "Cleans Elasticsearch volume"
+- name: Create List of nodes to be added into container's /etc/hosts file
+  set_fact:
+    masters_etc_hosts: "{{ masters_etc_hosts|default({}) | combine( {item: hostvars[item].ansible_default_ipv4.address} ) }}"
+  with_items: "{{ groups[target_hosts]}}"
+
+- name: "Cleans Elasticsearch data volume"
   file:
-    path: "{{ stack_data_dir }}/elasticsearch"
+    path: "{{ stack_data_dir }}"
     state: absent
-  when: elastic_clean_volume
+  when: elastic_clean_data_volume
+
+- name: Elasticsearch config
+  template:
+    src: elasticsearch.yml.j2
+    dest: /etc/elasticsearch.yml
+    mode: 0644
+
+- name: Get config file
+  command: cat /etc/elasticsearch.yml
+  register: result
+  when: debug
+
+- name: Print config 
+  debug:
+    msg: "{{ elastic_config }}"
+  when: debug
 
 - name: "Creates directory {{ stack_data_dir }}/elasticsearch"
   file:
@@ -81,8 +72,9 @@
     log_options: "{{ log_options }}"
     volumes:
       - "{{ stack_data_dir }}/elasticsearch:/usr/share/elasticsearch/data"
+      - /etc/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
     ports:
       - "9200:9200"
       - "9300:9300"
-    env: "{{ master_vars }}"
+    env: "{{ node_vars }}"
     recreate: "{{ elastic_reinstall }}"

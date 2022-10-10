@@ -2,23 +2,28 @@
 ---
 
 - name: "Remove containers"
-  hosts: cluster
+  hosts: "{{ target_hosts }}"
   become: yes
 
   vars_files:
-    - roles/stack/defaults/main.yml
-    - roles/logging/defaults/main.yml
+    - ../roles/stack/defaults/main.yml
+    - ../roles/logging/defaults/main.yml
+
+  vars_prompt:
+
+    - name: ireallymeanit
+      prompt: This will destroy the {{ target_hosts }} elastic cluster and its data. Confirm? [yes,no]
+      private: no
+      
 
   tasks:
     - name: "Show ireallymeanit"
-      debug: var=ireallymeanit
+      debug: var=ireallymeanit    
 
     - name: exit playbook, if user did not mean to tear down ElasticStack
       fail:
         msg: >
-          "Exiting teardown playbook. To really do it, either
-          say 'yes' on the prompt or use `-e ireallymeanit=yes`
-          on the command line when invoking the playbook"
+          "Exiting teardown playbook. To really do it, say 'yes' on the prompt"
       when: ireallymeanit != 'yes'
 
     - name: "Show stack nodes info"
@@ -38,7 +43,7 @@
         - "{{ eexporter_name }}"
         - "{{ filebeat_name }}"
 
-    - name: "Recursively remove {{ data_filesystem }} directory"
+    - name: "Recursively remove {{ stack_data_dir }}/elasticsearch directory"
       file:
-        path: "{{ data_filesystem }}"
+        path: "{{ stack_data_dir }}/elasticsearch"
         state: absent

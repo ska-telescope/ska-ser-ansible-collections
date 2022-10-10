@@ -1,0 +1,22 @@
+# Default Elastic configuration
+xpack.monitoring.collection.enabled: "true"
+xpack.security.enabled: "false" # TODO: just for testing
+action.auto_create_index: "true"
+bootstrap.memory_lock: "true"
+cluster.name: "ska-stfc1"
+discovery.type: "{{ discovery_type }}"
+indices.cache.cleanup_interval: "1m"
+network.bind_host: "0.0.0.0"
+network.publish_host: "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
+node.name: "{{ inventory_hostname }}"
+transport.bind_host: "0.0.0.0"
+transport.publish_host: "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
+discovery.seed_hosts: "{% for host in groups[target_hosts ~ '-master'] %}{% if host != inventory_hostname %}{{ host }},{% endif %}{% endfor %}"
+
+{% if node_roles is defined and node_roles|length > 0 %} 
+node.roles: {{ node_roles }} # default [] -> "cdfhilmrstw" role
+{% endif %}
+
+{% if elastic_first_install and inventory_hostname in groups[target_hosts ~ '-master']%}
+cluster.initial_master_nodes: "{%  for host in groups[target_hosts ~ '-master'] %}{{ host }},{% endfor %}"
+{% endif %}
