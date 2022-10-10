@@ -8,24 +8,6 @@ JOBS_DIR=resources/jobs
 # define overides for above variables in here
 -include PrivateRules.mak
 
-# # Fixed variables
-# TIMEOUT = 86400
-
-# # Docker and Gitlab CI variables
-# RDEBUG ?= ""
-# CI_ENVIRONMENT_SLUG ?= development
-# CI_PIPELINE_ID ?= pipeline$(shell tr -c -d '0123456789abcdefghijklmnopqrstuvwxyz' </dev/urandom | dd bs=8 count=1 2>/dev/null;echo)
-# CI_JOB_ID ?= job$(shell tr -c -d '0123456789abcdefghijklmnopqrstuvwxyz' </dev/urandom | dd bs=4 count=1 2>/dev/null;echo)
-# GITLAB_USER ?= ""
-# CI_BUILD_TOKEN ?= ""
-# REPOSITORY_TOKEN ?= ""
-# REGISTRY_TOKEN ?= ""
-# GITLAB_USER_EMAIL ?= "nobody@example.com"
-# DOCKER_VOLUMES ?= /var/run/docker.sock:/var/run/docker.sock
-# CI_APPLICATION_TAG ?= $(shell git rev-parse --verify --short=8 HEAD)
-# DOCKERFILE ?= Dockerfile
-# EXECUTOR ?= docker
-
 check-env:
 ifndef ENVIRONMENT
 	$(error ENVIRONMENT is undefined)
