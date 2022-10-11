@@ -3,6 +3,7 @@
 stack_data_dir: /var/lib/stack-data
 
 # Elasticsearch configurations
+elasticsearch_dns: logging.skao.stfc
 elasticsearch_cluster_name: "elasticsearch"
 elasticsearch_data_dir: "{{ stack_data_dir }}/elasticsearch"
 elasticsearch_name: "elasticsearch"

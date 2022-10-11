@@ -11,13 +11,24 @@
 - name: Apply the common and docker roles
   hosts: "{{ target_hosts }}"
   become: true
-  roles:
-    - ska_collections.instance_common.init
-    - ska_collections.docker_base.docker
-  
+  tasks:
+    # - name: Common role
+    #   include_role:
+    #     name: ska_collections.instance_common.init
+    # - name: Docker role
+    #   include_role:
+    #    name: ska_collections.docker_base.docker
+    - name: Certificates role
+      include_role:
+       name: ska_collections.instance_common.certs
+      vars:
+        private_key_name: "{{ inventory_hostname }}"
+        certificate_name: "{{ inventory_hostname }}"
+        dns_alt_name: "{{ elasticsearch_dns }}"
+
 - name: Verify elasticsearch cluster status
-  hosts: "{{ target_hosts }}-master[0]" 
   # TODO: this differently, as master 0 might go away and the cluster still exists
+  hosts: "{{ target_hosts }}-master[0]"
   tasks:
     - name: Set elasticsearch_api_port
       set_fact:

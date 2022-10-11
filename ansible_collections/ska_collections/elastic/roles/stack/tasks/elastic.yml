@@ -23,9 +23,7 @@
     src: elasticsearch.yml.j2
     dest: /etc/elasticsearch.yml
     mode: 0644
-
-- name: Show elasticsearch config file
-  ansible.builtin.command: cat /etc/elasticsearch.yml
+  register: elasticsearch_config
 
 - name: "Creates directory {{ elasticsearch_data_dir }}"
   ansible.builtin.file:
@@ -65,8 +63,9 @@
     volumes:
       - "{{ elasticsearch_data_dir }}:/usr/share/elasticsearch/data"
       - /etc/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - "{{ certificates_dir }}:/usr/share/elasticsearch/config/certificates"
     ports:
       - "{{ elasticsearch_api_port }}:{{ elasticsearch_api_port }}"
       - "{{ elasticsearch_transport_port }}:{{ elasticsearch_transport_port }}"
     env: "{{ elasticsearch_env_defaults | combine(elasticsearch_env_variables) }}"
-    recreate: "{{ elasticsearch_reinstall }}"
+    recreate: "{{ elasticsearch_reinstall or elasticsearch_config.changed | bool }}"

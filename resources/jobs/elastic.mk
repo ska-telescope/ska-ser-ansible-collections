@@ -8,10 +8,15 @@ ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 
-install: check_hosts ## Install elastic
+check_ca_pass:
+ifndef CA_CERT_PASS
+	$(error CA_CERT_PASS is undefined)
+endif
+
+install: check_hosts check_ca_pass ## Install elastic
 	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/install.yml \
 	-i $(PLAYBOOKS_ROOT_DIR)/inventory.yml \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) ca_cert_pass=$(CA_CERT_PASS)"
 	
 destroy: check_hosts ## Destroy elastic cluster
 	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/destroy.yml \

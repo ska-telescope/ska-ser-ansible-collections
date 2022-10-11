@@ -1,10 +1,10 @@
-# Node settings
+# Kibana settings
 server.name: "{{ inventory_hostname }}"
 server.host: "0.0.0.0"
 server.port: {{ kibana_port }}
-server.ssl.enabled: false
 server.basePath: "/kibana"
 server.rewriteBasePath: true
+server.ssl.enabled: false
 
 # Elasticsearch settings
 elasticsearch.hosts:

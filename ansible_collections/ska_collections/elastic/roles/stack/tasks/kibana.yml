@@ -13,6 +13,7 @@
     src: kibana.yml.j2
     dest: /etc/kibana.yml
     mode: 0644
+  register: kibana_config
 
 - name: Run kibana container
   community.general.docker_container:
@@ -29,4 +30,4 @@
       - /etc/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
     ports:
       - "{{ kibana_port }}:{{ kibana_port }}"
-    recreate: "{{ kibana_reinstall }}"
+    recreate: "{{ kibana_reinstall or kibana_config.changed | bool }}"
