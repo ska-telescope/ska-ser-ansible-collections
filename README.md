@@ -87,11 +87,7 @@ make elastic install
 
 ```
 $ make oci
-OCI targets - make playbooks oci <target>:
-containerd                     Install containerd
-docker                         Install docker
-help                           Show Help
-podman                         Install podman
+<output omitted>
 
 make oci docker
 <output omitted>
@@ -100,25 +96,10 @@ make oci docker
 
 ```
 $ make monitoring
-Monitoring solution targets - make playbooks monitoring <target>:
-help                           Show Help
-lint                           Lint playbooks
-node-exporter                  Install Prometheus node exporter - pass INVENTORY_FILE and NODES
-prometheus                     Install Prometheus Server
-thanos                         Install Thanos query and query front-end
-update_metadata                OpenStack metadata for node_exporters - pass INVENTORY_FILE all format should be OK
-update_scrapers                Force update of scrapers
-vars                           Variables
+<output omitted>
 
 $ make monitoring vars
-Current variable settings:
-PRIVATE_VARS=extra_vars.yml
-CLUSTER_KEYPAIR=
-INVENTORY_FILE=/home/matteo/ska-ser-infra-machinery/environments/stfc-techops/installation/inventory.yml 
-EXTRA_VARS=extra_vars.yml
-ANSIBLE_COLLECTIONS_PATHS=/home/matteo/ska-ser-infra-machinery/ska-ser-ansible-collections
-STACK_CLUSTER_PLAYBOOKS=
-DOCKER_PLAYBOOKS=
+<output omitted>
 
 ```
 
