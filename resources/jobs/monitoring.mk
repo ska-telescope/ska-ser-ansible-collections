@@ -1,6 +1,6 @@
 ## OPENSTACK VARIABLES
-OS_PROJECT_ID ?=geral;system-team;admin
-OS_AUTH_URL ?= http://192.168.93.215:5000/v3/
+PROM_OS_PROJECT_ID ?=geral;system-team;admin
+PROM_OS_AUTH_URL ?= http://192.168.93.215:5000/v3/
 
 V ?=
 PRIVATE_VARS ?= extra_vars.yml
@@ -18,9 +18,6 @@ PROMETHEUS_ALERTMANAGER_URL ?= http://monitoring.skao.stfc:9093
 PROMETHEUS_URL ?= http://monitoring.skao.stfc:9090
 PROM_CONFIGS_PATH ?= .
 
-ARCHIVER_PASSWORD ?= "mandatory"
-GRAFANA_PASSWORD ?= "mandatory"
-TANGODB_PASSWORD ?= "mandatory"
 KUBECONFIG ?= "mandatory"
 GITLAB_TOKEN ?= "mandatory"
 CA_CERT_PASSWORD ?= "mandatory"
@@ -73,9 +70,8 @@ prometheus: check_hosts ## Install Prometheus Server
 		-e "slack_channel='$(SLACK_CHANNEL)'" \
 		-e "slack_channel_mvp='$(SLACK_CHANNEL_MVP)'" \
 		-e "prometheus_alertmanager_url='$(PROMETHEUS_ALERTMANAGER_URL)'" \
-		-e "project_name='$(OS_PROJECT_NAME)' project_id='$(OS_PROJECT_ID)' auth_url='$(OS_AUTH_URL)'" \
-		-e "archiver_password='$(ARCHIVER_PASSWORD)' grafana_admin_password='$(GRAFANA_PASSWORD)' tangodb_password='$(TANGODB_PASSWORD)' kubeconfig='$(KUBECONFIG)'" \
-		-e "username='$(OS_USERNAME)' password='$(OS_PASSWORD)'" \
+		-e "project_name='$(PROM_OS_PROJECT_NAME)' project_id='$(PROM_OS_PROJECT_ID)' auth_url='$(PROM_OS_AUTH_URL)'" kubeconfig='$(KUBECONFIG)'" \
+		-e "username='$(PROM_OS_USERNAME)' password='$(PROM_OS_PASSWORD)'" \
 		-e "prometheus_url='$(PROMETHEUS_URL)'" $(PROMETHEUS_EXTRAVARS) \
 		-e "prometheus_gitlab_ci_pipelines_exporter_token=$(GITLAB_TOKEN)" \
 		-e "ca_cert_pass=$(CA_CERT_PASSWORD)" \
@@ -89,8 +85,8 @@ thanos: check_hosts ## Install Thanos query and query front-end
 	ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
 		--extra-vars "mode='thanos'" \
 		-e "ca_cert_pass=$(CA_CERT_PASSWORD)" \
-		-e "project_name='$(OS_PROJECT_NAME)' project_id='$(OS_PROJECT_ID)' auth_url='$(OS_AUTH_URL)'" \
-		-e "username='$(OS_USERNAME)' password='$(OS_PASSWORD)'" \
+		-e "project_name='$(PROM_OS_PROJECT_NAME)' project_id='$(PROM_OS_PROJECT_ID)' auth_url='$(PROM_OS_AUTH_URL)'" \
+		-e "username='$(PROM_OS_USERNAME)' password='$(PROM_OS_PASSWORD)'" \
 		-i $(INVENTORY_FILE) \
 		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \
 		-e @$(PROM_CONFIGS_PATH)/../environments/$(ENVIRONMENT)/installation/group_vars/prometheus.yml \
@@ -105,10 +101,10 @@ node-exporter: check_hosts ## Install Prometheus node exporter - pass INVENTORY_
 
 update_metadata: check_hosts ## OpenStack metadata for node_exporters - pass INVENTORY_FILE all format should be OK
 	ansible -i $(INVENTORY_FILE) $(PROMETHEUS_NODE) -b -m copy -a 'src=$(INVENTORY_FILE) dest=/tmp/all_inventory'
-	@ansible -i $(INVENTORY_FILE) $(PROMETHEUS_NODE) -b -m shell -a 'export project_name=$(OS_PROJECT_NAME) project_id=$(OS_PROJECT_ID) auth_url=$(OS_AUTH_URL) username=$(OS_USERNAME) password=$(OS_PASSWORD)	os_region_name=RegionOne os_interface=public os_project_id=$(OS_PROJECT_ID)	os_user_domain_name=default	os_identity_api_version=3 && python3 /usr/local/bin/prom_helper.py -u /tmp/all_inventory'
+	@ansible -i $(INVENTORY_FILE) $(PROMETHEUS_NODE) -b -m shell -a 'export project_name=$(PROM_OS_PROJECT_NAME) project_id=$(PROM_OS_PROJECT_ID) auth_url=$(PROM_OS_AUTH_URL) username=$(PROM_OS_USERNAME) password=$(PROM_OS_PASSWORD)	os_region_name=RegionOne os_interface=public PROM_OS_PROJECT_ID=$(PROM_OS_PROJECT_ID)	os_user_domain_name=default	os_identity_api_version=3 && python3 /usr/local/bin/prom_helper.py -u /tmp/all_inventory'
 
 update_scrapers: check_hosts ## Force update of scrapers
-	ansible -i $(INVENTORY_FILE) $(PROMETHEUS_NODE) -b -m shell -a 'export project_id=$(OS_PROJECT_ID) project_name=$(OS_PROJECT_NAME) auth_url=$(OS_AUTH_URL) username=$(OS_USERNAME) password=$(OS_PASSWORD) $(OPENSTACK_ENV_VARIABLES) && cd /etc/prometheus && python3 /usr/local/bin/prom_helper.py -g'
+	ansible -i $(INVENTORY_FILE) $(PROMETHEUS_NODE) -b -m shell -a 'export project_id=$(PROM_OS_PROJECT_ID) project_name=$(PROM_OS_PROJECT_NAME) auth_url=$(PROM_OS_AUTH_URL) username=$(PROM_OS_USERNAME) password=$(PROM_OS_PASSWORD) $(OPENSTACK_ENV_VARIABLES) && cd /etc/prometheus && python3 /usr/local/bin/prom_helper.py -g'
 
 help: ## Show Help
 	@echo "Monitoring solution targets - make playbooks monitoring <target>:"

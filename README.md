@@ -131,13 +131,3 @@ This repo expects these environment variables to run all make targets:
 
 These variables must be exported to your terminal shell or passed as 
 command line arguments.
-
-Using the script option based on the project structured above:
-```
-export BASE_PATH="$(cd "$(dirname "$1")"; pwd -P)"
-export PLAYBOOKS_ROOT_DIR="${BASE_PATH}/env-variables"
-export ANSIBLE_CONFIG="${BASE_PATH}/env-variables/ansible.cfg"
-export ANSIBLE_COLLECTIONS_PATHS="${BASE_PATH}/ska-ser-ansible-collections"
-export ANSIBLE_COLLECTIONS_PATHS="${BASE_PATH}/ska-ser-ansible-collections"
-export PLAYBOOKS_HOSTS="central-logging"
-```

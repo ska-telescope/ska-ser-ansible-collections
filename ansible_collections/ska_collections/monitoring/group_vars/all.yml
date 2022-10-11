@@ -29,18 +29,6 @@ swapfile_path: /swapfile
 swapfile_size: 1000
 swapfile_fallocate: true
 
-archiver_ip: "192.168.99.229"
-archiver_user: "eda_admin"
-archiver_password: "*************"
-archiver_default_db: "tango"
-grafana_host: "192.168.99.154"
-grafana_port: 3000
-grafana_user: "admin"
-grafana_admin_password: "*************"
-k8s_loadbalancer: "10.200.0.63"
-k8s_master: "192.168.99.184"
-tangodb_password: "*************"
-
 # kubectl vars
 kubectl_version: 'v1.18.2'
 kubectl_name: kubectl
