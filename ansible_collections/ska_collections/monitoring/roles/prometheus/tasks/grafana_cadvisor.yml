@@ -1,0 +1,26 @@
+---
+
+- name: Cadvisor make sure grafana configuration directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+  with_items:
+    - "/etc/grafana/provisioning/datasources"
+    - "/etc/grafana/provisioning/dashboards/cadvisor-dashboard"
+    - "/etc/grafana/provisioning/notifiers"
+
+- name: Cadvisor-dashboard Copy up resource files
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/dashboards/cadvisor/{{ item }}"
+    dest: "/etc/grafana/provisioning/dashboards/cadvisor-dashboard/{{ item }}"
+    mode: 0640
+  with_items:
+    - cadvisor.json
+    - summarised.json
+
+- name: Cadvisor-dashboard Write dashboards provisioning config file
+  ansible.builtin.template:
+    src: dashboards-cadvisor-dashboard.yml.j2
+    dest: /etc/grafana/provisioning/dashboards/cadvisor-dashboard.yml
+    mode: 0640

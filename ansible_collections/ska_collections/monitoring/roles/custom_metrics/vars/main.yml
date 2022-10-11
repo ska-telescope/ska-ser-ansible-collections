@@ -1,0 +1,11 @@
+cron_job_lines:
+    - name: generate filebeat metrics
+      minute: "*"
+      hour: "*"
+      day: "*"
+      month: "*"
+      weekday: "*"
+      job: /usr/local/bin/create_filebeat_metrics.sh
+      user: root
+
+cron_file: custom-metrics

@@ -1,0 +1,2423 @@
+{
+    "annotations": {
+        "list": [{
+            "builtIn": 1,
+            "datasource": "-- Grafana --",
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+        }]
+    },
+    "description": "This leverages the Prometheus exporter I wrote to fetch information about GitLab CI pipelines statuses.\n\nhttps://github.com/mvisonneau/gitlab-ci-pipelines-exporter",
+    "editable": false,
+    "gnetId": 10620,
+    "graphTooltip": 0,
+    "iteration": 1606196838990,
+    "links": [],
+    "panels": [{
+            "collapsed": false,
+            "datasource": null,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 164,
+            "panels": [],
+            "title": "Cross PI Metrics",
+            "type": "row"
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "unit": "none"
+                },
+                "overrides": []
+            },
+            "fill": 0,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 1
+            },
+            "hiddenSeries": false,
+            "id": 162,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": true,
+                "min": false,
+                "rightSide": false,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": true,
+            "linewidth": 2,
+            "nullPointMode": "null",
+            "options": {
+                "alertThreshold": false
+            },
+            "percentage": false,
+            "pluginVersion": "7.3.3",
+            "pointradius": 2,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"default\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> set(key: \"_field\",value: \"PI8 (2020-09-16)\")\n  |> yield(name: \"PI8\")\n\n\ntime1PI7 = uint(v: 2020-06-16T00:00:00Z)\ntime2PI7 = uint(v: 2020-09-16T00:00:00Z)\ndurPI7 = duration(v: time2PI7 - time1PI7)\n\nfrom(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-06-16T00:00:00Z, stop: 2020-09-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"default\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> set(key: \"_field\",value: \"PI7 (2020-06-16)\")\n  |> timeShift(duration: durPI7, columns: [\"_start\", \"_stop\", \"_time\"])\n  |> yield(name: \"PI7\")\n\n\ntime1PI6 = uint(v: 2020-03-16T00:00:00Z)\ntime2PI6 = uint(v: 2020-09-16T00:00:00Z)\ndurPI6 = duration(v: time2PI6 - time1PI6)\n\nfrom(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-03-16T00:00:00Z, stop: 2020-06-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"default\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> set(key: \"_field\",value: \"PI6 (2020-03-16)\")\n  |> timeShift(duration: durPI6, columns: [\"_start\", \"_stop\", \"_time\"])\n  |> yield(name: \"PI6\")\n\n\ntime1PI5 = uint(v: 2019-12-15T00:00:00Z)\ntime2PI5 = uint(v: 2020-09-16T00:00:00Z)\ndurPI5 = duration(v: time2PI5 - time1PI5)\n\nfrom(bucket: \"gitlab_metrics\")\n  |> range(start: 2019-12-15T00:00:00Z, stop: 2020-03-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"default\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> set(key: \"_field\",value: \"PI5 (2019-12-15)\")\n  |> timeShift(duration: durPI5, columns: [\"_start\", \"_stop\", \"_time\"])\n  |> yield(name: \"PI5\")\n\n\ntime1PI4 = uint(v: 2019-09-14T00:00:00Z)\ntime2PI4 = uint(v: 2020-09-16T00:00:00Z)\ndurPI4 = duration(v: time2PI4 - time1PI4)\n\nfrom(bucket: \"gitlab_metrics\")\n  |> range(start: 2019-09-14T00:00:00Z, stop: 2019-12-14T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"default\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> set(key: \"_field\",value: \"PI4 (2019-09-14)\")\n  |> timeShift(duration: durPI4, columns: [\"_start\", \"_stop\", \"_time\"])\n  |> yield(name: \"PI4\")\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Commits over PI",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "transformations": [],
+            "transparent": true,
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [{
+                    "$$hashKey": "object:190",
+                    "format": "none",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "$$hashKey": "object:191",
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [{
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "orange",
+                                "value": 40
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 80
+                            },
+                            {
+                                "color": "green",
+                                "value": 90
+                            }
+                        ]
+                    },
+                    "unit": "percent"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 12,
+                "x": 0,
+                "y": 9
+            },
+            "id": 166,
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "last"
+                    ],
+                    "fields": "",
+                    "values": true
+                },
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true
+            },
+            "pluginVersion": "7.3.3",
+            "repeat": null,
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "\nt1PI4 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2019-09-14T00:00:00Z, stop: 2019-12-14T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> filter(fn: (r) => r.jira == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n\nt2PI4 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2019-09-14T00:00:00Z, stop: 2019-12-14T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n\nPI4 = join(tables: {t1: t1PI4, t2: t2PI4 }, on: [\"default\"])\n  |> map(fn: (r) => ({ r with _value: (r._value_t1 * 100) / r._value_t2 }))\n  |> set(key: \"_field\",value: \"PI4\")\n  |> drop(columns:[\"default\"])\n\n\nt1PI5 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2019-12-15T00:00:00Z, stop: 2020-03-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> filter(fn: (r) => r.jira == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n\nt2PI5 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2019-12-15T00:00:00Z, stop: 2020-03-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n\nPI5 = join(tables: {t1: t1PI5, t2: t2PI5 }, on: [\"default\"])\n  |> map(fn: (r) => ({ r with _value: (r._value_t1 * 100) / r._value_t2 }))\n  |> set(key: \"_field\",value: \"PI5\")\n  |> drop(columns:[\"default\"])\n\n\nt1PI6 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-03-16T00:00:00Z, stop: 2020-06-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> filter(fn: (r) => r.jira == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n\nt2PI6 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-03-16T00:00:00Z, stop: 2020-06-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n\nPI6 = join(tables: {t1: t1PI6, t2: t2PI6 }, on: [\"default\"])\n  |> map(fn: (r) => ({ r with _value: (r._value_t1 * 100) / r._value_t2 }))\n  |> set(key: \"_field\",value: \"PI6\")\n  |> drop(columns:[\"default\"])\n\n\nt1PI7 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-06-16T00:00:00Z, stop: 2020-09-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> filter(fn: (r) => r.jira == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n\nt2PI7 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-06-16T00:00:00Z, stop: 2020-09-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n\nPI7 = join(tables: {t1: t1PI7, t2: t2PI7 }, on: [\"default\"])\n  |> map(fn: (r) => ({ r with _value: (r._value_t1 * 100) / r._value_t2 }))\n  |> set(key: \"_field\",value: \"PI7\")\n  |> drop(columns:[\"default\"])\n\n\nt1PI8 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> filter(fn: (r) => r.jira == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n\nt2PI8 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n\nPI8 = join(tables: {t1: t1PI8, t2: t2PI8 }, on: [\"default\"])\n  |> map(fn: (r) => ({ r with _value: (r._value_t1 * 100) / r._value_t2 }))\n  |> set(key: \"_field\",value: \"PI8\")\n  |> drop(columns:[\"default\"])\n\n\nunion(tables: [PI4, PI5, PI6, PI7, PI8])\n  |> yield(name: \"jira\")\n\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Commits with Jira",
+            "transformations": [],
+            "type": "gauge"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [{
+                            "color": "green",
+                            "value": null
+                        }]
+                    },
+                    "unit": "short"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 14,
+                "x": 0,
+                "y": 14
+            },
+            "id": 168,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "last"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "PI4 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2019-09-14T00:00:00Z, stop: 2019-12-14T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"project\", \"project_id\", \"default\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"bare\", \"ref\", \"who\", \"branch_name\",\"_measurement\", \"_field\"])\n  |> sum()\n  |> set(key: \"_field\",value: \"PI4\")\n\n\nPI5 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2019-12-15T00:00:00Z, stop: 2020-03-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"project\", \"project_id\", \"default\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"bare\", \"ref\", \"who\", \"branch_name\",\"_measurement\", \"_field\"])\n  |> sum()\n  |> set(key: \"_field\",value: \"PI5\")\n\n\nPI6 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-03-16T00:00:00Z, stop: 2020-06-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"project\", \"project_id\", \"default\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"bare\", \"ref\", \"who\", \"branch_name\",\"_measurement\", \"_field\"])\n  |> sum()\n  |> set(key: \"_field\",value: \"PI6\")\n\n\nPI7 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-06-16T00:00:00Z, stop: 2020-09-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"project\", \"project_id\", \"default\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"bare\", \"ref\", \"who\", \"branch_name\",\"_measurement\", \"_field\"])\n  |> sum()\n  |> set(key: \"_field\",value: \"PI7\")\n\n\nPI8 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"project\", \"project_id\", \"default\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"bare\", \"ref\", \"who\", \"branch_name\",\"_measurement\", \"_field\"])\n  |> sum()\n  |> set(key: \"_field\",value: \"PI8\")\n\n\nunion(tables: [PI4, PI5, PI6, PI7, PI8])\n  |> yield(name: \"lines\")\n\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "PI Commit Lines Changed ",
+            "type": "stat"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [{
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 14,
+                "x": 0,
+                "y": 18
+            },
+            "id": 170,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "last"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "PI4 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2019-09-14T00:00:00Z, stop: 2019-12-14T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> filter(fn: (r) => r.bare == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"default\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n  |> set(key: \"_field\",value: \"PI4\")\n\n\nPI5 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2019-12-15T00:00:00Z, stop: 2020-03-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> filter(fn: (r) => r.bare == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"default\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n  |> set(key: \"_field\",value: \"PI5\")\n\n\nPI6 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-03-16T00:00:00Z, stop: 2020-06-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> filter(fn: (r) => r.bare == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"default\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n  |> set(key: \"_field\",value: \"PI6\")\n\n\nPI7 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-06-16T00:00:00Z, stop: 2020-09-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> filter(fn: (r) => r.bare == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"default\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n  |> set(key: \"_field\",value: \"PI7\")\n\n\nPI8 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> filter(fn: (r) => r.bare == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"default\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n  |> set(key: \"_field\",value: \"PI8\")\n\n\nunion(tables: [PI4, PI5, PI6, PI7, PI8])\n  |> yield(name: \"lines\")\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "PI Bare Commits on Default",
+            "type": "stat"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [{
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 20
+                            },
+                            {
+                                "color": "orange",
+                                "value": 40
+                            },
+                            {
+                                "color": "red",
+                                "value": 60
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 14,
+                "x": 0,
+                "y": 22
+            },
+            "id": 172,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "mean"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "PI4 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2019-09-14T00:00:00Z, stop: 2019-12-14T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_branches\")\n  |> filter(fn: (r) => r.isstale == \"0\")\n  |> filter(fn: (r) => r.default == \"0\")\n  |> filter(fn: (r) => r.jira == \"0\")\n  |> drop(columns:[\"branch_id\", \"jira\", \"mr\", \"_field\", \"isstale\", \"merged\", \"default\", \"ref\", \"project_id\", \"project\", \"branch\", \"_measurement\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n  |> set(key: \"_field\",value: \"PI4\")\n\n\nPI5 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2019-12-15T00:00:00Z, stop: 2020-03-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_branches\")\n  |> filter(fn: (r) => r.isstale == \"0\")\n  |> filter(fn: (r) => r.default == \"0\")\n  |> filter(fn: (r) => r.jira == \"0\")\n  |> drop(columns:[\"branch_id\", \"jira\", \"mr\", \"_field\", \"isstale\", \"merged\", \"default\", \"ref\", \"project_id\", \"project\", \"branch\", \"_measurement\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n  |> set(key: \"_field\",value: \"PI5\")\n\n\nPI6 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-03-16T00:00:00Z, stop: 2020-06-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_branches\")\n  |> filter(fn: (r) => r.isstale == \"0\")\n  |> filter(fn: (r) => r.default == \"0\")\n  |> filter(fn: (r) => r.jira == \"0\")\n  |> drop(columns:[\"branch_id\", \"jira\", \"mr\", \"_field\", \"isstale\", \"merged\", \"default\", \"ref\", \"project_id\", \"project\", \"branch\", \"_measurement\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n  |> set(key: \"_field\",value: \"PI6\")\n\n\nPI7 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-06-16T00:00:00Z, stop: 2020-09-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_branches\")\n  |> filter(fn: (r) => r.isstale == \"0\")\n  |> filter(fn: (r) => r.default == \"0\")\n  |> filter(fn: (r) => r.jira == \"0\")\n  |> drop(columns:[\"branch_id\", \"jira\", \"mr\", \"_field\", \"isstale\", \"merged\", \"default\", \"ref\", \"project_id\", \"project\", \"branch\", \"_measurement\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n  |> set(key: \"_field\",value: \"PI7\")\n\n\nPI8 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_branches\")\n  |> filter(fn: (r) => r.isstale == \"0\")\n  |> filter(fn: (r) => r.default == \"0\")\n  |> filter(fn: (r) => r.jira == \"0\")\n  |> drop(columns:[\"branch_id\", \"jira\", \"mr\", \"_field\", \"isstale\", \"merged\", \"default\", \"ref\", \"project_id\", \"project\", \"branch\", \"_measurement\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n  |> set(key: \"_field\",value: \"PI8\")\n\n\nunion(tables: [PI4, PI5, PI6, PI7, PI8])\n  |> yield(name: \"lines\")\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "PI Branches without Jira",
+            "type": "stat"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [{
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 20
+                            },
+                            {
+                                "color": "orange",
+                                "value": 60
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 14,
+                "x": 0,
+                "y": 26
+            },
+            "id": 174,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "last"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "PI4 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2019-09-14T00:00:00Z, stop: 2019-12-14T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"merge_requests\")\n  |> filter(fn: (r) => r.stale == \"0\")\n  |> filter(fn: (r) => r.jira == \"0\")\n  |> drop(columns:[\"mr_id\", \"state\", \"author\", \"jira\", \"project\", \"project_id\", \"merged_by\", \"ref\", \"stale\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n  |> set(key: \"_field\",value: \"PI4\")\n\n\nPI5 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2019-12-15T00:00:00Z, stop: 2020-03-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"merge_requests\")\n  |> filter(fn: (r) => r.stale == \"0\")\n  |> filter(fn: (r) => r.jira == \"0\")\n  |> drop(columns:[\"mr_id\", \"state\", \"author\", \"jira\", \"project\", \"project_id\", \"merged_by\", \"ref\", \"stale\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n  |> set(key: \"_field\",value: \"PI5\")\n\n\nPI6 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-03-16T00:00:00Z, stop: 2020-06-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"merge_requests\")\n  |> filter(fn: (r) => r.stale == \"0\")\n  |> filter(fn: (r) => r.jira == \"0\")\n  |> drop(columns:[\"mr_id\", \"state\", \"author\", \"jira\", \"project\", \"project_id\", \"merged_by\", \"ref\", \"stale\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n  |> set(key: \"_field\",value: \"PI6\")\n\n\nPI7 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-06-16T00:00:00Z, stop: 2020-09-15T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"merge_requests\")\n  |> filter(fn: (r) => r.stale == \"0\")\n  |> filter(fn: (r) => r.jira == \"0\")\n  |> drop(columns:[\"mr_id\", \"state\", \"author\", \"jira\", \"project\", \"project_id\", \"merged_by\", \"ref\", \"stale\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n  |> set(key: \"_field\",value: \"PI7\")\n\n\nPI8 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"merge_requests\")\n  |> filter(fn: (r) => r.stale == \"0\")\n  |> filter(fn: (r) => r.jira == \"0\")\n  |> drop(columns:[\"mr_id\", \"state\", \"author\", \"jira\", \"project\", \"project_id\", \"merged_by\", \"ref\", \"stale\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])\n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n  |> set(key: \"_field\",value: \"PI8\")\n\n\nunion(tables: [PI4, PI5, PI6, PI7, PI8])\n  |> yield(name: \"lines\")\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "PI Merge Requests without Jira",
+            "type": "stat"
+        },
+        {
+            "collapsed": false,
+            "datasource": null,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 31
+            },
+            "id": 129,
+            "panels": [],
+            "title": "PI Quality Metrics - Commits",
+            "type": "row"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "description": "",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "decimals": 0,
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [{
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 1
+                            }
+                        ]
+                    },
+                    "unit": "locale"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 3,
+                "x": 0,
+                "y": 32
+            },
+            "id": 131,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "first"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-09T00:00:00Z, stop: 2020-12-08T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"default\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> distinct(column: \"commit_id\")\n  |> group()\n  |> count()\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Total Commits",
+            "type": "stat"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "max": 100,
+                    "thresholds": {
+                        "mode": "percentage",
+                        "steps": [{
+                                "color": "dark-red",
+                                "value": null
+                            },
+                            {
+                                "color": "orange",
+                                "value": 70
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 80
+                            },
+                            {
+                                "color": "green",
+                                "value": 90
+                            }
+                        ]
+                    },
+                    "unit": "percent"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 3,
+                "y": 32
+            },
+            "id": 133,
+            "options": {
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "last"
+                    ],
+                    "fields": "/^1$/",
+                    "values": false
+                },
+                "showThresholdLabels": true,
+                "showThresholdMarkers": true
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "alias": "pi8jira",
+                "groupBy": [{
+                        "params": [
+                            "1d"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "0"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "measurement": "project_commits",
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "t1 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-09T00:00:00Z, stop: 2020-12-08T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> filter(fn: (r) => r.jira == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])    \n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n\nt2 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-09T00:00:00Z, stop: 2020-12-08T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])    \n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n \njoin(tables: {t1: t1, t2: t2}, on: [\"default\"])\n  |> map(fn: (r) => ({ r with _value: (r._value_t1 * 100) / r._value_t2 }))\n  |> yield(name: \"jira\")",
+                "rawQuery": true,
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "*"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "count"
+                        }
+                    ]
+                ],
+                "tags": [{
+                        "key": "default",
+                        "operator": "=",
+                        "value": "1"
+                    },
+                    {
+                        "condition": "AND",
+                        "key": "jira",
+                        "operator": "=",
+                        "value": "1"
+                    }
+                ]
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "% Commits with Jira",
+            "transformations": [],
+            "type": "gauge"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "align": null,
+                        "displayMode": "auto",
+                        "filterable": false
+                    },
+                    "displayName": "Who",
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [{
+                            "color": "green",
+                            "value": null
+                        }]
+                    }
+                },
+                "overrides": [{
+                        "matcher": {
+                            "id": "byName",
+                            "options": "who"
+                        },
+                        "properties": [{
+                            "id": "displayName",
+                            "value": "Who"
+                        }]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "_value"
+                        },
+                        "properties": [{
+                            "id": "displayName",
+                            "value": "Commits"
+                        }]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Commits"
+                        },
+                        "properties": [{
+                            "id": "custom.width",
+                            "value": null
+                        }]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 12,
+                "w": 8,
+                "x": 8,
+                "y": 32
+            },
+            "id": 135,
+            "options": {
+                "frameIndex": 23,
+                "showHeader": true,
+                "sortBy": [{
+                    "desc": true,
+                    "displayName": "Commits"
+                }]
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-09T00:00:00Z, stop: 2020-12-08T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> filter(fn: (r) => r.who != \"Piers Harding [piers@ompka.net]\")   \n  |> drop(columns:[\"default\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> distinct(column: \"commit_id\")\n  |> group(columns: [\"who\"])\n  |> count()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> top(n:20)\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Committers",
+            "transformations": [],
+            "type": "table"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [{
+                            "color": "light-green",
+                            "value": null
+                        }]
+                    },
+                    "unit": "locale"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 3,
+                "w": 7,
+                "x": 0,
+                "y": 37
+            },
+            "id": 137,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "last"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-09T00:00:00Z, stop: 2020-12-08T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"project\", \"project_id\", \"default\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"bare\", \"ref\", \"who\", \"branch_name\",\"_measurement\", \"_field\"])\n  |> sum()\n  ",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Commit Line Changes to Default Branch",
+            "transformations": [],
+            "type": "stat"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "max": 100,
+                    "thresholds": {
+                        "mode": "percentage",
+                        "steps": [{
+                                "color": "light-orange",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 90
+                            }
+                        ]
+                    },
+                    "unit": "percent"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 4,
+                "x": 0,
+                "y": 40
+            },
+            "id": 140,
+            "options": {
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "last"
+                    ],
+                    "fields": "/^1$/",
+                    "values": false
+                },
+                "showThresholdLabels": true,
+                "showThresholdMarkers": true
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "t1 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-09T00:00:00Z, stop: 2020-12-08T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> filter(fn: (r) => r.bare == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])    \n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n\nt2 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-09T00:00:00Z, stop: 2020-12-08T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])    \n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n \njoin(tables: {t1: t1, t2: t2}, on: [\"default\"])\n  |> map(fn: (r) => ({ r with _value: (r._value_t1 * 100) / r._value_t2 }))\n  |> yield(name: \"bare\")\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "% Bare Commits on default",
+            "transformations": [],
+            "type": "gauge"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "percentage",
+                        "steps": [{
+                                "color": "light-orange",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 99
+                            }
+                        ]
+                    },
+                    "unit": "locale"
+                },
+                "overrides": [{
+                    "matcher": {
+                        "id": "byName",
+                        "options": "1"
+                    },
+                    "properties": []
+                }]
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 4,
+                "x": 4,
+                "y": 40
+            },
+            "id": 141,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "sum"
+                    ],
+                    "fields": "/^1$/",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-09T00:00:00Z, stop: 2020-12-08T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_commits\")\n  |> filter(fn: (r) => r.default == \"1\")\n  |> filter(fn: (r) => r.bare == \"1\")\n  |> drop(columns:[\"commit_id\", \"jira\", \"jira_on_ref\", \"merged\", \"pi\", \"project\", \"project_id\", \"bare\", \"ref\", \"who\", \"branch_name\", \"_measurement\", \"_field\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])    \n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()\n  ",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Bare Commits on default",
+            "transformations": [],
+            "type": "stat"
+        },
+        {
+            "collapsed": false,
+            "datasource": null,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 44
+            },
+            "id": 149,
+            "panels": [],
+            "title": "PI Quality Metrics - Branches",
+            "type": "row"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "max": 100,
+                    "thresholds": {
+                        "mode": "percentage",
+                        "steps": [{
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 99
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 5,
+                "x": 0,
+                "y": 45
+            },
+            "id": 145,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "sum"
+                    ],
+                    "fields": "/^_value$/",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "\nfrom(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_branches\")\n  |> filter(fn: (r) => r.isstale == \"0\")\n  |> filter(fn: (r) => r.default == \"0\")\n  |> drop(columns:[\"branch_id\", \"jira\", \"mr\", \"_field\", \"isstale\", \"merged\", \"default\", \"project_id\", \"branch\", \"_measurement\"])\n  |> group()\n  |> count()\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Total Branches  this PI (excl stale)",
+            "transformations": [],
+            "type": "stat"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "description": "Merged",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "max": 100,
+                    "thresholds": {
+                        "mode": "percentage",
+                        "steps": [{
+                                "color": "dark-red",
+                                "value": null
+                            },
+                            {
+                                "color": "orange",
+                                "value": 20
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 60
+                            },
+                            {
+                                "color": "green",
+                                "value": 90
+                            }
+                        ]
+                    },
+                    "unit": "percent"
+                },
+                "overrides": [{
+                    "matcher": {
+                        "id": "byName",
+                        "options": "Value"
+                    },
+                    "properties": [{
+                        "id": "unit",
+                        "value": "percent"
+                    }]
+                }]
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 5,
+                "x": 5,
+                "y": 45
+            },
+            "id": 146,
+            "options": {
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "last"
+                    ],
+                    "fields": "/^_value$/",
+                    "values": false
+                },
+                "showThresholdLabels": true,
+                "showThresholdMarkers": true
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "\nt1 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_branches\")\n  |> filter(fn: (r) => r.isstale == \"0\")\n  |> filter(fn: (r) => r.default == \"0\")\n  |> filter(fn: (r) => r.jira == \"1\")\n  |> filter(fn: (r) => r.merged == \"True\")\n  |> drop(columns:[\"branch_id\", \"jira\", \"mr\", \"_field\", \"isstale\", \"merged\", \"default\", \"project_id\", \"branch\", \"_measurement\"])\n  |> group()\n  |> count()\n  |> set(key: \"_field\",value: \"PI8\")\n\nt2 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_branches\")\n  |> filter(fn: (r) => r.isstale == \"0\")\n  |> filter(fn: (r) => r.default == \"0\")\n  |> filter(fn: (r) => r.merged == \"True\")\n  |> drop(columns:[\"branch_id\", \"jira\", \"mr\", \"_field\", \"isstale\", \"merged\", \"default\", \"project_id\", \"branch\", \"_measurement\"])\n  |> group()\n  |> count()\n  |> set(key: \"_field\",value: \"PI8\")\n \njoin(tables: {t1: t1, t2: t2}, on: [\"_field\"])\n  |> map(fn: (r) => ({ r with _value: (r._value_t1 * 100) / r._value_t2 }))\n  |> yield(name: \"jira\")\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "% Branches this PI with Jira (merged)",
+            "transformations": [],
+            "type": "gauge"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "description": "Merged",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "max": 100,
+                    "thresholds": {
+                        "mode": "percentage",
+                        "steps": [{
+                                "color": "light-orange",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 99
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 0,
+                "y": 50
+            },
+            "id": 147,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "sum"
+                    ],
+                    "fields": "/^_value$/",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "\nfrom(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_branches\")\n  |> filter(fn: (r) => r.isstale == \"0\")\n  |> filter(fn: (r) => r.default == \"0\")\n  |> filter(fn: (r) => r.mr == \"1\")\n  |> filter(fn: (r) => r.merged == \"True\")\n  |> drop(columns:[\"branch_id\", \"jira\", \"mr\", \"_field\", \"isstale\", \"merged\", \"default\", \"project_id\", \"branch\", \"_measurement\"])\n  |> group()\n  |> count()\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Branches with MR This PI",
+            "transformations": [],
+            "type": "stat"
+        },
+        {
+            "cacheTimeout": null,
+            "datasource": "${DS_INFLUXDB}",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "decimals": 0,
+                    "mappings": [{
+                        "id": 0,
+                        "op": "=",
+                        "text": "N/A",
+                        "type": 1,
+                        "value": "null"
+                    }],
+                    "nullValueMode": "connected",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [{
+                                "color": "light-orange",
+                                "value": null
+                            },
+                            {
+                                "color": "#d44a3a"
+                            }
+                        ]
+                    },
+                    "unit": "none"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 5,
+                "x": 4,
+                "y": 50
+            },
+            "id": 138,
+            "interval": null,
+            "links": [],
+            "maxDataPoints": 100,
+            "options": {
+                "colorMode": "background",
+                "fieldOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "mean"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "expr": "count(count(gitlab_metrics_branches_time_since_last_commit_secs{ref!=\"master\", stale=\"1\"} > 0) by (project, ref)) or vector(0)",
+                "format": "time_series",
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "instant": true,
+                "interval": "",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "from(bucket: \"gitlab_metrics\")\n  |> range(start: 2000-01-01T00:00:00Z, stop: 2020-12-08T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"project_branches\")\n  |> filter(fn: (r) => r.isstale == \"1\")\n  |> filter(fn: (r) => r.default == \"0\")\n  |> filter(fn: (r) => r.merged == \"False\")\n  |> drop(columns:[\"branch_id\", \"jira\", \"mr\", \"_field\", \"isstale\", \"merged\", \"default\", \"ref\", \"project_id\", \"project\", \"_measurement\"])\n  |> aggregateWindow(every: 1d, fn: count)\n  |> cumulativeSum(columns: [\"_value\"])    \n  |> sort(columns: [\"dateTime\"], desc: false)\n  |> last()",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Total Stale Branches (> 6 months)",
+            "type": "stat"
+        },
+        {
+            "collapsed": false,
+            "datasource": null,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 55
+            },
+            "id": 151,
+            "panels": [],
+            "title": "PI Quality Metrics - MRs",
+            "type": "row"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "max": 100,
+                    "thresholds": {
+                        "mode": "percentage",
+                        "steps": [{
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 99
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 5,
+                "x": 0,
+                "y": 56
+            },
+            "id": 143,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "sum"
+                    ],
+                    "fields": "/^Value$/",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "\nfrom(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"merge_requests\")\n  |> filter(fn: (r) => r.stale == \"0\")\n  |> drop(columns:[\"mr_id\", \"state\", \"author\", \"jira\", \"project\", \"project_id\", \"merged_by\", \"ref\", \"stale\", \"_measurement\", \"_field\"])\n  |> count()\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Total MRs this PI (excl stale)",
+            "transformations": [],
+            "type": "stat"
+        },
+        {
+            "cacheTimeout": null,
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "decimals": 0,
+                    "mappings": [{
+                        "id": 0,
+                        "op": "=",
+                        "text": "N/A",
+                        "type": 1,
+                        "value": "null"
+                    }],
+                    "nullValueMode": "connected",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [{
+                                "color": "light-orange",
+                                "value": null
+                            },
+                            {
+                                "color": "#d44a3a"
+                            }
+                        ]
+                    },
+                    "unit": "none"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 6,
+                "x": 5,
+                "y": 56
+            },
+            "id": 139,
+            "interval": "",
+            "links": [],
+            "maxDataPoints": 100,
+            "options": {
+                "colorMode": "background",
+                "fieldOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "mean"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "expr": "count(count(gitlab_metrics_merge_requests_time_since_created_secs{ref!=\"master\", stale=\"1\"} > 0) by (project, ref, mr)) or vector(0)",
+                "format": "time_series",
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "instant": true,
+                "interval": "",
+                "intervalFactor": 3,
+                "legendFormat": "",
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "\nfrom(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"merge_requests\")\n  |> filter(fn: (r) => r.stale == \"1\")\n  |> drop(columns:[\"mr_id\", \"state\", \"stale\", \"author\", \"jira\", \"project\", \"project_id\", \"merged_by\", \"ref\", \"_measurement\", \"_field\"])\n  |> count()\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Total Stale Merge Requests (> 4 weeks) this PI",
+            "type": "stat"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "max": 100,
+                    "thresholds": {
+                        "mode": "percentage",
+                        "steps": [{
+                                "color": "light-orange",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 99
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 5,
+                "x": 0,
+                "y": 61
+            },
+            "id": 160,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "sum"
+                    ],
+                    "fields": "/^Value$/",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "\nfrom(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"merge_requests\")\n  |> filter(fn: (r) => r.stale == \"0\")\n  |> filter(fn: (r) => r.jira == \"0\")\n  |> drop(columns:[\"mr_id\", \"state\", \"author\", \"stale\", \"jira\", \"project\", \"project_id\", \"merged_by\", \"ref\", \"_measurement\", \"_field\"])\n  |> count()\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "MRs Without Jira",
+            "transformations": [],
+            "type": "stat"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "max": 100,
+                    "thresholds": {
+                        "mode": "percentage",
+                        "steps": [{
+                                "color": "dark-red",
+                                "value": null
+                            },
+                            {
+                                "color": "orange",
+                                "value": 70
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 80
+                            },
+                            {
+                                "color": "green",
+                                "value": 90
+                            }
+                        ]
+                    }
+                },
+                "overrides": [{
+                    "matcher": {
+                        "id": "byName",
+                        "options": "Value"
+                    },
+                    "properties": [{
+                        "id": "unit",
+                        "value": "percent"
+                    }]
+                }]
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 5,
+                "y": 61
+            },
+            "id": 142,
+            "options": {
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "last"
+                    ],
+                    "fields": "/^PI8$/",
+                    "values": false
+                },
+                "showThresholdLabels": true,
+                "showThresholdMarkers": true
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "\nt1 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"merge_requests\")\n  |> filter(fn: (r) => r.stale == \"0\")\n  |> filter(fn: (r) => r.jira == \"0\")\n  |> drop(columns:[\"mr_id\", \"state\", \"author\", \"stale\", \"jira\", \"project\", \"project_id\", \"merged_by\", \"ref\", \"_measurement\", \"_field\"])\n  |> count()\n  |> set(key: \"_field\",value: \"PI8\")\n\nt2 = from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"merge_requests\")\n  |> filter(fn: (r) => r.stale == \"0\")\n  |> drop(columns:[\"mr_id\", \"state\", \"author\", \"stale\", \"jira\", \"project\", \"project_id\", \"merged_by\", \"ref\", \"_measurement\", \"_field\"])\n  |> count()\n  |> set(key: \"_field\",value: \"PI8\")\n \njoin(tables: {t1: t1, t2: t2}, on: [\"_field\"])\n  |> map(fn: (r) => ({ r with _value: (r._value_t1 * 100) / r._value_t2 }))\n  |> yield(name: \"jira\")\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "% MRs without Jira",
+            "transformations": [],
+            "type": "gauge"
+        },
+        {
+            "collapsed": false,
+            "datasource": null,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 66
+            },
+            "id": 153,
+            "panels": [],
+            "title": "PI Quality Metrics - Artefacts",
+            "type": "row"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "max": 100,
+                    "thresholds": {
+                        "mode": "percentage",
+                        "steps": [{
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 99
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 0,
+                "y": 67
+            },
+            "id": 154,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "sum"
+                    ],
+                    "fields": "/^Value$/",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "\nfrom(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"projects\" and r._field == \"last_pipeline_duration\")\n  |> drop(columns:[\"pipeline_last_run_status\", \"id\", \"project\", \"_measurement\", \"_field\", \"got_rtd\", \"got_coverage\", \"got_linting\", \"got_tests\"])\n  |> count()\n\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Repositories",
+            "transformations": [],
+            "type": "stat"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "max": 100,
+                    "thresholds": {
+                        "mode": "percentage",
+                        "steps": [{
+                                "color": "light-orange",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 99
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 4,
+                "y": 67
+            },
+            "id": 158,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "sum"
+                    ],
+                    "fields": "/^Value$/",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "\nfrom(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"projects\" and r._field == \"last_pipeline_duration\")\n  |> filter(fn: (r) => r.got_rtd == \"1\")\n  |> drop(columns:[\"pipeline_last_run_status\", \"id\", \"project\", \"_measurement\", \"_field\", \"got_rtd\", \"got_coverage\", \"got_linting\", \"got_tests\"])\n  |> count()\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Repositories with RTD",
+            "transformations": [],
+            "type": "stat"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "max": 100,
+                    "thresholds": {
+                        "mode": "percentage",
+                        "steps": [{
+                                "color": "light-orange",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 99
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 5,
+                "x": 8,
+                "y": 67
+            },
+            "id": 156,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "sum"
+                    ],
+                    "fields": "/^Value$/",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "\nfrom(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"projects\" and r._field == \"last_pipeline_duration\")\n  |> filter(fn: (r) => r.got_linting == \"1\")\n  |> drop(columns:[\"pipeline_last_run_status\", \"id\", \"project\", \"_measurement\", \"_field\", \"got_rtd\", \"got_coverage\", \"got_linting\", \"got_tests\"])\n  |> count()\n",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Repositories with Linting Badges",
+            "transformations": [],
+            "type": "stat"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "max": 100,
+                    "thresholds": {
+                        "mode": "percentage",
+                        "steps": [{
+                                "color": "light-orange",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 99
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 5,
+                "x": 13,
+                "y": 67
+            },
+            "id": 155,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "sum"
+                    ],
+                    "fields": "/^Value$/",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"projects\" and r._field == \"last_pipeline_duration\")\n  |> filter(fn: (r) => r.got_tests == \"1\")\n  |> drop(columns:[\"pipeline_last_run_status\", \"id\", \"project\", \"_measurement\", \"_field\", \"got_rtd\", \"got_coverage\", \"got_linting\", \"got_tests\"])\n  |> count()",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Repositories with Tests Badges",
+            "transformations": [],
+            "type": "stat"
+        },
+        {
+            "datasource": "InfluxDBFlux",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "mappings": [],
+                    "max": 100,
+                    "thresholds": {
+                        "mode": "percentage",
+                        "steps": [{
+                                "color": "light-orange",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 99
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 5,
+                "x": 18,
+                "y": 67
+            },
+            "id": 157,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "sum"
+                    ],
+                    "fields": "/^Value$/",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.3.3",
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "from(bucket: \"gitlab_metrics\")\n  |> range(start: 2020-09-16T00:00:00Z, stop: 2020-12-16T23:59:59Z)\n  |> filter(fn: (r) => r._measurement == \"projects\" and r._field == \"last_pipeline_duration\")\n  |> filter(fn: (r) => r.got_coverage == \"1\")\n  |> drop(columns:[\"pipeline_last_run_status\", \"id\", \"project\", \"_measurement\", \"_field\", \"got_rtd\", \"got_coverage\", \"got_linting\", \"got_tests\"])\n  |> count()",
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "mean"
+                        }
+                    ]
+                ],
+                "tags": []
+            }],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Repositories with Coverage Badges",
+            "transformations": [],
+            "type": "stat"
+        }
+    ],
+    "refresh": false,
+    "schemaVersion": 26,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+        "list": [{
+            "current": {
+                "selected": false,
+                "text": "InfluxDBFlux",
+                "value": "InfluxDBFlux"
+            },
+            "error": null,
+            "hide": 0,
+            "includeAll": false,
+            "label": "datasource",
+            "multi": false,
+            "name": "DS_INFLUXDB",
+            "options": [],
+            "query": "influxdb",
+            "queryValue": "",
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "type": "datasource"
+        }]
+    },
+    "time": {
+        "from": "2020-09-15T23:00:00.000Z",
+        "to": "2020-12-16T23:59:59.000Z"
+    },
+    "timepicker": {
+        "refresh_intervals": [
+            "10s",
+            "30s",
+            "1m",
+            "5m",
+            "15m",
+            "30m",
+            "1h",
+            "2h",
+            "1d"
+        ],
+        "time_options": [
+            "5m",
+            "15m",
+            "1h",
+            "6h",
+            "12h",
+            "24h",
+            "2d",
+            "7d",
+            "30d"
+        ]
+    },
+    "timezone": "",
+    "title": "PI Quality Metrics (InfluxDB2)",
+    "uid": "pi_quality_metrics_influx",
+    "version": 6
+}

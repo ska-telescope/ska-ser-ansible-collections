@@ -73,18 +73,35 @@ The make command must have a specific format to trigger the targets bellow.
 For example, for the ElasticSearch targets we must run:
 
 ```
-make elastic *job*
+$ make elastic
+
+ElasticSearch targets - make playbooks elastic <target>:
+destroy                        Destroy elastic - only the containers
+help                           Show Help
+install                        Install elastic
+
+make elastic install
+<output omitted>
+
 ```
 
-Following the same logic, we can run all the jobs bellow:
+```
+$ make oci
+<output omitted>
 
-| Collection | Job        | Description                                                | Role Dependency             |
-|------------|------------|------------------------------------------------------------|-----------------------------|
-| elastic    | install    | Install ElasticSearch cluster via OCI containers           | common.init <br> oci.docker |
-| oci        | docker     | Install Docker                                             |                             |
-| oci        | podman     | Install Podman                                             |                             |
-| oci        | containerd | Install containerd                                         |                             |
-| common     | init       | Update APT <br> Install common packages <br> Mount volumes |                             |
+make oci docker
+<output omitted>
+
+```
+
+```
+$ make monitoring
+<output omitted>
+
+$ make monitoring vars
+<output omitted>
+
+```
 
 ### Mandatory Environment Variables
 
@@ -95,13 +112,3 @@ This repo expects these environment variables to run all make targets:
 
 These variables must be exported to your terminal shell or passed as 
 command line arguments.
-
-Using the script option based on the project structured above:
-```
-export BASE_PATH="$(cd "$(dirname "$1")"; pwd -P)"
-export PLAYBOOKS_ROOT_DIR="${BASE_PATH}/env-variables"
-export ANSIBLE_CONFIG="${BASE_PATH}/env-variables/ansible.cfg"
-export ANSIBLE_COLLECTIONS_PATHS="${BASE_PATH}/ska-ser-ansible-collections"
-export ANSIBLE_COLLECTIONS_PATHS="${BASE_PATH}/ska-ser-ansible-collections"
-export PLAYBOOKS_HOSTS="central-logging"
-```

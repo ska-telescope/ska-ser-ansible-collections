@@ -1,0 +1,91 @@
+- name: Pull thanos query image {{ thanos_docker_tags }}
+  community.docker.docker_image:
+    name: thanosio/thanos
+    tag: "{{ thanos_docker_tags }}"
+    source: pull
+
+- name: Stop thanos query container
+  community.docker.docker_container:
+    name: thanos_query_frontend
+    stop_timeout: 180
+    state: absent
+
+
+- name: Create certificates for web configuration
+  become: True
+  block:
+  - name: Create certificates directory
+    ansible.builtin.file:
+      path: "{{ certificates_dir }}"
+      state: directory
+      mode: "0700"
+
+  - name: Create private key for new certificate
+    community.crypto.openssl_privatekey:
+      path: "{{ certificates_dir }}/thanos_query_frontend.key"
+
+  - name: Create certificate signing request (CSR) for new certificate
+    community.crypto.openssl_csr_pipe:
+      privatekey_path: "{{ certificates_dir }}/thanos_query_frontend.key"
+      common_name: "{{ ansible_hostname }}"
+      subject_alt_name: 'DNS:monitoring.skao.stfc,IP:{{ ansible_default_ipv4.address }}'
+      organization_name: "SKAO"
+    register: csr
+
+  - name: Sign certificate with our CA
+    community.crypto.x509_certificate_pipe:
+      csr_content: "{{ csr.csr }}"
+      provider: ownca
+      ownca_path: "{{ certificates_dir }}/ca-certificate.pem"
+      ownca_privatekey_path: "{{ certificates_dir }}/ca-certificate.key"
+      ownca_privatekey_passphrase: "{{ ca_cert_pass }}"
+      ownca_not_after: +365d # valid for one year
+      ownca_not_before: "-1d" # valid since yesterday
+    delegate_to: terminus
+    register: certificate
+
+  - name: Write certificate file on client host
+    copy:
+      dest: "{{ certificates_dir }}/thanos_query_frontend.crt"
+      content: "{{ certificate.certificate }}"
+
+  - name: Get CA certificate pem from Terminus
+    ansible.builtin.slurp:
+      src: "{{ certificates_dir }}/ca-certificate.pem"
+    delegate_to: terminus
+    register: capemfile
+
+  - name: Write CA certificate file on client host
+    copy:
+      content: "{{ capemfile['content'] }}"
+      dest: "{{ certificates_dir }}/ca-certificate.pem"
+
+- name: Generate thanos tls configuration
+  become: true
+  ansible.builtin.template:
+    src: "thanos_query_frontend.yaml.j2"
+    dest: "{{ thanos_config_dir }}/thanos_query_frontend.yaml"
+    force: true
+    owner: "{{ localuser }}"
+    group: "{{ localuser }}"
+    mode: 0644
+
+- name: Start thanos query frontend
+  community.docker.docker_container:
+    name: thanos_query_frontend
+    image: "thanosio/thanos:{{ thanos_docker_tags }}"
+    state: started
+    command:
+    - "query-frontend"
+    - "--http-address=0.0.0.0:9095"
+    - "--query-frontend.downstream-url=http://{{ ansible_default_ipv4.address }}:9091"
+    - "--http.config=/etc/thanos/thanos_query_frontend.yaml"
+    user: root
+    restart: true
+    restart_policy: always
+    ports:
+    - "9095:9095"
+    volumes:
+    - "/etc/hosts:/etc/hosts:ro"
+    - "{{ thanos_config_dir }}:{{ thanos_config_dir }}"
+    - "{{ certificates_dir }}:{{ certificates_dir }}"
