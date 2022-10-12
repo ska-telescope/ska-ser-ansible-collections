@@ -5,7 +5,7 @@ endif
 
 check_ca_pass:
 ifndef CA_CERT_PASS
-        $(error CA_CERT_PASS is undefined)
+	$(error CA_CERT_PASS is undefined)
 endif
 
 install: check_hosts ## Install logging
