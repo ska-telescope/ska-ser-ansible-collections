@@ -9,8 +9,8 @@ global
   ssl-default-bind-options ssl-min-ver TLSv1.2 no-tls-tickets
 
 defaults
-  log	global
-  mode	http
+  log	    global
+  mode	  http
   option	httplog
   option	dontlognull
   timeout connect 5s
@@ -20,39 +20,39 @@ defaults
   timeout tunnel 1h
 
 frontend stats
-  bind *:{{haproxy_stats_port}}
-  mode http
+  bind  *:{{ haproxy_stats_port }}
+  mode  http
   stats enable
   stats hide-version
   stats realm Haproxy\ Statistics
-  stats uri /haproxy_stats
-  stats auth {{ haproxy_user }}:{{ haproxy_passwd }}
+  stats uri {{ haproxy_stats_endpoint }}
+  stats auth {{ haproxy_stats_user }}:{{ haproxy_stats_passwd }}
   stats refresh 10s
   stats admin if LOCALHOST
-
 
 #############################
 #  elasticsearch configs
 #############################
 
-frontend front-api-proxy
-  bind *:{{elasticsearch_port}}
-  mode tcp
-  option tcplog
-  option forwardfor
-  default_backend back-api-proxy
+frontend front-elasticsearch-api-proxy
+  bind    *:{{ haproxy_elasticsearch_port }}
+  mode    tcp
   timeout client 1800s
   timeout client-fin 50s
+  default_backend back-elasticsearch-api-proxy
 
-backend back-api-proxy
-  mode tcp
-  option tcplog
+backend back-elasticsearch-api-proxy
+  mode    tcp
+  option  tcplog
   balance roundrobin
-  # option ssl-hello-chk TODO: ssl config
-  option log-health-checks
+  option  log-health-checks
+  option  httpchk
+  http-check connect
+  http-check send meth GET uri {{ elasticsearch_health_endpoint }}
+  http-check expect status 200
   default-server inter 10s fall 2
-  {%- for item in groups[target_hosts ~ '-master'] %}
-  server {{ item }} {{hostvars[item].ip}}:9200 check
+  {%- for item in (groups[target_hosts ~ '-master'] + groups[target_hosts ~ '-data']) %}
+  server {{ item }} {{ hostvars[item].ip }}:{{ elasticsearch_api_port }} check
   {%- endfor %}
   timeout connect 10s
   timeout server 1800s

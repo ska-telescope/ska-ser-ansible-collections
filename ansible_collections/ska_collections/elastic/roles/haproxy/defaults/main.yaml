@@ -1,22 +1,23 @@
 ---
-# stats user account
-haproxy_user: stats
-haproxy_passwd: loggingHA
-
-haproxy_stats_port: "9200"
-nginx_http_proxy_port: "80"
-nginx_https_proxy_port: "443"
-elasticsearch_port: "9200"
-haproxy_container_image: haproxy:2.1
 haproxy_name: haproxy
-log_max_size: "10m"
-log_max_file: "3"
-log_driver: json-file
-log_options:
-  max-size: "{{  log_max_size }}"
-  max-file: "{{ log_max_file }}"
+haproxy_image: haproxy:2.6
+haproxy_labels:
+  org.ska.app.group: frontend
+
+haproxy_log_driver: json-file
+haproxy_log_max_size: "10m"
+haproxy_log_max_file: "3"
+haproxy_log_options:
+  max-size: "{{  haproxy_log_max_size }}"
+  max-file: "{{ haproxy_log_max_file }}"
   labels: "org.ska.app.group"
 
-# labelling on container runtime
-container_labels:
-  org.ska.app.group: frontend
+haproxy_elasticsearch_port: 9200
+haproxy_stats_port: 9090
+haproxy_stats_endpoint: "/haproxy_stats"
+haproxy_stats_user: stats
+haproxy_stats_passwd: loggingHA
+
+# Shared variables
+elasticsearch_api_port: 9200
+elasticsearch_health_endpoint: "/_cat/health"

@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 .DEFAULT_GOAL := help
 
+=======
+>>>>>>> ST-1400: Refactored elastic playbooks
 check_hosts:
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)

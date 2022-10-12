@@ -1,6 +1,6 @@
 ---
-- name: docker pull kibana image
-  docker_image:
+- name: "Docker pull {{ kibana_image }}"
+  community.general.docker_image:
     source: pull
     name: "{{ kibana_image }}"
   register: docker_pull_retry
@@ -8,24 +8,25 @@
   retries: 5
   delay: 5
 
-- name: Kibana config
-  template:
+- name: Create kibana configuration
+  ansible.builtin.template:
     src: kibana.yml.j2
     dest: /etc/kibana.yml
     mode: 0644
 
-- name: Install Kibana Container
-  docker_container:
-    name: elk_kibana
+- name: Run kibana container
+  community.general.docker_container:
+    name: "{{ kibana_name }}"
+    network_mode: "{{ kibana_network_mode }}"  # reverse DNS must work
+    privileged: "{{ 'yes' if kibana_network_mode == 'host' else 'no' }}"
     restart_policy: always
     image: "{{ kibana_image }}"
-    command: "kibana -e http://{{ hostvars[groups[target_hosts + '-master'][0]].ip }}:9200"  
     state: started
-    labels: "{{ container_labels }}"
-    log_driver: "{{ log_driver }}"
-    log_options: "{{ log_options }}"
+    labels: "{{ kibana_labels }}"
+    log_driver: "{{ kibana_log_driver }}"
+    log_options: "{{ kibana_log_options }}"
     volumes:
       - /etc/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
     ports:
-      - "5601:5601"
+      - "{{ kibana_port }}:{{ kibana_port }}"
     recreate: "{{ kibana_reinstall }}"

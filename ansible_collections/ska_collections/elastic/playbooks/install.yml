@@ -1,88 +1,95 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: "Show debug info"
+- name: Show debug info
   hosts: "{{ target_hosts }}"
   become: true
   tasks:
     - name: "Show stack nodes info"
-      debug: var=hostvars[inventory_hostname]
+      ansible.builtin.debug: var=hostvars[inventory_hostname]
       when: debug
 
-- name: "Apply the common and docker roles"
+- name: Apply the common and docker roles
   hosts: "{{ target_hosts }}"
   become: true
   roles:
     - ska_collections.instance_common.init
     - ska_collections.docker_base.docker
-
-- name: Verify Elastic Cluster for bootstraping
-  hosts: "{{ target_hosts }}-master[0]"
+  
+- name: Verify elasticsearch cluster status
+  hosts: "{{ target_hosts }}-master[0]" 
+  # TODO: this differently, as master 0 might go away and the cluster still exists
   tasks:
-    - name: Get health
-      uri:
-        url: http://localhost:9200/_cluster/health
+    - name: Set elasticsearch_api_port
+      set_fact:
+        elasticsearch_api_port: 9200
+      when: elasticsearch_api_port is undefined
+    - name: Set elasticsearch_health_endpoint
+      set_fact:
+        elasticsearch_health_endpoint: "/_cat/health"
+      when: elasticsearch_health_endpoint is undefined
+    - name: Get cluster health
+      ansible.builtin.uri:
+        url: http://localhost:{{ elasticsearch_api_port }}{{ elasticsearch_health_endpoint }}
         return_content: true
         status_code: [200]
-      register: response_health
+      register: cluster_health
       ignore_errors: true
-
-    - name: Print health response - debug mode
-      debug:
-        msg: "{{ response_health }}"
-         
-      
-    - name: Set elastic_first_install fact on all hosts
-      set_fact:
-        elastic_first_install: "{{ (response_health.status | default(0)) != 200 }}"
+    - name: Print health response
+      ansible.builtin.debug:
+        msg: "{{ cluster_health }}"
+      when: debug
+    - name: Set elasticsearch_first_install fact on all hosts
+      ansible.builtin.set_fact:
+        elasticsearch_first_install: "{{ (cluster_health.status | default(0)) != 200 }}"
       delegate_to: "{{ item }}"
-      with_items: "{{ target_hosts }}"
+      with_items: "{{ groups[target_hosts] }}"
 
-- name: "Master Elastic tasks"
+- name: Deploy elasticsearch to master nodes
   hosts: "{{ target_hosts }}-master"
   become: true
   tasks:
-
-    - name: Install Elastic
-      ansible.builtin.import_role:
-        name: ska_collections.elastic.stack
-        tasks_from: elastic
-      when: '((groups[target_hosts + "-data"] | default([])) | length ) == 0'
-    
-    - name: Install Master-only Elastic
+    - name: Check installation status
+      debug:
+        msg: "Installing elasticsearch for the first time: {{ elasticsearch_first_install }}"
+    - name: Install elasticsearch
       ansible.builtin.import_role:
         name: ska_collections.elastic.stack
         tasks_from: elastic
       vars:
-        node_roles: ["master","remote_cluster_client","transform","ml","ingest"]
-      when: '((groups[target_hosts + "-data"] | default([])) | length ) > 0'
-        
-    - name: Install Kibana on Master0 if Kibana only instance is missing
-      ansible.builtin.import_role:
-        name: ska_collections.elastic.stack
-        tasks_from: kibana
-      vars:
-        kibana_on_master: true
+        elasticsearch_node_roles: "{{ elasticsearch_default_master_roles if ((groups[target_hosts + '-data'] | default([])) | length ) > 0 else elasticsearch_default_node_roles }}"
+    #- name: Install elasticsearch exporter
+    #  ansible.builtin.import_role:
+    #    name: ska_collections.elastic.stack
+    #    tasks_from: elasticsearch_exporter
 
-      when: '((groups[target_hosts + "-kibana"] | default([])) | length ) == 0'
-
-- name: "Data Elastic tasks"
+- name: Deploy elasticsearch to data nodes
   hosts: "{{ target_hosts }}-data"
   become: true
   tasks:
-  
-    - name: Install Elastic Data nodes
+    - name: Check installation status
+      debug:
+        msg: "Installing elasticsearch for the first time: {{ elasticsearch_first_install }}"
+    - name: Install elasticsearch
       ansible.builtin.import_role:
         name: ska_collections.elastic.stack
         tasks_from: elastic
       vars:
-        node_roles: ["data"]
+        elasticsearch_node_roles: "{{ elasticsearch_default_data_roles }}"
+    #- name: Install elasticsearch exporter
+    #  ansible.builtin.import_role:
+    #    name: ska_collections.elastic.stack
+    #    tasks_from: elasticsearch_exporter
 
-- hosts: "{{ target_hosts }}-loadbalancer"
+- name: Deploy HAProxy to loadbalancer nodes
+  hosts: "{{ target_hosts }}-loadbalancer"
   become: true
-  roles:
-    - haproxy
+  tasks:
+    - name: Install haproxy
+      ansible.builtin.import_role:
+        name: ska_collections.elastic.haproxy
+        tasks_from: main
   
-- name: Kibana tasks
+- name: Deploy kibana to kibana nodes
   hosts: "{{ target_hosts }}-kibana"
   become: true
   tasks:
@@ -90,6 +97,19 @@
       ansible.builtin.import_role:
         name: ska_collections.elastic.stack
         tasks_from: kibana
-  
 
+- name: Deploy kibana to a master node
+  hosts: "{{ target_hosts }}-master"
+  become: true
+  tasks:
+    - name: Install kibana
+      ansible.builtin.import_role:
+        name: ska_collections.elastic.stack
+        tasks_from: kibana
+      when: '((groups[target_hosts + "-kibana"] | default([])) | length ) == 0 and inventory_hostname == groups[target_hosts + "-master"][0]'
+    - name: Remove kibana if kibana only instance is present
+      community.general.docker_container:
+        name: "{{ kibana_name }}"
+        state: absent
+      when: '((groups[target_hosts + "-kibana"] | default([])) | length ) > 0'
 
