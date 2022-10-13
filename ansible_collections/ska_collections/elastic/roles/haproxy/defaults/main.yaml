@@ -17,7 +17,3 @@ haproxy_stats_port: 9090
 haproxy_stats_endpoint: "/haproxy_stats"
 haproxy_stats_user: stats
 haproxy_stats_passwd: loggingHA
-
-# Shared variables
-elasticsearch_api_port: 9200
-elasticsearch_health_endpoint: "/_cat/health"

@@ -38,11 +38,11 @@ docker_deb_dependencies:
   - software-properties-common
   - python3-pip
 
-docker_deb_version: 5:20.10.5~3-0~ubuntu-{{ ansible_distribution_release }}
+docker_deb_version: 5:20.10.18~3-0~ubuntu-{{ ansible_distribution_release }}
 
 docker_deb_pkgs:
-  - "docker-ce"
-  - "docker-ce-cli"
+  - "docker-ce={{ docker_deb_version }}"
+  - "docker-ce-cli={{ docker_deb_version }}"
 
 ### RedHat section
 # change if required or override at runtime using --extra-vars

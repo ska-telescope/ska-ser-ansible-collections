@@ -1,8 +1,12 @@
+---
 - name: Create HAProxy config
   ansible.builtin.template:
     src: haproxyConfig.j2
     dest: "/etc/haproxy.cfg"
     mode: 0644
+  vars:
+    elasticsearch_api_port: elasticsearch_api_port
+    elasticsearch_health_endpoint: elasticsearch_health_endpoint
   register: haproxy_config
 
 - name: Show HAProxy config

@@ -35,11 +35,11 @@ xpack.security.transport.ssl.verification_mode: "certificate"
 xpack.security.transport.ssl.key: "/usr/share/elasticsearch/config/certificates/{{ inventory_hostname }}.key"
 #xpack.security.transport.ssl.key_passphrase: "{{ ca_cert_pass }}"
 xpack.security.transport.ssl.certificate: "/usr/share/elasticsearch/config/certificates/{{ inventory_hostname }}.crt"
-xpack.security.transport.ssl.certificate_authorities: [ "/usr/share/elasticsearch/config/certificates/ca-certificate.crt" ]
+xpack.security.transport.ssl.certificate_authorities: [ "/usr/share/elasticsearch/config/certificates/ca-certificate.pem" ]
 
 # HTTP
 xpack.security.http.ssl.enabled: "true"
 xpack.security.http.ssl.key: "/usr/share/elasticsearch/config/certificates/{{ inventory_hostname }}.key"
 #xpack.security.http.ssl.key_passphrase: "{{ ca_cert_pass }}"
 xpack.security.http.ssl.certificate: "/usr/share/elasticsearch/config/certificates/{{ inventory_hostname }}.crt"
-xpack.security.http.ssl.certificate_authorities: [ "/usr/share/elasticsearch/config/certificates/ca-certificate.crt" ]
+xpack.security.http.ssl.certificate_authorities: [ "/usr/share/elasticsearch/config/certificates/ca-certificate.pem" ]
