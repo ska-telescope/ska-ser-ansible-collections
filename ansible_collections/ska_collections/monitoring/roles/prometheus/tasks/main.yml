@@ -1,148 +1,148 @@
----
-# tasks file for prometheus
-- name: Install distutils
-  ansible.builtin.apt:
-    pkg:
-      - python3-distutils
-      - python3-requests
-      - jq
-    state: present
-    update_cache: true
-  when: ansible_os_family == "Debian" and (mode == "server" or mode == "all" or mode == "docker")
+# ---
+# # tasks file for prometheus
+# - name: Install distutils
+#   ansible.builtin.apt:
+#     pkg:
+#       - python3-distutils
+#       - python3-requests
+#       - jq
+#     state: present
+#     update_cache: true
+#   when: ansible_os_family == "Debian" and (mode == "server" or mode == "all" or mode == "docker")
 
-- name: Fix pip
-  when: mode == "server" or mode == "all" or mode == "docker"
-  block:
-    - name: Install packages required for docker (apt)
-      ansible.builtin.apt:
-        name: ['python3-pip']
-        state: present
-      when: ansible_os_family == "Debian"
+# - name: Fix pip
+#   when: mode == "server" or mode == "all" or mode == "docker"
+#   block:
+#     - name: Install packages required for docker (apt)
+#       ansible.builtin.apt:
+#         name: ['python3-pip']
+#         state: present
+#       when: ansible_os_family == "Debian"
 
-    - name: Ensure dnf installed
-      ansible.builtin.yum:
-        name: "dnf"
-        state: present
-      when: ansible_distribution == "CentOS"
+#     - name: Ensure dnf installed
+#       ansible.builtin.yum:
+#         name: "dnf"
+#         state: present
+#       when: ansible_distribution == "CentOS"
 
-    - name: Install packages required for docker (dnf)
-      ansible.builtin.dnf:
-        name: ['python-pip', 'python3-pip']
-        state: present
-      when: ansible_os_family == "RedHat"
+#     - name: Install packages required for docker (dnf)
+#       ansible.builtin.dnf:
+#         name: ['python-pip', 'python3-pip']
+#         state: present
+#       when: ansible_os_family == "RedHat"
 
-    - name: Uninstall docker dependencies
-      ansible.builtin.pip:
-        name: ['docker-py', 'docker-pycreds']
-        executable: pip3
-        state: absent
+#     - name: Uninstall docker dependencies
+#       ansible.builtin.pip:
+#         name: ['docker-py', 'docker-pycreds']
+#         executable: pip3
+#         state: absent
 
-    - name: Install docker dependencies
-      ansible.builtin.pip:
-        executable: pip3
-        name: docker
+#     - name: Install docker dependencies
+#       ansible.builtin.pip:
+#         executable: pip3
+#         name: docker
 
-- name: Pip self-update  # noqa package-latest
-  ansible.builtin.pip:
-    name: pip
-    state: latest
-  when: mode == "server" or mode == "all" or mode == "docker"
+# - name: Pip self-update  # noqa package-latest
+#   ansible.builtin.pip:
+#     name: pip
+#     state: latest
+#   when: mode == "server" or mode == "all" or mode == "docker"
 
-- name: Install certain apt packages for openstack
-  ansible.builtin.apt:
-    pkg:
-      - python3-heatclient
-      - python3-novaclient
-      - python3-keystoneauth1
-    state: present
-    update_cache: true
-  when: ansible_os_family == "Debian" and (mode == "server" or mode == "all" or mode == "docker")
-  tags:
-    - openstack
+# - name: Install certain apt packages for openstack
+#   ansible.builtin.apt:
+#     pkg:
+#       - python3-heatclient
+#       - python3-novaclient
+#       - python3-keystoneauth1
+#     state: present
+#     update_cache: true
+#   when: ansible_os_family == "Debian" and (mode == "server" or mode == "all" or mode == "docker")
+#   tags:
+#     - openstack
 
-- name: Install certain python modules for openstack
-  ansible.builtin.pip:
-    name: "{{ item.name }}"
-    version: "{{ item.version }}"
-    executable: pip3
-    state: present
-  with_items:
-    - {name: openstacksdk, version: 0.43.0}
-    - {name: python-openstackclient, version: 5.2.0}
-    - {name: kubernetes, version: 12.0.1}
-    - {name: pymysql, version: 1.0.2}
-  when: mode == "server" or mode == "all" or mode == "docker"
-  tags:
-    - openstack
+# - name: Install certain python modules for openstack
+#   ansible.builtin.pip:
+#     name: "{{ item.name }}"
+#     version: "{{ item.version }}"
+#     executable: pip3
+#     state: present
+#   with_items:
+#     - {name: openstacksdk, version: 0.43.0}
+#     - {name: python-openstackclient, version: 5.2.0}
+#     - {name: kubernetes, version: 12.0.1}
+#     - {name: pymysql, version: 1.0.2}
+#   when: mode == "server" or mode == "all" or mode == "docker"
+#   tags:
+#     - openstack
 
-- include: blackbox_exporter.yml
-  when: mode == "server" or mode == "all"
+# - include: blackbox_exporter.yml
+#   when: mode == "server" or mode == "all"
 
-- include: runner_exporter.yml
-  when: mode == "runner"
+# - include: runner_exporter.yml
+#   when: mode == "runner"
 
-- include: docker_exporter.yml
-  when: mode == "docker"
+# - include: docker_exporter.yml
+#   when: mode == "docker"
 
-- include: grafana_ceph.yml
-  when: mode == "server" or mode == "all"
+# - include: grafana_ceph.yml
+#   when: mode == "server" or mode == "all"
 
-- include: grafana_elasticstack.yml
-  when: mode == "server" or mode == "all"
+# - include: grafana_elasticstack.yml
+#   when: mode == "server" or mode == "all"
 
-- include: grafana_kubernetes.yml
-  when: mode == "server" or mode == "all"
+# - include: grafana_kubernetes.yml
+#   when: mode == "server" or mode == "all"
 
-- include: grafana_gitlab_runners.yml
-  when: mode == "server" or mode == "all"
+# - include: grafana_gitlab_runners.yml
+#   when: mode == "server" or mode == "all"
 
-- include: grafana_cadvisor.yml
-  when: mode == "server" or mode == "all"
+# - include: grafana_cadvisor.yml
+#   when: mode == "server" or mode == "all"
 
-- include: grafana_nodexporter.yml
-  when: mode == "server" or mode == "all"
+# - include: grafana_nodexporter.yml
+#   when: mode == "server" or mode == "all"
 
-- include: gitlab_ci_pipelines_exporter.yml
-  when: mode == "server" or mode == "all"
+# - include: gitlab_ci_pipelines_exporter.yml
+#   when: mode == "server" or mode == "all"
 
-- include: grafana_alerts.yml
-  when: mode == "server" or mode == "all"
+# - include: grafana_alerts.yml
+#   when: mode == "server" or mode == "all"
 
-# launch prom/alert/grafana after configuration
-- include: server.yml
-  when: mode == "server" or mode == "all"
-  tags:
-    - cron
+# # launch prom/alert/grafana after configuration
+# - include: server.yml
+#   when: mode == "server" or mode == "all"
+#   tags:
+#     - cron
 
-- include: thanos_sidecar.yml
-  when: mode == "server" or mode == "all"
-  tags:
-    - cron
+# - include: thanos_sidecar.yml
+#   when: mode == "server" or mode == "all"
+#   tags:
+#     - cron
 
-- include: thanos_query.yml
-  when: mode == "thanos" or mode == "all"
-  tags:
-    - cron
+# - include: thanos_query.yml
+#   when: mode == "thanos" or mode == "all"
+#   tags:
+#     - cron
 
-- include: thanos_query_frontend.yml
-  when: mode == "thanos" or mode == "all"
-  tags:
-    - cron
+# - include: thanos_query_frontend.yml
+#   when: mode == "thanos" or mode == "all"
+#   tags:
+#     - cron
 
-- include: thanos_store.yml
-  when: mode == "thanos" or mode == "all"
-  tags:
-    - cron
+# - include: thanos_store.yml
+#   when: mode == "thanos" or mode == "all"
+#   tags:
+#     - cron
 
-- include: thanos_compactor.yml
-  when: mode == "thanos" or mode == "all"
-  tags:
-    - cron
+# - include: thanos_compactor.yml
+#   when: mode == "thanos" or mode == "all"
+#   tags:
+#     - cron
 
-- include: alert_manager.yml
-  when: mode == "server" or mode == "all"
-  tags:
-    - cron
+# - include: alert_manager.yml
+#   when: mode == "server" or mode == "all"
+#   tags:
+#     - cron
 
 - include: grafana.yml
   when: mode == "server" or mode == "all"

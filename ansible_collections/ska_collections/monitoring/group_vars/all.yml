@@ -30,7 +30,7 @@ swapfile_size: 1000
 swapfile_fallocate: true
 
 # kubectl vars
-kubectl_version: 'v1.18.2'
+kubectl_version: 'v1.22.5'
 kubectl_name: kubectl
 kubectl_install_dir: /usr/local/bin
 kubectl_platform: linux/amd64

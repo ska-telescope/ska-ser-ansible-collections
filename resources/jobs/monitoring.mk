@@ -70,7 +70,7 @@ prometheus: check_hosts ## Install Prometheus Server
 		-e "slack_channel='$(SLACK_CHANNEL)'" \
 		-e "slack_channel_mvp='$(SLACK_CHANNEL_MVP)'" \
 		-e "prometheus_alertmanager_url='$(PROMETHEUS_ALERTMANAGER_URL)'" \
-		-e "project_name='$(PROM_OS_PROJECT_NAME)' project_id='$(PROM_OS_PROJECT_ID)' auth_url='$(PROM_OS_AUTH_URL)'" kubeconfig='$(KUBECONFIG)'" \
+		-e "project_id='$(PROM_OS_PROJECT_ID)' auth_url='$(PROM_OS_AUTH_URL)' kubeconfig='$(KUBECONFIG)'" \
 		-e "username='$(PROM_OS_USERNAME)' password='$(PROM_OS_PASSWORD)'" \
 		-e "prometheus_url='$(PROMETHEUS_URL)'" $(PROMETHEUS_EXTRAVARS) \
 		-e "prometheus_gitlab_ci_pipelines_exporter_token=$(GITLAB_TOKEN)" \
@@ -85,7 +85,7 @@ thanos: check_hosts ## Install Thanos query and query front-end
 	ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
 		--extra-vars "mode='thanos'" \
 		-e "ca_cert_pass=$(CA_CERT_PASSWORD)" \
-		-e "project_name='$(PROM_OS_PROJECT_NAME)' project_id='$(PROM_OS_PROJECT_ID)' auth_url='$(PROM_OS_AUTH_URL)'" \
+		-e "project_id='$(PROM_OS_PROJECT_ID)' auth_url='$(PROM_OS_AUTH_URL)'" \
 		-e "username='$(PROM_OS_USERNAME)' password='$(PROM_OS_PASSWORD)'" \
 		-i $(INVENTORY_FILE) \
 		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \
