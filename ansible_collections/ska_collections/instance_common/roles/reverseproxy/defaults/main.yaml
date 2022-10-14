@@ -1,0 +1,28 @@
+---
+# nginx:1.19.8
+nginx_server_name: www.example.com
+ha_api_proxy_port: "6443"
+nginx_https_proxy_port: "80"  # port of backend service behind ssl termination
+nginx_container_image: nginx:1.23
+oauth2proxy_container_image: quay.io/oauth2-proxy/oauth2-proxy:v7.2.1
+# debug image and fix for auth panic
+# from https://gitlab.com/piersharding/oauth2-proxy
+# oauth2proxy_container_image: registry.gitlab.com/piersharding/oauth2-proxy:latest
+oauth2proxy_port: 4180
+oauth2proxy_name: oauth2proxy
+oauth2proxy_client_id: ""
+oauth2proxy_client_secret: ""
+oauth2proxy_tenant_id: ""
+oauth2proxy_cookie_secret: ""
+nginx_name: reverseproxy
+log_max_size: "10m"
+log_max_file: "3"
+log_driver: json-file
+log_options:
+  max-size: "{{  log_max_size }}"
+  max-file: "{{ log_max_file }}"
+  labels: "org.ska.app.group"
+
+# labelling on container runtime
+container_labels:
+  org.ska.app.group: frontend

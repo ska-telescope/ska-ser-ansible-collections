@@ -1,0 +1,10 @@
+---
+- name: Ingress Proxy
+  hosts: bifrost
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: create proxy server
+      include_role:
+        name: reverseproxy

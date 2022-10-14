@@ -1,0 +1,442 @@
+#jinja2:trim_blocks:False
+# https://ssl-config.mozilla.org/
+
+user  nginx;
+worker_processes  1;
+
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+# passthru API Server
+stream {
+    upstream api_server {
+        # Our web server, listening for SSL traffic
+        # Note the web server will expect traffic
+        server {{ hostvars[groups['loadbalancers'][0]]["ansible_host"] }}:{{ ha_api_proxy_port }};
+    }
+
+    server {
+        listen {{ ha_api_proxy_port }};
+        proxy_pass api_server;
+    }
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    # deactivate the default
+    #include /etc/nginx/conf.d/*.conf;
+
+
+    server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+
+        # server_name {{ nginx_server_name }};
+
+        return 301 https://$host$request_uri;
+    }
+
+    server {
+        listen 443 ssl http2;
+        listen [::]:443 ssl http2;
+        # server_name {{ nginx_server_name }};
+
+        ### Best practice SSL configuration
+        ssl_certificate /etc/nginx/sdhp.stfc.skao.int.crt;
+        ssl_certificate_key /etc/nginx/sdhp.stfc.skao.int.key;
+        ssl_session_timeout 1d;
+        ssl_session_cache shared:MozSSL:10m;  # about 40000 sessions
+        ssl_session_tickets off;
+        keepalive_timeout 300; # up from 75 secs default
+
+        # curl https://ssl-config.mozilla.org/ffdhe2048.txt > /etc/nginx/dhparam
+        ssl_dhparam /etc/nginx/dhparam;
+
+        # intermediate configuration
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+        ssl_prefer_server_ciphers off;
+
+        # HSTS (ngx_http_headers_module is required) (63072000 seconds)
+        add_header Strict-Transport-Security "max-age=63072000" always;
+
+        # OCSP stapling
+        ssl_stapling on;
+        ssl_stapling_verify on;
+
+        # verify chain of trust of OCSP response using Root CA and Intermediate certs
+        ssl_trusted_certificate /etc/nginx/sdhp.stfc.skao.int-ca.crt;
+
+        # replace with the IP address of your resolver
+        resolver 127.0.0.1;
+
+        ### auth proxy configuration part 1
+
+        location /oauth2/ {
+          proxy_pass       http://127.0.0.1:4180;
+          proxy_set_header Host                    $host;
+          proxy_set_header X-Real-IP               $remote_addr;
+          proxy_set_header X-Scheme                $scheme;
+          proxy_set_header X-Auth-Request-Redirect $request_uri;
+          # or, if you are handling multiple domains:
+          # proxy_set_header X-Auth-Request-Redirect $scheme://$host$request_uri;
+
+          # needs to be a big buffer because of header size
+          # https://stackoverflow.com/questions/23844761/upstream-sent-too-big-header-while-reading-response-header-from-upstream
+          proxy_buffer_size          128k;
+          proxy_buffers              4 256k;
+          proxy_busy_buffers_size    256k;
+          proxy_temp_file_write_size 256k;
+        }
+        location = /oauth2/auth {
+          proxy_pass       http://127.0.0.1:4180;
+          proxy_set_header Host             $host;
+          proxy_set_header X-Real-IP        $remote_addr;
+          proxy_set_header X-Scheme         $scheme;
+          # nginx auth_request includes headers but not body
+          proxy_set_header Content-Length   "";
+          proxy_pass_request_body           off;
+          proxy_buffer_size          128k;
+          proxy_buffers              4 256k;
+          proxy_busy_buffers_size    256k;
+          proxy_temp_file_write_size 256k;
+        }
+        ### end of auth proxy configuration part 1
+
+
+        ## proxy kibana requests to the monitoring instance
+        location /kibana/ {
+          ### auth proxy configuration part 2
+          auth_request /oauth2/auth;
+          error_page 401 = /oauth2/sign_in;
+
+          # pass information via X-User and X-Email headers to backend,
+          # requires running with --set-xauthrequest flag
+          auth_request_set $user   $upstream_http_x_auth_request_user;
+          auth_request_set $email  $upstream_http_x_auth_request_email;
+          proxy_set_header X-User  $user;
+          proxy_set_header X-Email $email;
+
+          # if you enabled --pass-access-token, this will pass the token to the backend
+          auth_request_set $token  $upstream_http_x_auth_request_access_token;
+          proxy_set_header X-Access-Token $token;
+
+          proxy_buffer_size          128k;
+          proxy_buffers              4 256k;
+          proxy_busy_buffers_size    256k;
+          proxy_temp_file_write_size 256k;
+
+          # if you enabled --cookie-refresh, this is needed for it to work with auth_request
+          auth_request_set $auth_cookie $upstream_http_set_cookie;
+          add_header Set-Cookie $auth_cookie;
+
+          # When using the --set-authorization-header flag, some provider's cookies can exceed the 4kb
+          # limit and so the OAuth2 Proxy splits these into multiple parts.
+          # Nginx normally only copies the first `Set-Cookie` header from the auth_request to the response,
+          # so if your cookies are larger than 4kb, you will need to extract additional cookies manually.
+          auth_request_set $auth_cookie_name_upstream_1 $upstream_cookie_auth_cookie_name_1;
+
+          # Extract the Cookie attributes from the first Set-Cookie header and append them
+          # to the second part ($upstream_cookie_* variables only contain the raw cookie content)
+          if ($auth_cookie ~* "(; .*)") {
+              set $auth_cookie_name_0 $auth_cookie;
+              set $auth_cookie_name_1 "auth_cookie_name_1=$auth_cookie_name_upstream_1$1";
+          }
+
+          # Send both Set-Cookie headers now if there was a second part
+          if ($auth_cookie_name_upstream_1) {
+              add_header Set-Cookie $auth_cookie_name_0;
+              add_header Set-Cookie $auth_cookie_name_1;
+          }
+          ### end of auth proxy configuration part 2
+
+          ### Proxy to K8s configuration
+          proxy_set_header        Host $host;
+          proxy_set_header        X-Real-IP $remote_addr;
+          proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header        X-Forwarded-Proto $scheme;
+          proxy_set_header        X-NginX-Proxy true;
+
+          proxy_ssl_session_reuse off;
+
+          # Fix the “It appears that your reverse proxy set up is broken" error.
+          proxy_pass          http://{{ hostvars[groups['systems_monitoring1_master'][0]]["ansible_host"] }}:5602/;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+          proxy_read_timeout 86400;
+
+          proxy_cache_bypass $http_upgrade;
+
+          proxy_redirect off;
+        }
+
+        ## proxy grafana requests directly to the grafana instance
+        location /grafana/ {
+          # pass information via X-User and X-Email headers to backend,
+          # requires running with --set-xauthrequest flag
+          auth_request_set $user   $upstream_http_x_auth_request_user;
+          auth_request_set $email  $upstream_http_x_auth_request_email;
+          proxy_set_header X-User  $user;
+          proxy_set_header X-Email $email;
+
+          # if you enabled --pass-access-token, this will pass the token to the backend
+          auth_request_set $token  $upstream_http_x_auth_request_access_token;
+          proxy_set_header X-Access-Token $token;
+
+          proxy_buffer_size          128k;
+          proxy_buffers              4 256k;
+          proxy_busy_buffers_size    256k;
+          proxy_temp_file_write_size 256k;
+
+          # if you enabled --cookie-refresh, this is needed for it to work with auth_request
+          auth_request_set $auth_cookie $upstream_http_set_cookie;
+          add_header Set-Cookie $auth_cookie;
+
+          # When using the --set-authorization-header flag, some provider's cookies can exceed the 4kb
+          # limit and so the OAuth2 Proxy splits these into multiple parts.
+          # Nginx normally only copies the first `Set-Cookie` header from the auth_request to the response,
+          # so if your cookies are larger than 4kb, you will need to extract additional cookies manually.
+          auth_request_set $auth_cookie_name_upstream_1 $upstream_cookie_auth_cookie_name_1;
+
+          # Extract the Cookie attributes from the first Set-Cookie header and append them
+          # to the second part ($upstream_cookie_* variables only contain the raw cookie content)
+          if ($auth_cookie ~* "(; .*)") {
+              set $auth_cookie_name_0 $auth_cookie;
+              set $auth_cookie_name_1 "auth_cookie_name_1=$auth_cookie_name_upstream_1$1";
+          }
+
+          # Send both Set-Cookie headers now if there was a second part
+          if ($auth_cookie_name_upstream_1) {
+              add_header Set-Cookie $auth_cookie_name_0;
+              add_header Set-Cookie $auth_cookie_name_1;
+          }
+          ### end of auth proxy configuration part 2
+
+          ### Proxy to K8s configuration
+          proxy_set_header        Host $host;
+          proxy_set_header        X-Real-IP $remote_addr;
+          proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header        X-Forwarded-Proto $scheme;
+          proxy_set_header        X-NginX-Proxy true;
+
+          proxy_ssl_session_reuse off;
+
+          # Fix the “It appears that your reverse proxy set up is broken" error.
+          rewrite  ^/grafana/(.*)  /$1 break;
+          proxy_pass          http://{{ hostvars[groups['prometheus_prometheus'][0]]["ansible_host"] }}:3000/;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+          proxy_read_timeout 86400;
+
+          proxy_cache_bypass $http_upgrade;
+
+          proxy_redirect off;
+        }
+
+        # ## default proxy everything to k8s Ingress
+        # location /nexus/webhooks/ {
+
+        #   # Extract the Cookie attributes from the first Set-Cookie header and append them
+        #   # to the second part ($upstream_cookie_* variables only contain the raw cookie content)
+        #   if ($auth_cookie ~* "(; .*)") {
+        #       set $auth_cookie_name_0 $auth_cookie;
+        #       set $auth_cookie_name_1 "auth_cookie_name_1=$auth_cookie_name_upstream_1$1";
+        #   }
+
+        #   # Send both Set-Cookie headers now if there was a second part
+        #   if ($auth_cookie_name_upstream_1) {
+        #       add_header Set-Cookie $auth_cookie_name_0;
+        #       add_header Set-Cookie $auth_cookie_name_1;
+        #   }
+        #   ### end of auth proxy configuration part 2
+
+        #   ### Proxy to K8s configuration
+        #   proxy_set_header        Host $host;
+        #   proxy_set_header        X-Real-IP $remote_addr;
+        #   proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        #   proxy_set_header        X-Forwarded-Proto $scheme;
+        #   proxy_set_header        X-NginX-Proxy true;
+
+        #   proxy_ssl_session_reuse off;
+
+        #   # Fix the “It appears that your reverse proxy set up is broken" error.
+        #   proxy_pass          http://10.200.0.63:80;
+        #   proxy_http_version 1.1;
+        #   proxy_set_header Upgrade $http_upgrade;
+        #   proxy_set_header Connection "upgrade";
+        #   proxy_read_timeout 86400;
+
+        #   proxy_cache_bypass $http_upgrade;
+
+        #   proxy_redirect off;
+        # }
+
+        ## default proxy everything to k8s Ingress
+        location / {
+          ### auth proxy configuration part 2
+          auth_request /oauth2/auth;
+          error_page 401 = /oauth2/sign_in;
+
+          # pass information via X-User and X-Email headers to backend,
+          # requires running with --set-xauthrequest flag
+          auth_request_set $user   $upstream_http_x_auth_request_user;
+          auth_request_set $email  $upstream_http_x_auth_request_email;
+          proxy_set_header X-User  $user;
+          proxy_set_header X-Email $email;
+
+          # if you enabled --pass-access-token, this will pass the token to the backend
+          auth_request_set $token  $upstream_http_x_auth_request_access_token;
+          proxy_set_header X-Access-Token $token;
+
+          # if you enabled --cookie-refresh, this is needed for it to work with auth_request
+          auth_request_set $auth_cookie $upstream_http_set_cookie;
+          add_header Set-Cookie $auth_cookie;
+
+          # When using the --set-authorization-header flag, some provider's cookies can exceed the 4kb
+          # limit and so the OAuth2 Proxy splits these into multiple parts.
+          # Nginx normally only copies the first `Set-Cookie` header from the auth_request to the response,
+          # so if your cookies are larger than 4kb, you will need to extract additional cookies manually.
+          auth_request_set $auth_cookie_name_upstream_1 $upstream_cookie_auth_cookie_name_1;
+
+          # Extract the Cookie attributes from the first Set-Cookie header and append them
+          # to the second part ($upstream_cookie_* variables only contain the raw cookie content)
+          if ($auth_cookie ~* "(; .*)") {
+              set $auth_cookie_name_0 $auth_cookie;
+              set $auth_cookie_name_1 "auth_cookie_name_1=$auth_cookie_name_upstream_1$1";
+          }
+
+          # Send both Set-Cookie headers now if there was a second part
+          if ($auth_cookie_name_upstream_1) {
+              add_header Set-Cookie $auth_cookie_name_0;
+              add_header Set-Cookie $auth_cookie_name_1;
+          }
+          ### end of auth proxy configuration part 2
+
+          ### Proxy to K8s configuration
+          proxy_set_header        Host $host;
+          proxy_set_header        X-Real-IP $remote_addr;
+          proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header        X-Forwarded-Proto $scheme;
+          proxy_set_header        X-NginX-Proxy true;
+
+          proxy_ssl_session_reuse off;
+
+          # Fix the “It appears that your reverse proxy set up is broken" error.
+          proxy_pass          http://{{ hostvars[groups['loadbalancers'][0]]["ansible_host"] }}:{{ nginx_https_proxy_port }};
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+          proxy_read_timeout 86400;
+
+          proxy_buffer_size          128k;
+          proxy_buffers              4 256k;
+          proxy_busy_buffers_size    256k;
+          proxy_temp_file_write_size 256k;
+
+          proxy_cache_bypass $http_upgrade;
+
+          proxy_redirect off;
+        }
+
+
+    }
+
+
+
+    server {
+        listen 9443 ssl http2;
+        listen [::]:9443 ssl http2;
+
+        ### Best practice SSL configuration
+        ssl_certificate /etc/nginx/sdhp.stfc.skao.int.crt;
+        ssl_certificate_key /etc/nginx/sdhp.stfc.skao.int.key;
+        ssl_session_timeout 1d;
+        ssl_session_cache shared:MozSSL:10m;  # about 40000 sessions
+        ssl_session_tickets off;
+        keepalive_timeout 300; # up from 75 secs default
+
+        # curl https://ssl-config.mozilla.org/ffdhe2048.txt > /etc/nginx/dhparam
+        ssl_dhparam /etc/nginx/dhparam;
+
+        # intermediate configuration
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+        ssl_prefer_server_ciphers off;
+
+        # HSTS (ngx_http_headers_module is required) (63072000 seconds)
+        add_header Strict-Transport-Security "max-age=63072000" always;
+
+        # OCSP stapling
+        ssl_stapling on;
+        ssl_stapling_verify on;
+
+        # verify chain of trust of OCSP response using Root CA and Intermediate certs
+        ssl_trusted_certificate /etc/nginx/sdhp.stfc.skao.int-ca.crt;
+
+        # replace with the IP address of your resolver
+        resolver 127.0.0.1;
+
+        # To allow special characters in headers
+        ignore_invalid_headers off;
+
+        # Allow any size file to be uploaded.
+        # Set to a value such as 1000m; to restrict file size to a specific value
+        client_max_body_size 0;
+
+        # To disable buffering
+        proxy_buffering off;
+
+        ## default proxy everything to k8s Ingress
+        location / {
+
+          ### Proxy to K8s configuration
+          proxy_set_header        Host $http_host;
+          proxy_set_header        X-Real-IP $remote_addr;
+          proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header        X-Forwarded-Proto $scheme;
+          proxy_set_header        X-NginX-Proxy true;
+
+          proxy_ssl_session_reuse off;
+
+          # Fix the “It appears that your reverse proxy set up is broken" error.
+          proxy_pass          http://{{ hostvars[groups['loadbalancers'][0]]["ansible_host"] }}:9000;
+          proxy_http_version 1.1;
+          proxy_set_header Connection "";
+          chunked_transfer_encoding off;
+          proxy_read_timeout 86400;
+          proxy_connect_timeout 300;
+        }
+
+    }
+
+    server {
+        listen 10901 http2;
+ 
+        location /thanos_sidecar {
+            grpcs_pass grpcs://{{ hostvars[groups['prometheus_prometheus'][0]]["ansible_host"] }}:10901;
+        }
+    }
+
+}
