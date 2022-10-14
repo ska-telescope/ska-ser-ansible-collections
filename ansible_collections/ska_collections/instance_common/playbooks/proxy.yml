@@ -1,6 +1,6 @@
 ---
 - name: Ingress Proxy
-  hosts: bifrost
+  hosts: "{{ target_hosts }}"
   become: true
   gather_facts: true
 

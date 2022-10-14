@@ -14,11 +14,12 @@ endif
 
 
 reverseproxy: ## Install nginx reverse proxy
-	cd playbooks && \
-	ansible-playbook  -i $(INVENTORY_FILE) $(BIFROST_CLUSTER_NAME) $(PLAYBOOK_PATH)/proxy.yml \
+	@ansible-playbook  -i $(INVENTORY_FILE) $(BIFROST_CLUSTER_NAME) $(PLAYBOOK_PATH)/proxy.yml \
 		-e @../$(BIFROST_VARS) \
 		--extra-vars="$(BIFROST_EXTRA_VARS)" \
-		--extra-vars="oauth2proxy_client_id='$(AZUREAD_CLIENT_ID)'" \ 
+		--extra-vars="oauth2proxy_client_id='$(AZUREAD_CLIENT_ID)'" \
 		--extra-vars="oauth2proxy_client_secret='$(AZUREAD_CLIENT_SECRET)'" \
-		--extra-vars="oauth2proxy_cookie_secret='$(AZUREAD_COOKIE_SECRET)'" \ 
-		--extra-vars="oauth2proxy_tenant_id='$(AZUREAD_TENANT_ID)'"
+		--extra-vars="oauth2proxy_cookie_secret='$(AZUREAD_COOKIE_SECRET)'" \
+		--extra-vars="oauth2proxy_tenant_id='$(AZUREAD_TENANT_ID)'" \
+		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
+		-e 'ansible_python_interpreter=/usr/bin/python3'
