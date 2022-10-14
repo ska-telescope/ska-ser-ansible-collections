@@ -1,9 +1,15 @@
 #!/usr/bin/env ansible-playbook
 ---
+- name: Gather facts on full inventory
+  hosts: "{{ groups['all'] }}"
+  tasks:
+    - name: Show node info
+      debug:
+        msg: "{{ inventory_hostname }} at {{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
+      when: debug
 
-- name: "Apply the common role to docker nodes"
-  hosts:
-    - cluster
+- name: Apply the common role to the node
+  hosts: "{{ target_hosts }}"
   become: true
   become_method: sudo
   roles:

@@ -2,14 +2,15 @@
 MAKEFLAGS += --no-print-directory
 .PHONY: elastic
 
-PLAYBOOKS_HOSTS?=all
+PLAYBOOKS_HOSTS ?= all
+INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml 
 JOBS_DIR=resources/jobs
 ANSIBLE_COLLECTIONS_PATHS ?=
 PLAYBOOKS_ROOT_DIR ?=
 INVENTORY_FILE ?= inventory.yml
 ANSIBLE_LINT_PARAMETERS = --exclude ansible_collections/ska_collections/monitoring/roles/prometheus/files
 PLAYBOOKS_HOSTS ?=
-ANSIBLE_CONFIG?=
+ANSIBLE_CONFIG ?=
 
 include .make/base.mk
 include .make/ansible.mk
@@ -38,8 +39,8 @@ vars_recursive:
 	@echo ""
 	@$(foreach file, $(wildcard $(JOBS_DIR)/*), make vars -f $(file); echo "";)
 
-ping:  check-env ## Ping Ansible targets
-	ansible all -i $(PLAYBOOKS_ROOT_DIR) -m ping -l $(PLAYBOOKS_HOSTS)
+ping: check-env ## Ping Ansible targets
+	@ansible all -i $(INVENTORY_FILE) -m ping -l $(PLAYBOOKS_HOSTS)
 
 install_collections:  ## Install dependent ansible collections
 	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
@@ -56,10 +57,8 @@ ifneq ($(filter $(JOBLIST),$(firstword $(MAKECMDGOALS))),)
   $(eval $(TARGET_ARGS):;@:)
 endif
 
-install_collections:  ## Install dependent ansible collections
-	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
-	ansible-galaxy collection install \
-	-r requirements.yml -p ./ansible_collections
+common: check-env ## common targets
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/common.mk
 
 oci: check-env ## oci targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/oci.mk
@@ -73,11 +72,11 @@ logging: check-env ## logging targets
 monitoring: check-env ## monitoring targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/monitoring.mk
 
-ceph: check-env ## Ceph targets
+ceph: check-env ## ceph targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/ceph.mk
 
-common: check-env ## common targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/common.mk
+gitlab-runner: check-env ## gitlab-runner targets
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/gitlab-runner.mk
 
 print_targets: ## Show Help
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {p=index($$1,":")} {printf "\033[36m%-30s\033[0m %s\n", substr($$1,p+1), $$2}';

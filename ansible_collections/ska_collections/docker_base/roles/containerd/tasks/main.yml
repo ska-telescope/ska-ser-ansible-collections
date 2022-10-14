@@ -9,9 +9,8 @@
   ansible.builtin.debug: var=nvidia_driver_check.rc
   when: debug | bool
 
-- name: Set the host grouping
+- name: Set nvidia driver exists
   ansible.builtin.set_fact:
-    host_grouping: "{% if 'masters' in groups and inventory_hostname in groups['masters'] %}master{% else %}worker{% endif %}"
     nvidia_driver_exists: "{{ nvidia_driver_check.rc == 0 }}"
 
 - name: Check nvidia-driver installed when Nvidia support requested
@@ -59,7 +58,6 @@
 
 - name: Set net.netfilter.nf_conntrack_max to 1000000
   ansible.builtin.sysctl: name=net.netfilter.nf_conntrack_max value=1000000 state=present ignoreerrors=true
-
 
 - name: Add containerd cri sysctl vars
   ansible.builtin.lineinfile:
@@ -222,7 +220,6 @@
     dest: "/etc/crictl.yaml"
     mode: "0644"
 
-# run the crictl system prune everyday
 - name: Add cron job for crictl system prune
   ansible.builtin.lineinfile:
     path: /etc/crontab

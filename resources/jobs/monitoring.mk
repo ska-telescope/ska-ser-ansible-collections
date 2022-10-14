@@ -120,5 +120,5 @@ update_scrapers: check_hosts ## Force update of scrapers
 	@ansible -i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) $(PROMETHEUS_NODE) -b -m shell -a 'export project_id=$(PROM_OS_PROJECT_ID) project_name=$(PROM_OS_PROJECT_NAME) auth_url=$(PROM_OS_AUTH_URL) username=$(PROM_OS_USERNAME) password=$(PROM_OS_PASSWORD) $(OPENSTACK_ENV_VARIABLES) && cd /etc/prometheus && python3 /usr/local/bin/prom_helper.py -g'
 
 help: ## Show Help
-	@echo "Monitoring solution targets - make playbooks monitoring <target>:"
+	@echo "Monitoring targets - make playbooks monitoring <target>:"
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

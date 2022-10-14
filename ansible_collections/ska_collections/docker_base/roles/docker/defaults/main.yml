@@ -9,7 +9,7 @@ ignore_nvidia_fail: false
 docker_driver: overlay2
 
 docker_repo: localhost:5000
-nexus_hosted_cache: 192.168.99.204:9080 # docker-internal
+nexus_hosted_cache: 192.168.99.204:9080
 
 docker_mtu: ""
 
@@ -17,8 +17,6 @@ log_max_size: "10m"
 log_max_file: "3"
 log_driver: json-file
 
-# Nexus repository cache
-# registry_mirror: "https://registry-1.docker.io"
 registry_mirror: "http://192.168.99.204:9082"  # default to STFC Nexus Cache
 
 ### Debian Section

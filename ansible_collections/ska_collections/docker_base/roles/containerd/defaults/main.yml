@@ -2,7 +2,6 @@
 debug: false
 
 containerd_version: 1.6.6-1
-activate_containerd: true
 crictl_version: v1.24.2
 
 activate_nvidia: false
@@ -13,7 +12,6 @@ docker_deb_repo_url: "deb https://download.docker.com/linux/ubuntu {{ ansible_di
 docker_deb_repo_key_url: https://download.docker.com/linux/ubuntu/gpg
 docker_deb_repo_key_id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
 
-# docker_hub_mirror: "https://registry-1.docker.io"
 docker_hub_mirror: "http://192.168.99.204:9082"  # default to STFC Nexus Cache
 central_nexus_mirror: "http://192.168.99.204:9082"  # default to STFC Nexus Cache
 gitlab_nexus_mirror: "http://192.168.99.204:9082"  # default to STFC Nexus Cache
@@ -28,13 +26,8 @@ debian_containerd_dependencies:
   - gnupg-agent
   - python3-pip
 
-
-redhat_containerd_version: 1.2.0-3.el7
-# containerd_version: 1.2.13-3.1.el7
-
 # hard dependency because of docker 3:19.03.8-3.el7
 redhat_containerd_dependency: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.13-3.1.el7.x86_64.rpm
-# containerd_dependency: "containerd.io-{{ containerd_version }}"
 
 docker_yum_repo_url: "{% if ansible_distribution == 'CentOS'
   %}https://download.docker.com/linux/centos/docker-ce.repo{%

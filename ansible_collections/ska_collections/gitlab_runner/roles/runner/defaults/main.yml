@@ -1,0 +1,34 @@
+---
+gitlab_runner_configuration_dir: /srv/gitlab-runner/config
+gitlab_runner_name: gitlab-runner
+gitlab_runner_image: gitlab/gitlab-runner:latest
+gitlab_runner_log_driver: json-file
+gitlab_runner_log_max_size: "10m"
+gitlab_runner_log_max_file: "3"
+gitlab_runner_log_options:
+  max-size: "{{  gitlab_runner_log_max_size }}"
+  max-file: "{{ gitlab_runner_log_max_file }}"
+  labels: "org.ska.app.group"
+gitlab_runner_labels:
+  org.ska.app.group: logging
+
+gitlab_runner_recreate: false
+gitlab_runner_reregister: false
+gitlab_runner_unregister_all: false
+gitlab_runner_concurrent_jobs: 10
+gitlab_runner_check_interval: 3
+gitlab_runner_log_level: "info"
+gitlab_runner_metrics_port: 30931
+
+gitlab_runner_id: ska-gitlab-runner
+gitlab_runner_tags: "{{ gitlab_runner_id }}"
+gitlab_runner_base_image: artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.8.2
+gitlab_runner_url: https://gitlab.com/
+gitlab_runner_maintenance_note: ""
+gitlab_runner_env_variables: {}
+gitlab_runner_default_env_variables:
+  RUNNER_NAME: "{{ gitlab_runner_id }}"
+
+gitlab_runner_run_untagged: false
+gitlab_runner_locked: false
+gitlab_runner_access_level: not_protected

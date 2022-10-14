@@ -1,15 +1,24 @@
-INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml 
+.DEFAULT_GOAL := help
+ANSIBLE_PLAYBOOK_ARGUMENTS ?=
+INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml
 PLAYBOOK_PATH ?= ./ansible_collections/ska_collections/instance_common/playbooks
 BIFROST_VARS ?= ./environments/$(ENVIRONMENT)/installation/group_vars/bifrost.yml
 BIFROST_CLUSTER_NAME ?= terminus
 BIFROST_EXTRA_VARS ?= jump_host=' -F $(PLAYBOOKS_ROOT_DIR)/ssh.config $(BIFROST_CLUSTER_NAME) '
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 
+-include $(BASE_PATH)/PrivateRules.mak
+
 check_hosts:
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 
+install: check_hosts ## Run common tasks (setup host(s), mount volumes)
+	ansible-playbook ./ansible_collections/ska_collections/instance_common/playbooks/common.yml \
+	-i $(INVENTORY_FILE) \
+	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 reverseproxy: check_hosts ## Install nginx reverse proxy
 	ansible-playbook $(PLAYBOOK_PATH)/proxy.yml \
@@ -25,3 +34,7 @@ reverseproxy: check_hosts ## Install nginx reverse proxy
 		ansible_python_interpreter='/usr/bin/python3' \
 		$(BIFROST_EXTRA_VARS) \
 	"
+
+help: ## Show Help
+	@echo "Common targets - make playbooks common <target>:"
+	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

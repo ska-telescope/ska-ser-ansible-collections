@@ -1,5 +1,6 @@
 .DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
+INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml
 
 -include $(BASE_PATH)/PrivateRules.mak
 
@@ -28,7 +29,7 @@ vars:
 
 install: check_hosts check_secrets ## Install elastic
 	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/install.yml \
-	-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
+	-i $(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars " \
 		target_hosts=$(PLAYBOOKS_HOSTS) \
@@ -40,10 +41,10 @@ install: check_hosts check_secrets ## Install elastic
 
 destroy: check_hosts ## Destroy elastic cluster
 	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/destroy.yml \
-	-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
+	-i $(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 help: ## Show Help
-	@echo "ElasticSearch targets - make playbooks elastic <target>:"
+	@echo "Elastic targets - make playbooks elastic <target>:"
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

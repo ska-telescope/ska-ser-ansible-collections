@@ -1,5 +1,6 @@
 .DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
+INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml 
 
 -include $(BASE_PATH)/PrivateRules.mak
 
@@ -24,12 +25,12 @@ vars:
 	
 install: check_hosts ## Install logging
 	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/logging.yml \
-	-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) elastic_password=$(ELASTIC_PASSWORD) ca_cert_pass=$(CA_CERT_PASS)"
-destroy: check_hosts ## Destroy logging - only the containers
-	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/logging.yml \
-	-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) elastic_password=$(ELASTIC_PASSWORD) ca_cert_pass=$(CA_CERT_PASS)"
+	-i $(INVENTORY_FILE) \
+	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+	--extra-vars "
+		target_hosts=$(PLAYBOOKS_HOSTS)
+		ca_cert_pass=$(CA_CERT_PASS)
+	"
 
 help: ## Show Help
 	@echo "Logging targets - make playbooks logging <target>:"

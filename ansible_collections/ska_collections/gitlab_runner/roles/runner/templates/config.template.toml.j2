@@ -1,0 +1,13 @@
+[[runners]]
+  name = "{{ gitlab_runner_id }}"
+  pre_build_script = """
+      echo "This is a pre-build script for SKA."
+      echo "Project: ${CI_PROJECT_NAME}"
+      echo "Agent: ${SKA_AGENT_NAME}"
+  """
+  [runners.docker]
+    host = "unix:///var/run/docker.sock"
+    image = "{{ gitlab_runner_base_image }}"
+    privileged = false
+    [runners.docker.sysctls]
+      "net.ipv4.ip_forward" = "1"

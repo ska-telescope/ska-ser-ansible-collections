@@ -1,8 +1,8 @@
 ---
-
-- name: "Begin volume mounting process"
+- name: Begin volume mounting process
   debug:
     msg: "{{ volume }}"
+  when: debug
 
 - name: Check if volume is already mounted
   command: /bin/mountpoint -q {{ volume.mount_point }}
@@ -16,18 +16,15 @@
       filesystem:
         fstype: "{{ volume.file_system }}"
         dev: "{{ volume.device }}"
-
     - name: Get volume UUID
       ansible.builtin.command: lsblk {{ volume.device }} -no UUID
       register: uuid
       changed_when: false
-
     - name: Create mounting directory
       file:
         path: "{{ volume.mount_point }}"
         state: directory
         mode: "0755"
-
     - name: Mount volume
       mount:
         name: "{{ volume.mount_point }}"

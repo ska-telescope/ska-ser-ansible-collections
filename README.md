@@ -5,11 +5,12 @@ This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/
 
 | Collection            | Roles                                 | Description                                               |
 | --------------------- | --------------------------------------| ----------------------------------------------------------|
-| oci                   | containerd <br> docker <br> podman    | install specific OCI engine                               |
-| instance_common       | init <br> certs                       | VM initialization                                         |
-| elastic               | stack <br> haproxy <br> logging       | Elasticsearch cluster roles                               |
-| ceph                  | install                               | Ceph roles                                                |
-<!-- | k8s           | charts, <br> haproxy, <br> helm, <br> join, <br> k8s, <br> kubectl, <br> resources, <br> metallb ,<br> binderhub, <br> ping | default SKA helm charts <br> haproxy Kubernetes LoadBalancer <br> helm client <br> join node to HA cluster <br> Kubernetes packages <br> Kubernetes client <br> Create Namespaces and Apply Limits and Quotas <br> Load balancer for kubernetes <br> Service to share Jupyter notebooks in the cloud <br> Ping service to test ingress | -->
+| oci                   | containerd <br> docker <br> podman    | Install specific OCI engine                               |
+| instance_common       | init <br> certs                       | VM initialization (common packages, mount volumes, etc)   |
+| elastic               | stack                                 | Elasticsearch and Kibana cluster roles                    |
+| monitoring            | custom_metrics <br> node_exporter <br> prometheus <br> updatehosts | Install prometheus-based metrics services |
+| gitlab_runner         | runner                                 | Install docker-based Gitlab-runner                       |
+| ceph                  | installation                          | Ceph roles                                                |
 
 ## Usage
 
@@ -68,8 +69,8 @@ The table bellow, iterates all the targets available on the main Makefile.
 | ping                  | ping all hosts on a specific inventory  | PLAYBOOKS_ROOT_DIR <br> PLAYBOOKS_HOSTS <br> ANSIBLE_CONFIG |
 | install_collections   | pulls collections from requirements.yml | ANSIBLE_COLLECTIONS_PATHS                                   |
 
-All the targets specific to a collection such as ElasticSearch or OCI engine, 
-it will be separated on their own **.mk** file on **resources/jobs** folder.
+All the targets specific to a collection such as **elastic** or **oci** engine, 
+will be separated on their own **.mk** file on **resources/jobs** folder.
 
 The make command must have a specific format to trigger the targets bellow, like:
 
@@ -87,6 +88,8 @@ make <collection> <job> <VARS>
 | common     | init       | Update APT <br> Install common packages <br> Mount volumes |                                                |
 | common     | certs      | Generate certificates from the Terminus CA                 |                                                |
 | ceph       | install    | Install ceph                                               | stackhp cephadm (run install_collections)      |
+| gitlab_runner | deploy  | Deploy and register gitlab runner                          |  common.init <br> oci.docker                   |
+| gitlab_runner | undeploy| Undeploy and unregister gitlab runner                      |                                                |
 
 ### Mandatory Environment Variables
 

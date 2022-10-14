@@ -1,7 +1,16 @@
 #!/usr/bin/env ansible-playbook
 ---
+- name: Show debug info
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: "Show stack nodes info"
+      ansible.builtin.debug: var=hostvars[inventory_hostname]
+      when: debug
 
-- name: "Ensure that the apt repositories are updated - old image issues"
+- name: Ensure that the apt repositories are updated
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
@@ -15,7 +24,7 @@
       until: apt_res is success
       when: ansible_os_family == "Debian"
 
-- name: "Apply the containerd role to docker nodes"
+- name: Apply containerd, podman and docker roles
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
