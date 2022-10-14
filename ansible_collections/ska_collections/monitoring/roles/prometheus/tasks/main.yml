@@ -145,7 +145,7 @@
     - cron
 
 - include: grafana.yml
-  when: mode == "server" or mode == "all"
+  when: mode == "grafana" or mode == "all"
   tags:
     - cron
 

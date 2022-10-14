@@ -54,12 +54,12 @@
     community.crypto.x509_certificate_pipe:
       csr_content: "{{ csr.csr }}"
       provider: ownca
-      ownca_path: "{{ certificates_dir }}/ca-certificate.pem"
+      ownca_path: "{{ certificates_dir }}/ca-certificate.crt"
       ownca_privatekey_path: "{{ certificates_dir }}/ca-certificate.key"
       ownca_privatekey_passphrase: "{{ ca_cert_pass }}"
       ownca_not_after: +365d # valid for one year
       ownca_not_before: "-1d" # valid since yesterday
-    delegate_to: terminus
+    delegate_to: "{{ gateway_host }}"
     register: certificate
 
   - name: Write certificate file on client host
@@ -69,14 +69,14 @@
 
   - name: Get CA certificate pem from Terminus
     ansible.builtin.slurp:
-      src: "{{ certificates_dir }}/ca-certificate.pem"
-    delegate_to: terminus
+      src: "{{ certificates_dir }}/ca-certificate.crt"
+    delegate_to: "{{ gateway_host }}"
     register: capemfile
 
   - name: Write CA certificate file on client host
     copy:
       content: "{{ capemfile['content'] }}"
-      dest: "{{ certificates_dir }}/ca-certificate.pem"
+      dest: "{{ certificates_dir }}/ca-certificate.crt"
 
 - name: Generate thanos swift configuration
   become: true
@@ -100,7 +100,7 @@
     - "--grpc-address=0.0.0.0:10901"
     - "--grpc-server-tls-cert='{{ certificates_dir }}/thanos_sidecar.crt'"
     - "--grpc-server-tls-key='{{ certificates_dir }}/thanos_sidecar.key'"
-    - "--grpc-server-tls-client-ca='{{ certificates_dir }}/ca-certificate.pem'"
+    - "--grpc-server-tls-client-ca='{{ certificates_dir }}/ca-certificate.crt'"
     - "--prometheus.http-client-file='/etc/thanos/thanos_sidecar.yaml'"
     - "--objstore.config-file='{{ thanos_config_dir }}/swift.yml'"
     user: root
