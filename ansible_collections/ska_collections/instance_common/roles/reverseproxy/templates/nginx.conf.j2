@@ -434,7 +434,7 @@ http {
     server {
         listen 10901 http2;
  
-        location /thanos_sidecar {
+        location / {
             grpcs_pass grpcs://{{ hostvars[groups['prometheus_prometheus'][0]]["ansible_host"] }}:10901;
         }
     }
