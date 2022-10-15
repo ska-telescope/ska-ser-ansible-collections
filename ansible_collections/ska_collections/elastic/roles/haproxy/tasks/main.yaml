@@ -29,7 +29,6 @@
   community.general.docker_container:
     name: "{{ haproxy_name }}"
     image: "{{ haproxy_image }}"
-    recreate: true
     restart_policy: always
     state: started
     privileged: true
@@ -43,4 +42,4 @@
     volumes:
       - /etc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     command: -f /usr/local/etc/haproxy/haproxy.cfg
-  when: haproxy_config.changed or haproxy_image_pull.changed or not haproxy_info.exists or not haproxy_info.container.State.Running
+    recreate: "{{ haproxy_config.changed or haproxy_image_pull.changed }}"

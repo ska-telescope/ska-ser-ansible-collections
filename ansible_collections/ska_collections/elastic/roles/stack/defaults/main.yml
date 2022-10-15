@@ -3,7 +3,7 @@
 stack_data_dir: /var/lib/stack-data
 
 # Elasticsearch configurations
-elasticsearch_dns: logging.skao.stfc
+elasticsearch_dns: logging.skao.int
 elasticsearch_cluster_name: "elasticsearch"
 elasticsearch_data_dir: "{{ stack_data_dir }}/elasticsearch"
 elasticsearch_name: "elasticsearch"
@@ -19,6 +19,7 @@ elasticsearch_env_defaults:
   ES_JAVA_OPTS: "-server -Xms{{ elasticsearch_java_mem }} -Xmx{{ elasticsearch_java_mem }} -Dlog4j2.formatMsgNoLookups=true"
   ES_HEAP_SIZE: "{{ elasticsearch_java_mem }}"
   MAX_OPEN_FILES: "131070"
+  ELASTIC_PASSWORD: '{{ elastic_password }}'
 
 elasticsearch_api_port: 9200
 elasticsearch_transport_port: 9300

@@ -46,7 +46,7 @@ backend back-elasticsearch-api-proxy
   option  tcplog
   balance roundrobin
   option  log-health-checks
-  option  httpchk
+  option ssl-hello-chk
   http-check connect
   http-check send meth GET uri {{ elasticsearch_health_endpoint }}
   http-check expect status 200

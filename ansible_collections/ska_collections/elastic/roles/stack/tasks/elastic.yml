@@ -42,6 +42,16 @@
   retries: 5
   delay: 5
 
+- name: Change {{ certificates_dir }} ownership
+  ansible.builtin.file:
+    path: "{{ certificates_dir }}"
+    mode: "0770"
+    
+- name: Change private key ownership
+  ansible.builtin.file:
+    path: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+    mode: "0640"
+
 - name: Run Elasticsearch container
   community.general.docker_container:
     name: "{{ elasticsearch_name }}"
@@ -63,9 +73,9 @@
     volumes:
       - "{{ elasticsearch_data_dir }}:/usr/share/elasticsearch/data"
       - /etc/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
-      - "{{ certificates_dir }}:/usr/share/elasticsearch/config/certificates"
+      - "{{ certificates_dir }}:/usr/share/elasticsearch/config/certificates:rw"
     ports:
       - "{{ elasticsearch_api_port }}:{{ elasticsearch_api_port }}"
       - "{{ elasticsearch_transport_port }}:{{ elasticsearch_transport_port }}"
     env: "{{ elasticsearch_env_defaults | combine(elasticsearch_env_variables) }}"
-    recreate: "{{ elasticsearch_reinstall or elasticsearch_config.changed | bool }}"
+    recreate: "{{ elasticsearch_reinstall }}"

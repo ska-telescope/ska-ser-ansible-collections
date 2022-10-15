@@ -9,5 +9,5 @@ server.ssl.enabled: false
 # Elasticsearch settings
 elasticsearch.hosts:
 {% for item in (groups[target_hosts ~ '-master'] + groups[target_hosts ~ '-data']) %}
-  - http://{{ hostvars[item].ip }}:{{ elasticsearch_api_port }}
+  - https://{{ hostvars[item].ip }}:{{ elasticsearch_api_port }}
 {% endfor %}
