@@ -19,3 +19,5 @@
   become_method: sudo
   roles:
     - containerd
+    - podman
+    - docker
