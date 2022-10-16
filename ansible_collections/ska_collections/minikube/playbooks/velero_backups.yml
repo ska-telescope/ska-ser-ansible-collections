@@ -1,0 +1,7 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: "Apply the velero role to nodes"
+  hosts: "{{ target_hosts }}"
+  roles:
+    - role: velero

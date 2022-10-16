@@ -1,0 +1,15 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: "Apply the minikube role to nodes"
+  hosts: "{{ target_hosts }}"
+  roles:
+    - role: setup
+      tags:
+        - build
+      become: true
+      become_method: sudo
+
+# do not become: true
+# and pass thru tags: build|destroy
+    - role: minikube

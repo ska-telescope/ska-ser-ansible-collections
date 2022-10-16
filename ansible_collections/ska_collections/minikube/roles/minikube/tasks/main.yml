@@ -1,0 +1,156 @@
+---
+
+# load shared vars with setup
+- name: Include vars
+  ansible.builtin.include_vars:
+    file: ../setup/defaults/main.yml
+  tags: [always]
+
+- name: Check if minikube is already running
+  ansible.builtin.command: "{{ minikube_exe_dir }}/minikube status"
+  changed_when: false
+  register: minikube_run_check
+  ignore_errors: true
+  tags: [always]
+
+
+- name: Start Minikube
+  block:
+
+    - name: install kubernetes dependency on pip3
+      ansible.builtin.pip:
+        executable: pip3
+        name: kubernetes
+      become: true
+
+    - name: Make sure mount from directory exists
+      ansible.builtin.file:
+        path: "{{ minikube_mount_from }}"
+        state: directory
+        recurse: true
+      become: true
+
+    # will just restart it if it shutdown as opposed to uninstalled
+    - name: Launch Minikube
+      ansible.builtin.command: |
+        {{ minikube_exe_dir }}/minikube \
+        start \
+        --driver={{ minikube_driver }} \
+        --container-runtime={{ minikube_runtime }} \
+        --kubernetes-version={{ kubernetes_version }} \
+        --cpus={{ minikube_cpus }} \
+        --memory={{ minikube_mem }} \
+        --apiserver-port=6443 \
+        --apiserver-names={{ ansible_hostname }} \
+        --apiserver-names={{ ansible_fqdn }} \
+        --apiserver-ips={{ ansible_default_ipv4.address }} \
+        --nodes={{ minikube_nodes }} \
+        --addons=logviewer \
+        --addons=metrics-server \
+        --addons=ingress \
+        --addons=metallb \
+        --mount \
+        --mount-string='{{ minikube_mount_from }}:{{ minikube_mount_to }}'
+
+      changed_when: false
+      register: minikube_exec_check
+      become: false
+
+    - name: Apply storage classes
+      kubernetes.core.k8s:
+        state: present
+        template: 'sc.yaml.j2'
+
+    - name: Get minikube IP
+      ansible.builtin.command: "{{ minikube_exe_dir }}/minikube ip"
+      changed_when: false
+      register: minikube_ip_check
+
+    - name: Extract IP
+      ansible.builtin.set_fact:
+        minikube_ip: "{{ minikube_ip_check.stdout | regex_search(regexp,'\\1') | first }}"
+      vars:
+        regexp: '([0-9\.]+)'
+
+    - name: Extract IP Prefix
+      ansible.builtin.set_fact:
+        minikube_ip_prefix: "{{ minikube_ip  | regex_search(regexp,'\\1') | first }}"
+      vars:
+        regexp: '([0-9]+\.[0-9]+\.[0-9]+)\..*'
+
+    - name: Apply changes to metallb config
+      kubernetes.core.k8s:
+        state: present
+        template: 'metallb.yaml.j2'
+
+    - name: Make sure haproxy directory exists
+      ansible.builtin.file:
+        path: "/etc/haproxy"
+        state: directory
+      become: true
+
+    - name: Add proxy config
+      ansible.builtin.template:
+        src: haproxy.cfg.j2
+        dest: /etc/haproxy/haproxy-minikube.cfg
+        mode: "0644"
+      become: true
+
+    - name: "Pull haproxy image {{ minikube_haproxy_image }}"
+      community.docker.docker_image:
+        name: "{{ minikube_haproxy_image }}"
+        source: pull
+
+    - name: "Stop {{ minikube_haproxy_name }} container"
+      community.docker.docker_container:
+        name: "{{ minikube_haproxy_name }}"
+        state: absent
+
+    - name: Start haproxy container
+      community.docker.docker_container:
+        name: "{{ minikube_haproxy_name }}"
+        image: "{{ minikube_haproxy_image }}"
+        command:
+          - " -f /usr/local/etc/haproxy/haproxy.cfg"
+        state: started
+        network_mode: host
+        user: root
+        restart: true
+        restart_policy: always
+        ports:
+          - "80:80"
+          - "443:443"
+          - "6443:6443"
+        volumes:
+          - "/etc/haproxy/haproxy-minikube.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro"
+
+  # Minikube is not started - this actually works for both shutdown and uninstalled!!!
+  when: "minikube_run_check.rc != 0"
+  tags:
+    - build
+
+
+- name: Destroy Minikube Instance
+  block:
+
+    - name: "Remove {{ minikube_haproxy_name }} container"
+      community.docker.docker_container:
+        name: "{{ minikube_haproxy_name }}"
+        state: absent
+
+    - name: Teardown Minikube
+      ansible.builtin.shell: |
+        {{ minikube_exe_dir }}/minikube stop || true; \
+        {{ minikube_exe_dir }}/minikube delete || true
+      become: false
+      changed_when: false
+      register: minikube_exec_check
+
+  # Minikube is started
+  when: "minikube_run_check.rc == 0"
+  tags:
+    - destroy
+
+
+- name: Flush those handlers
+  meta: flush_handlers
