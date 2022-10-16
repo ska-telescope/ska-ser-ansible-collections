@@ -5,6 +5,11 @@ MAKEFLAGS += --no-print-directory
 PLAYBOOKS_HOSTS?=all
 JOBS_DIR=resources/jobs
 
+# standard make targets and Ansible support
+include .make/base.mk
+include .make/ansible.mk
+
+
 # define overides for above variables in here
 -include PrivateRules.mak
 
@@ -41,6 +46,17 @@ endif
 
 elastic: check-env ## ElasticSearch targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/elastic.mk
+
+# If the first argument is "clusterapi"...
+ifeq (clusterapi,$(firstword $(MAKECMDGOALS)))
+  # use the rest as arguments for "clusterapi"
+  TARGET_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  # ...and turn them into do-nothing targets
+  $(eval $(TARGET_ARGS):;@:)
+endif
+
+clusterapi: check-env
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/clusterapi.mk
 
 # If the first argument is "monitoring"...
 ifeq (monitoring,$(firstword $(MAKECMDGOALS)))
