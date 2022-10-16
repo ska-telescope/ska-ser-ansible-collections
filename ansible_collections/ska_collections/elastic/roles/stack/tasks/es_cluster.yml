@@ -7,7 +7,7 @@
         master_specific_vars:
           cluster.initial_master_nodes: "{%  for host in groups[target_hosts] %}{{ host }},{% endfor %}"
           discovery.seed_hosts: "{% for host in groups[target_hosts] %}{% if host != inventory_hostname %}{{ host }},{% endif %}{% endfor %}"
-        
+
         # configuration for all cases
         all_node_vars:
 

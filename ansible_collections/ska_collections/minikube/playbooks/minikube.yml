@@ -3,6 +3,8 @@
 
 - name: "Apply the minikube role to nodes"
   hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
   roles:
     - role: setup
       tags:

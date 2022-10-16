@@ -8,4 +8,3 @@ helm_version: v3.10.1
 k9s_version: v0.26.6
 ## yq tool version to install https://github.com/mikefarah/yq/releases
 yq_version: 4.27.3
-

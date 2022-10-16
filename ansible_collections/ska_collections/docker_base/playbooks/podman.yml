@@ -3,6 +3,8 @@
 
 - name: "Ensure that the apt repositories are updated - old image issues"
   hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
   become: true
   tasks:
     - name: Ensure that the apt cache is updated
@@ -15,6 +17,8 @@
 
 - name: "Apply the podman role to the podman nodes"
   hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
   become: true
   roles:
     - podman

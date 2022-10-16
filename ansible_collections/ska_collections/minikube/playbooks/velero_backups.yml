@@ -5,3 +5,5 @@
   hosts: "{{ target_hosts }}"
   roles:
     - role: velero
+  vars:
+    target_hosts: localhost

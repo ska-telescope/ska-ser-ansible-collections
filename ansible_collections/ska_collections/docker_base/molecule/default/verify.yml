@@ -20,8 +20,8 @@
   - name: Check Containerd running
     assert:
       that:
-        - ansible_facts.services['containerd.service'].state == "running"
-        - ansible_facts.services['containerd.service'].status == "enabled"
+      - ansible_facts.services['containerd.service'].state == "running"
+      - ansible_facts.services['containerd.service'].status == "enabled"
 
   # - name: Wait for Docker metrics
   #   wait_for:
@@ -47,7 +47,7 @@
   - name: Check containerd healthy
     assert:
       that:
-        - containerd_ps.rc == 0
+      - containerd_ps.rc == 0
 
   # - name: docker pull image for busybox
   #   docker_image:

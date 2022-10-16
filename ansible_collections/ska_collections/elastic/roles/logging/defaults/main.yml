@@ -21,12 +21,10 @@ container_labels:
 
 filebeat_name: filebeat
 # pipeline run in filebeat - default none
-filebeat_pipeline: ""
 filebeat_template_overwrite: false
 ska_environment: testing
 ska_service: elasticstack
 ska_deployment: core
-
 
 # elasticsearch_image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
 # kibana_image: docker.elastic.co/kibana/kibana:7.17.0

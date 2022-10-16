@@ -7,4 +7,4 @@
   become: true
   become_method: sudo
   roles:
-    - ska_cicd.stack_cluster.init
+    - ska_collections.instance_common.init

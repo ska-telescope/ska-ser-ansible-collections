@@ -3,6 +3,7 @@
 - name: Deploy_node_exporter
   hosts: all
   vars:
+    target_hosts: localhost
     mode: "exporter"
   become: true
   become_method: sudo

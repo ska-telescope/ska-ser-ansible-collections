@@ -26,8 +26,6 @@
   when: "not stat_minikube.stat.exists or
     minikube_version_check.stdout.find(minikube_version) == -1"
 
-
-
 - name: Check if kubectl exists
   stat:
     path: "{{ minikube_exe_dir }}/kubectl"

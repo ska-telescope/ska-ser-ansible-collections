@@ -77,27 +77,27 @@
 - name: Start Velero
   block:
 
-  - name: Start up Velero
-    command: |
-     {{ velero_exe_dir }}/velero install \
-      --provider "community.openstack.org/openstack" \
-               --plugins {{ velero_ostack_plugin_version }} \
-               --bucket {{ velero_bucket }} --no-secret
+    - name: Start up Velero
+      command: |
+        {{ velero_exe_dir }}/velero install \
+          --provider "community.openstack.org/openstack" \
+                  --plugins {{ velero_ostack_plugin_version }} \
+                  --bucket {{ velero_bucket }} --no-secret
 
-    changed_when: false
-    register: velero_check
+      changed_when: false
+      register: velero_check
 
-  - name: Wait for deploy/velero
-    kubernetes.core.k8s_info:
-      kind: Deployment
-      api_version: v1
-      name: velero
-      namespace: velero
-      wait: true
-      wait_sleep: 10
-      wait_timeout: 300
-      wait_condition:
-        type: Available
+    - name: Wait for deploy/velero
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        api_version: v1
+        name: velero
+        namespace: velero
+        wait: true
+        wait_sleep: 10
+        wait_timeout: 300
+        wait_condition:
+          type: Available
 
   # Velero is not started
   when: "not velero_controller_check.resources"

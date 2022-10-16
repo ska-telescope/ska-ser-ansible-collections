@@ -2,6 +2,8 @@
 ---
 - name: "Show debug info"
   hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
   become: true
   tasks:
     - name: "Show stack nodes info"
@@ -10,6 +12,8 @@
 
 - name: "Apply the stack role to the stack nodes"
   hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
   become: true
   roles:
     - ska_collections.instance_common.init

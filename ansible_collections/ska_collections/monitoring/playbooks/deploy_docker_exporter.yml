@@ -2,6 +2,7 @@
 - name: Deploy docker exporter
   hosts: "{{ target_hosts }}"
   vars:
+    target_hosts: localhost
     mode: "docker"
   become: true
   become_method: sudo
