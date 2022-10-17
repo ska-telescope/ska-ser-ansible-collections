@@ -23,4 +23,4 @@
   hosts: "{{ target_hosts }}"
   become: true
   roles:
-    - ska_cicd.docker_base.podman
+    - podman
