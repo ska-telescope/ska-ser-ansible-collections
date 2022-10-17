@@ -53,6 +53,17 @@ endif
 monitoring: check-env ## ElasticSearch targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/monitoring.mk
 
+# If the first argument is "common"...
+ifeq (common,$(firstword $(MAKECMDGOALS)))
+  # use the rest as arguments for "common"
+  TARGET_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  # ...and turn them into do-nothing targets
+  $(eval $(TARGET_ARGS):;@:)
+endif
+
+common: check-env ## ElasticSearch targets
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/common.mk
+
 help: ## Show Help
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}';
 	@echo ""

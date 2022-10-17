@@ -123,7 +123,7 @@ http {
         }
         ### end of auth proxy configuration part 1
 
-
+{% if groups['systems_monitoring1_master'] is defined %}
         ## proxy kibana requests to the monitoring instance
         location /kibana/ {
           ### auth proxy configuration part 2
@@ -190,6 +190,8 @@ http {
 
           proxy_redirect off;
         }
+{% endif %}
+        
 
         ## proxy grafana requests directly to the grafana instance
         location /grafana/ {
@@ -435,7 +437,7 @@ http {
         listen 10901 http2;
  
         location / {
-            grpcs_pass grpcs://{{ hostvars[groups['prometheus_prometheus'][0]]["ansible_host"] }}:10901;
+            grpc_pass grpcs://{{ hostvars[groups['prometheus_prometheus'][0]]["ansible_host"] }}:10901;
         }
     }
 

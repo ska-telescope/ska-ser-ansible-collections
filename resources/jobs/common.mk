@@ -1,11 +1,8 @@
 INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml 
 PLAYBOOK_PATH ?= ./ansible_collections/ska_collections/instance_common/playbooks
-BIFROST_VARS ?= ../environments/$(ENVIRONMENT)/installation/group_vars/prometheus.yml
+BIFROST_VARS ?= ./environments/$(ENVIRONMENT)/installation/group_vars/bifrost.yml
 BIFROST_CLUSTER_NAME ?= jupiter
-BIFROST_EXTRA_VARS ?= registry_mirror='$(REGISTRY_MIRROR)' \
-docker_hub_mirror='$(REGISTRY_MIRROR)' \
-podman_registry_mirror='$(PODMAN_REGISTRY_MIRROR)' \
-jump_host=' -F $(THIS_BASE)/ssh.config $(BIFROST_CLUSTER_NAME) '
+BIFROST_EXTRA_VARS ?= jump_host=' -F $(THIS_BASE)/ssh.config $(BIFROST_CLUSTER_NAME) '
 
 check_hosts:
 ifndef PLAYBOOKS_HOSTS
@@ -14,7 +11,7 @@ endif
 
 
 reverseproxy: ## Install nginx reverse proxy
-	@ansible-playbook  -i $(INVENTORY_FILE) $(BIFROST_CLUSTER_NAME) $(PLAYBOOK_PATH)/proxy.yml \
+	@ansible-playbook -i $(INVENTORY_FILE) $(PLAYBOOK_PATH)/proxy.yml \
 		-e @../$(BIFROST_VARS) \
 		--extra-vars="$(BIFROST_EXTRA_VARS)" \
 		--extra-vars="oauth2proxy_client_id='$(AZUREAD_CLIENT_ID)'" \
