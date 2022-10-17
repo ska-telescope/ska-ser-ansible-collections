@@ -1,0 +1,10 @@
+[
+    {
+      "labels": {
+        "job": "docker_cadvisor"
+      },
+      "targets": [
+        "192.168.93.26:9324"
+      ]
+    }
+  ]

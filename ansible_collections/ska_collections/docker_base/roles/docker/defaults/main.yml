@@ -1,6 +1,8 @@
 ---
 debug: false
 
+docker_allow_upgrade: false
+
 activate_nvidia: false
 ignore_nvidia_fail: false
 
@@ -38,45 +40,8 @@ docker_deb_dependencies:
   - software-properties-common
   - python3-pip
 
-docker_deb_version: 5:20.10.5~3-0~ubuntu-{{ ansible_distribution_release }}
+docker_deb_version: 5:20.10.18~3-0~ubuntu-{{ ansible_distribution_release }}
 
 docker_deb_pkgs:
-  - "docker-ce={{ docker_deb_version }}"
-  - "docker-ce-cli={{ docker_deb_version }}"
-
-### RedHat section
-# change if required or override at runtime using --extra-vars
-
-docker_yum_repo_url: https://download.docker.com/linux/fedora/docker-ce.repo
-
-docker_rpm_uninstall_pkgs:
-  - docker
-  - docker-client
-  - docker-client-latest
-  - docker-common
-  - docker-latest
-  - docker-latest-logrotate
-  - docker-logrotate
-  - docker-selinux
-  - docker-engine-selinux
-  - docker-engine
-
-docker_rpm_dependencies:
-  - dnf-plugins-core
-  - yum-utils
-  - device-mapper-persistent-data
-  - lvm2
-  - python3-pip
-
-# docker_rpm_version: 3:19.03.8-3.el7
-# docker_rpm_cli_version: 1:19.03.8-3.el7
-
-docker_rpm_version: 3:19.03.9-3.el7
-docker_rpm_cli_version: 1:19.03.9-3.el7
-
-# containerd_rpm_dependency: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.13-3.2.el7.x86_64.rpm
-containerd_rpm_dependency: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.3.7-3.1.el7.x86_64.rpm
-
-docker_rpm_pkgs:
-  - "docker-ce-{{ docker_rpm_version }}"
-  - "docker-ce-cli-{{ docker_rpm_cli_version }}"
+  - "docker-ce"
+  - "docker-ce-cli"

@@ -1,0 +1,15 @@
+type: SWIFT
+config:
+  auth_version: 0
+  auth_url: "{{ auth_url }}"
+  username: "{{ username }}"
+  password: "{{ password }}"
+  domain_name: "default"
+  project_id: "{{ project_id }}"
+  project_name: "{{ project_name }}"
+  container_name: "cicd-thanos-object-store"
+  large_object_chunk_size: 1073741824
+  retries: 3
+  connect_timeout: 10s
+  timeout: 5m
+  use_dynamic_large_objects: false

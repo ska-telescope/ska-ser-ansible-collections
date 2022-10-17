@@ -1,5 +1,0 @@
----
-- hosts: loadbalancers
-  become: true
-  roles:
-    - haproxy

@@ -1,0 +1,25 @@
+---
+
+- name: Nodexporter-dashboard make sure grafana configuration directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+  with_items:
+    - "/etc/grafana/provisioning/datasources"
+    - "/etc/grafana/provisioning/dashboards/node-exporter-dashboard"
+    - "/etc/grafana/provisioning/notifiers"
+
+- name: Nodexporter-dashboard Copy up resource files
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/dashboards/node-exporter/{{ item }}"
+    dest: "/etc/grafana/provisioning/dashboards/node-exporter-dashboard/{{ item }}"
+    mode: 0640
+  with_items:
+    - node-exporter.json
+
+- name: Nodexporter-dashboard Write dashboards provisioning config file
+  ansible.builtin.template:
+    src: dashboards-nodexporter-dashboard.yml.j2
+    dest: /etc/grafana/provisioning/dashboards/nodexporter-dashboard.yml
+    mode: 0640

@@ -1,0 +1,46 @@
+---
+- name: Install node_exporter for RedHat/CentOS
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat'
+  block:
+    - name: Download node exporter install script
+      ansible.builtin.get_url:
+        url: https://packagecloud.io/install/repositories/prometheus-rpm/release/script.rpm.sh
+        dest: /tmp/script.rpm.sh
+        mode: 0755
+
+    - name: Install prometheus-node-exporter
+      ansible.builtin.shell: |
+        bash /tmp/script.rpm.sh
+      changed_when: false
+
+    - name: Install node_exporter-{{ node_exporter_version }}
+      ansible.builtin.yum:
+        name: "node_exporter-{{ node_exporter_version }}.centos.x86_64"
+        state: present
+      notify: restart node_exporter
+
+- name: Install node_exporter for Debian
+  when:
+    - ansible_distribution == 'Ubuntu'
+  block:
+    - name: Install prometheus-node-exporter
+      ansible.builtin.apt:
+        deb: "{{ node_exporter_apt_package }}"
+
+    - name: Create node_exporter service configuration directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/prometheus-node-exporter.service.d
+        state: directory
+        mode: 0755
+
+    - name: Fix node_exporter service configuration
+      become: true
+      ansible.builtin.template:
+        src: "prometheus-node-exporter.conf.j2"
+        dest: /etc/systemd/system/prometheus-node-exporter.service.d/prometheus-node-exporter.conf
+        force: true
+        mode: 0755
+      notify: restart prometheus-node-exporter
+
+- name: Flush handlers meta
+  ansible.builtin.meta: flush_handlers

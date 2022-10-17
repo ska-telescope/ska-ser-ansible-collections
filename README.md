@@ -6,8 +6,8 @@ This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/
 | Collection            | Roles                                 | Description                                               |
 | --------------------- | --------------------------------------| ----------------------------------------------------------|
 | oci                   | containerd <br> docker <br> podman    | install specific OCI engine                               |
-| instance_common       | init                                  | VM initialization (common packages, mount volumes, etc)   |
-| elastic               | stack                                 | install Elasticsearch cluster (container based)           |
+| instance_common       | init <br> certs                       | VM initialization                                         |
+| elastic               | stack <br> haproxy <br> logging       | Elasticsearch cluster roles                               |
 <!-- | k8s           | charts, <br> haproxy, <br> helm, <br> join, <br> k8s, <br> kubectl, <br> resources, <br> metallb ,<br> binderhub, <br> ping | default SKA helm charts <br> haproxy Kubernetes LoadBalancer <br> helm client <br> join node to HA cluster <br> Kubernetes packages <br> Kubernetes client <br> Create Namespaces and Apply Limits and Quotas <br> Load balancer for kubernetes <br> Service to share Jupyter notebooks in the cloud <br> Ping service to test ingress | -->
 
 ## Usage
@@ -69,22 +69,21 @@ The table bellow, iterates all the targets available on the main Makefile.
 All the targets specific to a collection such as ElasticSearch or OCI engine, 
 it will be separated on their own **.mk** file on **resources/jobs** folder.
 
-The make command must have a specific format to trigger the targets bellow.
-For example, for the ElasticSearch targets we must run:
+The make command must have a specific format to trigger the targets bellow, like:
 
 ```
-make elastic *job*
+make <collection> <job> <VARS>
 ```
 
-Following the same logic, we can run all the jobs bellow:
-
-| Collection | Job        | Description                                                | Role Dependency             |
-|------------|------------|------------------------------------------------------------|-----------------------------|
-| elastic    | install    | Install ElasticSearch cluster via OCI containers           | common.init <br> oci.docker |
-| oci        | docker     | Install Docker                                             |                             |
-| oci        | podman     | Install Podman                                             |                             |
-| oci        | containerd | Install containerd                                         |                             |
-| common     | init       | Update APT <br> Install common packages <br> Mount volumes |                             |
+| Collection | Job        | Description                                                | Role Dependency                                |
+|------------|------------|------------------------------------------------------------|----------------------------------------------- |
+| elastic    | install    | Install ElasticSearch cluster via OCI containers           | common.init <br> common.certs <br> oci.docker  |
+| elastic    | destroy    | Destroy ElasticSearch cluster                              |                                                |
+| oci        | docker     | Install Docker                                             |                                                |
+| oci        | podman     | Install Podman                                             |                                                |
+| oci        | containerd | Install containerd                                         |                                                |
+| common     | init       | Update APT <br> Install common packages <br> Mount volumes |                                                |
+| common     | certs      | Generate certificates from the Terminus CA                 |                                                |
 
 ### Mandatory Environment Variables
 
@@ -95,13 +94,3 @@ This repo expects these environment variables to run all make targets:
 
 These variables must be exported to your terminal shell or passed as 
 command line arguments.
-
-Using the script option based on the project structured above:
-```
-export BASE_PATH="$(cd "$(dirname "$1")"; pwd -P)"
-export PLAYBOOKS_ROOT_DIR="${BASE_PATH}/env-variables"
-export ANSIBLE_CONFIG="${BASE_PATH}/env-variables/ansible.cfg"
-export ANSIBLE_COLLECTIONS_PATHS="${BASE_PATH}/ska-ser-ansible-collections"
-export ANSIBLE_COLLECTIONS_PATHS="${BASE_PATH}/ska-ser-ansible-collections"
-export PLAYBOOKS_HOSTS="central-logging"
-```

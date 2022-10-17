@@ -1,43 +1,45 @@
-- name: create /etc/ha_config directory
-  file:
-    path: /etc/hap_config
-    state: directory
-    mode: 0644
-
-- name: create HAproxy config
-  template:
+---
+- name: Create HAProxy config
+  ansible.builtin.template:
     src: haproxyConfig.j2
-    dest: /etc/hap_config/haproxy.cfg
-    mode: "0644"
-  register: hap_config
+    dest: "/etc/haproxy.cfg"
+    mode: 0644
+  vars:
+    elasticsearch_api_port: elasticsearch_api_port
+    elasticsearch_health_endpoint: elasticsearch_health_endpoint
+  register: haproxy_config
 
-- name: "docker pull image for {{ haproxy_container_image }}"
-  docker_image:
+- name: Show HAProxy config
+  ansible.builtin.debug:
+    var: haproxy_config
+  when: debug
+
+- name: "Docker pull image for {{ elastic_haproxy_image }}"
+  community.general.docker_image:
     source: pull
-    name: "{{ haproxy_container_image }}"
-  register: hap_image
+    name: "{{ elastic_haproxy_image }}"
+  register: elastic_haproxy_image_pull
 
-- name: Get haproxy container info
-  docker_container_info:
-    name: "{{ haproxy_name }}"
-  register: hap_info
+- name: "Get {{ elastic_haproxy_name }} container info"
+  community.general.docker_container_info:
+    name: "{{ elastic_haproxy_name }}"
+  register: haproxy_info
 
-- name: run haproxy in a container  # noqa no-handler
-  docker_container:
-    name: "{{ haproxy_name }}"
-    image: "{{ haproxy_container_image }}"
-    # restart: true
-    recreate: true
+- name: "Run {{ elastic_haproxy_name }} container"  # noqa no-handler
+  community.general.docker_container:
+    name: "{{ elastic_haproxy_name }}"
+    image: "{{ elastic_haproxy_image }}"
     restart_policy: always
     state: started
     privileged: true
     network_mode: host
     exposed_ports:
-      - "{{ elasticsearch_port }}"
-    labels: "{{ container_labels }}"
-    log_driver: "{{ log_driver }}"
-    log_options: "{{ log_options }}"
+      - "{{ elastic_haproxy_stats_port }}"
+      - "{{ elastic_haproxy_elasticsearch_port }}"
+    labels: "{{ elastic_haproxy_labels }}"
+    log_driver: "{{ elastic_haproxy_log_driver }}"
+    log_options: "{{ elastic_haproxy_log_options }}"
     volumes:
-      - /etc/hap_config/:/usr/local/etc/haproxy/
+      - /etc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     command: -f /usr/local/etc/haproxy/haproxy.cfg
-  when: hap_config.changed or hap_image.changed or not hap_info.exists or not hap_info.container.State.Running
+    recreate: "{{ haproxy_config.changed or elastic_haproxy_image_pull.changed }}"

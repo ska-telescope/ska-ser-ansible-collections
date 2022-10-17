@@ -1,9 +1,15 @@
 #!/usr/bin/env ansible-playbook
 ---
+- name: Show debug info
+  hosts: "{{ target_hosts }}"
+  become: true
+  tasks:
+    - name: "Show stack nodes info"
+      ansible.builtin.debug: var=hostvars[inventory_hostname]
+      when: debug
 
 - name: "Ensure that the apt repositories are updated - old image issues"
-  hosts:
-    - cluster
+  hosts: "{{ target_hosts }}"
   become: true
   tasks:
     - name: Ensure that the apt cache is updated
@@ -12,27 +18,9 @@
       register: apt_res
       retries: 5
       until: apt_res is success
-      when: ansible_os_family == "Debian"
 
 - name: "Apply the docker role to the docker nodes"
-  hosts:
-    - cluster
+  hosts: "{{ target_hosts }}"
   become: true
   roles:
-    - ska_cicd.docker_base.docker
-
-- name: "Apply the podman role to the podman nodes"
-  hosts:
-    - cluster
-  become: true
-  roles:
-    - ska_cicd.docker_base.podman
-
-
-- name: "Apply the containerd role to docker nodes"
-  hosts:
-    - cluster
-  become: true
-  become_method: sudo
-  roles:
-    - ska_cicd.docker_base.containerd
+    - docker
