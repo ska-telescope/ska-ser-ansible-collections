@@ -48,7 +48,7 @@
     copy:
       dest: "{{ certificates_dir }}/{{ certificate_name }}.crt"
       content: "{{ certificate.certificate }}"
-  when: not (check_key.stat.exists and check_cert.stat.exists)
+  when: not (check_key.stat.exists and check_cert.stat.exists) or certificates_recreate
 
 - name: Get CA certificate pem from Terminus
   ansible.builtin.slurp:
