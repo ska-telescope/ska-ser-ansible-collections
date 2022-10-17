@@ -13,6 +13,7 @@ default:
 stages:
   - lint
   - scan
+  - build
   - pages
   - publish
 
