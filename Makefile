@@ -30,8 +30,10 @@ vars:  ## Variables
 ping:  check-env ## Ping Ansible targets
 	ansible all -i $(PLAYBOOKS_ROOT_DIR)/inventory.yml -m ping -l $(PLAYBOOKS_HOSTS)
 
-# If the first argument is "oci"...
-ifeq (oci,$(firstword $(MAKECMDGOALS)))
+JOBLIST := $(shell find $(JOBS_DIR) -iname '*.mk' -exec basename {} .mk ';')
+
+# If the first argument matches a Makefile in the JOBS_DIR...
+ifneq ($(filter $(JOBLIST),$(firstword $(MAKECMDGOALS))),)
   # use the rest as arguments for "oci"
   TARGET_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   # ...and turn them into do-nothing targets
@@ -41,35 +43,12 @@ endif
 oci: check-env ## ElasticSearch targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/oci.mk
 
-# If the first argument is "elastic"...
-ifeq (elastic,$(firstword $(MAKECMDGOALS)))
-  # use the rest as arguments for "elastic"
-  TARGET_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-  # ...and turn them into do-nothing targets
-  $(eval $(TARGET_ARGS):;@:)
-endif
-
-# If the first argument is "oci"...
-ifeq (logging,$(firstword $(MAKECMDGOALS)))
-  # use the rest as arguments for "oci"
-  TARGET_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-  # ...and turn them into do-nothing targets
-  $(eval $(TARGET_ARGS):;@:)
-endif
-
 elastic: check-env ## ElasticSearch targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/elastic.mk
 
 logging: check-env ## Filebeat targets
 	$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/logging.mk
-
-# If the first argument is "monitoring"...
-ifeq (monitoring,$(firstword $(MAKECMDGOALS)))
-  # use the rest as arguments for "monitoring"
-  TARGET_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-  # ...and turn them into do-nothing targets
-  $(eval $(TARGET_ARGS):;@:)
-endif
+	echo $(JOBLIST)
 
 monitoring: check-env ## ElasticSearch targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/monitoring.mk
