@@ -1,5 +1,12 @@
 #!/usr/bin/env ansible-playbook
 ---
+- name: Show debug info
+  hosts: "{{ target_hosts }}"
+  become: true
+  tasks:
+    - name: "Show stack nodes info"
+      ansible.builtin.debug: var=hostvars[inventory_hostname]
+      when: debug
 
 - name: "Ensure that the apt repositories are updated - old image issues"
   hosts: "{{ target_hosts }}"
