@@ -34,7 +34,7 @@ JOBLIST := $(shell find $(JOBS_DIR) -iname '*.mk' -exec basename {} .mk ';')
 
 # If the first argument matches a Makefile in the JOBS_DIR...
 ifneq ($(filter $(JOBLIST),$(firstword $(MAKECMDGOALS))),)
-  # use the rest as arguments for "oci"
+  # use the rest as arguments for the job
   TARGET_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   # ...and turn them into do-nothing targets
   $(eval $(TARGET_ARGS):;@:)
