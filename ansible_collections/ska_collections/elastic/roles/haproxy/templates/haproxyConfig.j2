@@ -20,13 +20,13 @@ defaults
   timeout tunnel 1h
 
 frontend stats
-  bind  *:{{ haproxy_stats_port }}
+  bind  *:{{ elastic_haproxy_stats_port }}
   mode  http
   stats enable
   stats hide-version
   stats realm Haproxy\ Statistics
-  stats uri {{ haproxy_stats_endpoint }}
-  stats auth {{ haproxy_stats_user }}:{{ haproxy_stats_passwd }}
+  stats uri {{ elastic_haproxy_stats_endpoint }}
+  stats auth {{ elastic_haproxy_stats_user }}:{{ elastic_haproxy_stats_passwd }}
   stats refresh 10s
   stats admin if LOCALHOST
 
@@ -35,7 +35,7 @@ frontend stats
 #############################
 
 frontend front-elasticsearch-api-proxy
-  bind    *:{{ haproxy_elasticsearch_port }}
+  bind    *:{{ elastic_haproxy_elasticsearch_port }}
   mode    tcp
   timeout client 1800s
   timeout client-fin 50s

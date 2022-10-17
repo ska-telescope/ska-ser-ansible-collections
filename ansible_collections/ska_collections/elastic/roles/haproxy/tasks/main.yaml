@@ -14,32 +14,32 @@
     var: haproxy_config
   when: debug
 
-- name: "Docker pull image for {{ haproxy_image }}"
+- name: "Docker pull image for {{ elastic_haproxy_image }}"
   community.general.docker_image:
     source: pull
-    name: "{{ haproxy_image }}"
-  register: haproxy_image_pull
+    name: "{{ elastic_haproxy_image }}"
+  register: elastic_haproxy_image_pull
 
-- name: "Get {{ haproxy_name }} container info"
+- name: "Get {{ elastic_haproxy_name }} container info"
   community.general.docker_container_info:
-    name: "{{ haproxy_name }}"
+    name: "{{ elastic_haproxy_name }}"
   register: haproxy_info
 
-- name: "Run {{ haproxy_name }} container"  # noqa no-handler
+- name: "Run {{ elastic_haproxy_name }} container"  # noqa no-handler
   community.general.docker_container:
-    name: "{{ haproxy_name }}"
-    image: "{{ haproxy_image }}"
+    name: "{{ elastic_haproxy_name }}"
+    image: "{{ elastic_haproxy_image }}"
     restart_policy: always
     state: started
     privileged: true
     network_mode: host
     exposed_ports:
-      - "{{ haproxy_stats_port }}"
-      - "{{ haproxy_elasticsearch_port }}"
-    labels: "{{ haproxy_labels }}"
-    log_driver: "{{ haproxy_log_driver }}"
-    log_options: "{{ haproxy_log_options }}"
+      - "{{ elastic_haproxy_stats_port }}"
+      - "{{ elastic_haproxy_elasticsearch_port }}"
+    labels: "{{ elastic_haproxy_labels }}"
+    log_driver: "{{ elastic_haproxy_log_driver }}"
+    log_options: "{{ elastic_haproxy_log_options }}"
     volumes:
       - /etc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     command: -f /usr/local/etc/haproxy/haproxy.cfg
-    recreate: "{{ haproxy_config.changed or haproxy_image_pull.changed }}"
+    recreate: "{{ haproxy_config.changed or elastic_haproxy_image_pull.changed }}"

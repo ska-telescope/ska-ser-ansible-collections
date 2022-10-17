@@ -25,6 +25,7 @@ vars:  ## Variables
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 	@echo "CA_CERT_PASS=$(CA_CERT_PASS)"
 	@echo "ELASTIC_PASSWORD=$(ELASTIC_PASSWORD)"
+	@echo "ELASTIC_HAPROXY_STATS_PASS=$(ELASTIC_HAPROXY_STATS_PASS)"
 
 ping:  check-env ## Ping Ansible targets
 	ansible all -i $(PLAYBOOKS_ROOT_DIR)/inventory.yml -m ping -l $(PLAYBOOKS_HOSTS)
