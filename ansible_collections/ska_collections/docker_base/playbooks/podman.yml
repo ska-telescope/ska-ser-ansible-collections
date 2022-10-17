@@ -23,8 +23,4 @@
   hosts: "{{ target_hosts }}"
   become: true
   roles:
-<<<<<<< HEAD
     - ska_cicd.docker_base.podman
-=======
-    - ska_cicd.docker_base.podman
->>>>>>> ST-1400: elastic password removed from defaults and clean code
