@@ -45,7 +45,7 @@ logging_elasticsearch_addresses:
 
 java_mem: 8g
 
-stack_data_dir: "{{ data_filesystem }}"
+stack_data_dir: /var/lib/stack-data
 
 # determine whether this is single_node or not
 discovery_type: "{% if groups[target_hosts] > 1 %}{% else %}single-node{% endif %}"

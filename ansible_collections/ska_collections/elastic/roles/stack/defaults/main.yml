@@ -1,49 +1,101 @@
 ---
-elastic_reinstall: true
-
-elasticsearch_image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
-kibana_image: docker.elastic.co/kibana/kibana:7.17.0
-elasticsearch_exporter_image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.5.0
-
+# Global configurations
 stack_data_dir: /var/lib/stack-data
 
-# container logging options
-log_driver: json-file
-log_options:
-  max-size: "10m"
-  max-file: "3"
-  labels: "org.ska.app.group"
-  # env: "some_var"
-
-# labelling on container runtime
-container_labels:
-  org.ska.app.group: monitoring
-
-eexporter_name: elasticsearch_exporter
-
+# Elasticsearch configurations
+elasticsearch_dns: logging.stfc.skao.int
+elasticsearch_cluster_name: "elasticsearch"
+elasticsearch_data_dir: "{{ stack_data_dir }}/elasticsearch"
+elasticsearch_name: "elasticsearch"
+elasticsearch_image: docker.elastic.co/elasticsearch/elasticsearch:8.4.2
+elasticsearch_network_mode: "bridge"
 elasticsearch_memory: 16G
+elasticsearch_java_mem: 8g
+elasticsearch_labels:
+  org.ska.app.group: logging
 
-network_mode: "bridge"
-
-# determine whether this is single_node or multi_node=""
-discovery_type: "{% if (groups[target_hosts] | length) > 1 %}{% else %}single-node{% endif %}"
-
-#### Elastic Cluster Defaults
-master_vars:
-  action.auto_create_index: "true"
-  bootstrap.memory_lock: "true"
-  cluster.name: "ska-stfc1"
-  discovery.type: "{{ discovery_type }}"
-  indices.cache.cleanup_interval: "1m"
-  # https://github.com/elastic/elasticsearch/issues/31478
-  # network.host: "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
-  network.bind_host: "0.0.0.0"
-  network.publish_host: "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
-  node.name: "{{ inventory_hostname }}"
-  # transport.host: "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
-  transport.bind_host: "0.0.0.0"
-  transport.publish_host: "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
-  # https://discuss.elastic.co/t/elasticsearch-6-8-in-docker-crashing-with-sigill-after-restart-corrupt-state/200452
-  # ES_JAVA_OPTS: "-server -Xms{{ java_mem }} -Xmx{{ java_mem }} -Dlog4j2.formatMsgNoLookups=true"
-  ES_HEAP_SIZE: 8g
+elasticsearch_env_variables: {}
+elasticsearch_env_defaults:
+  ES_JAVA_OPTS: "-server -Xms{{ elasticsearch_java_mem }} -Xmx{{ elasticsearch_java_mem }} -Dlog4j2.formatMsgNoLookups=true"
+  ES_HEAP_SIZE: "{{ elasticsearch_java_mem }}"
   MAX_OPEN_FILES: "131070"
+  ELASTIC_PASSWORD: '{{ elastic_password }}'
+
+elasticsearch_api_port: 9200
+elasticsearch_transport_port: 9300
+elasticsearch_health_endpoint: "/_cat/health"
+elasticsearch_nodes_endpoint: "/_cat/nodes?h=name"
+elasticsearch_doc_endpoint: "/_doc/"
+elasticsearch_doc_count_endpoint: "/_count"
+elasticsearch_doc_delete_endpoint: "/_delete_by_query"
+
+elasticsearch_discovery_type: "{% if (groups[target_hosts] | length) > 1 %}multi-node{% else %}single-node{% endif %}"
+
+elasticsearch_log_driver: json-file
+elasticsearch_log_max_size: "10m"
+elasticsearch_log_max_file: "3"
+elasticsearch_log_options:
+  max-size: "{{  elasticsearch_log_max_size }}"
+  max-file: "{{ elasticsearch_log_max_file }}"
+  labels: "org.ska.app.group"
+
+elasticsearch_reinstall: false
+elasticsearch_clean_data_volume: false
+elasticsearch_first_install: false
+elasticsearch_default_node_roles:
+  - master
+  - remote_cluster_client
+  - data
+  - ingest
+  - ml
+  - remote_cluster_client
+  - transform
+elasticsearch_default_master_roles: 
+  - master
+  - remote_cluster_client
+elasticsearch_default_data_roles:
+  - data
+  - ingest
+  - ml
+  - remote_cluster_client
+  - transform
+
+# Elasticsearch Exporter configurations
+elasticsearch_exporter_name: elasticsearch-exporter
+elasticsearch_exporter_image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.5.0
+elasticsearch_exporter_network_mode: "bridge"
+elasticsearch_exporter_port: 9114
+elasticsearch_exporter_log_driver: json-file
+elasticsearch_exporter_log_max_size: "10m"
+elasticsearch_exporter_log_max_file: "3"
+elasticsearch_exporter_log_options:
+  max-size: "{{  elasticsearch_exporter_log_max_size }}"
+  max-file: "{{ elasticsearch_exporter_log_max_file }}"
+  labels: "org.ska.app.group"
+
+elasticsearch_exporter_env_variables: {}
+elasticsearch_exporter_env_defaults:
+  ES_URI: "http://{{ ansible_default_ipv4.address }}:9200"
+
+elasticsearch_exporter_reinstall: false
+
+# Kibana configurations
+kibana_name: kibana
+kibana_image: docker.elastic.co/kibana/kibana:8.4.2
+kibana_network_mode: "bridge"
+kibana_port: 5601
+kibana_log_driver: json-file
+kibana_log_max_size: "10m"
+kibana_log_max_file: "3"
+kibana_log_options:
+  max-size: "{{  kibana_log_max_size }}"
+  max-file: "{{ kibana_log_max_file }}"
+  labels: "org.ska.app.group"
+
+kibana_labels:
+  org.ska.app.group: logging
+
+kibana_env_variables: {}
+kibana_env_defaults: {}
+
+kibana_reinstall: false

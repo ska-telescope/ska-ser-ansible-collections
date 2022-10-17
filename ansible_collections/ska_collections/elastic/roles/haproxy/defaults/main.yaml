@@ -1,22 +1,19 @@
 ---
-# stats user account
-haproxy_user: stats
-haproxy_passwd: loggingHA
+elastic_haproxy_name: haproxy
+elastic_haproxy_image: haproxy:2.6
+elastic_haproxy_labels:
+  org.ska.app.group: frontend
 
-haproxy_stats_port: "9200"
-nginx_http_proxy_port: "80"
-nginx_https_proxy_port: "443"
-elasticsearch_port: "9200"
-haproxy_container_image: haproxy:2.1
-haproxy_name: haproxy
-log_max_size: "10m"
-log_max_file: "3"
-log_driver: json-file
-log_options:
-  max-size: "{{  log_max_size }}"
-  max-file: "{{ log_max_file }}"
+elastic_haproxy_log_driver: json-file
+elastic_haproxy_log_max_size: "10m"
+elastic_haproxy_log_max_file: "3"
+elastic_haproxy_log_options:
+  max-size: "{{  elastic_haproxy_log_max_size }}"
+  max-file: "{{ elastic_haproxy_log_max_file }}"
   labels: "org.ska.app.group"
 
-# labelling on container runtime
-container_labels:
-  org.ska.app.group: frontend
+elastic_haproxy_elasticsearch_port: 9200
+elastic_haproxy_stats_port: 9090
+elastic_haproxy_stats_endpoint: "/haproxy_stats"
+elastic_haproxy_stats_user: stats
+elastic_haproxy_stats_passwd: loggingHA
