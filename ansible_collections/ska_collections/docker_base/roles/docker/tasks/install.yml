@@ -17,4 +17,3 @@
   dpkg_selections:
     name: "{{ item }}"
     selection: hold
-      

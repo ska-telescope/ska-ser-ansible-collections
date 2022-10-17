@@ -2,6 +2,8 @@
 ---
 - name: Show debug info
   hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
   become: true
   tasks:
     - name: "Show stack nodes info"
