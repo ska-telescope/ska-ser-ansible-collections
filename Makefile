@@ -48,7 +48,6 @@ elastic: check-env ## ElasticSearch targets
 
 logging: check-env ## Filebeat targets
 	$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/logging.mk
-	echo $(JOBLIST)
 
 monitoring: check-env ## ElasticSearch targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/monitoring.mk
