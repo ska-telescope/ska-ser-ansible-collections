@@ -49,6 +49,14 @@ ifeq (elastic,$(firstword $(MAKECMDGOALS)))
   $(eval $(TARGET_ARGS):;@:)
 endif
 
+# If the first argument is "oci"...
+ifeq (logging,$(firstword $(MAKECMDGOALS)))
+  # use the rest as arguments for "oci"
+  TARGET_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  # ...and turn them into do-nothing targets
+  $(eval $(TARGET_ARGS):;@:)
+endif
+
 elastic: check-env ## ElasticSearch targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/elastic.mk
 
