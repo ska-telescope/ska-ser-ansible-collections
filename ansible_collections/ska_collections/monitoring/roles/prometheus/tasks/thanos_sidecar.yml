@@ -30,7 +30,7 @@
     state: absent
 
 - name: Create certificates for server communication
-  include_role:
+  ansible.builtin.include_role:
     name: ska_collections.instance_common.certs
   vars:
     private_key_name: "thanos_sidecar"
@@ -54,15 +54,15 @@
     image: "thanosio/thanos:{{ thanos_docker_tags }}"
     state: started
     command:
-    - "sidecar"
-    - "--tsdb.path=/prometheus"
-    - "--prometheus.url=https://{{ ansible_default_ipv4.address }}:9090"
-    - "--grpc-address=0.0.0.0:10901"
-    - "--grpc-server-tls-cert='{{ certificates_dir }}/thanos_sidecar.crt'"
-    - "--grpc-server-tls-key='{{ certificates_dir }}/thanos_sidecar.key'"
-    - "--grpc-server-tls-client-ca='{{ certificates_dir }}/ca-certificate.crt'"
-    - "--prometheus.http-client-file='/etc/thanos/thanos_sidecar.yaml'"
-    - "--objstore.config-file='{{ thanos_config_dir }}/swift.yml'"
+      - "sidecar"
+      - "--tsdb.path=/prometheus"
+      - "--prometheus.url=https://{{ ansible_default_ipv4.address }}:9090"
+      - "--grpc-address=0.0.0.0:10901"
+      - "--grpc-server-tls-cert='{{ certificates_dir }}/thanos_sidecar.crt'"
+      - "--grpc-server-tls-key='{{ certificates_dir }}/thanos_sidecar.key'"
+      - "--grpc-server-tls-client-ca='{{ certificates_dir }}/ca-certificate.crt'"
+      - "--prometheus.http-client-file='/etc/thanos/thanos_sidecar.yaml'"
+      - "--objstore.config-file='{{ thanos_config_dir }}/swift.yml'"
     user: root
     restart: true
     restart_policy: always

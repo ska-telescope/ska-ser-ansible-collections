@@ -11,7 +11,7 @@
     state: absent
 
 - name: Create certificates for client communication
-  include_role:
+  ansible.builtin.include_role:
     name: ska_collections.instance_common.certs
   vars:
     private_key_name: "thanos_compactor"

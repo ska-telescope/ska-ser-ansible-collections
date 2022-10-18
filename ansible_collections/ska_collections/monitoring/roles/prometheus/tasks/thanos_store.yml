@@ -20,7 +20,7 @@
     state: absent
 
 - name: Create certificates for client communication
-  include_role:
+  ansible.builtin.include_role:
     name: ska_collections.instance_common.certs
   vars:
     private_key_name: "thanos_store"
@@ -28,15 +28,15 @@
     dns_alt_name: "{{ thanos_alt_name }}"
     certificates_recreate: true
 
-    - name: Generate thanos swift configuration
-      become: true
-      ansible.builtin.template:
-        src: "swift.yml.j2"
-        dest: "{{ thanos_config_dir }}/swift.yml"
-        force: true
-        owner: "{{ localuser }}"
-        group: "{{ localuser }}"
-        mode: 0644
+- name: Generate thanos swift configuration
+  become: true
+  ansible.builtin.template:
+    src: "swift.yml.j2"
+    dest: "{{ thanos_config_dir }}/swift.yml"
+    force: true
+    owner: "{{ localuser }}"
+    group: "{{ localuser }}"
+    mode: 0644
 
 - name: Start thanos container
   community.docker.docker_container:
@@ -44,20 +44,20 @@
     image: "thanosio/thanos:{{ thanos_docker_tags }}"
     state: started
     command:
-    - "store"
-    - "--data-dir=/local/state/data/dir"
-    - "--grpc-address='0.0.0.0:19090'"
-    - "--grpc-server-tls-cert='{{ certificates_dir }}/thanos_store.crt'"
-    - "--grpc-server-tls-key='{{ certificates_dir }}/thanos_store.key'"
-    - "--grpc-server-tls-client-ca='{{ certificates_dir }}/ca-certificate.crt'"
-    - "--objstore.config-file='{{ thanos_config_dir }}/swift.yml'"
+      - "store"
+      - "--data-dir=/local/state/data/dir"
+      - "--grpc-address='0.0.0.0:19090'"
+      - "--grpc-server-tls-cert='{{ certificates_dir }}/thanos_store.crt'"
+      - "--grpc-server-tls-key='{{ certificates_dir }}/thanos_store.key'"
+      - "--grpc-server-tls-client-ca='{{ certificates_dir }}/ca-certificate.crt'"
+      - "--objstore.config-file='{{ thanos_config_dir }}/swift.yml'"
     user: root
     restart: true
     restart_policy: always
     ports:
-    - "19090:19090"
+      - "19090:19090"
     volumes:
-    - "/etc/hosts:/etc/hosts:ro"
-    - "{{ thanos_config_dir }}:/etc/thanos"
-    - "{{ certificates_dir }}:{{ certificates_dir }}"
-    - "{{ thanos_store_data_dir }}:/local/state/data/dir"
+      - "/etc/hosts:/etc/hosts:ro"
+      - "{{ thanos_config_dir }}:/etc/thanos"
+      - "{{ certificates_dir }}:{{ certificates_dir }}"
+      - "{{ thanos_store_data_dir }}:/local/state/data/dir"

@@ -52,7 +52,7 @@ lint: ## Lint playbooks
 			./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
 			./ansible_collections/ska_collections/monitoring/playbooks/export_runners.yml  \
 			./ansible_collections/ska_collections/monitoring/roles/*
-	@ansible-lint --exclude=roles/prometheus/files \
+	@ansible-lint --exclude=./ansible_collections/ska_collections/monitoring/roles/prometheus/files/ \
 	 ./ansible_collections/ska_collections/monitoring/playbooks/deploy_docker_exporter.yml \
 	 ./ansible_collections/ska_collections/monitoring/playbooks/deploy_node_exporter.yml \
 	 ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml  \

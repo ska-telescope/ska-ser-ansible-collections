@@ -16,7 +16,7 @@
   loop: "{{ thanos_query_endpoints }}"
 
 - name: Create certificates for server communication
-  include_role:
+  ansible.builtin.include_role:
     name: ska_collections.instance_common.certs
   vars:
     private_key_name: "thanos_query"
@@ -25,7 +25,7 @@
     certificates_recreate: true
 
 - name: Create certificates for client communication
-  include_role:
+  ansible.builtin.include_role:
     name: ska_collections.instance_common.certs
   vars:
     private_key_name: "thanos_query_client"
@@ -46,18 +46,18 @@
 - name: Set fact about thanos query command
   ansible.builtin.set_fact:
     command:
-    - "query"
-    - "--grpc-address=0.0.0.0:10902"
-    - "--http-address=0.0.0.0:9091"
-    - "--grpc-server-tls-cert='{{ certificates_dir }}/thanos_query.crt'"
-    - "--grpc-server-tls-key='{{ certificates_dir }}/thanos_query.key'"
-    - "--grpc-server-tls-client-ca='{{ certificates_dir }}/ca-certificate.crt'"
-    - "--grpc-client-tls-cert='{{ certificates_dir }}/thanos_query_client.crt'"
-    - "--grpc-client-tls-key='{{ certificates_dir }}/thanos_query_client.key'"
-    - "--grpc-client-tls-ca='{{ certificates_dir }}/ca-certificate.crt'"
-    - "--grpc-client-tls-secure"
-    - "--grpc-client-tls-skip-verify"
-    - "--grpc-client-server-name='{{ ansible_hostname }}'"
+      - "query"
+      - "--grpc-address=0.0.0.0:10902"
+      - "--http-address=0.0.0.0:9091"
+      - "--grpc-server-tls-cert='{{ certificates_dir }}/thanos_query.crt'"
+      - "--grpc-server-tls-key='{{ certificates_dir }}/thanos_query.key'"
+      - "--grpc-server-tls-client-ca='{{ certificates_dir }}/ca-certificate.crt'"
+      - "--grpc-client-tls-cert='{{ certificates_dir }}/thanos_query_client.crt'"
+      - "--grpc-client-tls-key='{{ certificates_dir }}/thanos_query_client.key'"
+      - "--grpc-client-tls-ca='{{ certificates_dir }}/ca-certificate.crt'"
+      - "--grpc-client-tls-secure"
+      - "--grpc-client-tls-skip-verify"
+      - "--grpc-client-server-name='{{ ansible_hostname }}'"
 
 - name: Set fact about thanos query oci command
   ansible.builtin.set_fact:
