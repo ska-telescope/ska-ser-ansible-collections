@@ -32,9 +32,9 @@
       include_role:
        name: ska_collections.instance_common.certs
       vars:
-        private_key_name: "filebeat"
-        certificate_name: "filebeat"
-        dns_alt_name: "logging.skao.stfc"
+        private_key_name: "{{ filebeat_private_key_name }}"
+        certificate_name: "{{ filebeat_certificate_name }}"
+        dns_alt_name: "{{ filebeat_dns_alt_name }}"
 
     - name: scope for update pipeline
       block:
