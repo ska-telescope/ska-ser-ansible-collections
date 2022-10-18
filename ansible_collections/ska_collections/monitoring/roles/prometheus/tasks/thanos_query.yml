@@ -83,6 +83,10 @@
     - "--grpc-server-tls-cert='{{ certificates_dir }}/thanos_query.crt'"
     - "--grpc-server-tls-key='{{ certificates_dir }}/thanos_query.key'"
     - "--grpc-server-tls-client-ca='{{ certificates_dir }}/ca-certificate.crt'"
+    - "--grpc-client-tls-cert='{{ certificates_dir }}/thanos_query.crt'"
+    - "--grpc-client-tls-key='{{ certificates_dir }}/thanos_query.key'"
+    - "--grpc-client-tls-ca='{{ certificates_dir }}/ca-certificate.crt'"
+    - "--grpc-client-tls-skip-verify"
 
 - name: Set fact about thanos query oci command
   ansible.builtin.set_fact:
