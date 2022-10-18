@@ -11,14 +11,14 @@
   hosts: all
   tasks:
 
-    - name: "Include ska_cicd.docker_base.docker"
-      include_role:
-        name: "ska_cicd.docker_base.docker"
+    - name: "Include ska_collections.docker_base.docker"
+      ansible.builtin.include_role:
+        name: "ska_collections.docker_base.docker"
 
-    - name: "Include ska_cicd.docker_base.podman"
-      include_role:
-        name: "ska_cicd.docker_base.podman"
+    - name: "Include ska_collections.docker_base.podman"
+      ansible.builtin.include_role:
+        name: "ska_collections.docker_base.podman"
 
-    - name: "Include ska_cicd.docker_base.containerd"
-      include_role:
-        name: "ska_cicd.docker_base.containerd"
+    - name: "Include ska_collections.docker_base.containerd"
+      ansible.builtin.include_role:
+        name: "ska_collections.docker_base.containerd"

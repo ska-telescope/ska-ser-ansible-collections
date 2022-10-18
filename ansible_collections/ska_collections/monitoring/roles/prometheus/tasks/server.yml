@@ -231,10 +231,11 @@
       delegate_to: terminus
       register: certificate
 
-    - name: Write certificate file on client host
-      copy:
+    - name: Write certificate file on client host  # noqa: template-instead-of-copy
+      ansible.builtin.copy:
         dest: "{{ certificates_dir }}/prometheus.crt"
         content: "{{ certificate.certificate }}"
+        mode: 0600
 
     - name: Get CA certificate pem from Terminus
       ansible.builtin.slurp:
@@ -242,10 +243,11 @@
       delegate_to: terminus
       register: capemfile
 
-    - name: Write CA certificate file on client host
-      copy:
+    - name: Write CA certificate file on client host  # noqa: template-instead-of-copy
+      ansible.builtin.copy:
         content: "{{ capemfile['content'] }}"
         dest: "{{ certificates_dir }}/ca-certificate.pem"
+        mode: 0600
 
 - name: Create alerting rules file
   ansible.builtin.template:
@@ -392,7 +394,7 @@
   when: not is_swapfile.stat.exists
 
 - name: Manage swap file in /etc/fstab
-  mount:
+  ansible.builtin.mount:
     src: "{{ swapfile_path }}"
     name: "none"
     fstype: "swap"

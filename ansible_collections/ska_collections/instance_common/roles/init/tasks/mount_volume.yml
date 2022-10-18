@@ -16,12 +16,12 @@
       filesystem:
         fstype: "{{ volume.file_system }}"
         dev: "{{ volume.device }}"
-    
+
     - name: Get volume UUID
       ansible.builtin.command: lsblk {{ volume.device }} -no UUID
       register: uuid
       changed_when: false
-    
+
     - name: Create mounting directory
       file:
         path: "{{ volume.mount_point }}"

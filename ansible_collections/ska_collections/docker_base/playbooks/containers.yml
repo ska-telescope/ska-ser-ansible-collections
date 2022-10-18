@@ -1,0 +1,27 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: "Ensure that the apt repositories are updated - old image issues"
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: Ensure that the apt cache is updated
+      ansible.builtin.apt:
+        update_cache: true
+      register: apt_res
+      retries: 5
+      until: apt_res is success
+      when: ansible_os_family == "Debian"
+
+- name: "Apply the containerd role to docker nodes"
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  become_method: sudo
+  roles:
+    - containerd
+    - podman
+    - docker

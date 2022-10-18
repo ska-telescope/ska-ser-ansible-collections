@@ -1,0 +1,59 @@
+#############################
+#  api-proxy config
+#############################
+frontend front-api-proxy
+  bind *:6443
+  mode tcp
+  option tcplog
+  option forwardfor
+  default_backend back-api-proxy
+  timeout client 1800s
+  timeout client-fin 50s
+
+backend back-api-proxy
+  mode tcp
+  option tcplog
+  balance roundrobin
+  option ssl-hello-chk
+  option log-health-checks
+  default-server inter 10s fall 2
+  server server1 {{ minikube_ip }}:6443 check
+  timeout connect 10s
+  timeout server 1800s
+
+#############################
+#  nginx-proxy config
+#############################
+frontend front-nginx-http-proxy
+  bind *:80
+  mode http
+  option httplog
+  default_backend back-nginx-http-proxy
+  timeout client 1800s
+  timeout client-fin 50s
+
+backend back-nginx-http-proxy
+  mode http
+  option http-server-close
+  option dontlognull
+  balance roundrobin
+  server server1 {{ minikube_ip }}:80 check
+  timeout connect 10s
+  timeout server 1800s
+
+frontend front-nginx-https-proxy
+  bind *:443
+  mode tcp
+  option tcplog
+  option forwardfor
+  default_backend back-nginx-https-proxy
+  timeout client 1800s
+  timeout client-fin 50s
+
+backend back-nginx-https-proxy
+  mode tcp
+  option tcplog
+  balance roundrobin
+  server server1 {{ minikube_ip }}:443 check
+  timeout connect 10s
+  timeout server 1800s

@@ -2,6 +2,7 @@
 - name: Export gitlab runners to prometheus
   hosts: "{{ target_hosts }}"
   vars:
+    target_hosts: localhost
     mode: "runner"
   become: true
   become_method: sudo

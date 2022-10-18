@@ -11,53 +11,55 @@
     state: absent
 
 - name: Create certificates for web configuration
-  become: True
+  become: true
   block:
-  - name: Create certificates directory
-    ansible.builtin.file:
-      path: "{{ certificates_dir }}"
-      state: directory
-      mode: "0700"
+    - name: Create certificates directory
+      ansible.builtin.file:
+        path: "{{ certificates_dir }}"
+        state: directory
+        mode: "0700"
 
-  - name: Create private key for new certificate
-    community.crypto.openssl_privatekey:
-      path: "{{ certificates_dir }}/thanos_compactor.key"
+    - name: Create private key for new certificate
+      community.crypto.openssl_privatekey:
+        path: "{{ certificates_dir }}/thanos_compactor.key"
 
-  - name: Create certificate signing request (CSR) for new certificate
-    community.crypto.openssl_csr_pipe:
-      privatekey_path: "{{ certificates_dir }}/thanos_compactor.key"
-      common_name: "{{ ansible_hostname }}"
-      subject_alt_name: 'DNS:monitoring.skao.stfc,IP:{{ ansible_default_ipv4.address }}'
-      organization_name: "SKAO"
-    register: csr
+    - name: Create certificate signing request (CSR) for new certificate
+      community.crypto.openssl_csr_pipe:
+        privatekey_path: "{{ certificates_dir }}/thanos_compactor.key"
+        common_name: "{{ ansible_hostname }}"
+        subject_alt_name: 'DNS:monitoring.skao.stfc,IP:{{ ansible_default_ipv4.address }}'
+        organization_name: "SKAO"
+      register: csr
 
-  - name: Sign certificate with our CA
-    community.crypto.x509_certificate_pipe:
-      csr_content: "{{ csr.csr }}"
-      provider: ownca
-      ownca_path: "{{ certificates_dir }}/ca-certificate.pem"
-      ownca_privatekey_path: "{{ certificates_dir }}/ca-certificate.key"
-      ownca_privatekey_passphrase: "{{ ca_cert_pass }}"
-      ownca_not_after: +365d # valid for one year
-      ownca_not_before: "-1d" # valid since yesterday
-    delegate_to: terminus
-    register: certificate
+    - name: Sign certificate with our CA
+      community.crypto.x509_certificate_pipe:
+        csr_content: "{{ csr.csr }}"
+        provider: ownca
+        ownca_path: "{{ certificates_dir }}/ca-certificate.pem"
+        ownca_privatekey_path: "{{ certificates_dir }}/ca-certificate.key"
+        ownca_privatekey_passphrase: "{{ ca_cert_pass }}"
+        ownca_not_after: +365d # valid for one year
+        ownca_not_before: "-1d" # valid since yesterday
+      delegate_to: terminus
+      register: certificate
 
-  - name: Write certificate file on client host
-    copy:
-      dest: "{{ certificates_dir }}/thanos_compactor.crt"
-      content: "{{ certificate.certificate }}"
+    - name: Write certificate file on client host  # noqa: template-instead-of-copy
+      ansible.builtin.copy:
+        dest: "{{ certificates_dir }}/thanos_compactor.crt"
+        content: "{{ certificate.certificate }}"
+        mode: 0600
 
-  - name: Get CA certificate pem from Terminus
-    ansible.builtin.slurp:
-      src: "{{ certificates_dir }}/ca-certificate.pem"
-    delegate_to: terminus
-    register: capemfile
+    - name: Get CA certificate pem from Terminus
+      ansible.builtin.slurp:
+        src: "{{ certificates_dir }}/ca-certificate.pem"
+      delegate_to: terminus
+      register: capemfile
 
-  - name: Write CA certificate file on client host
-    copy:
-      content: "{{ capemfile['content'] }}"
-      dest: "{{ certificates_dir }}/ca-certificate.pem"
+    - name: Write CA certificate file on client host  # noqa: template-instead-of-copy
+      ansible.builtin.copy:
+        content: "{{ capemfile['content'] }}"
+        dest: "{{ certificates_dir }}/ca-certificate.pem"
+        mode: 0600
 
 - name: Generate thanos tls configuration
   become: true
@@ -85,20 +87,20 @@
     image: "thanosio/thanos:{{ thanos_docker_tags }}"
     state: started
     command:
-    - "compact"
-    - "--data-dir='/data'"
-    - "--objstore.config-file='{{ thanos_config_dir }}/swift.yml'"
-    - "--http-address='0.0.0.0:19091'"
-    - "--http.config='{{ thanos_config_dir }}/thanos_compactor.yaml'"
-    - "--wait"
-    - "--wait-interval=60m"
+      - "compact"
+      - "--data-dir='/data'"
+      - "--objstore.config-file='{{ thanos_config_dir }}/swift.yml'"
+      - "--http-address='0.0.0.0:19091'"
+      - "--http.config='{{ thanos_config_dir }}/thanos_compactor.yaml'"
+      - "--wait"
+      - "--wait-interval=60m"
     user: root
     restart: true
     restart_policy: always
     ports:
-    - "19091:19091"
+      - "19091:19091"
     volumes:
-    - "/etc/hosts:/etc/hosts:ro"
-    - "{{ thanos_config_dir }}:{{ thanos_config_dir }}"
-    - "{{ certificates_dir }}:{{ certificates_dir }}"
-    - "{{ thanos_compactor_data_dir }}:/data"
+      - "/etc/hosts:/etc/hosts:ro"
+      - "{{ thanos_config_dir }}:{{ thanos_config_dir }}"
+      - "{{ certificates_dir }}:{{ certificates_dir }}"
+      - "{{ thanos_compactor_data_dir }}:/data"

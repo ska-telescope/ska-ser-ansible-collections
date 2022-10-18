@@ -2,7 +2,7 @@ import os
 import json
 import requests
 import pymysql.cursors
-from kubernetes import client, config, watch
+from kubernetes import client, config
 
 archiver_ip = os.getenv("ARCHIVER_IP")
 archiver_user = os.getenv("ARCHIVER_USER")
@@ -47,14 +47,14 @@ def get_databases():
     return db
 
 
-## return namespace-tango_host name dicationary
+# return namespace-tango_host name dicationary
 def get_active_namespaces(list_service_for_all_namespaces):
     result = {}
     for item in list_service_for_all_namespaces.items:
-        if not "tangodb" in item.metadata.name:
+        if "tangodb" not in item.metadata.name:
             continue
 
-        if not item.metadata.namespace in result:
+        if item.metadata.namespace not in result:
             result[
                 item.metadata.namespace
             ] = f"{k8s_master}:{item._spec._ports[0].node_port}"
@@ -62,19 +62,16 @@ def get_active_namespaces(list_service_for_all_namespaces):
     return result
 
 
-grafana_url = os.path.join("http://", "%s:%s@%s:%s" % (grafana_user, grafana_password, grafana_host, grafana_port))
+grafana_url = os.path.join(
+    "http://",
+    "%s:%s@%s:%s"
+    % (grafana_user, grafana_password, grafana_host, grafana_port),
+)
 session = requests.Session()
-# login_post = session.post(
-#     os.path.join(grafana_url, "login"),
-#     data=json.dumps({"user": grafana_user, "email": "", "password": grafana_password}),
-#     headers={"content-type": "application/json"},
-# )
-
 # Get list of configured datasources in grafana
 datasources_get = session.get(os.path.join(grafana_url, "api", "datasources"))
 datasources = datasources_get.json()
-# print(datasources)
-#################### Insert Archiver DBs
+# Insert Archiver DBs
 available_dbs = get_databases()
 for db in available_dbs:
     present = False
@@ -91,11 +88,14 @@ for db in available_dbs:
                 {
                     "name": f"Archiver({db})",
                     "type": "mysql",
-                    "typeLogoUrl": "public/app/plugins/datasource/mysql/img/mysql_logo.svg",
+                    "typeLogoUrl": (
+                        "public/app/plugins/"
+                        "datasource/mysql/img/mysql_logo.svg"
+                    ),
                     "access": "proxy",
                     "url": f"{archiver_ip}:3306",
                     "password": "",
-                    'secureJsonData': {'password': archiver_password},
+                    "secureJsonData": {"password": archiver_password},
                     "user": archiver_user,
                     "database": db,
                     "basicAuth": False,
@@ -108,15 +108,15 @@ for db in available_dbs:
         )
         if not datasources_put.status_code == requests.codes.ok:
             print(datasources_put.json())
-#################### End Insert Archiver DBs
+# End Insert Archiver DBs
 
-#################### Insert/Update TangoGQL/TangoDB
+# Insert/Update TangoGQL/TangoDB
 config.load_kube_config()
 core_v1_api = client.CoreV1Api()
 all_svc = core_v1_api.list_service_for_all_namespaces()
 active_namespaces = get_active_namespaces(all_svc)
 
-################## Remove old
+# Remove old
 for datasource in datasources:
     bool_tango_gql = datasource["type"] == "fifemon-graphql-datasource"
     bool_tangodb = "TangoDB" in datasource["name"]
@@ -131,7 +131,10 @@ for datasource in datasources:
             present = True
             break
 
-        if bool_tangodb and active_namespaces[active_namespace] == datasource["url"]:
+        if (
+            bool_tangodb
+            and active_namespaces[active_namespace] == datasource["url"]
+        ):
             present = True
             break
 
@@ -142,14 +145,16 @@ for datasource in datasources:
     if not present:
         print(f"deleting {datasource['name']}: not available")
         delete_res = session.delete(
-            os.path.join(grafana_url, "api", "datasources", str(datasource["id"]))
+            os.path.join(
+                grafana_url, "api", "datasources", str(datasource["id"])
+            )
         )
         if not delete_res.status_code == requests.codes.ok:
             print(delete_res.json())
 
-################## End Remove old
+# End Remove old
 
-################## Insert new
+# Insert new
 for active_namespace in active_namespaces:
     bool_TangoGql_present = False
     bool_TangoDB_present = False
@@ -169,16 +174,25 @@ for active_namespace in active_namespaces:
             bool_TangoDB_present = True
 
     if not bool_TangoGql_present:
-        print(f"insert TANGOGQL for {active_namespace}:TANGOGQL ({active_namespace})")
+        print(
+            f"insert TANGOGQL for {active_namespace}"
+            f":TANGOGQL ({active_namespace})"
+        )
         datasources_put = session.post(
             os.path.join(grafana_url, "api", "datasources"),
             data=json.dumps(
                 {
                     "name": f"TangoGQL ({active_namespace})",
                     "type": "fifemon-graphql-datasource",
-                    "typeLogoUrl": "public/plugins/fifemon-graphql-datasource/img/logo.svg",
+                    "typeLogoUrl": (
+                        "public/plugins/"
+                        "fifemon-graphql-datasource/img/logo.svg"
+                    ),
                     "access": "proxy",
-                    "url": f"http://{k8s_loadbalancer}/{active_namespace}/taranta/db",
+                    "url": (
+                        f"http://{k8s_loadbalancer}/"
+                        f"{active_namespace}/taranta/db"
+                    ),
                     "password": "",
                     "user": "",
                     "database": "",
@@ -195,7 +209,10 @@ for active_namespace in active_namespaces:
 
     if not bool_TangoDB_present:
         print(
-            f"insert TangoDB for {active_namespace}: {active_namespaces[active_namespace]}"
+            (
+                f"insert TangoDB for {active_namespace}: "
+                f"{active_namespaces[active_namespace]}"
+            )
         )
         datasources_put = session.post(
             os.path.join(grafana_url, "api", "datasources"),
@@ -203,11 +220,14 @@ for active_namespace in active_namespaces:
                 {
                     "name": f"TangoDB({active_namespace})",
                     "type": "mysql",
-                    "typeLogoUrl": "public/app/plugins/datasource/mysql/img/mysql_logo.svg",
+                    "typeLogoUrl": (
+                        "public/app/plugins/"
+                        "datasource/mysql/img/mysql_logo.svg"
+                    ),
                     "access": "proxy",
                     "url": f"{active_namespaces[active_namespace]}",
                     "password": "",
-                    'secureJsonData': {'password': tangodb_password},
+                    "secureJsonData": {"password": tangodb_password},
                     "user": "root",
                     "database": "tango",
                     "basicAuth": False,
@@ -221,4 +241,4 @@ for active_namespace in active_namespaces:
         if not datasources_put.status_code == requests.codes.ok:
             print(datasources_put.json())
 
-################## End Insert new
+# End Insert new

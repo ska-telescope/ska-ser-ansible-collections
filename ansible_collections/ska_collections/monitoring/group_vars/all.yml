@@ -3,8 +3,8 @@
 # common variables
 aptcachetime: 3600
 locale: "en_US.UTF-8"
-localuser: "{{ lookup('env','USER') }}"
-localhome: "{{ lookup('env','HOME') }}"
+localuser: "{{ lookup('env', 'USER') }}"
+localhome: "{{ lookup('env', 'HOME') }}"
 
 oidc_issuer_url: 'https://gitlab.com'
 oidc_client_id: '417ea12283741e0d74b22778d2dd3f5d0dcee78828c6e9a8fd5e8589025b8d2f'
@@ -18,7 +18,7 @@ prometheus_alertmanager_url: http://192.168.93.26:9093
 prometheus_alertmanager_docker_tags: 'v0.24.0'
 prometheus_blackbox_exporter_docker_tags: 'v0.21.0'
 cadvisor_docker_tags: 'v0.44.0'
-grafana_docker_tags: '9.0.0' 
+grafana_docker_tags: '9.0.0'
 grafana_influxdb: 192.168.100.5
 grafana_influxdb_db: gitlab_metrics
 thanos_docker_tags: 'v0.28.0'

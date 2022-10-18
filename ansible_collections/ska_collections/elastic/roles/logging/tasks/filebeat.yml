@@ -6,7 +6,7 @@
       ansible.builtin.package:
         name: crun
         state: present
-        
+
     - name: podman pull image for filebeat
       containers.podman.podman_image:
         name: "{{ filebeat_image }}"
