@@ -19,7 +19,6 @@
     - name: Retrive default values
       ansible.builtin.include_vars:
         file: "../roles/stack/defaults/main.yml"
-
     - name: Retrive datacenter values
       ansible.builtin.include_vars:
         file: "{{ inventory_dir }}/group_vars/all.yml"
@@ -44,6 +43,8 @@
         private_key_name: "{{ inventory_hostname }}"
         certificate_name: "{{ inventory_hostname }}"
         dns_alt_name: "{{ elasticsearch_dns | default(elastic_defaults.elasticsearch_dns) }}"
+  tags:
+    - common
 
 - name: Verify elasticsearch cluster status
   # TODO: this differently, as master 0 might go away and the cluster still exists
@@ -67,6 +68,8 @@
         elasticsearch_first_install: "{{ (cluster_health.status | default(0)) != 200 }}"
       delegate_to: "{{ item }}"
       with_items: "{{ groups[target_hosts] }}"
+  tags:
+    - elasticsearch
 
 - name: Deploy elasticsearch to master nodes
   hosts: "{{ target_hosts }}-master"
@@ -83,6 +86,8 @@
         tasks_from: elastic
       vars:
         elasticsearch_node_roles: "{{ elasticsearch_default_master_roles if ((groups[target_hosts + '-data'] | default([])) | length ) > 0 else elasticsearch_default_node_roles }}"
+  tags:
+    - elasticsearch
 
 - name: Deploy elasticsearch to data nodes
   hosts: "{{ target_hosts }}-data"
@@ -99,6 +104,8 @@
         tasks_from: elastic
       vars:
         elasticsearch_node_roles: "{{ elasticsearch_default_data_roles }}"
+  tags:
+    - elasticsearch
 
 - name: Deploy HAProxy to loadbalancer nodes
   hosts: "{{ target_hosts }}-loadbalancer"
@@ -109,3 +116,34 @@
     - name: Install haproxy
       ansible.builtin.import_role:
         name: ska_collections.elastic.haproxy
+  tags:
+    - haproxy
+  
+- name: Deploy kibana to kibana nodes
+  hosts: "{{ target_hosts }}-kibana"
+  become: true
+  tasks:
+    - name: Install Kibana on Kibana-only instances
+      ansible.builtin.import_role:
+        name: ska_collections.elastic.stack
+        tasks_from: kibana
+  tags:
+    - kibana
+
+- name: Deploy kibana to a master node
+  hosts: "{{ target_hosts }}-master"
+  become: true
+  tasks:
+    - name: Install kibana
+      ansible.builtin.import_role:
+        name: ska_collections.elastic.stack
+        tasks_from: kibana
+      when: '((groups[target_hosts + "-kibana"] | default([])) | length ) == 0 and inventory_hostname == groups[target_hosts + "-master"][0]'
+    - name: Remove kibana if kibana only instance is present
+      community.general.docker_container:
+        name: "{{ kibana_name }}"
+        state: absent
+      when: '((groups[target_hosts + "-kibana"] | default([])) | length ) > 0'
+  tags:
+    - kibana
+

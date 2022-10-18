@@ -7,6 +7,25 @@ server.rewriteBasePath: true
 server.ssl.enabled: false
 
 # Elasticsearch settings
+https://www.elastic.co/guide/en/elasticsearch/reference/8.0/security-api-create-service-token.html
+FATAL  Error: [config validation of [elasticsearch].username]: value of "elastic" is forbidden. This is a superuser account that cannot write to system indices that Kibana needs to function. Use a service account token instead. Learn more: https://www.elastic.co/guide/en/elasticsearch/reference/8.0/service-accounts.html
+elasticsearch.username: elastic
+elasticsearch.password: "{{ elasticsearch_password }}"
+elasticsearch.ssl.alwaysPresentCertificate: true
+elasticsearch.ssl.certificate: "/usr/share/kibana/config/certificates/{{ inventory_hostname }}.crt"
+elasticsearch.ssl.key: "/usr/share/elasticsearch/config/certificates/{{ inventory_hostname }}.key"
+elasticsearch.ssl.certificateAuthorities: [ "/usr/share/elasticsearch/config/certificates/ca-certificate.crt" ]
+#elasticsearch.ssl.keyPassphrase: "{{ ca_cert_pass }}"
+
+# Features
+monitoring.ui.enabled: true
+
+# XPACK
+xpack.reporting.kibanaServer.hostname: localhost
+xpack.reporting.encryptionKey: "{{ ansible_date_time.iso8601_micro | md5 }}"
+xpack.encryptedSavedObjects.encryptionKey: "{{ ansible_date_time.iso8601_micro | md5 }}"
+
+# Elasticsearch settings
 elasticsearch.hosts:
 {% for item in (groups[target_hosts ~ '-master'] + groups[target_hosts ~ '-data']) %}
   - https://{{ hostvars[item].ip }}:{{ elasticsearch_api_port }}

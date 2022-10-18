@@ -19,7 +19,7 @@ elasticsearch_env_defaults:
   ES_JAVA_OPTS: "-server -Xms{{ elasticsearch_java_mem }} -Xmx{{ elasticsearch_java_mem }} -Dlog4j2.formatMsgNoLookups=true"
   ES_HEAP_SIZE: "{{ elasticsearch_java_mem }}"
   MAX_OPEN_FILES: "131070"
-  ELASTIC_PASSWORD: '{{ elastic_password }}'
+  ELASTIC_PASSWORD: '{{ elasticsearch_password }}'
 
 elasticsearch_api_port: 9200
 elasticsearch_transport_port: 9300
