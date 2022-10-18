@@ -23,6 +23,9 @@ filebeat_name: filebeat
 
 # certificate options
 certificates_dir: "/etc/pki/tls/private"
+filebeat_certificate_name: "{{ inventory_hostname }}-filebeat"
+filebeat_private_key_name: "{{ filebeat_certificate_name }}"
+filebeat_dns_alt_name: null
 
 # pipeline run in filebeat - default none
 filebeat_template_overwrite: false

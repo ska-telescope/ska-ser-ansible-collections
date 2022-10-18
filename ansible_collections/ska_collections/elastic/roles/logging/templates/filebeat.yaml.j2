@@ -77,8 +77,8 @@ output:
       - {{ adr }}
 {% endfor %}
     ssl.certificate_authorities: ["{{ certificates_dir }}/ca-certificate.crt"]
-    ssl.certificate: "{{ certificates_dir }}/filebeat.crt" # certificate for SSL client authentication to be copied from terminus
-    ssl.key: "{{ certificates_dir }}/filebeat.key" # client certificate key to be copied from terminus
+    ssl.certificate: "{{ certificates_dir }}/{{ filebeat_certificate_name }}.crt" # certificate for SSL client authentication to be copied from terminus
+    ssl.key: "{{ certificates_dir }}/{{ filebeat_private_key_name }}.key" # client certificate key to be copied from terminus
     loadbalance: true
     worker: 1
     # bulk_max_size: 100
