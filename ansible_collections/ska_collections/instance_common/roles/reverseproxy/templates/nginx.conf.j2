@@ -46,7 +46,6 @@ http {
     # deactivate the default
     #include /etc/nginx/conf.d/*.conf;
 
-
     server {
         listen 80 default_server;
         listen [::]:80 default_server;
@@ -73,7 +72,7 @@ http {
         ssl_dhparam /etc/nginx/dhparam;
 
         # intermediate configuration
-        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_protocols SSLv3 TLSv1.2 TLSv1.3;
         ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
         ssl_prefer_server_ciphers off;
 
