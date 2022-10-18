@@ -20,6 +20,10 @@ container_labels:
   org.ska.app.group: monitoring
 
 filebeat_name: filebeat
+
+# certificate options
+certificates_dir: "/etc/pki/tls/private"
+
 # pipeline run in filebeat - default none
 filebeat_template_overwrite: false
 ska_environment: testing

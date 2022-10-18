@@ -42,6 +42,7 @@
   loop: "{{ hostvars[inventory_hostname]['volumes'] }}"
   loop_control:
     loop_var: volume
+  when: hostvars[inventory_hostname]['volumes'] is defined
 
 - name: Ensure required packages are installed (apt)
   apt:
