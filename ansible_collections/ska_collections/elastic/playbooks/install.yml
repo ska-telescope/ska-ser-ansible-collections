@@ -32,6 +32,7 @@
     - name: Common role
       include_role:
         name: ska_collections.instance_common.init
+
     - name: Docker role
       include_role:
         name: ska_collections.docker_base.docker
@@ -59,10 +60,12 @@
         status_code: [200]
       register: cluster_health
       ignore_errors: true
+
     - name: Print health response
       ansible.builtin.debug:
         msg: "{{ cluster_health }}"
       when: debug
+
     - name: Set elasticsearch_first_install fact on all hosts
       ansible.builtin.set_fact:
         elasticsearch_first_install: "{{ (cluster_health.status | default(0)) != 200 }}"
@@ -72,7 +75,7 @@
     - elasticsearch
 
 - name: Deploy elasticsearch to master nodes
-  hosts: "{{ target_hosts }}-master"
+  hosts: "{{ target_hosts }}-master" # TODO: Fix this
   vars:
     target_hosts: localhost
   become: true
@@ -80,6 +83,7 @@
     - name: Check installation status
       debug:
         msg: "Installing elasticsearch for the first time: {{ elasticsearch_first_install }}"
+
     - name: Install elasticsearch
       ansible.builtin.import_role:
         name: ska_collections.elastic.stack
@@ -90,7 +94,7 @@
     - elasticsearch
 
 - name: Deploy elasticsearch to data nodes
-  hosts: "{{ target_hosts }}-data"
+  hosts: "{{ target_hosts }}-data" # TODO: Fix this
   vars:
     target_hosts: localhost
   become: true
@@ -98,6 +102,7 @@
     - name: Check installation status
       debug:
         msg: "Installing elasticsearch for the first time: {{ elasticsearch_first_install }}"
+
     - name: Install elasticsearch
       ansible.builtin.import_role:
         name: ska_collections.elastic.stack
@@ -108,7 +113,7 @@
     - elasticsearch
 
 - name: Deploy HAProxy to loadbalancer nodes
-  hosts: "{{ target_hosts }}-loadbalancer"
+  hosts: "{{ target_hosts }}-loadbalancer"  # TODO: Fix this
   vars:
     target_hosts: localhost
   become: true

@@ -1,6 +1,7 @@
 ---
 - name: Unregister existing runner(s)
   ansible.builtin.import_tasks: unregister.yml
+
 - name: "Stop {{ gitlab_runner_name }}"
   community.general.docker_container:
     name: "{{ gitlab_runner_name }}"
@@ -8,6 +9,7 @@
     stop_timeout: 60
     timeout: 120
     force_kill: no
+
 - name: Remove configuration directory
   ansible.builtin.file:
     path: "{{ gitlab_runner_configuration_dir }}"

@@ -17,14 +17,17 @@
     - name: Show ireallymeanit
       ansible.builtin.debug: var=ireallymeanit
       when: debug
+
     - name: Abort playbook
       ansible.builtin.fail:
         msg: >
           "Exiting teardown playbook. To really do it, say 'yes' on the prompt"
       when: ireallymeanit != 'yes'
+
     - name: Show stack nodes info
       ansible.builtin.debug: var=hostvars[inventory_hostname]
       when: debug
+
     - name: Remove containers
       community.general.docker_container:
         name: "{{ item }}"
@@ -37,6 +40,7 @@
         - "{{ elasticsearch_exporter_name }}"
         - "{{ kibana_name }}"
         - "{{ filebeat_name }}"
+
     - name: "Recursively remove {{ elasticsearch_data_dir }} directory"
       file:
         path: "{{ elasticsearch_data_dir }}"

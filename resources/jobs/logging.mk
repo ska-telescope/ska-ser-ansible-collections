@@ -27,9 +27,9 @@ install: check_hosts ## Install logging
 	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/logging.yml \
 	-i $(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
-	--extra-vars "
-		target_hosts=$(PLAYBOOKS_HOSTS)
-		ca_cert_pass=$(CA_CERT_PASS)
+	--extra-vars " \
+		target_hosts=$(PLAYBOOKS_HOSTS) \
+		ca_cert_pass=$(CA_CERT_PASS) \
 	"
 
 help: ## Show Help

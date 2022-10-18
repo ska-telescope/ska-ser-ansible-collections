@@ -1,7 +1,9 @@
 #!/usr/bin/env ansible-playbook
 ---
 - name: Deploy gitlab-runner
-  hosts: all
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
   become: true
   tasks:
     - name: Deploy gitlab-runner

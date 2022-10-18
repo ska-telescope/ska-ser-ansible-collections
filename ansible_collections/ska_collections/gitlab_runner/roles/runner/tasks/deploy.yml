@@ -35,6 +35,7 @@
       ansible.builtin.import_tasks: unregister.yml
       vars:
         gitlab_runner_unregister_all: true
+  
     - name: Register runner
       community.general.docker_container:
         name: "{{ gitlab_runner_name }}-register"
@@ -63,12 +64,14 @@
         log_options: "{{ gitlab_runner_log_options }}"
         volumes:
           - "{{ gitlab_runner_configuration_dir }}:/etc/gitlab-runner"
+
     - name: Create gitlab-runner configuration with registration
       ansible.builtin.copy:
         src: "{{ gitlab_runner_configuration_dir }}/default-config.toml"
         dest: "{{ gitlab_runner_configuration_dir }}/config.toml"
         remote_src: true
         mode: 0644
+
   when: not config.stat.exists or config_template.changed or default_config_checksum == config.stat.checksum or gitlab_runner_reregister
 
 - name: Check generated gitlab-runner configuration

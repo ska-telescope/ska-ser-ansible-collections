@@ -1,11 +1,11 @@
 ---
 
-- name: "Check if private key exists"
+- name: Check if private key exists
   stat:
     path: "{{ certificates_dir }}/{{ private_key_name }}.key"
   register: check_key
 
-- name: "Check if certificate exists"
+- name: Check if certificate exists
   stat:
     path: "{{ certificates_dir }}/{{ certificate_name }}.crt"
   register: check_cert

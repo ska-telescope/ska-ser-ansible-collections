@@ -9,7 +9,6 @@
   ansible.builtin.debug: var=nvidia_driver_check.rc
   when: debug | bool
 
-# Review this
 - name: Set the facts
   ansible.builtin.set_fact:
     host_grouping: "{% if 'masters' in groups and inventory_hostname in groups['masters'] %}master{% else %}worker{% endif %}"
@@ -120,7 +119,6 @@
     - Reload systemd
     - Restart docker
 
-# run the docker system prune everyday
 - name: Add cron job for docker system prune
   ansible.builtin.lineinfile:
     path: /etc/crontab

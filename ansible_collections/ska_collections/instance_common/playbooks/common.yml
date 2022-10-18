@@ -10,6 +10,8 @@
 
 - name: Apply the common role to the node
   hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
   become: true
   become_method: sudo
   roles:

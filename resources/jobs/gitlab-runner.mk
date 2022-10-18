@@ -18,15 +18,19 @@ deploy: check_hosts check_secrets ## Deploy gitlab-runner
 	@ansible-playbook ./ansible_collections/ska_collections/gitlab_runner/playbooks/deploy.yml \
 	-i $(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
-	-e gitlab_runner_registration_token=$(GITLAB_RUNNER_REGISTRATION_TOKEN) \
-	-l $(PLAYBOOKS_HOSTS)
-	
+	--extra-vars " \
+		target_hosts=$(PLAYBOOKS_HOSTS) \
+		gitlab_runner_registration_token=$(GITLAB_RUNNER_REGISTRATION_TOKEN) \
+	"
+
 undeploy: check_hosts check_secrets ## Undeploy gitlab-runner
 	@ansible-playbook ./ansible_collections/ska_collections/gitlab_runner/playbooks/undeploy.yml \
 	-i $(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
-	-e gitlab_runner_registration_token=$(GITLAB_RUNNER_REGISTRATION_TOKEN) \
-	-l $(PLAYBOOKS_HOSTS)
+	--extra-vars " \
+		target_hosts=$(PLAYBOOKS_HOSTS) \
+		gitlab_runner_registration_token=$(GITLAB_RUNNER_REGISTRATION_TOKEN) \
+	"
 
 help: ## Show Help
 	@echo "Gitlab-runner targets - make playbooks gitlab-runner <target>:"
