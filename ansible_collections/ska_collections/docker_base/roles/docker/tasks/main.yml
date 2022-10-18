@@ -1,44 +1,44 @@
 ---
 - name: Check if the nvidia driver is install
-  command: nvidia-smi --query
+  ansible.builtin.command: nvidia-smi --query
   changed_when: false
   register: nvidia_driver_check
   ignore_errors: true
 
 - name: Nvidia check
-  debug: var=nvidia_driver_check.rc
-  when: debug|bool
+  ansible.builtin.debug: var=nvidia_driver_check.rc
+  when: debug | bool
 
 - name: Set the facts
-  set_fact:
+  ansible.builtin.set_fact:
     host_grouping: "{% if 'masters' in groups and inventory_hostname in groups['masters'] %}master{% else %}worker{% endif %}"
     nvidia_driver_exists: "{{ nvidia_driver_check.rc == 0 }}"
-    user_to_add: "{{ lookup('env','USER') }}"
+    user_to_add: "{{ lookup('env', 'USER') }}"
 
 - name: Check nvidia-driver installed when Nvidia support requested
-  fail:
+  ansible.builtin.fail:
     msg: The Nvidia driver has not been found (nvidia-smi --query) - aborting.
-  when: activate_nvidia|bool and not ignore_nvidia_fail|bool and not nvidia_driver_exists|bool
+  when: activate_nvidia | bool and not ignore_nvidia_fail | bool and not nvidia_driver_exists | bool
 
-- name: remove wrong packages for Docker
-  apt:
+- name: Remove wrong packages for Docker
+  ansible.builtin.apt:
     name: "{{ docker_deb_uninstall_pkgs }}"
     force: true
     state: absent
 
 - name: Install packages required for docker
-  apt:
+  ansible.builtin.apt:
     name: "{{ docker_deb_dependencies }}"
     state: present
 
 - name: Add dockerproject apt key
-  apt_key:
+  ansible.builtin.apt_key:
     url: "{{ docker_deb_repo_key_url }}"
     id: "{{ docker_deb_repo_key_id }}"
     state: present
 
 - name: Add dockerproject apt source
-  lineinfile:
+  ansible.builtin.lineinfile:
     line: "{{ docker_deb_repo_url }}"
     dest: /etc/apt/sources.list.d/docker.list
     create: true
@@ -48,46 +48,46 @@
   register: installeddocker
 
 - name: Update apt cache
-  apt:
+  ansible.builtin.apt:
     update_cache: true
 
 
 - name: Docker install
-  include_tasks: install.yml
+  ansible.builtin.include_tasks: install.yml
   loop: "{{ docker_deb_pkgs }}"
 
-- name: Add {{ ansible_user }} user to docker group
-  user:
+- name: "Add user to docker group {{ ansible_user }}"
+  ansible.builtin.user:
     name: "{{ ansible_user }}"
     append: true
     groups: docker
 
-- name: ensure that pip is install (CentOS 7)
-  easy_install:
+- name: Ensure that pip is install (CentOS 7)
+  ansible.builtin.easy_install:
     name: pip
     state: present
   when: ansible_distribution == "CentOS" and ansible_distribution_version is regex("^7\.")
 
-- name: uninstall docker dependencies pip3
-  pip:
+- name: Uninstall docker dependencies pip3
+  ansible.builtin.pip:
     name: ["docker-py", "docker-pycreds", "docker"]
     executable: pip3
     state: absent
 
-- name: uninstall docker dependencies pip - this may not exist!  # noqa ignore-errors
-  pip:
+- name: Uninstall docker dependencies pip - this may not exist!  # noqa ignore-errors
+  ansible.builtin.pip:
     name: ["docker-py", "docker-pycreds", "docker"]
     executable: pip
     state: absent
   ignore_errors: true
 
-- name: install docker dependencies pip3
-  pip:
+- name: Install docker dependencies pip3
+  ansible.builtin.pip:
     executable: pip3
     name: docker-py
 
 - name: Create /etc/systemd/system/docker.service.d
-  file:
+  ansible.builtin.file:
     path: "/etc/systemd/system/docker.service.d"
     state: directory
     owner: root
@@ -95,16 +95,16 @@
     mode: "0755"
 
 - name: Configure docker server
-  template:
+  ansible.builtin.template:
     src: docker.conf.j2
     dest: "/etc/systemd/system/docker.service.d/docker.conf"
     mode: "0644"
   notify:
-    - reload systemd
-    - restart docker
+    - Reload systemd
+    - Restart docker
 
 - name: Create /etc/docker
-  file:
+  ansible.builtin.file:
     path: "/etc/docker"
     state: directory
     owner: root
@@ -112,24 +112,24 @@
     mode: "0755"
 
 - name: Configure docker daemon
-  template:
+  ansible.builtin.template:
     src: daemon.json.j2
     dest: "/etc/docker/daemon.json"
     mode: "0644"
   notify:
-    - reload systemd
-    - restart docker
+    - Reload systemd
+    - Restart docker
 
 # run the docker system prune everyday
 - name: Add cron job for docker system prune
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/crontab
     regexp: 'docker system prune'
     line: >-
       30 */4     * * *   root    docker system prune -a --volumes -f
   become: true
   notify:
-    - restart cron
+    - Restart cron
 
 - name: Flush those handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers

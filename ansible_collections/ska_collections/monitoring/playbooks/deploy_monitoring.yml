@@ -2,6 +2,7 @@
 - name: Deploy monitoring solution
   hosts: "{{ target_hosts }}"
   vars:
+    target_hosts: localhost
     mode: "all"
   become: true
   become_method: sudo

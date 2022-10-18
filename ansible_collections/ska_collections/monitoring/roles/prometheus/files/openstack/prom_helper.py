@@ -1,12 +1,9 @@
-import configparser
 import re
 import argparse
 import json
-from threading import Thread
 import sys
 import datetime
 import socket
-import time
 import yaml
 import os
 import logging
@@ -63,11 +60,12 @@ def update_openstack_metadata(update_metadata):
     This method parses the provided inventory file (ansible format ini file)
     and updates the metadata on each machine in the Engage platform.
 
-    It iterates over the EXPORTERS list and find the matching ports in the machines,
-    and then adds the respective metadata to the machines
+    It iterates over the EXPORTERS list and find the matching ports in the
+    machines, and then adds the respective metadata to the machines
 
-    Note: For k8s related metrics, only the loadbalancer (tagged with [loadbalancer]) machine is updated
-    even though the all the cluster nodes expose the same ports!
+    Note: For k8s related metrics, only the loadbalancer (tagged with
+    [loadbalancer]) machine is updated even though the all the cluster nodes
+    expose the same ports!
     """
     inventory = ""
     with open(update_metadata, "r") as file:
@@ -83,7 +81,9 @@ def update_openstack_metadata(update_metadata):
         for server in novac.compute.servers():
             server_name = str(server.to_dict()["name"]).lower()
             address = get_address(server)
-            print("Processing server " + server_name + " address " + str(address))
+            print(
+                "Processing server " + server_name + " address " + str(address)
+            )
             if address == "-" or str(address) not in inventory:
                 continue
 
@@ -139,7 +139,8 @@ def generate_targets_from_metadata():
     which have the metadata matching the EXPORTERS list
     and also generates relabellings accordingly.
 
-    To update the metadata on the machines see :func:`update_openstack_metadata`
+    To update the metadata on the machines
+    see :func:`update_openstack_metadata`
     """
     proj_list = os.environ["project_name"].split(";")
 
@@ -157,20 +158,26 @@ def generate_targets_from_metadata():
                 continue
 
             for exporter_name, details in EXPORTERS.items():
-                if not exporter_name in targets:
+                if exporter_name not in targets:
                     targets[exporter_name] = []
                 try:
                     targets[exporter_name].append(
-                        server.to_dict()["metadata"][NAMESPACE_PREFIX + exporter_name]
+                        server.to_dict()["metadata"][
+                            NAMESPACE_PREFIX + exporter_name
+                        ]
                     )
 
                     hostrelabelling[RELABEL_KEY].append(
                         {
                             "source_labels": ["instance"],
-                            "regex": re.escape(address) + ":" + str(details["port"]),
+                            "regex": re.escape(address)
+                            + ":"
+                            + str(details["port"]),
                             "action": "replace",
                             "target_label": "instance",
-                            "replacement": server_name + ":" + str(details["port"]),
+                            "replacement": server_name
+                            + ":"
+                            + str(details["port"]),
                         }
                     )
                 except KeyError:
@@ -211,7 +218,10 @@ if (
     or (os.environ.get("project_name") is None)
 ):
     print(
-        "Please provide the following environment variables: auth_url, username, password, project_name(comma separated values)"
+        (
+            "Please provide the following environment variables: auth_url, "
+            "username, password, project_name(comma separated values)"
+        )
     )
     sys.exit(1)
 
@@ -222,7 +232,10 @@ parser.add_argument(
     help="update metadata on openstack according to an hosts inventory file",
 )
 parser.add_argument(
-    "-g", "--generate_targets", help="generate targets file", action="store_true"
+    "-g",
+    "--generate_targets",
+    help="generate targets file",
+    action="store_true",
 )
 
 args = parser.parse_args()

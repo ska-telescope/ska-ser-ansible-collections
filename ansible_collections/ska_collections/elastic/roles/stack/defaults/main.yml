@@ -50,7 +50,7 @@ elasticsearch_default_node_roles:
   - ml
   - remote_cluster_client
   - transform
-elasticsearch_default_master_roles: 
+elasticsearch_default_master_roles:
   - master
   - remote_cluster_client
 elasticsearch_default_data_roles:
