@@ -35,12 +35,12 @@
       ansible.builtin.import_tasks: unregister.yml
       vars:
         gitlab_runner_unregister_all: true
-  
+
     - name: Register runner
       community.general.docker_container:
         name: "{{ gitlab_runner_name }}-register"
         image: "{{ gitlab_runner_image }}"
-        restart_policy: False
+        restart_policy: "False"
         command:
           - register
           - --non-interactive

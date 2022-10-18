@@ -24,7 +24,7 @@
       file:
         path: "{{ volume.mount_point }}"
         state: directory
-        mode: "0755"
+        mode: 0755
     - name: Mount volume
       mount:
         name: "{{ volume.mount_point }}"

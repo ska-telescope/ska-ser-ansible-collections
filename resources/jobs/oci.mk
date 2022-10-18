@@ -2,6 +2,7 @@
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml 
 
+-include $(BASE_PATH)/PrivateRules.mak
 -include $(PLAYBOOKS_ROOT_DIR)/PrivateRules.mak
 
 check_hosts:

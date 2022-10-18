@@ -17,8 +17,8 @@ readme: README.md
 # A list of the collection's content authors. Can be just the name or in the format 'Full Name <email> (url)
 # @nicks:irc/im.site#channel'
 authors:
-- Pedro Osório <pedro.osorio@atlar.pt>
-- Mariana Paulo <mariana.paulo@criticalsoftware.com>
+  - Pedro Osório <pedro.osorio@atlar.pt>
+  - Mariana Paulo <mariana.paulo@criticalsoftware.com>
 
 
 ### OPTIONAL but strongly recommended
@@ -29,7 +29,7 @@ description: Core roles for installing gitlab runners
 # Either a single license or a list of licenses for content inside of a collection. Ansible Galaxy currently only
 # accepts L(SPDX,https://spdx.org/licenses/) licenses. This key is mutually exclusive with 'license_file'
 license:
-- Apache-2.0
+  - Apache-2.0
 
 # The path to the license file for the collection. This path is relative to the root of the collection. This key is
 # mutually exclusive with 'license'
@@ -55,4 +55,4 @@ documentation: https://developer.skatelescope.org
 homepage: https://gitlab.com/ska-telescope/sdi/ska-cicd-ansible-collections
 
 # The URL to the collection issue tracker
-#issues: http://example.com/issue/tracker
+# issues: http://example.com/issue/tracker

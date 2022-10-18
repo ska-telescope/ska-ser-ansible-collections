@@ -17,7 +17,7 @@ readme: README.md
 # A list of the collection's content authors. Can be just the name or in the format 'Full Name <email> (url)
 # @nicks:irc/im.site#channel'
 authors:
-- Domingos Nunes <domingos.nunes@atlar.pt>
+  - Domingos Nunes <domingos.nunes@atlar.pt>
 
 
 ### OPTIONAL but strongly recommended
@@ -28,7 +28,7 @@ description: Core roles for creating an OpenStack cluster
 # Either a single license or a list of licenses for content inside of a collection. Ansible Galaxy currently only
 # accepts L(SPDX,https://spdx.org/licenses/) licenses. This key is mutually exclusive with 'license_file'
 license:
-- "BSD-3-Clause"
+  - "BSD-3-Clause"
 
 # The path to the license file for the collection. This path is relative to the root of the collection. This key is
 # mutually exclusive with 'license'
@@ -54,4 +54,4 @@ documentation: https://developer.skatelescope.org
 homepage: https://gitlab.com/ska-telescope/sdi/ska-cicd-ansible-roles
 
 # The URL to the collection issue tracker
-#issues: http://example.com/issue/tracker
+# issues: http://example.com/issue/tracker

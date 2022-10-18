@@ -8,7 +8,7 @@
     state: absent
     stop_timeout: 60
     timeout: 120
-    force_kill: no
+    force_kill: false
 
 - name: Remove configuration directory
   ansible.builtin.file:
