@@ -58,7 +58,6 @@
     - "--grpc-client-tls-secure"
     - "--grpc-client-tls-skip-verify"
     - "--grpc-client-server-name='{{ ansible_hostname }}'"
-    - "--log.level=debug"
 
 - name: Set fact about thanos query oci command
   ansible.builtin.set_fact:
