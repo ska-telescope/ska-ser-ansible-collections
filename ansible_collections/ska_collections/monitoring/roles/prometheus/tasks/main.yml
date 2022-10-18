@@ -89,27 +89,27 @@
 
 - name: Task grafana_ceph
   ansible.builtin.include_tasks: grafana_ceph.yml
-  when: mode == "server" or mode == "all"
+  when: mode == "grafana" or mode == "server" or mode == "all"
 
 - name: Task grafana_elasticstack
   ansible.builtin.include_tasks: grafana_elasticstack.yml
-  when: mode == "server" or mode == "all"
+  when: mode == "grafana" or mode == "server" or mode == "all"
 
 - name: Task grafana_kubernetes
   ansible.builtin.include_tasks: grafana_kubernetes.yml
-  when: mode == "server" or mode == "all"
+  when: mode == "grafana" or mode == "server" or mode == "all"
 
 - name: Task grafana_gitlab_runners
   ansible.builtin.include_tasks: grafana_gitlab_runners.yml
-  when: mode == "server" or mode == "all"
+  when: mode == "grafana" or mode == "server" or mode == "all"
 
 - name: Task grafana_cadvisor
   ansible.builtin.include_tasks: grafana_cadvisor.yml
-  when: mode == "server" or mode == "all"
+  when: mode == "grafana" or mode == "server" or mode == "all"
 
 - name: Task grafana_nodexporter
   ansible.builtin.include_tasks: grafana_nodexporter.yml
-  when: mode == "server" or mode == "all"
+  when: mode == "grafana" or mode == "server" or mode == "all"
 
 - name: Task gitlab_ci_pipelines_exporter
   ansible.builtin.include_tasks: gitlab_ci_pipelines_exporter.yml
@@ -117,7 +117,7 @@
 
 - name: Task grafana_alerts
   ansible.builtin.include_tasks: grafana_alerts.yml
-  when: mode == "server" or mode == "all"
+  when: mode == "grafana" or mode == "server" or mode == "all"
 
 # launch prom/alert/grafana after configuration
 - name: Task server
