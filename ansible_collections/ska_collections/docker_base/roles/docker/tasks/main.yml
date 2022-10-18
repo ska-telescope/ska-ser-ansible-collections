@@ -20,106 +20,47 @@
     msg: The Nvidia driver has not been found (nvidia-smi --query) - aborting.
   when: activate_nvidia|bool and not ignore_nvidia_fail|bool and not nvidia_driver_exists|bool
 
-- name: OS Family
-  debug: var=ansible_os_family
+- name: remove wrong packages for Docker
+  apt:
+    name: "{{ docker_deb_uninstall_pkgs }}"
+    force: true
+    state: absent
 
-- name: Debian Docker install
-  block:
-    - name: remove wrong packages for Docker
-      apt:
-        name: "{{ docker_deb_uninstall_pkgs }}"
-        force: true
-        state: absent
+- name: Install packages required for docker
+  apt:
+    name: "{{ docker_deb_dependencies }}"
+    state: present
 
-    - name: Install packages required for docker
-      apt:
-        name: "{{ docker_deb_dependencies }}"
-        state: present
+- name: Add dockerproject apt key
+  apt_key:
+    url: "{{ docker_deb_repo_key_url }}"
+    id: "{{ docker_deb_repo_key_id }}"
+    state: present
 
-    - name: Add dockerproject apt key
-      apt_key:
-        url: "{{ docker_deb_repo_key_url }}"
-        id: "{{ docker_deb_repo_key_id }}"
-        state: present
+- name: Add dockerproject apt source
+  lineinfile:
+    line: "{{ docker_deb_repo_url }}"
+    dest: /etc/apt/sources.list.d/docker.list
+    create: true
+    owner: root
+    group: root
+    mode: 0644
+  register: installeddocker
 
-    - name: Add dockerproject apt source
-      lineinfile:
-        line: "{{ docker_deb_repo_url }}"
-        dest: /etc/apt/sources.list.d/docker.list
-        create: true
-        owner: root
-        group: root
-        mode: 0644
-      register: installeddocker
+- name: Update apt cache
+  apt:
+    update_cache: true
 
-    - name: Update apt cache
-      apt:
-        update_cache: true
 
-    - name: Install docker CE (apt)
-      apt:
-        name: "{{ docker_deb_pkgs }}"
-        state: present
-        force: true
-      notify:
-        - restart docker
-
-  when: ansible_os_family == "Debian"
-
-- name: RedHat Docker install
-  block:
-    - name: remove wrong packages for Docker
-      dnf:
-        name: "{{ docker_rpm_uninstall_pkgs }}"
-        state: absent
-
-    - name: Install packages required for docker
-      dnf:
-        name: "{{ docker_rpm_dependencies }}"
-        state: present
-
-    - name: add RedHat repository control
-      dnf:
-        name: "dnf-plugins-core"
-        state: present
-
-    - name: Add Docker Yum repository
-      become: true
-      get_url:
-        url: "{{ docker_yum_repo_url }}"
-        dest: "/etc/yum.repos.d/docker.repo"
-        mode: 0644
-      register: installeddocker
-
-    - name: Install dependent containerd.io (dnf)
-      dnf:
-        name: "{{ containerd_rpm_dependency }}"
-        state: present
-      notify:
-        - restart docker
-
-    - name: Install docker CE (dnf)
-      dnf:
-        name: "{{ docker_rpm_pkgs }}"
-        state: present
-        skip_broken: true
-      notify:
-        - restart docker
-
-  when: ansible_os_family == "RedHat"
+- name: Docker install
+  include_tasks: install.yml
+  loop: "{{ docker_deb_pkgs }}"
 
 - name: Add {{ ansible_user }} user to docker group
   user:
     name: "{{ ansible_user }}"
     append: true
     groups: docker
-
-- name: Add local user ({{ user_to_add }}) to docker group
-  user:
-    name: "{{ user_to_add }}"
-    append: true
-    groups: docker
-  when: "ansible_user != user_to_add"
 
 - name: ensure that pip is install (CentOS 7)
   easy_install:

@@ -1,24 +1,33 @@
 ---
+- name: "Docker pull {{ kibana_image }}"
+  community.general.docker_image:
+    source: pull
+    name: "{{ kibana_image }}"
+  register: docker_pull_retry
+  until: "docker_pull_retry is not failed"
+  retries: 5
+  delay: 5
 
-- name: Kibana config
-  template:
+- name: Create kibana configuration
+  ansible.builtin.template:
     src: kibana.yml.j2
     dest: /etc/kibana.yml
     mode: 0644
+  register: kibana_config
 
-# only start this on the first one - should really go on a separate build
-- name: Restart a Kibana A
-  docker_container:
-    name: elk_kibana
+- name: Run kibana container
+  community.general.docker_container:
+    name: "{{ kibana_name }}"
+    network_mode: "{{ kibana_network_mode }}"  # reverse DNS must work
+    privileged: "{{ 'yes' if kibana_network_mode == 'host' else 'no' }}"
     restart_policy: always
     image: "{{ kibana_image }}"
-    command: "kibana -e https://{{ ansible_default_ipv4.address }}:9200"
     state: started
-    labels: "{{ container_labels }}"
-    log_driver: "{{ log_driver }}"
-    log_options: "{{ log_options }}"
+    labels: "{{ kibana_labels }}"
+    log_driver: "{{ kibana_log_driver }}"
+    log_options: "{{ kibana_log_options }}"
     volumes:
       - /etc/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
     ports:
-      - "5602:5601"
-  when: "inventory_hostname == groups[target_hosts][0]"
+      - "{{ kibana_port }}:{{ kibana_port }}"
+    recreate: "{{ kibana_reinstall or kibana_config.changed | bool }}"

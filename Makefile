@@ -4,6 +4,10 @@ MAKEFLAGS += --no-print-directory
 
 PLAYBOOKS_HOSTS?=all
 JOBS_DIR=resources/jobs
+ANSIBLE_COLLECTIONS_PATHS ?=
+PLAYBOOKS_ROOT_DIR ?=
+ANSIBLE_CONFIG ?=
+PLAYBOOKS_HOSTS ?=
 
 # define overides for above variables in here
 -include PrivateRules.mak
@@ -16,6 +20,12 @@ endif
 vars:  ## Variables
 	@echo "Current variable settings:"
 	@echo "ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS)"
+	@echo "PLAYBOOKS_ROOT_DIR=$(PLAYBOOKS_ROOT_DIR)"
+	@echo "ANSIBLE_CONFIG=$(ANSIBLE_CONFIG)"
+	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
+	@echo "CA_CERT_PASS=$(CA_CERT_PASS)"
+	@echo "ELASTIC_PASSWORD=$(ELASTIC_PASSWORD)"
+	@echo "ELASTIC_HAPROXY_STATS_PASS=$(ELASTIC_HAPROXY_STATS_PASS)"
 
 ping:  check-env ## Ping Ansible targets
 	ansible all -i $(PLAYBOOKS_ROOT_DIR)/inventory.yml -m ping -l $(PLAYBOOKS_HOSTS)
@@ -64,7 +74,16 @@ endif
 common: check-env ## ElasticSearch targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/common.mk
 
+help-from-submodule: ## Show Help
+	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}';
+	@echo ""
+	@echo "--------- Playbook Jobs ------------"
+	@echo ""
+	@$(foreach file, $(wildcard $(JOBS_DIR)/*), make help -f $(file); echo "";)
+	
 help: ## Show Help
+	@make vars;
+	@echo "";
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}';
 	@echo ""
 	@echo "--------- Playbook Jobs ------------"

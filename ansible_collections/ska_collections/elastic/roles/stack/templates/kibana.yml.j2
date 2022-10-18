@@ -1,6 +1,13 @@
-# Default Kibana configuration for docker target
-server.name: kibana
-server.host: "0"
-elasticsearch.hosts: [ "https://{{ ansible_default_ipv4.address }}:9200" ]
+# Kibana settings
+server.name: "{{ inventory_hostname }}"
+server.host: "0.0.0.0"
+server.port: {{ kibana_port }}
 server.basePath: "/kibana"
-#server.rewriteBasePath: true
+server.rewriteBasePath: true
+server.ssl.enabled: false
+
+# Elasticsearch settings
+elasticsearch.hosts:
+{% for item in (groups[target_hosts ~ '-master'] + groups[target_hosts ~ '-data']) %}
+  - https://{{ hostvars[item].ip }}:{{ elasticsearch_api_port }}
+{% endfor %}
