@@ -46,7 +46,7 @@
   ansible.builtin.file:
     path: "{{ certificates_dir }}"
     mode: "0770"
-    
+
 - name: Change private key ownership
   ansible.builtin.file:
     path: "{{ certificates_dir }}/{{ inventory_hostname }}.key"

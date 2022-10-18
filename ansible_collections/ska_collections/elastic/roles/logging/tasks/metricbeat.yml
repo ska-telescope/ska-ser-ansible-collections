@@ -71,7 +71,7 @@
     mode: 0644
   register: updatemetricbeat
 
-- name: ensure metricbeat restarts  # noqa 503
+- name: ensure metricbeat restarts  # noqa no-handler
   service: name=metricbeat state=restarted enabled=true
   when: updatemetricbeat.changed
   become: true

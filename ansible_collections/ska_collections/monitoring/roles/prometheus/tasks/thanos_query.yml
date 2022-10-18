@@ -76,9 +76,9 @@
     restart: true
     restart_policy: always
     ports:
-    - "9091:9091"
-    - "10902:10902"
+      - "9091:9091"
+      - "10902:10902"
     volumes:
-    - "/etc/hosts:/etc/hosts:ro"
-    - "{{ thanos_config_dir }}:{{ thanos_config_dir }}"
-    - "{{ certificates_dir }}:{{ certificates_dir }}"
+      - "/etc/hosts:/etc/hosts:ro"
+      - "{{ thanos_config_dir }}:{{ thanos_config_dir }}"
+      - "{{ certificates_dir }}:{{ certificates_dir }}"

@@ -1,14 +1,14 @@
 ---
-- name: restart containerd
+- name: Restart containerd
   ansible.builtin.systemd:
     state: restarted
     daemon_reload: true
     name: containerd
 
-- name: restart docker  # noqa ignore-errors
-  service: name=docker enabled=true state=restarted
+- name: Restart docker  # noqa ignore-errors
+  ansible.builtin.service: name=docker enabled=true state=restarted
   ignore_errors: true
 
-- name: restart cron
-  service: name=cron state=restarted enabled=yes
+- name: Restart cron
+  ansible.builtin.service: name=cron state=restarted enabled=yes
   become: true

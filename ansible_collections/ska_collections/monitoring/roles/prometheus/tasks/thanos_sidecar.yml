@@ -67,9 +67,9 @@
     restart: true
     restart_policy: always
     ports:
-    - "10901:10901"
+      - "10901:10901"
     volumes:
-    - "/etc/hosts:/etc/hosts:ro"
-    - "{{ prometheus_data_dir }}:/prometheus"
-    - "{{ thanos_config_dir }}:/etc/thanos"
-    - "{{ certificates_dir }}:{{ certificates_dir }}"
+      - "/etc/hosts:/etc/hosts:ro"
+      - "{{ prometheus_data_dir }}:/prometheus"
+      - "{{ thanos_config_dir }}:/etc/thanos"
+      - "{{ certificates_dir }}:{{ certificates_dir }}"

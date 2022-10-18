@@ -5,24 +5,24 @@
   tasks:
 
     - name: Upgrade all packages (apt)
-      apt:
+      ansible.builtin.apt:
         upgrade: dist
         autoremove: true
 
     - name: Ensure required packages are installed (apt)
-      apt:
+      ansible.builtin.apt:
         name: "iproute2"
         update_cache: true
         state: present
 
-    - name: install cron
-      apt:
+    - name: Install cron
+      ansible.builtin.apt:
         name: "cron"
         update_cache: true
         state: present
-        
-    - name: install kmod
-      apt:
+
+    - name: Install kmod
+      ansible.builtin.apt:
         name: "kmod"
         update_cache: true
         state: present

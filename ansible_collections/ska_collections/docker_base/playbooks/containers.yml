@@ -3,10 +3,12 @@
 
 - name: "Ensure that the apt repositories are updated - old image issues"
   hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
   become: true
   tasks:
     - name: Ensure that the apt cache is updated
-      apt:
+      ansible.builtin.apt:
         update_cache: true
       register: apt_res
       retries: 5
@@ -15,6 +17,8 @@
 
 - name: "Apply the containerd role to docker nodes"
   hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
   become: true
   become_method: sudo
   roles:

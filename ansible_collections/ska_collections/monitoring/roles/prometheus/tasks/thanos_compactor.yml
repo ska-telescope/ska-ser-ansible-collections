@@ -45,20 +45,20 @@
     image: "thanosio/thanos:{{ thanos_docker_tags }}"
     state: started
     command:
-    - "compact"
-    - "--data-dir='/data'"
-    - "--objstore.config-file='{{ thanos_config_dir }}/swift.yml'"
-    - "--http-address='0.0.0.0:19091'"
-    - "--http.config='{{ thanos_config_dir }}/thanos_compactor.yaml'"
-    - "--wait"
-    - "--wait-interval=60m"
+      - "compact"
+      - "--data-dir='/data'"
+      - "--objstore.config-file='{{ thanos_config_dir }}/swift.yml'"
+      - "--http-address='0.0.0.0:19091'"
+      - "--http.config='{{ thanos_config_dir }}/thanos_compactor.yaml'"
+      - "--wait"
+      - "--wait-interval=60m"
     user: root
     restart: true
     restart_policy: always
     ports:
-    - "19091:19091"
+      - "19091:19091"
     volumes:
-    - "/etc/hosts:/etc/hosts:ro"
-    - "{{ thanos_config_dir }}:{{ thanos_config_dir }}"
-    - "{{ certificates_dir }}:{{ certificates_dir }}"
-    - "{{ thanos_compactor_data_dir }}:/data"
+      - "/etc/hosts:/etc/hosts:ro"
+      - "{{ thanos_config_dir }}:{{ thanos_config_dir }}"
+      - "{{ certificates_dir }}:{{ certificates_dir }}"
+      - "{{ thanos_compactor_data_dir }}:/data"
