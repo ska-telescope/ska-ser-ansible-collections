@@ -7,14 +7,14 @@ BIFROST_CLUSTER_NAME ?= terminus
 BIFROST_EXTRA_VARS ?= jump_host=' -F $(PLAYBOOKS_ROOT_DIR)/ssh.config $(BIFROST_CLUSTER_NAME) '
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 
--include $(BASE_PATH)/PrivateRules.mak
+-include $(PLAYBOOKS_ROOT_DIR)/PrivateRules.mak
 
 check_hosts:
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 
-install: check_hosts ## Run common tasks (setup host(s), mount volumes)
+setup: check_hosts ## Run common tasks (setup host(s), mount volumes)
 	ansible-playbook ./ansible_collections/ska_collections/instance_common/playbooks/common.yml \
 	-i $(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
