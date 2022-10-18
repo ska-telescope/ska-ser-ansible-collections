@@ -5,13 +5,24 @@ ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 
-install: check_hosts ## Install elastic
-	@ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/stack.yml \
+check_passwords:
+ifndef CA_CERT_PASS
+	$(error CA_CERT_PASS is undefined)
+endif
+ifndef ELASTIC_PASSWORD
+	$(error ELASTIC_PASSWORD is undefined)
+endif
+ifndef ELASTIC_HAPROXY_STATS_PASS
+	$(error ELASTIC_HAPROXY_STATS_PASS is undefined)
+endif
+
+install: check_hosts check_passwords ## Install elastic
+	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/install.yml \
 	-i $(PLAYBOOKS_ROOT_DIR)/inventory.yml \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) ca_cert_pass=$(CA_CERT_PASS) elastic_password=$(ELASTIC_PASSWORD) elastic_elastic_haproxy_stats_passwd=$(ELASTIC_HAPROXY_STATS_PASS)"
 	
-destroy: check_hosts ## Destroy elastic - only the containers
-	@ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/stack.yml \
+destroy: check_hosts ## Destroy elastic cluster
+	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/destroy.yml \
 	-i $(PLAYBOOKS_ROOT_DIR)/inventory.yml \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 

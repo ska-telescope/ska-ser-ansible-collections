@@ -1,0 +1,25 @@
+---
+- name: "Docker pull {{ elasticsearch_exporter_image }}"
+  community.general.docker_image:
+    source: pull
+    name: "{{ elasticsearch_exporter_image }}"
+  register: docker_pull_retry
+  until: "docker_pull_retry is not failed"
+  retries: 5
+  delay: 5
+
+- name: Run elasticsearch exporter container
+  community.general.docker_container:
+    name: "{{ elasticsearch_exporter_name }}"
+    network_mode: "{{ elasticsearch_exporter_network_mode }}"  # reverse DNS must work
+    privileged: "{{ 'yes' if elasticsearch_exporter_network_mode == 'host' else 'no' }}"
+    restart_policy: always
+    image: "{{ elasticsearch_exporter_image }}"
+    state: started
+    labels: "{{ elasticsearch_exporter_labels }}"
+    log_driver: "{{ elasticsearch_exporter_log_driver }}"
+    log_options: "{{ elasticsearch_exporter_log_options }}"
+    ports:
+      - "{{ elasticsearch_exporter_port }}:{{ elasticsearch_exporter_port }}"
+    env: "{{ elasticsearch_exporter_env_defaults | combine(elasticsearch_exporter_env_variables) }}"
+    recreate: "{{ elasticsearch_exporter_reinstall }}"

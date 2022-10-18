@@ -1,0 +1,15 @@
+[[package]]
+name = "mitogen"
+version = "0.3.3"
+description = "Library for writing distributed self-replicating programs."
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
+
+[metadata]
+lock-version = "1.1"
+python-versions = "^3.8"
+content-hash = "d25899f94f491d1f3cf6ef3a6937150ac8bbcaf88ba45245c466985e9f044186"
+
+[metadata.files]
+mitogen = []
