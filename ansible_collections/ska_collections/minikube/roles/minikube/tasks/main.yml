@@ -15,9 +15,13 @@
 
 
 - name: Start Minikube
+  # Minikube is not started - this actually works for both shutdown and uninstalled!!!
+  when: "minikube_run_check.rc != 0"
+  tags:
+    - build
   block:
 
-    - name: install kubernetes dependency on pip3
+    - name: Install kubernetes dependency on pip3
       ansible.builtin.pip:
         executable: pip3
         name: kubernetes
@@ -68,13 +72,13 @@
 
     - name: Extract IP
       ansible.builtin.set_fact:
-        minikube_ip: "{{ minikube_ip_check.stdout | regex_search(regexp,'\\1') | first }}"
+        minikube_ip: "{{ minikube_ip_check.stdout | regex_search(regexp, '\\1') | first }}"
       vars:
         regexp: '([0-9\.]+)'
 
     - name: Extract IP Prefix
       ansible.builtin.set_fact:
-        minikube_ip_prefix: "{{ minikube_ip  | regex_search(regexp,'\\1') | first }}"
+        minikube_ip_prefix: "{{ minikube_ip | regex_search(regexp, '\\1') | first }}"
       vars:
         regexp: '([0-9]+\.[0-9]+\.[0-9]+)\..*'
 
@@ -87,6 +91,7 @@
       ansible.builtin.file:
         path: "/etc/haproxy"
         state: directory
+        mode: "0755"
       become: true
 
     - name: Add proxy config
@@ -101,7 +106,7 @@
         name: "{{ minikube_haproxy_image }}"
         source: pull
 
-    - name: "Stop {{ minikube_haproxy_name }} container"
+    - name: "Stop container {{ minikube_haproxy_name }}"
       community.docker.docker_container:
         name: "{{ minikube_haproxy_name }}"
         state: absent
@@ -124,16 +129,15 @@
         volumes:
           - "/etc/haproxy/haproxy-minikube.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro"
 
-  # Minikube is not started - this actually works for both shutdown and uninstalled!!!
-  when: "minikube_run_check.rc != 0"
-  tags:
-    - build
-
 
 - name: Destroy Minikube Instance
+  # Minikube is started
+  when: "minikube_run_check.rc == 0"
+  tags:
+    - destroy
   block:
 
-    - name: "Remove {{ minikube_haproxy_name }} container"
+    - name: "Remove container {{ minikube_haproxy_name }}"
       community.docker.docker_container:
         name: "{{ minikube_haproxy_name }}"
         state: absent
@@ -146,11 +150,6 @@
       changed_when: false
       register: minikube_exec_check
 
-  # Minikube is started
-  when: "minikube_run_check.rc == 0"
-  tags:
-    - destroy
-
 
 - name: Flush those handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers

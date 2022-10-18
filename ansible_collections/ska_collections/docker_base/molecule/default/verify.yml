@@ -5,8 +5,8 @@
   hosts: all
   tasks:
 
-  - name: populate service facts
-    service_facts:
+  - name: Populate service facts
+    ansible.builtin.service_facts:
 
   # - debug:
   #     var: ansible_facts.services
@@ -18,7 +18,7 @@
   #       - ansible_facts.services['docker.service'].status == "enabled"
 
   - name: Check Containerd running
-    assert:
+    ansible.builtin.assert:
       that:
       - ansible_facts.services['containerd.service'].state == "running"
       - ansible_facts.services['containerd.service'].status == "enabled"
@@ -40,12 +40,12 @@
   #     that:
   #       - not docker_metrics.failed and docker_metrics.state == "started"
 
-  - name: Get containerd ps # noqa 301
-    command: "/usr/local/bin/crictl ps"
+  - name: Get containerd ps # noqa no-changed-when
+    ansible.builtin.command: "/usr/local/bin/crictl ps"
     register: containerd_ps
 
   - name: Check containerd healthy
-    assert:
+    ansible.builtin.assert:
       that:
       - containerd_ps.rc == 0
 

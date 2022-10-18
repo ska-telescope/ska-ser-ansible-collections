@@ -8,7 +8,7 @@ crictl_version: v1.24.2
 activate_nvidia: false
 ignore_nvidia_fail: false
 
-debian_arch: "{{ {'x86_64': 'amd64', 'aarch64': 'arm64'}[ansible_architecture]|default(ansible_architecture) }}"
+debian_arch: "{{ {'x86_64': 'amd64', 'aarch64': 'arm64'}[ansible_architecture] | default(ansible_architecture) }}"
 docker_deb_repo_url: "deb https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
 docker_deb_repo_key_url: https://download.docker.com/linux/ubuntu/gpg
 docker_deb_repo_key_id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88

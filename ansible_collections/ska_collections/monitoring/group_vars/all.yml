@@ -3,8 +3,8 @@
 # common variables
 aptcachetime: 3600
 locale: "en_US.UTF-8"
-localuser: "{{ lookup('env','USER') }}"
-localhome: "{{ lookup('env','HOME') }}"
+localuser: "{{ lookup('env', 'USER') }}"
+localhome: "{{ lookup('env', 'HOME') }}"
 
 oidc_issuer_url: 'https://gitlab.com'
 oidc_client_id: '417ea12283741e0d74b22778d2dd3f5d0dcee78828c6e9a8fd5e8589025b8d2f'

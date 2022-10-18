@@ -1,15 +1,16 @@
 ---
 - name: OS Family
-  debug: var=ansible_os_family
+  ansible.builtin.debug: var=ansible_os_family
 
 - name: Debian Podman install
+  when: ansible_os_family == "Debian"
   block:
     - name: Add podman project apt key
-      apt_key:
+      ansible.builtin.apt_key:
         url: "{{ podman_deb_repo_key_url }}"
 
     - name: Add podman project apt source
-      lineinfile:
+      ansible.builtin.lineinfile:
         line: "{{ podman_deb_repo_url }}"
         dest: /etc/apt/sources.list.d/podman.list
         create: true
@@ -18,22 +19,17 @@
         mode: 0644
       register: installed_podman
 
-    # nolonger required as dependecy has been fixed
-    # - name: Add criu PPA
-    #   ansible.builtin.apt_repository:
-    #     repo: "ppa:criu/ppa"
-
     - name: Update apt cache
-      apt:
+      ansible.builtin.apt:
         update_cache: true
 
     - name: Upgrade all packages (apt)
-      apt:
+      ansible.builtin.apt:
         upgrade: true
         autoremove: true
 
     - name: Set kernel.unprivileged_userns_clone=1
-      sysctl: name=kernel.unprivileged_userns_clone value=1 state=present ignoreerrors=true
+      ansible.builtin.sysctl: name=kernel.unprivileged_userns_clone value=1 state=present ignoreerrors=true
       notify:
         - restart procps
 
@@ -41,28 +37,33 @@
       sysctl: name=user.max_inotify_instances value=1048576 state=present ignoreerrors=true
 
     - name: Set fs.inotify.max_user_watches to 1048576
-      sysctl: name=fs.inotify.max_user_watches value=1048576 state=present ignoreerrors=true
+      ansible.builtin.sysctl: name=fs.inotify.max_user_watches value=1048576 state=present ignoreerrors=true
 
     - name: Install podman CE (apt)
-      apt:
+      ansible.builtin.apt:
         name: "{{ podman_deb_pkgs }}"
         state: present
         force: true
 
     - name: Configure podman
-      template:
+      ansible.builtin.template:
         src: registries.conf.j2
         dest: "/etc/containers/registries.conf.d/mirror.conf"
         mode: "0644"
 
+    - name: "Check if /etc/containers/storage.conf exists"
+      ansible.builtin.stat:
+        path: "/etc/containers/storage.conf"
+      register: result_storage
+
     - name: Remove metacopy=on - not supported prior 4.19
-      replace:
+      ansible.builtin.replace:
         dest: /etc/containers/storage.conf
         regexp: '^mountopt = .*'
         replace: 'mountopt = "nodev"'
         backup: true
 # this file apparently does not exist when using alvistack
-      ignore_errors: true
+      when: result_storage.stat.exists
 
     - name: Enable service docker and ensure it is not masked
       ansible.builtin.systemd:
@@ -70,7 +71,5 @@
         enabled: true
         masked: false
 
-  when: ansible_os_family == "Debian"
-
 - name: Flush those handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers

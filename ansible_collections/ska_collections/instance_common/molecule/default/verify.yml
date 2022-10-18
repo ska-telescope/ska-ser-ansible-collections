@@ -40,7 +40,7 @@
   #     that:
   #       - not docker_metrics.failed and docker_metrics.state == "started"
 
-  - name: Get containerd ps # noqa 301
+  - name: Get containerd ps # noqa no-changed-when
     command: "/usr/local/bin/crictl ps"
     register: containerd_ps
 

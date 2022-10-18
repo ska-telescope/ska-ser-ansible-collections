@@ -1,7 +1,7 @@
 ---
 
 - name: Calculate version vars
-  set_fact:
+  ansible.builtin.set_fact:
     os_name: "{{ ansible_system | lower }}"
     os_binary: "{% if ansible_facts.architecture == 'x86_64' %}amd64{% else %}unknown{% endif %}"
     os_arch: "{{ ansible_facts.architecture | lower }}"
@@ -14,40 +14,42 @@
   tags: [always]
 
 - name: Load cloud config
-  include_vars:
+  ansible.builtin.include_vars:
     file: "{{ velero_cloud_config }}"
     name: "velero_ostack_cloud_yaml"
 
-- name: set selected cloud
-  set_fact:
+- name: Set selected cloud
+  ansible.builtin.set_fact:
     velero_selected_cloud: "{{ velero_ostack_cloud_yaml['clouds'][velero_cloud] }}"
 
 - name: Check if velero exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ velero_exe_dir }}/velero"
   register: stat_velero
 
 - name: Check if the velero version is installed
-  command: "{{ velero_exe_dir }}/velero version --client-only"
+  ansible.builtin.command: "{{ velero_exe_dir }}/velero version --client-only"
   changed_when: false
   register: velero_version_check
   ignore_errors: true
 
-- name: velero install
+- name: Velero install
+  when: "not stat_velero.stat.exists or
+    velero_version_check.stdout.find(velero_version) == -1"
   block:
-    - name: set velero_archive fact
-      set_fact:
+    - name: Set velero_archive fact
+      ansible.builtin.set_fact:
         velero_archive: "velero-{{ velero_version }}-{{ os_name }}-{{ os_binary }}.tar.gz"
 
     - name: Download velero
-      get_url:
+      ansible.builtin.get_url:
         url: "https://github.com/vmware-tanzu/velero/releases/download/{{ velero_version }}/{{ velero_archive }}"
         dest: "/tmp/{{ velero_archive }}"
         mode: "0755"
         tmp_dest: "/tmp/"
 
-    - name: unpack velero
-      unarchive:
+    - name: Unpack velero
+      ansible.builtin.unarchive:
         src: "/tmp/{{ velero_archive }}"
         include: "velero-{{ velero_version }}-{{ os_name }}-{{ os_binary }}/velero"
         remote_src: true
@@ -57,16 +59,13 @@
           - "--strip-components=1"
       become: true
 
-    - name: tidy up velero download
-      file:
+    - name: Tidy up velero download
+      ansible.builtin.file:
         path: "/tmp/{{ velero_archive }}"
         state: absent
 
-  when: "not stat_velero.stat.exists or
-    velero_version_check.stdout.find(velero_version) == -1"
-
 - name: Check Velero is running
-  k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Deployment
     name: velero
@@ -75,10 +74,12 @@
 
 # https://github.com/Lirt/velero-plugin-for-openstack
 - name: Start Velero
+  # Velero is not started
+  when: "not velero_controller_check.resources"
   block:
 
     - name: Start up Velero
-      command: |
+      ansible.builtin.command: |
         {{ velero_exe_dir }}/velero install \
           --provider "community.openstack.org/openstack" \
                   --plugins {{ velero_ostack_plugin_version }} \
@@ -99,11 +100,8 @@
         wait_condition:
           type: Available
 
-  # Velero is not started
-  when: "not velero_controller_check.resources"
-
 - name: Check Velero BackUpStorageLocation
-  k8s_info:
+  kubernetes.core.k8s_info:
     kind: BackupStorageLocation
     api_version: velero.io/v1
     name: default
@@ -111,7 +109,7 @@
   register: velero_backuplocation_check
 
 - name: Set Velero backup config
-  command: |
+  ansible.builtin.command: |
     kubectl -n velero set env deployment/velero \
     OS_REGION_NAME="{{ velero_selected_cloud.region_name }}" \
     OS_INTERFACE="{{ velero_selected_cloud.interface }}" \
@@ -129,14 +127,14 @@
          velero_backuplocation_check.resources[0].status.phase != 'Available'"
 
 - name: Check backup schedule
-  command: |
+  ansible.builtin.command: |
     velero schedule describe {{ velero_schedule_name }}
   changed_when: false
   register: velero_schedule_check
   ignore_errors: true
 
 - name: Set Velero backup schedule
-  command: |
+  ansible.builtin.command: |
     velero schedule create {{ velero_schedule_name }} \
      --schedule="{{ velero_schedule_time }}" \
      --include-cluster-resources=true \
@@ -149,4 +147,4 @@
   when: "not velero_schedule_check.rc == 0"
 
 - name: Flush those handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers

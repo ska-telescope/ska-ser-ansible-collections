@@ -1,19 +1,19 @@
 ---
 - name: Allow updating Docker apt packages
-  dpkg_selections:
+  ansible.builtin.dpkg_selections:
     name: "{{ item }}"
     selection: install
   when: docker_allow_upgrade
 
 - name: Install docker CE (apt)
-  apt:
+  ansible.builtin.apt:
     name: "{{ item }}={{ docker_deb_version }}"
     state: present
     allow_downgrade: true
   notify:
-    - restart docker
+    - Restart docker
 
 - name: Hold Docker apt packages
-  dpkg_selections:
+  ansible.builtin.dpkg_selections:
     name: "{{ item }}"
     selection: hold

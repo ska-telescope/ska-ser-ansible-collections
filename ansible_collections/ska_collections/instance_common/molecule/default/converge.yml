@@ -2,7 +2,7 @@
 - name: Converge
 
   collections:
-  - ska_cicd.docker_base
+  - ska_collections.docker_base
 
   vars:
     debug: true
@@ -18,10 +18,10 @@
     debug:
       msg: var=ansible_default_ipv4
 
-  - name: "Include ska_cicd.docker_base.docker"
+  - name: "Include ska_collections.docker_base.docker"
     include_role:
-      name: "ska_cicd.docker_base.docker"
+      name: "ska_collections.docker_base.docker"
 
-  - name: "Include ska_cicd.docker_base.containerd"
+  - name: "Include ska_collections.docker_base.containerd"
     include_role:
-      name: "ska_cicd.docker_base.containerd"
+      name: "ska_collections.docker_base.containerd"
