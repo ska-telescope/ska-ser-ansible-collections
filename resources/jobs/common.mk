@@ -15,7 +15,7 @@ ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 
-setup: check_hosts ## Run common tasks (setup host(s), mount volumes)
+install: check_hosts ## Run common tasks (setup host(s), mount volumes)
 	ansible-playbook ./ansible_collections/ska_collections/instance_common/playbooks/common.yml \
 	-i $(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \

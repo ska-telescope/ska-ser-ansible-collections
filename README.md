@@ -5,10 +5,11 @@ This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/
 
 | Collection            | Roles                                 | Description                                               |
 | --------------------- | --------------------------------------| ----------------------------------------------------------|
-| oci                   | containerd <br> docker <br> podman    | Install specific OCI engine                               |
 | instance_common       | init <br> certs                       | VM initialization (common packages, mount volumes, etc)   |
-| elastic               | stack                                 | Elasticsearch and Kibana cluster roles                    |
+| docker_base           | containerd <br> docker <br> podman    | Install specific OCI engine                               |
+| elastic               | stack <br> logging <br> haproxy       | Elasticsearch and Kibana cluster roles                    |
 | monitoring            | custom_metrics <br> node_exporter <br> prometheus <br> updatehosts | Install prometheus-based metrics services |
+| minikube              | minikube <br> setup <br> velero        | Install minikube and associated tools                    |
 | gitlab_runner         | runner                                 | Install docker-based Gitlab-runner                       |
 | ceph                  | installation                          | Ceph roles                                                |
 
@@ -58,6 +59,7 @@ project - umbrella repository
 
 Finally, this repo has make targets to run the desired collections with all the files and configurations added with
 little setup.
+
 ### Make Targets
 
 The table bellow, iterates all the targets available on the main Makefile. 
@@ -80,16 +82,24 @@ make <collection> <job> <VARS>
 
 | Collection | Job        | Description                                                | Role Dependency                                |
 |------------|------------|------------------------------------------------------------|----------------------------------------------- |
-| elastic    | install    | Install ElasticSearch cluster via OCI containers           | common.init <br> common.certs <br> oci.docker  |
-| elastic    | destroy    | Destroy ElasticSearch cluster                              |                                                |
+| common     | install    | Update APT, install common packages and mounts volumes     |                                                |
 | oci        | docker     | Install Docker                                             |                                                |
 | oci        | podman     | Install Podman                                             |                                                |
 | oci        | containerd | Install containerd                                         |                                                |
 | common     | init       | Update APT <br> Install common packages <br> Mount volumes |                                                |
 | common     | certs      | Generate certificates from the Terminus CA                 |                                                |
 | ceph       | install    | Install ceph                                               | stackhp cephadm (run install_collections)      |
-| gitlab_runner | deploy  | Deploy and register gitlab runner                          |  common.init <br> oci.docker                   |
-| gitlab_runner | undeploy| Undeploy and unregister gitlab runner                      |                                                |
+| elastic    | install    | Install elasticsearch cluster via OCI containers           | instance_common.init <br> intance_common.certs <br> docker_base.docker  |
+| elastic    | destroy    | Destroy elasticsearch cluster                              |                                                |
+| logging    | install    | Deploy filebeat into nodes                                 |                                                |
+| logging    | destroy    | Remove filebeat from nodes                                 |                                                |
+| monitoring    | prometheus       | Install prometheus                                |                                                |
+| monitoring    | thanos           | Install thanos                                    |                                                |
+| monitoring    | node-exporter    | Install node-exporter                             |                                                |
+| monitoring    | update_metadata  | Update nodes metadata for scrapers                |                                                |
+| monitoring    | update_scrapers  | Update prometheus scrapers                        |                                                |
+| gitlab_runner | install  | Install and register gitlab runner                        |  instance_common.init <br> docker_base.docker  |
+| gitlab_runner | destroy  | Destroy and unregister gitlab runner                      |                                                |
 
 ### Mandatory Environment Variables
 

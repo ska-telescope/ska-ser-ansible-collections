@@ -15,7 +15,7 @@ ifndef GITLAB_RUNNER_REGISTRATION_TOKEN
 	$(error GITLAB_RUNNER_REGISTRATION_TOKEN is undefined)
 endif
 
-deploy: check_hosts check_secrets ## Deploy gitlab-runner
+install: check_hosts check_secrets ## Deploy gitlab-runner
 	@ansible-playbook ./ansible_collections/ska_collections/gitlab_runner/playbooks/deploy.yml \
 	-i $(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
@@ -23,8 +23,8 @@ deploy: check_hosts check_secrets ## Deploy gitlab-runner
 		target_hosts=$(PLAYBOOKS_HOSTS) \
 		gitlab_runner_registration_token=$(GITLAB_RUNNER_REGISTRATION_TOKEN) \
 	"
-
-undeploy: check_hosts check_secrets ## Undeploy gitlab-runner
+	
+destroy: check_hosts check_secrets ## Destroy gitlab-runner
 	@ansible-playbook ./ansible_collections/ska_collections/gitlab_runner/playbooks/undeploy.yml \
 	-i $(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
