@@ -101,6 +101,7 @@ elasticsearch_instance_add_cluster_label:
 prometheus_alertmanager_config_dir: /etc/alertmanager
 prometheus_alertmanager_data_dir: /alertmanager
 
+thanos_alt_name: "monitoring.skao.stfc"
 thanos_config_dir: /etc/thanos
 thanos_store_data_dir: /etc/thanos/data/dir
 thanos_compactor_data_dir: /etc/thanos/thanos-compact

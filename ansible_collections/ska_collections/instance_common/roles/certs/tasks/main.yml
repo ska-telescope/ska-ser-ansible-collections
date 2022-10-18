@@ -28,7 +28,7 @@
     community.crypto.openssl_csr_pipe:
       privatekey_path: "{{ certificates_dir }}/{{ private_key_name }}.key"
       common_name: "{{ ansible_hostname }}"
-      subject_alt_name: 'DNS:{{ dns_alt_name }},IP:{{ ansible_default_ipv4.address }}'
+      subject_alt_name: 'DNS:{{ ansible_hostname }},DNS:{{ dns_alt_name }},IP:{{ ansible_default_ipv4.address }}'
       organization_name: "{{ organization_name }}"
     register: csr
 
