@@ -20,9 +20,9 @@ container_labels:
   org.ska.app.group: monitoring
 
 filebeat_name: filebeat
+
+# certificate options
 certificates_dir: "/etc/pki/tls/private"
-certificate_name: "{{ filebeat_name }}"
-private_key_name: "{{ filebeat_name }}"
 
 # pipeline run in filebeat - default none
 filebeat_pipeline: ""
