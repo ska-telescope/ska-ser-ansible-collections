@@ -3,7 +3,6 @@ ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml 
 
 -include $(BASE_PATH)/PrivateRules.mak
--include $(PLAYBOOKS_ROOT_DIR)/PrivateRules.mak
 
 check_hosts:
 ifndef PLAYBOOKS_HOSTS
@@ -19,13 +18,13 @@ docker: check_hosts ## Install docker
 	-i $(INVENTORY_FILE)\
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
-	
+
 containerd: check_hosts ## Install containerd
 	ansible-playbook ./ansible_collections/ska_collections/docker_base/playbooks/containerd.yml \
 	-i $(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
-	
+
 podman: check_hosts ## Install podman
 	ansible-playbook ./ansible_collections/ska_collections/docker_base/playbooks/podman.yml \
 	-i $(INVENTORY_FILE) \

@@ -3,19 +3,18 @@ ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml
 
 -include $(BASE_PATH)/PrivateRules.mak
--include $(PLAYBOOKS_ROOT_DIR)/PrivateRules.mak
 
 check_hosts:
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 
-check_secrets:
+check_gitlab_runner_secrets:
 ifndef GITLAB_RUNNER_REGISTRATION_TOKEN
 	$(error GITLAB_RUNNER_REGISTRATION_TOKEN is undefined)
 endif
 
-install: check_hosts check_secrets ## Deploy gitlab-runner
+install: check_hosts check_gitlab_runner_secrets ## Deploy gitlab-runner
 	@ansible-playbook ./ansible_collections/ska_collections/gitlab_runner/playbooks/deploy.yml \
 	-i $(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
@@ -23,8 +22,8 @@ install: check_hosts check_secrets ## Deploy gitlab-runner
 		target_hosts=$(PLAYBOOKS_HOSTS) \
 		gitlab_runner_registration_token=$(GITLAB_RUNNER_REGISTRATION_TOKEN) \
 	"
-	
-destroy: check_hosts check_secrets ## Destroy gitlab-runner
+
+destroy: check_hosts check_gitlab_runner_secrets ## Destroy gitlab-runner
 	@ansible-playbook ./ansible_collections/ska_collections/gitlab_runner/playbooks/undeploy.yml \
 	-i $(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \

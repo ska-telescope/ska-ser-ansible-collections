@@ -8,7 +8,6 @@ BIFROST_EXTRA_VARS ?= jump_host=' -F $(PLAYBOOKS_ROOT_DIR)/ssh.config $(BIFROST_
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 
 -include $(BASE_PATH)/PrivateRules.mak
--include $(PLAYBOOKS_ROOT_DIR)/PrivateRules.mak
 
 check_hosts:
 ifndef PLAYBOOKS_HOSTS

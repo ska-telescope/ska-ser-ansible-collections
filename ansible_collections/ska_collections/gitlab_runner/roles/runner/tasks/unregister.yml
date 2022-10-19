@@ -21,7 +21,7 @@
         command:
           - unregister
           - --config "/etc/gitlab-runner/config.toml"
-          - "{{ gitlab_runner_unregister_all | ternary('--name ' + gitlab_runner_id, '--all-runners') }}"
+          - "{{ gitlab_runner_unregister_all | ternary('--name ' + gitlab_runner_name, '--all-runners') }}"
         state: started
         ulimits:
           - "memlock:-1:-1"

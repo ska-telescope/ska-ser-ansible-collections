@@ -26,7 +26,6 @@ AZUREAD_TENANT_ID ?=
 PROMETHEUS_EXTRAVARS ?=
 
 -include $(BASE_PATH)/PrivateRules.mak
--include $(PLAYBOOKS_ROOT_DIR)/PrivateRules.mak
 
 check_hosts:
 ifndef PLAYBOOKS_HOSTS
