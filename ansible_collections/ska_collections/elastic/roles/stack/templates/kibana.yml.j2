@@ -2,28 +2,33 @@
 server.name: "{{ inventory_hostname }}"
 server.host: "0.0.0.0"
 server.port: {{ kibana_port }}
-server.basePath: "/kibana"
+server.basePath: "{{ kibana_basepath }}"
 server.rewriteBasePath: true
 server.ssl.enabled: false
 
 # Elasticsearch settings
-https://www.elastic.co/guide/en/elasticsearch/reference/8.0/security-api-create-service-token.html
-FATAL  Error: [config validation of [elasticsearch].username]: value of "elastic" is forbidden. This is a superuser account that cannot write to system indices that Kibana needs to function. Use a service account token instead. Learn more: https://www.elastic.co/guide/en/elasticsearch/reference/8.0/service-accounts.html
-elasticsearch.username: elastic
-elasticsearch.password: "{{ elasticsearch_password }}"
+elasticsearch.serviceAccountToken: "{{ elasticsearch_kibana_token }}"
+elasticsearch.ssl.verificationMode: "certificate"
 elasticsearch.ssl.alwaysPresentCertificate: true
 elasticsearch.ssl.certificate: "/usr/share/kibana/config/certificates/{{ inventory_hostname }}.crt"
-elasticsearch.ssl.key: "/usr/share/elasticsearch/config/certificates/{{ inventory_hostname }}.key"
-elasticsearch.ssl.certificateAuthorities: [ "/usr/share/elasticsearch/config/certificates/ca-certificate.crt" ]
-#elasticsearch.ssl.keyPassphrase: "{{ ca_cert_pass }}"
+elasticsearch.ssl.key: "/usr/share/kibana/config/certificates/{{ inventory_hostname }}.key"
+elasticsearch.ssl.certificateAuthorities: [ "/usr/share/kibana/config/certificates/ca-certificate.crt" ]
 
 # Features
 monitoring.ui.enabled: true
 
 # XPACK
+xpack.security.authc.providers:
+  anonymous.anonymous1:
+    order: 0
+    credentials:
+      username: "elastic"
+      password: "{{ elasticsearch_password }}"
 xpack.reporting.kibanaServer.hostname: localhost
-xpack.reporting.encryptionKey: "{{ ansible_date_time.iso8601_micro | md5 }}"
-xpack.encryptedSavedObjects.encryptionKey: "{{ ansible_date_time.iso8601_micro | md5 }}"
+xpack.reporting.encryptionKey: "{{ ansible_date_time.iso8601_micro + 'reporting' | md5 }}"
+xpack.security.encryptionKey: "{{ ansible_date_time.iso8601_micro + 'security' | md5 }}"
+xpack.encryptedSavedObjects.encryptionKey: "{{ ansible_date_time.iso8601_micro + 'encryptedSavedObjects' | md5 }}"
+xpack.monitoring.collection.enabled: true
 
 # Elasticsearch settings
 elasticsearch.hosts:

@@ -1,6 +1,7 @@
 ---
 # Global configurations
 stack_data_dir: /var/lib/stack-data
+certificates_dir: /etc/pki/tls/private
 
 # Elasticsearch configurations
 elasticsearch_dns: logging.stfc.skao.int
@@ -99,3 +100,4 @@ kibana_env_variables: {}
 kibana_env_defaults: {}
 
 kibana_reinstall: false
+kibana_basepath: "/kibana"

@@ -8,11 +8,43 @@
   retries: 5
   delay: 5
 
+- name: Change {{ certificates_dir }} ownership
+  ansible.builtin.file:
+    path: "{{ certificates_dir }}"
+    mode: 0770
+
+- name: Change private key ownership
+  ansible.builtin.file:
+    path: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+    mode: 0640
+
+- name: Create kibana service account token
+  ansible.builtin.uri:
+    url: "https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}/_security/service/elastic/kibana/credential/token/{{ inventory_hostname }}?pretty"
+    url_username: elastic 
+    url_password: "{{ elasticsearch_password }}"
+    ca_path: "{{ certificates_dir }}/ca-certificate.crt"
+    client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+    client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+    force: true
+    method: POST
+    status_code: 200
+    dest: /etc/kibana.serviceaccount
+    creates: /etc/kibana.serviceaccount
+    mode: 0600
+    validate_certs: no
+
+- name: Get kibana service account token
+  ansible.builtin.command: cat /etc/kibana.serviceaccount
+  register: kibana_serviceaccount
+
 - name: Create kibana configuration
   ansible.builtin.template:
     src: kibana.yml.j2
     dest: /etc/kibana.yml
     mode: 0644
+  vars:
+    elasticsearch_kibana_token: "{{ kibana_serviceaccount.stdout | from_json | json_query('token.value')}}"
   register: kibana_config
 
 - name: Run kibana container
@@ -20,6 +52,7 @@
     name: "{{ kibana_name }}"
     network_mode: "{{ kibana_network_mode }}"  # reverse DNS must work
     privileged: "{{ 'yes' if kibana_network_mode == 'host' else 'no' }}"
+    user: kibana
     restart_policy: always
     image: "{{ kibana_image }}"
     state: started
@@ -28,6 +61,7 @@
     log_options: "{{ kibana_log_options }}"
     volumes:
       - /etc/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+      - "{{ certificates_dir }}:/usr/share/kibana/config/certificates:rw"
     ports:
       - "{{ kibana_port }}:{{ kibana_port }}"
     recreate: "{{ kibana_reinstall or kibana_config.changed | bool }}"
