@@ -5,19 +5,23 @@ ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 
+vars:
+	@echo "\033[36mOCI:\033[0m"
+	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
+
 docker: check_hosts ## Install docker
 	ansible-playbook ./ansible_collections/ska_collections/docker_base/playbooks/docker.yml \
-	-i $(PLAYBOOKS_ROOT_DIR)/inventory.yml \
+	-i $(PLAYBOOKS_ROOT_DIR)\
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 	
 containerd: check_hosts ## Install containerd
 	ansible-playbook ./ansible_collections/ska_collections/docker_base/playbooks/containerd.yml \
-	-i $(PLAYBOOKS_ROOT_DIR)/inventory.yml \
+	-i $(PLAYBOOKS_ROOT_DIR) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 	
 podman: check_hosts ## Install podman
 	ansible-playbook ./ansible_collections/ska_collections/docker_base/playbooks/podman.yml \
-	-i $(PLAYBOOKS_ROOT_DIR)/inventory.yml \
+	-i $(PLAYBOOKS_ROOT_DIR) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 help: ## Show Help
