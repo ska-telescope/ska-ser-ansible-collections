@@ -48,9 +48,9 @@ grafana_plugins:
 grafana_admin_password: admin
 
 # Alert Manager
-# slack_api_url and slack_api_url_mvp has to be set in the command line
+# slack_api_url and slack_api_url_user has to be set in the command line
 slack_api_url: "*********************"
-slack_api_url_mvp: "*********************"
+slack_api_url_user: "*********************"
 
 alerts_inhibit_rules: []
 # - target_match:

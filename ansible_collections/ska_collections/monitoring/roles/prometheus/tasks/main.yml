@@ -158,7 +158,7 @@
 
 - name: Alert_manager task
   ansible.builtin.include_tasks: alert_manager.yml
-  when: mode == "server" or mode == "all"
+  when: mode == "alert" or mode == "server" or mode == "all"
   tags:
     - cron
 

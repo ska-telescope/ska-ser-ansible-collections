@@ -11,11 +11,7 @@ EXTRA_VARS ?= extra_vars.yml
 COLLECTIONS_PATHS ?= ./collections
 
 SLACK_API_URL ?= ******************
-SLACK_API_URL_MVP ?= ******************
-SLACK_CHANNEL ?= prometheus-alerts
-SLACK_CHANNEL_MVP ?= proj-mvp-messages
-PROMETHEUS_ALERTMANAGER_URL ?= http://monitoring.skao.stfc:9093
-PROMETHEUS_URL ?= http://monitoring.skao.stfc:9090
+SLACK_API_URL_USER ?= ******************
 PROM_CONFIGS_PATH ?= .
 
 KUBECONFIG ?= "mandatory"
@@ -64,14 +60,10 @@ lint: ## Lint playbooks
 prometheus: check_hosts ## Install Prometheus Server
 	ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
 		-i $(INVENTORY_FILE) \
-		-e "mode='server' slack_api_url='$(SLACK_API_URL)' slack_api_url_mvp='$(SLACK_API_URL_MVP)'" \
+		-e "mode='server' slack_api_url='$(SLACK_API_URL)' slack_api_url_user='$(SLACK_API_URL_USER)'" \
 		--extra-vars="azuread_client_id='$(AZUREAD_CLIENT_ID)' azuread_client_secret='$(AZUREAD_CLIENT_SECRET)' azuread_tenant_id='$(AZUREAD_TENANT_ID)'" \
-		-e "slack_channel='$(SLACK_CHANNEL)'" \
-		-e "slack_channel_mvp='$(SLACK_CHANNEL_MVP)'" \
-		-e "prometheus_alertmanager_url='$(PROMETHEUS_ALERTMANAGER_URL)'" \
 		-e "project_id='$(PROM_OS_PROJECT_ID)' auth_url='$(PROM_OS_AUTH_URL)' kubeconfig='$(KUBECONFIG)'" \
-		-e "username='$(PROM_OS_USERNAME)' password='$(PROM_OS_PASSWORD)'" \
-		-e "prometheus_url='$(PROMETHEUS_URL)'" $(PROMETHEUS_EXTRAVARS) \
+		-e "username='$(PROM_OS_USERNAME)' password='$(PROM_OS_PASSWORD)'" $(PROMETHEUS_EXTRAVARS) \
 		-e "prometheus_gitlab_ci_pipelines_exporter_token=$(GITLAB_TOKEN)" \
 		-e "ca_cert_pass=$(CA_CERT_PASSWORD)" \
 		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \
@@ -85,6 +77,16 @@ grafana: check_hosts ## Install Grafana Server
 		-i $(INVENTORY_FILE) \
 		-e "mode='grafana'" \
 		--extra-vars="azuread_client_id='$(AZUREAD_CLIENT_ID)' azuread_client_secret='$(AZUREAD_CLIENT_SECRET)' azuread_tenant_id='$(AZUREAD_TENANT_ID)'" \
+		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \
+		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
+		-e @$(PROM_CONFIGS_PATH)/../environments/$(ENVIRONMENT)/installation/group_vars/prometheus.yml \
+		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
+		-e 'ansible_python_interpreter=/usr/bin/python3' $(V)
+
+alertmanager: check_hosts ## Install Prometheus Server
+	ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
+		-i $(INVENTORY_FILE) \
+		-e "mode='alert' slack_api_url='$(SLACK_API_URL)' slack_api_url_user='$(SLACK_API_URL_USER)'" \
 		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
 		-e @$(PROM_CONFIGS_PATH)/../environments/$(ENVIRONMENT)/installation/group_vars/prometheus.yml \
