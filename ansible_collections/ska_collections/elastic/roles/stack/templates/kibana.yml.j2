@@ -25,9 +25,9 @@ xpack.security.authc.providers:
       username: "elastic"
       password: "{{ elasticsearch_password }}"
 xpack.reporting.kibanaServer.hostname: localhost
-xpack.reporting.encryptionKey: "{{ ansible_date_time.iso8601_micro + 'reporting' | md5 }}"
-xpack.security.encryptionKey: "{{ ansible_date_time.iso8601_micro + 'security' | md5 }}"
-xpack.encryptedSavedObjects.encryptionKey: "{{ ansible_date_time.iso8601_micro + 'encryptedSavedObjects' | md5 }}"
+xpack.reporting.encryptionKey: "{{ kibana_encryption_keys.reporting }}"
+xpack.security.encryptionKey: "{{ kibana_encryption_keys.security }}"
+xpack.encryptedSavedObjects.encryptionKey: "{{ kibana_encryption_keys.encryptedSavedObjects }}"
 xpack.monitoring.collection.enabled: true
 
 # Elasticsearch settings

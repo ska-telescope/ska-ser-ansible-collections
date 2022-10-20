@@ -101,3 +101,6 @@ kibana_env_defaults: {}
 
 kibana_reinstall: false
 kibana_basepath: "/kibana"
+kibana_secrets_directory: "/etc/kibana"
+kibana_secrets_file_path: "{{ kibana_secrets_directory }}/kibana.secrets"
+kibana_service_account_path: "{{ kibana_secrets_directory }}/kibana.serviceaccount"

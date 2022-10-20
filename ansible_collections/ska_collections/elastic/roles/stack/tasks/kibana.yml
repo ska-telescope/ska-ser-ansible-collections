@@ -18,6 +18,32 @@
     path: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
     mode: 0640
 
+- name: Create kibana secrets directory
+  ansible.builtin.file:
+    path: "{{ kibana_secrets_directory }}"
+    state: directory
+    mode: 0644
+
+- name: Check if kibana encryption keys exist
+  ansible.builtin.stat:
+    path: "{{ kibana_secrets_file_path }}"
+  register: kibana_secrets_file
+
+- name: Create kibana encryption keys
+  set_fact:
+    kibana_encryption_keys:
+      reporting: "{{ lookup('password', target_hosts + '/reporting length=32 chars=ascii_letters') }}"
+      security: "{{ lookup('password', target_hosts + '/security length=32 chars=ascii_letters') }}"
+      encryptedSavedObjects: "{{ lookup('password', target_hosts + '/encryptedSavedObjects length=32 chars=ascii_letters') }}"
+  when: not kibana_secrets_file.stat.exists
+
+- name: Store kibana encryption keys
+  ansible.builtin.copy:
+    content: "{{ kibana_encryption_keys | to_json }}"
+    dest: "{{ kibana_secrets_file_path }}"
+    mode: 0600
+  when: not kibana_secrets_file.stat.exists
+
 - name: Create kibana service account token
   ansible.builtin.uri:
     url: "https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}/_security/service/elastic/kibana/credential/token/{{ inventory_hostname }}?pretty"
@@ -29,14 +55,18 @@
     force: true
     method: POST
     status_code: 200
-    dest: /etc/kibana.serviceaccount
-    creates: /etc/kibana.serviceaccount
+    dest: "{{ kibana_service_account_path }}"
+    creates: "{{ kibana_service_account_path }}"
     mode: 0600
     validate_certs: no
 
 - name: Get kibana service account token
-  ansible.builtin.command: cat /etc/kibana.serviceaccount
+  ansible.builtin.command: cat "{{ kibana_service_account_path }}"
   register: kibana_serviceaccount
+
+- name: Get kibana secrets
+  ansible.builtin.command: cat "{{ kibana_secrets_file_path }}"
+  register: kibana_secrets
 
 - name: Create kibana configuration
   ansible.builtin.template:
@@ -45,6 +75,7 @@
     mode: 0644
   vars:
     elasticsearch_kibana_token: "{{ kibana_serviceaccount.stdout | from_json | json_query('token.value')}}"
+    kibana_encryption_keys: "{{ kibana_secrets.stdout | from_json }}"
   register: kibana_config
 
 - name: Run kibana container
