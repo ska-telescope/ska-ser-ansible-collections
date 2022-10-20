@@ -21,7 +21,7 @@
 - name: Create kibana service account token
   ansible.builtin.uri:
     url: "https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}/_security/service/elastic/kibana/credential/token/{{ inventory_hostname }}?pretty"
-    url_username: elastic 
+    url_username: elastic
     url_password: "{{ elasticsearch_password }}"
     ca_path: "{{ certificates_dir }}/ca-certificate.crt"
     client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"

@@ -118,7 +118,7 @@
         name: ska_collections.elastic.haproxy
   tags:
     - haproxy
-  
+
 - name: Deploy kibana to kibana nodes
   hosts: "{{ target_hosts }}-kibana"
   become: true
@@ -127,7 +127,7 @@
       ansible.builtin.import_role:
         name: ska_collections.elastic.stack
         tasks_from: kibana
-      vars: 
+      vars:
         elasticsearch_address: "{{ groups[target_hosts + '-loadbalancer'][0] if ((groups[target_hosts + '-loadbalancer'] | default([])) | length ) > 0 else groups[target_hosts + '-master'][0] }}"
   tags:
     - kibana
@@ -140,7 +140,7 @@
       ansible.builtin.import_role:
         name: ska_collections.elastic.stack
         tasks_from: kibana
-      vars: 
+      vars:
         elasticsearch_address: "{{ inventory_hostname }}"
       when: '((groups[target_hosts + "-kibana"] | default([])) | length ) == 0 and inventory_hostname == groups[target_hosts + "-master"][0]'
     - name: Remove kibana if kibana only instance is present
