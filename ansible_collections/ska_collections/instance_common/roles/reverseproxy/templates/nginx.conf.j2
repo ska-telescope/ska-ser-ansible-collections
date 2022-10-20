@@ -61,8 +61,8 @@ http {
         # server_name {{ nginx_server_name }};
 
         ### Best practice SSL configuration
-        ssl_certificate /etc/nginx/sdhp.stfc.skao.int.crt;
-        ssl_certificate_key /etc/nginx/sdhp.stfc.skao.int.key;
+        ssl_certificate /etc/nginx/{{ nginx_server_name }}.crt;
+        ssl_certificate_key /etc/nginx/{{ nginx_server_name }}.key;
         ssl_session_timeout 1d;
         ssl_session_cache shared:MozSSL:10m;  # about 40000 sessions
         ssl_session_tickets off;
@@ -84,7 +84,7 @@ http {
         ssl_stapling_verify on;
 
         # verify chain of trust of OCSP response using Root CA and Intermediate certs
-        ssl_trusted_certificate /etc/nginx/sdhp.stfc.skao.int-ca.crt;
+        ssl_trusted_certificate /etc/nginx/{{ nginx_server_name }}-ca.crt;
 
         # replace with the IP address of your resolver
         resolver 127.0.0.1;
@@ -256,44 +256,6 @@ http {
           proxy_redirect off;
         }
 
-        # ## default proxy everything to k8s Ingress
-        # location /nexus/webhooks/ {
-
-        #   # Extract the Cookie attributes from the first Set-Cookie header and append them
-        #   # to the second part ($upstream_cookie_* variables only contain the raw cookie content)
-        #   if ($auth_cookie ~* "(; .*)") {
-        #       set $auth_cookie_name_0 $auth_cookie;
-        #       set $auth_cookie_name_1 "auth_cookie_name_1=$auth_cookie_name_upstream_1$1";
-        #   }
-
-        #   # Send both Set-Cookie headers now if there was a second part
-        #   if ($auth_cookie_name_upstream_1) {
-        #       add_header Set-Cookie $auth_cookie_name_0;
-        #       add_header Set-Cookie $auth_cookie_name_1;
-        #   }
-        #   ### end of auth proxy configuration part 2
-
-        #   ### Proxy to K8s configuration
-        #   proxy_set_header        Host $host;
-        #   proxy_set_header        X-Real-IP $remote_addr;
-        #   proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        #   proxy_set_header        X-Forwarded-Proto $scheme;
-        #   proxy_set_header        X-NginX-Proxy true;
-
-        #   proxy_ssl_session_reuse off;
-
-        #   # Fix the “It appears that your reverse proxy set up is broken" error.
-        #   proxy_pass          http://10.200.0.63:80;
-        #   proxy_http_version 1.1;
-        #   proxy_set_header Upgrade $http_upgrade;
-        #   proxy_set_header Connection "upgrade";
-        #   proxy_read_timeout 86400;
-
-        #   proxy_cache_bypass $http_upgrade;
-
-        #   proxy_redirect off;
-        # }
-
         ## default proxy everything to k8s Ingress
         location / {
           ### auth proxy configuration part 2
@@ -371,8 +333,8 @@ http {
         listen [::]:9443 ssl http2;
 
         ### Best practice SSL configuration
-        ssl_certificate /etc/nginx/sdhp.stfc.skao.int.crt;
-        ssl_certificate_key /etc/nginx/sdhp.stfc.skao.int.key;
+        ssl_certificate /etc/nginx/{{ nginx_server_name }}.crt;
+        ssl_certificate_key /etc/nginx/{{ nginx_server_name }}.key;
         ssl_session_timeout 1d;
         ssl_session_cache shared:MozSSL:10m;  # about 40000 sessions
         ssl_session_tickets off;
@@ -394,7 +356,7 @@ http {
         ssl_stapling_verify on;
 
         # verify chain of trust of OCSP response using Root CA and Intermediate certs
-        ssl_trusted_certificate /etc/nginx/sdhp.stfc.skao.int-ca.crt;
+        ssl_trusted_certificate /etc/nginx/{{ nginx_server_name }}-ca.crt;
 
         # replace with the IP address of your resolver
         resolver 127.0.0.1;

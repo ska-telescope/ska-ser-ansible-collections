@@ -60,14 +60,6 @@ clusterapi: check-env
 monitoring: check-env ## ElasticSearch targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/monitoring.mk
 
-# If the first argument is "common"...
-ifeq (common,$(firstword $(MAKECMDGOALS)))
-  # use the rest as arguments for "common"
-  TARGET_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-  # ...and turn them into do-nothing targets
-  $(eval $(TARGET_ARGS):;@:)
-endif
-
 common: check-env ## ElasticSearch targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/common.mk
 
