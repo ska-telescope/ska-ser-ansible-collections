@@ -18,12 +18,12 @@ endif
 
 install: check_hosts check_passwords ## Install elastic
 	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/install.yml \
-	-i $(PLAYBOOKS_ROOT_DIR)/inventory.yml \
+	-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) ca_cert_pass=$(CA_CERT_PASS) elastic_password=$(ELASTIC_PASSWORD) elastic_elastic_haproxy_stats_passwd=$(ELASTIC_HAPROXY_STATS_PASS)"
 	
 destroy: check_hosts ## Destroy elastic cluster
 	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/destroy.yml \
-	-i $(PLAYBOOKS_ROOT_DIR)/inventory.yml \
+	-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 help: ## Show Help

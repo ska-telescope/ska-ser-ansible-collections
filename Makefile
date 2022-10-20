@@ -6,6 +6,7 @@ PLAYBOOKS_HOSTS?=all
 JOBS_DIR=resources/jobs
 ANSIBLE_COLLECTIONS_PATHS ?=
 PLAYBOOKS_ROOT_DIR ?=
+INVENTORY_FILE ?= inventory.yml
 ANSIBLE_LINT_PARAMETERS = --exclude ansible_collections/ska_collections/monitoring/roles/prometheus/files
 PLAYBOOKS_HOSTS ?=
 

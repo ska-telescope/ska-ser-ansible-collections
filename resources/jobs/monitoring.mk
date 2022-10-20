@@ -63,7 +63,7 @@ lint: ## Lint playbooks
 
 prometheus: check_hosts ## Install Prometheus Server
 	ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
-		-i $(INVENTORY_FILE) \
+		-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
 		-e "mode='server' slack_api_url='$(SLACK_API_URL)' slack_api_url_mvp='$(SLACK_API_URL_MVP)'" \
 		--extra-vars="registry_mirror='$(REGISTRY_MIRROR)' docker_hub_mirror='$(REGISTRY_MIRROR)' podman_registry_mirror='$(PODMAN_REGISTRY_MIRROR)'" \
 		--extra-vars="azuread_client_id='$(AZUREAD_CLIENT_ID)' azuread_client_secret='$(AZUREAD_CLIENT_SECRET)' azuread_tenant_id='$(AZUREAD_TENANT_ID)'" \
@@ -87,24 +87,24 @@ thanos: check_hosts ## Install Thanos query and query front-end
 		-e "ca_cert_pass=$(CA_CERT_PASSWORD)" \
 		-e "project_name='$(PROM_OS_PROJECT_NAME)' project_id='$(PROM_OS_PROJECT_ID)' auth_url='$(PROM_OS_AUTH_URL)'" \
 		-e "username='$(PROM_OS_USERNAME)' password='$(PROM_OS_PASSWORD)'" \
-		-i $(INVENTORY_FILE) \
+		-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
 		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \
 		-e @$(PROM_CONFIGS_PATH)/../environments/$(ENVIRONMENT)/installation/group_vars/prometheus.yml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3' $(V)
 
 node-exporter: check_hosts ## Install Prometheus node exporter - pass INVENTORY_FILE and NODES
-	ansible-playbook deploy_node_exporter.yml -i $(INVENTORY_FILE) \
+	ansible-playbook deploy_node_exporter.yml -i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
 	-e 'ansible_python_interpreter=/usr/bin/python3' \
 	-e @$(EXTRA_VARS) \
 	--limit $(NODES)
 
 update_metadata: check_hosts ## OpenStack metadata for node_exporters - pass INVENTORY_FILE all format should be OK
-	ansible -i $(INVENTORY_FILE) $(PROMETHEUS_NODE) -b -m copy -a 'src=$(INVENTORY_FILE) dest=/tmp/all_inventory'
-	@ansible -i $(INVENTORY_FILE) $(PROMETHEUS_NODE) -b -m shell -a 'export project_name=$(PROM_OS_PROJECT_NAME) project_id=$(PROM_OS_PROJECT_ID) auth_url=$(PROM_OS_AUTH_URL) username=$(PROM_OS_USERNAME) password=$(PROM_OS_PASSWORD)	os_region_name=RegionOne os_interface=public PROM_OS_PROJECT_ID=$(PROM_OS_PROJECT_ID)	os_user_domain_name=default	os_identity_api_version=3 && python3 /usr/local/bin/prom_helper.py -u /tmp/all_inventory'
+	ansible -i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) $(PROMETHEUS_NODE) -b -m copy -a 'src=$(INVENTORY_FILE) dest=/tmp/all_inventory'
+	@ansible -i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) $(PROMETHEUS_NODE) -b -m shell -a 'export project_name=$(PROM_OS_PROJECT_NAME) project_id=$(PROM_OS_PROJECT_ID) auth_url=$(PROM_OS_AUTH_URL) username=$(PROM_OS_USERNAME) password=$(PROM_OS_PASSWORD)	os_region_name=RegionOne os_interface=public PROM_OS_PROJECT_ID=$(PROM_OS_PROJECT_ID)	os_user_domain_name=default	os_identity_api_version=3 && python3 /usr/local/bin/prom_helper.py -u /tmp/all_inventory'
 
 update_scrapers: check_hosts ## Force update of scrapers
-	ansible -i $(INVENTORY_FILE) $(PROMETHEUS_NODE) -b -m shell -a 'export project_id=$(PROM_OS_PROJECT_ID) project_name=$(PROM_OS_PROJECT_NAME) auth_url=$(PROM_OS_AUTH_URL) username=$(PROM_OS_USERNAME) password=$(PROM_OS_PASSWORD) $(OPENSTACK_ENV_VARIABLES) && cd /etc/prometheus && python3 /usr/local/bin/prom_helper.py -g'
+	ansible -i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) $(PROMETHEUS_NODE) -b -m shell -a 'export project_id=$(PROM_OS_PROJECT_ID) project_name=$(PROM_OS_PROJECT_NAME) auth_url=$(PROM_OS_AUTH_URL) username=$(PROM_OS_USERNAME) password=$(PROM_OS_PASSWORD) $(OPENSTACK_ENV_VARIABLES) && cd /etc/prometheus && python3 /usr/local/bin/prom_helper.py -g'
 
 help: ## Show Help
 	@echo "Monitoring solution targets - make playbooks monitoring <target>:"
