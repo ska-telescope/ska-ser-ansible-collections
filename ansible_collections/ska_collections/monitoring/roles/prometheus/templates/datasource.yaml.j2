@@ -13,7 +13,7 @@ datasources:
   type: 'prometheus'
   access: 'proxy'
   orgId: 1
-  url: https://{{ ansible_fqdn | default(ansible_host) | default('localhost') }}:9090
+  url: https://{{ thanos_query_frontend }}
   basicAuth: false
   isDefault: true
   editable: false
