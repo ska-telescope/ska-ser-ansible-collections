@@ -36,7 +36,7 @@ ifndef PLAYBOOKS_HOSTS
 endif
 
 vars:  ## Variables
-	@echo "Current variable settings:"
+	@echo "\033[36mMonitoring:\033[0m"
 	@echo "PRIVATE_VARS=$(PRIVATE_VARS)"
 	@echo "CLUSTER_KEYPAIR=$(CLUSTER_KEYPAIR)"
 	@echo "INVENTORY_FILE=$(INVENTORY_FILE)"
