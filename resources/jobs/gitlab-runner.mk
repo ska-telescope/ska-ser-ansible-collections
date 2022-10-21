@@ -14,6 +14,11 @@ ifndef GITLAB_RUNNER_REGISTRATION_TOKEN
 	$(error GITLAB_RUNNER_REGISTRATION_TOKEN is undefined)
 endif
 
+vars:
+	@echo "\033[Gitlab-runner:\033[0m"
+	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
+	@echo "GITLAB_RUNNER_REGISTRATION_TOKEN=$(GITLAB_RUNNER_REGISTRATION_TOKEN)"
+
 install: check_hosts check_gitlab_runner_secrets ## Deploy gitlab-runner
 	@ansible-playbook ./ansible_collections/ska_collections/gitlab_runner/playbooks/deploy.yml \
 	-i $(INVENTORY_FILE) \

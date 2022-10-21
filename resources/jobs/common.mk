@@ -14,6 +14,10 @@ ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 
+vars:
+	@echo "\033[36mCommon:\033[0m"
+	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
+
 install: check_hosts ## Run common tasks (setup host(s), mount volumes)
 	ansible-playbook ./ansible_collections/ska_collections/instance_common/playbooks/common.yml \
 	-i $(INVENTORY_FILE) \
