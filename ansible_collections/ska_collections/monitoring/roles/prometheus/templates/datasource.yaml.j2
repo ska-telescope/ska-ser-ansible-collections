@@ -13,7 +13,7 @@ datasources:
   type: 'prometheus'
   access: 'proxy'
   orgId: 1
-  url: https://{{ thanos_query_frontend }}
+  url: https://{{ hostvars[thanos_query_frontend].ip }}:{{ thanos_query_frontend_port }}
   basicAuth: false
   isDefault: true
   editable: false
