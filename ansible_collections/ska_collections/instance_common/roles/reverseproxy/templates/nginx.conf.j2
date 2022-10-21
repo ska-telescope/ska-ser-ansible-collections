@@ -24,6 +24,14 @@ stream {
         listen {{ ha_api_proxy_port }};
         proxy_pass api_server;
     }
+
+    upstream thanos_sidecar {
+        server {{ hostvars[groups['prometheus_prometheus'][0]]["ansible_host"] }}:10901 max_fails=3 fail_timeout=10s;
+    }
+    server {
+        listen 10901;
+        proxy_pass thanos_sidecar;
+    }
 }
 
 http {
@@ -393,13 +401,4 @@ http {
         }
 
     }
-
-    server {
-        listen 10901 http2;
- 
-        location / {
-            grpc_pass grpcs://{{ hostvars[groups['prometheus_prometheus'][0]]["ansible_host"] }}:10901;
-        }
-    }
-
 }
