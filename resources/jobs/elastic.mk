@@ -35,6 +35,7 @@ install: check_hosts check_secrets ## Install elastic
 		ca_cert_pass=$(CA_CERT_PASS) \
 		elasticsearch_password=$(ELASTICSEARCH_PASSWORD) \
 		elastic_haproxy_stats_passwd=$(ELASTIC_HAPROXY_STATS_PASSWORD) \
+		kibana_viewer_password=$(KIBANA_VIEWER_PASSWORD) \
 	"
 
 destroy: check_hosts ## Destroy elastic cluster

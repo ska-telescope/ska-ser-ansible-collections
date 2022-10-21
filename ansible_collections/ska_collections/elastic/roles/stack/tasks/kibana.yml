@@ -44,12 +44,29 @@
     mode: 0600
   when: not kibana_secrets_file.stat.exists
 
+- name: Create kibana user with viewer roles
+  ansible.builtin.uri:
+    url: "https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}/_security/user/{{ kibana_viewer_user }}"
+    url_username: elastic
+    url_password: "{{ elasticsearch_password }}"
+    body_format: "json"
+    body:
+      password: "{{ kibana_viewer_password }}"
+      enabled: true
+      roles: "{{ kibana_viewer_user_roles }}"
+    client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+    client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+    force: true
+    method: POST
+    status_code: 200
+  environment:
+    SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+
 - name: Create kibana service account token
   ansible.builtin.uri:
     url: "https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}/_security/service/elastic/kibana/credential/token/{{ inventory_hostname }}?pretty"
     url_username: elastic
     url_password: "{{ elasticsearch_password }}"
-    ca_path: "{{ certificates_dir }}/ca-certificate.crt"
     client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
     client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
     force: true
@@ -58,7 +75,8 @@
     dest: "{{ kibana_service_account_path }}"
     creates: "{{ kibana_service_account_path }}"
     mode: 0600
-    validate_certs: no
+  environment:
+    SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
 
 - name: Get kibana service account token
   ansible.builtin.command: cat "{{ kibana_service_account_path }}"

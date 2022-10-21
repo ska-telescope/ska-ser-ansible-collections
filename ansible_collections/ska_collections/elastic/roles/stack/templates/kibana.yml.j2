@@ -22,8 +22,10 @@ xpack.security.authc.providers:
   anonymous.anonymous1:
     order: 0
     credentials:
-      username: "elastic"
-      password: "{{ elasticsearch_password }}"
+      username: "{{kibana_viewer_user }}"
+      password: "{{ kibana_viewer_password }}"
+  basic.basic1:
+    order: 1
 xpack.reporting.kibanaServer.hostname: localhost
 xpack.reporting.encryptionKey: "{{ kibana_encryption_keys.reporting }}"
 xpack.security.encryptionKey: "{{ kibana_encryption_keys.security }}"
