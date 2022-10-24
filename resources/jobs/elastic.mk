@@ -16,6 +16,13 @@ ifndef ELASTIC_HAPROXY_STATS_PASS
 	$(error ELASTIC_HAPROXY_STATS_PASS is undefined)
 endif
 
+vars:
+	@echo "\033[36mElasticsearch:\033[0m"
+	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
+	@echo "CA_CERT_PASS=$(CA_CERT_PASS)"
+	@echo "ELASTIC_PASSWORD=$(ELASTIC_PASSWORD)"
+	@echo "ELASTIC_HAPROXY_STATS_PASS=$(ELASTIC_HAPROXY_STATS_PASS)"
+
 install: check_hosts check_passwords ## Install elastic
 	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/install.yml \
 	-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \

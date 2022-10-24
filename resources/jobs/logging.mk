@@ -12,6 +12,11 @@ ifndef ELASTIC_PASSWORD
         $(error ELASTIC_PASSWORD is undefined)
 endif
 
+vars:
+	@echo "\033[36mLogging:\033[0m"
+	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
+	@echo "CA_CERT_PASS=$(CA_CERT_PASS)"
+	
 install: check_hosts ## Install logging
 	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/logging.yml \
 	-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \

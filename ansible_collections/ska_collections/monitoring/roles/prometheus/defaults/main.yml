@@ -9,7 +9,7 @@ prometheus_gitlab_ci_pipelines_exporter_token: ""
 prometheus_datacentre: engage-ska-monitor
 prometheus_binary_dir: /usr/local/bin
 prometheus_config_dir: /etc/prometheus
-prometheus_data_dir: /prometheus
+prometheus_data_dir: /var/lib/prometheus
 prometheus_node_metric_relabel_configs: []
 prometheus_static_node_metric_relabel_configs:
   - action: replace
@@ -101,6 +101,8 @@ elasticsearch_instance_add_cluster_label:
 prometheus_alertmanager_config_dir: /etc/alertmanager
 prometheus_alertmanager_data_dir: /alertmanager
 
+thanos_alt_name: "monitoring.skao.stfc"
+thanos_query_frontend: thanos
 thanos_config_dir: /etc/thanos
 thanos_store_data_dir: /etc/thanos/data/dir
 thanos_compactor_data_dir: /etc/thanos/thanos-compact
