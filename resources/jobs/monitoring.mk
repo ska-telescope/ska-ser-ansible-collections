@@ -104,7 +104,7 @@ thanos: check_hosts ## Install Thanos query and query front-end
 		-e 'ansible_python_interpreter=/usr/bin/python3' $(V)
 
 node-exporter: check_hosts ## Install Prometheus node exporter - pass INVENTORY_FILE and NODES
-	ansible-playbook deploy_node_exporter.yml -i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
+	@ansible-playbook deploy_node_exporter.yml -i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
 	-e 'ansible_python_interpreter=/usr/bin/python3' \
 	-e @$(EXTRA_VARS) \
 	--limit $(NODES)
