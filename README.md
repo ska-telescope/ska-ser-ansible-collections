@@ -8,6 +8,7 @@ This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/
 | oci                   | containerd <br> docker <br> podman    | install specific OCI engine                               |
 | instance_common       | init <br> certs                       | VM initialization                                         |
 | elastic               | stack <br> haproxy <br> logging       | Elasticsearch cluster roles                               |
+| ceph                  | install                               | Ceph roles                                                |
 <!-- | k8s           | charts, <br> haproxy, <br> helm, <br> join, <br> k8s, <br> kubectl, <br> resources, <br> metallb ,<br> binderhub, <br> ping | default SKA helm charts <br> haproxy Kubernetes LoadBalancer <br> helm client <br> join node to HA cluster <br> Kubernetes packages <br> Kubernetes client <br> Create Namespaces and Apply Limits and Quotas <br> Load balancer for kubernetes <br> Service to share Jupyter notebooks in the cloud <br> Ping service to test ingress | -->
 
 ## Usage
@@ -60,11 +61,12 @@ little setup.
 
 The table bellow, iterates all the targets available on the main Makefile. 
 
-| Target | Description                            | Mandatory Variables                                         |
-|--------|----------------------------------------|-------------------------------------------------------------|
-| vars   | Print relevant shell variables         |                                                             |
-| help   | Help guide                             |                                                             |
-| ping   | ping all hosts on a specific inventory | PLAYBOOKS_ROOT_DIR <br> PLAYBOOKS_HOSTS <br> ANSIBLE_CONFIG |
+| Target                | Description                             | Mandatory Variables                                         |
+|-----------------------|-----------------------------------------|-------------------------------------------------------------|
+| vars                  | Print relevant shell variables          |                                                             |
+| help                  | Help guide                              |                                                             |
+| ping                  | ping all hosts on a specific inventory  | PLAYBOOKS_ROOT_DIR <br> PLAYBOOKS_HOSTS <br> ANSIBLE_CONFIG |
+| install_collections   | pulls collections from requirements.yml | ANSIBLE_COLLECTIONS_PATHS                                   |
 
 All the targets specific to a collection such as ElasticSearch or OCI engine, 
 it will be separated on their own **.mk** file on **resources/jobs** folder.
@@ -84,6 +86,7 @@ make <collection> <job> <VARS>
 | oci        | containerd | Install containerd                                         |                                                |
 | common     | init       | Update APT <br> Install common packages <br> Mount volumes |                                                |
 | common     | certs      | Generate certificates from the Terminus CA                 |                                                |
+| ceph       | install    | Install ceph                                               | stackhp cephadm (run install_collections)      |
 
 ### Mandatory Environment Variables
 
