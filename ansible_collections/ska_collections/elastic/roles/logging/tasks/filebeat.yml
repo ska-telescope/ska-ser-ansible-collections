@@ -64,7 +64,7 @@
             SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
           when: ska_log_parsing_pipeline_conf.changed
 
-      when: filebeat_pipeline 
+      when: filebeat_pipeline
 
     - name: scope for index initialisation
       block:
