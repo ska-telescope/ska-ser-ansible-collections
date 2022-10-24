@@ -53,7 +53,6 @@
         - name: update pipeline config
           uri:
             url: "{{ logging_loadbalancer_address }}/_ingest/pipeline/{{ filebeat_pipeline }}"
-            ca_path: "{{ certificates_dir }}/ca-certificate.crt"
             client_cert: "{{ certificates_dir }}/{{ filebeat_certificate_name }}.crt"
             client_key: "{{ certificates_dir }}/{{ filebeat_private_key_name }}.key"
             method: PUT
@@ -61,7 +60,8 @@
             body: "{{ ska_log_parsing_pipeline_file['content'] | b64decode }}"
             status_code: 200
             body_format: json
-            validate_certs: false
+          environment:
+            SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
           when: ska_log_parsing_pipeline_conf.changed
 
       when: filebeat_pipeline 
