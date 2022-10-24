@@ -1,0 +1,31 @@
+---
+
+- name: Ensure that the apt cache is updated
+  apt:
+    update_cache: true
+  register: apt_res
+  retries: 5
+  until: apt_res is success
+
+- name: "Apply the docker role to the ceph nodes"
+  ansible.builtin.include_role: 
+    name: ska_collections.docker_base.docker
+  when: ska_cephadm_docker_role | bool
+
+- name: "Install cephadm"
+  include_role: 
+    name: stackhpc.cephadm.cephadm
+
+- name: "Install ceph pools"
+  include_role: 
+    name: stackhpc.cephadm.pools
+
+- name: "Run cephadm commands"
+  include_role: 
+    name: stackhpc.cephadm.commands    
+
+#- name: "Apply commands"
+#  vars:
+#    cephadm_commands: "{{ var }}"
+#  include_role: 
+#    name: stackhpc.cephadm.commands

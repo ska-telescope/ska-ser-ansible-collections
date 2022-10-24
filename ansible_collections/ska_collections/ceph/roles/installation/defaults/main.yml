@@ -1,0 +1,9 @@
+---
+
+# docker
+ska_cephadm_docker_role: false
+
+ska_ceph_safe_delete: false
+
+cephadm_bootstrap_configs: []
+cephadm_commands: []

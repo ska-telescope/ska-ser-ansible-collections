@@ -50,10 +50,15 @@ ifneq ($(filter $(JOBLIST),$(firstword $(MAKECMDGOALS))),)
   $(eval $(TARGET_ARGS):;@:)
 endif
 
-oci: check-env ## oci targets
+install_collections:  ## Install dependent ansible collections
+	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
+	ansible-galaxy collection install \
+	-r requirements.yml -p ./ansible_collections
+
+oci: check-env ## ElasticSearch targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/oci.mk
 
-elastic: check-env ## elastic targets
+elastic: check-env ## ElasticSearch targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/elastic.mk
 
 logging: check-env ## logging targets
@@ -61,6 +66,9 @@ logging: check-env ## logging targets
 
 monitoring: check-env ## monitoring targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/monitoring.mk
+
+ceph: check-env ## Ceph targets
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/ceph.mk
 
 common: check-env ## common targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/common.mk

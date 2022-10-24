@@ -1,0 +1,9 @@
+---
+
+- hosts: "{{ target_hosts }}"
+  gather_facts: true
+  become: true
+  any_errors_fatal: true
+  roles:
+    - installation
+
