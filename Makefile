@@ -40,6 +40,12 @@ vars_recursive:
 ping:  check-env ## Ping Ansible targets
 	ansible all -i $(PLAYBOOKS_ROOT_DIR) -m ping -l $(PLAYBOOKS_HOSTS)
 
+install_collections:  ## Install dependent ansible collections
+	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
+	ANSIBLE_COLLECTIONS_PATH=$(ANSIBLE_COLLECTIONS_PATHS) \
+	ansible-galaxy collection install \
+	-r requirements.yml -p ./ansible_collections
+
 JOBLIST := $(shell find $(JOBS_DIR) -iname '*.mk' -exec basename {} .mk ';')
 
 # If the first argument matches a Makefile in the JOBS_DIR...
@@ -55,10 +61,10 @@ install_collections:  ## Install dependent ansible collections
 	ansible-galaxy collection install \
 	-r requirements.yml -p ./ansible_collections
 
-oci: check-env ## ElasticSearch targets
+oci: check-env ## oci targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/oci.mk
 
-elastic: check-env ## ElasticSearch targets
+elastic: check-env ## elastic targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/elastic.mk
 
 logging: check-env ## logging targets
