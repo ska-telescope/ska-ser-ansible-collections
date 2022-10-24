@@ -50,6 +50,8 @@ logging_elasticsearch_addresses:
   - http://192.168.99.22:9200
   - http://192.168.99.183:9200
 
+logging_loadbalancer_address: "https://logging.stfc.skao.int:9200"
+
 java_mem: 8g
 
 stack_data_dir: /var/lib/stack-data
