@@ -1,6 +1,7 @@
 ---
 # Global configurations
 stack_data_dir: /var/lib/stack-data
+certificates_dir: /etc/pki/tls/private
 
 # Elasticsearch configurations
 elasticsearch_dns: logging.stfc.skao.int
@@ -19,7 +20,7 @@ elasticsearch_env_defaults:
   ES_JAVA_OPTS: "-server -Xms{{ elasticsearch_java_mem }} -Xmx{{ elasticsearch_java_mem }} -Dlog4j2.formatMsgNoLookups=true"
   ES_HEAP_SIZE: "{{ elasticsearch_java_mem }}"
   MAX_OPEN_FILES: "131070"
-  ELASTIC_PASSWORD: '{{ elastic_password }}'
+  ELASTIC_PASSWORD: '{{ elasticsearch_password }}'
 
 elasticsearch_api_port: 9200
 elasticsearch_transport_port: 9300
@@ -99,3 +100,9 @@ kibana_env_variables: {}
 kibana_env_defaults: {}
 
 kibana_reinstall: false
+kibana_basepath: "/kibana"
+kibana_viewer_user: "kibana_viewer"
+kibana_viewer_user_roles: [ "apm_system", "kibana_system", "logstash_system", "monitoring_user", "remote_monitoring_collector", "reporting_user", "viewer", "watcher_user" ]
+kibana_secrets_directory: "/etc/kibana"
+kibana_secrets_file_path: "{{ kibana_secrets_directory }}/kibana.secrets"
+kibana_service_account_path: "{{ kibana_secrets_directory }}/kibana.serviceaccount"

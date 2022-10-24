@@ -30,6 +30,8 @@ AZUREAD_TENANT_ID ?=
 .DEFAULT_GOAL := help
 PROMETHEUS_EXTRAVARS ?=
 
+-include $(BASE_PATH)/PrivateRules.mak
+
 check_hosts:
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)

@@ -8,11 +8,92 @@
   retries: 5
   delay: 5
 
+- name: Change {{ certificates_dir }} ownership
+  ansible.builtin.file:
+    path: "{{ certificates_dir }}"
+    mode: 0770
+
+- name: Change private key ownership
+  ansible.builtin.file:
+    path: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+    mode: 0640
+
+- name: Create kibana secrets directory
+  ansible.builtin.file:
+    path: "{{ kibana_secrets_directory }}"
+    state: directory
+    mode: 0644
+
+- name: Check if kibana encryption keys exist
+  ansible.builtin.stat:
+    path: "{{ kibana_secrets_file_path }}"
+  register: kibana_secrets_file
+
+- name: Create kibana encryption keys
+  set_fact:
+    kibana_encryption_keys:
+      reporting: "{{ lookup('password', target_hosts + '/reporting length=32 chars=ascii_letters') }}"
+      security: "{{ lookup('password', target_hosts + '/security length=32 chars=ascii_letters') }}"
+      encryptedSavedObjects: "{{ lookup('password', target_hosts + '/encryptedSavedObjects length=32 chars=ascii_letters') }}"
+  when: not kibana_secrets_file.stat.exists
+
+- name: Store kibana encryption keys
+  ansible.builtin.copy:
+    content: "{{ kibana_encryption_keys | to_json }}"
+    dest: "{{ kibana_secrets_file_path }}"
+    mode: 0600
+  when: not kibana_secrets_file.stat.exists
+
+- name: Create kibana user with viewer roles
+  ansible.builtin.uri:
+    url: "https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}/_security/user/{{ kibana_viewer_user }}"
+    url_username: elastic
+    url_password: "{{ elasticsearch_password }}"
+    body_format: "json"
+    body:
+      password: "{{ kibana_viewer_password }}"
+      enabled: true
+      roles: "{{ kibana_viewer_user_roles }}"
+    client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+    client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+    force: true
+    method: POST
+    status_code: 200
+  environment:
+    SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+
+- name: Create kibana service account token
+  ansible.builtin.uri:
+    url: "https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}/_security/service/elastic/kibana/credential/token/{{ inventory_hostname }}?pretty"
+    url_username: elastic
+    url_password: "{{ elasticsearch_password }}"
+    client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+    client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+    force: true
+    method: POST
+    status_code: 200
+    dest: "{{ kibana_service_account_path }}"
+    creates: "{{ kibana_service_account_path }}"
+    mode: 0600
+  environment:
+    SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+
+- name: Get kibana service account token
+  ansible.builtin.command: cat "{{ kibana_service_account_path }}"
+  register: kibana_serviceaccount
+
+- name: Get kibana secrets
+  ansible.builtin.command: cat "{{ kibana_secrets_file_path }}"
+  register: kibana_secrets
+
 - name: Create kibana configuration
   ansible.builtin.template:
     src: kibana.yml.j2
     dest: /etc/kibana.yml
     mode: 0644
+  vars:
+    elasticsearch_kibana_token: "{{ kibana_serviceaccount.stdout | from_json | json_query('token.value')}}"
+    kibana_encryption_keys: "{{ kibana_secrets.stdout | from_json }}"
   register: kibana_config
 
 - name: Run kibana container
@@ -20,6 +101,7 @@
     name: "{{ kibana_name }}"
     network_mode: "{{ kibana_network_mode }}"  # reverse DNS must work
     privileged: "{{ 'yes' if kibana_network_mode == 'host' else 'no' }}"
+    user: kibana
     restart_policy: always
     image: "{{ kibana_image }}"
     state: started
@@ -28,6 +110,7 @@
     log_options: "{{ kibana_log_options }}"
     volumes:
       - /etc/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+      - "{{ certificates_dir }}:/usr/share/kibana/config/certificates:rw"
     ports:
       - "{{ kibana_port }}:{{ kibana_port }}"
     recreate: "{{ kibana_reinstall or kibana_config.changed | bool }}"

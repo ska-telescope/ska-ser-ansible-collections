@@ -10,13 +10,10 @@ ANSIBLE_LINT_PARAMETERS = --exclude ansible_collections/ska_collections/monitori
 PLAYBOOKS_HOSTS ?=
 ANSIBLE_CONFIG?=
 
-# standard make targets and Ansible support
 include .make/base.mk
 include .make/ansible.mk
 
-
-# define overides for above variables in here
--include PrivateRules.mak
+-include $(BASE_PATH)/PrivateRules.mak
 
 check-env:
 ifndef ENVIRONMENT
@@ -29,6 +26,9 @@ vars:  ## Variables
 	@echo "ANSIBLE_LINT_PARAMETERS=$(ANSIBLE_LINT_PARAMETERS)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 	@echo "ANSIBLE_CONFIG=$(ANSIBLE_CONFIG)"
+	@echo "CA_CERT_PASS=$(CA_CERT_PASS)"
+	@echo "ELASTICSEARCH_PASSWORD=$(ELASTICSEARCH_PASSWORD)"
+	@echo "ELASTIC_HAPROXY_STATS_PASSWORD=$(ELASTIC_HAPROXY_STATS_PASSWORD)"
 
 vars_recursive:
 	@make vars;
@@ -38,7 +38,7 @@ vars_recursive:
 	@$(foreach file, $(wildcard $(JOBS_DIR)/*), make vars -f $(file); echo "";)
 
 ping:  check-env ## Ping Ansible targets
-	ansible all -i $(PLAYBOOKS_ROOT_DIR)/inventory.yml -m ping -l $(PLAYBOOKS_HOSTS)
+	ansible all -i $(PLAYBOOKS_ROOT_DIR) -m ping -l $(PLAYBOOKS_HOSTS)
 
 JOBLIST := $(shell find $(JOBS_DIR) -iname '*.mk' -exec basename {} .mk ';')
 
@@ -50,22 +50,19 @@ ifneq ($(filter $(JOBLIST),$(firstword $(MAKECMDGOALS))),)
   $(eval $(TARGET_ARGS):;@:)
 endif
 
-oci: check-env ## ElasticSearch targets
+oci: check-env ## oci targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/oci.mk
 
-elastic: check-env ## ElasticSearch targets
+elastic: check-env ## elastic targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/elastic.mk
 
-logging: check-env ## Filebeat targets
+logging: check-env ## logging targets
 	$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/logging.mk
 
-clusterapi: check-env
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/clusterapi.mk
-
-monitoring: check-env ## ElasticSearch targets
+monitoring: check-env ## monitoring targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/monitoring.mk
 
-common: check-env ## ElasticSearch targets
+common: check-env ## common targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/common.mk
 
 print_targets: ## Show Help
