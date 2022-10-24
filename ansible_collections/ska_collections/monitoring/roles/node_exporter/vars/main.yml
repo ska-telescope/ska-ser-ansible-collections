@@ -9,7 +9,7 @@ node_exporter_apt_package: http://archive.ubuntu.com/ubuntu/pool/universe/p/prom
 
 prometheus_binary_dir: /usr/local/bin
 prometheus_config_dir: /etc/prometheus
-prometheus_data_dir: /prometheus
+prometheus_data_dir: /var/lib/prometheus
 prometheus_node_metric_relabel_configs: []
 elasticsearch_instance_add_cluster_label:
   - regex: '^192\.168\.93\.(94|96|112):(\d+)'

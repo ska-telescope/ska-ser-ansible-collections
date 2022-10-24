@@ -91,9 +91,9 @@
     log_options: "{{ log_options }}"
     volumes:
       - /etc/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - /etc/nginx/sdhp.stfc.skao.int.key:/etc/nginx/sdhp.stfc.skao.int.key:ro
-      - /etc/nginx/sdhp.stfc.skao.int.crt:/etc/nginx/sdhp.stfc.skao.int.crt:ro
-      - /etc/nginx/sdhp.stfc.skao.int-ca.crt:/etc/nginx/sdhp.stfc.skao.int-ca.crt:ro
+      - /etc/nginx/{{ nginx_server_name }}.key:/etc/nginx/{{ nginx_server_name }}.key:ro
+      - /etc/nginx/{{ nginx_server_name }}.crt:/etc/nginx/{{ nginx_server_name }}.crt:ro
+      - /etc/nginx/{{ nginx_server_name }}-ca.crt:/etc/nginx/{{ nginx_server_name }}-ca.crt:ro
       - /etc/nginx/dhparam:/etc/nginx/dhparam:ro
 
 - name: run nginx in a container  # noqa no-handler
@@ -114,7 +114,7 @@
     log_options: "{{ log_options }}"
     volumes:
       - /etc/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - /etc/nginx/sdhp.stfc.skao.int.key:/etc/nginx/sdhp.stfc.skao.int.key:ro
-      - /etc/nginx/sdhp.stfc.skao.int.crt:/etc/nginx/sdhp.stfc.skao.int.crt:ro
-      - /etc/nginx/sdhp.stfc.skao.int-ca.crt:/etc/nginx/sdhp.stfc.skao.int-ca.crt:ro
+      - /etc/nginx/{{ nginx_server_name }}.key:/etc/nginx/{{ nginx_server_name }}.key:ro
+      - /etc/nginx/{{ nginx_server_name }}.crt:/etc/nginx/{{ nginx_server_name }}.crt:ro
+      - /etc/nginx/{{ nginx_server_name }}-ca.crt:/etc/nginx/{{ nginx_server_name }}-ca.crt:ro
       - /etc/nginx/dhparam:/etc/nginx/dhparam:ro

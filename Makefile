@@ -8,6 +8,7 @@ ANSIBLE_COLLECTIONS_PATHS ?=
 PLAYBOOKS_ROOT_DIR ?=
 ANSIBLE_LINT_PARAMETERS = --exclude ansible_collections/ska_collections/monitoring/roles/prometheus/files
 PLAYBOOKS_HOSTS ?=
+ANSIBLE_CONFIG?=
 
 # standard make targets and Ansible support
 include .make/base.mk
@@ -23,14 +24,18 @@ ifndef ENVIRONMENT
 endif
 
 vars:  ## Variables
-	@echo "Current variable settings:"
 	@echo "ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS)"
 	@echo "PLAYBOOKS_ROOT_DIR=$(PLAYBOOKS_ROOT_DIR)"
 	@echo "ANSIBLE_LINT_PARAMETERS=$(ANSIBLE_LINT_PARAMETERS)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
-	@echo "CA_CERT_PASS=$(CA_CERT_PASS)"
-	@echo "ELASTIC_PASSWORD=$(ELASTIC_PASSWORD)"
-	@echo "ELASTIC_HAPROXY_STATS_PASS=$(ELASTIC_HAPROXY_STATS_PASS)"
+	@echo "ANSIBLE_CONFIG=$(ANSIBLE_CONFIG)"
+
+vars_recursive:
+	@make vars;
+	@echo ""
+	@echo -e "\033[33m--------- Installation Jobs ------------\033[0m"
+	@echo ""
+	@$(foreach file, $(wildcard $(JOBS_DIR)/*), make vars -f $(file); echo "";)
 
 ping:  check-env ## Ping Ansible targets
 	ansible all -i $(PLAYBOOKS_ROOT_DIR)/inventory.yml -m ping -l $(PLAYBOOKS_HOSTS)
@@ -60,29 +65,18 @@ clusterapi: check-env
 monitoring: check-env ## ElasticSearch targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/monitoring.mk
 
-# If the first argument is "common"...
-ifeq (common,$(firstword $(MAKECMDGOALS)))
-  # use the rest as arguments for "common"
-  TARGET_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-  # ...and turn them into do-nothing targets
-  $(eval $(TARGET_ARGS):;@:)
-endif
-
 common: check-env ## ElasticSearch targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/common.mk
 
-help-from-submodule: ## Show Help
-	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}';
+print_targets: ## Show Help
+	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {p=index($$1,":")} {printf "\033[36m%-30s\033[0m %s\n", substr($$1,p+1), $$2}';
 	@echo ""
 	@echo "--------- Playbook Jobs ------------"
 	@echo ""
 	@$(foreach file, $(wildcard $(JOBS_DIR)/*), make help -f $(file); echo "";)
 
 help: ## Show Help
+	@echo ""
+	@echo "Vars:"
 	@make vars;
-	@echo "";
-	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}';
-	@echo ""
-	@echo "--------- Playbook Jobs ------------"
-	@echo ""
-	@$(foreach file, $(wildcard $(JOBS_DIR)/*), make help -f $(file); echo "";)
+	@make print_targets
