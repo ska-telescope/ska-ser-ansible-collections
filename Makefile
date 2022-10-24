@@ -42,7 +42,6 @@ ping:  check-env ## Ping Ansible targets
 
 install_collections:  ## Install dependent ansible collections
 	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
-	ANSIBLE_COLLECTIONS_PATH=$(ANSIBLE_COLLECTIONS_PATHS) \
 	ansible-galaxy collection install \
 	-r requirements.yml -p ./ansible_collections
 
