@@ -75,7 +75,7 @@
     - elasticsearch
 
 - name: Deploy elasticsearch to master nodes
-  hosts: "{{ target_hosts }}-master" # TODO: Fix this
+  hosts: "{{ target_hosts }}-master"
   vars:
     target_hosts: localhost
   become: true
@@ -94,7 +94,7 @@
     - elasticsearch
 
 - name: Deploy elasticsearch to data nodes
-  hosts: "{{ target_hosts }}-data" # TODO: Fix this
+  hosts: "{{ target_hosts }}-data"
   vars:
     target_hosts: localhost
   become: true
@@ -113,7 +113,7 @@
     - elasticsearch
 
 - name: Deploy HAProxy to loadbalancer nodes
-  hosts: "{{ target_hosts }}-loadbalancer"  # TODO: Fix this
+  hosts: "{{ target_hosts }}-loadbalancer"
   vars:
     target_hosts: localhost
   become: true
@@ -126,6 +126,8 @@
 
 - name: Deploy kibana to kibana nodes
   hosts: "{{ target_hosts }}-kibana"
+  vars:
+    target_hosts: localhost
   become: true
   tasks:
     - name: Install Kibana on Kibana-only instances
@@ -139,6 +141,8 @@
 
 - name: Deploy kibana to a master node
   hosts: "{{ target_hosts }}-master"
+  vars:
+    target_hosts: localhost
   become: true
   tasks:
     - name: Install kibana

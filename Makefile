@@ -3,7 +3,7 @@ MAKEFLAGS += --no-print-directory
 .PHONY: elastic
 
 PLAYBOOKS_HOSTS ?= all
-INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml 
+INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml
 JOBS_DIR=resources/jobs
 ANSIBLE_COLLECTIONS_PATHS ?=
 PLAYBOOKS_ROOT_DIR ?=

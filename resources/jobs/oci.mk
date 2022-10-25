@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
-INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml 
+INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml
 
 -include $(BASE_PATH)/PrivateRules.mak
 
