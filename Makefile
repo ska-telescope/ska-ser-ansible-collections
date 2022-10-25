@@ -40,6 +40,11 @@ vars_recursive:
 ping:  check-env ## Ping Ansible targets
 	ansible all -i $(PLAYBOOKS_ROOT_DIR) -m ping -l $(PLAYBOOKS_HOSTS)
 
+install_collections:  ## Install dependent ansible collections
+	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
+	ansible-galaxy collection install \
+	-r requirements.yml -p ./ansible_collections
+
 JOBLIST := $(shell find $(JOBS_DIR) -iname '*.mk' -exec basename {} .mk ';')
 
 # If the first argument matches a Makefile in the JOBS_DIR...
@@ -49,6 +54,11 @@ ifneq ($(filter $(JOBLIST),$(firstword $(MAKECMDGOALS))),)
   # ...and turn them into do-nothing targets
   $(eval $(TARGET_ARGS):;@:)
 endif
+
+install_collections:  ## Install dependent ansible collections
+	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
+	ansible-galaxy collection install \
+	-r requirements.yml -p ./ansible_collections
 
 oci: check-env ## oci targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/oci.mk
@@ -61,6 +71,9 @@ logging: check-env ## logging targets
 
 monitoring: check-env ## monitoring targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/monitoring.mk
+
+ceph: check-env ## Ceph targets
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/ceph.mk
 
 common: check-env ## common targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/common.mk
