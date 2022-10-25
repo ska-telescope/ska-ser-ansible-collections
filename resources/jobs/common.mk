@@ -2,6 +2,7 @@
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 PLAYBOOK_PATH ?= ./ansible_collections/ska_collections/instance_common/playbooks
+
 BIFROST_VARS ?= ./environments/$(ENVIRONMENT)/installation/group_vars/bifrost.yml
 BIFROST_CLUSTER_NAME ?= terminus
 BIFROST_EXTRA_VARS ?= jump_host=' -F $(PLAYBOOKS_ROOT_DIR)/ssh.config $(BIFROST_CLUSTER_NAME) '
@@ -16,7 +17,12 @@ endif
 
 vars:
 	@echo "\033[36mCommon:\033[0m"
+	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
+	@echo "AZUREAD_CLIENT_ID=$(AZUREAD_CLIENT_ID)"
+	@echo "AZUREAD_CLIENT_SECRET=$(AZUREAD_CLIENT_SECRET)"
+	@echo "AZUREAD_COOKIE_SECRET=$(AZUREAD_COOKIE_SECRET)"
+	@echo "AZUREAD_TENANT_ID=$(AZUREAD_TENANT_ID)"
 
 install: check_hosts ## Run common tasks (setup host(s), mount volumes)
 	ansible-playbook ./ansible_collections/ska_collections/instance_common/playbooks/common.yml \

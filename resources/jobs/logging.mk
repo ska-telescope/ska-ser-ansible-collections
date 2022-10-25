@@ -19,6 +19,7 @@ endif
 
 vars:
 	@echo "\033[36mLogging:\033[0m"
+	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 	@echo "CA_CERT_PASS=$(CA_CERT_PASS)"
 

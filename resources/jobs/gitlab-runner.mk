@@ -15,7 +15,8 @@ ifndef GITLAB_RUNNER_REGISTRATION_TOKEN
 endif
 
 vars:
-	@echo "\033[Gitlab-runner:\033[0m"
+	@echo "\033[36mGitlab-runner:\033[0m"
+	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 	@echo "GITLAB_RUNNER_REGISTRATION_TOKEN=$(GITLAB_RUNNER_REGISTRATION_TOKEN)"
 
@@ -25,7 +26,7 @@ install: check_hosts check_gitlab_runner_secrets ## Deploy gitlab-runner
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars " \
 		target_hosts=$(PLAYBOOKS_HOSTS) \
-		gitlab_runner_registration_token=$(GITLAB_RUNNER_REGISTRATION_TOKEN) \
+		gitlab_runner_registration_token=$(GITLAB_RUNNER_REGISTRATION_TOKEN)
 	"
 
 destroy: check_hosts check_gitlab_runner_secrets ## Destroy gitlab-runner

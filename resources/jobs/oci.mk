@@ -11,6 +11,7 @@ endif
 
 vars:
 	@echo "\033[36mOCI:\033[0m"
+	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
 docker: check_hosts ## Install docker

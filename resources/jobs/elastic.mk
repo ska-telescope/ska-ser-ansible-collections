@@ -19,13 +19,18 @@ endif
 ifndef ELASTIC_HAPROXY_STATS_PASSWORD
 	$(error ELASTIC_HAPROXY_STATS_PASSWORD is undefined)
 endif
+ifndef KIBANA_VIEWER_PASSWORD
+	$(error KIBANA_VIEWER_PASSWORD is undefined)
+endif
 
 vars:
 	@echo "\033[36mElasticsearch:\033[0m"
+	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 	@echo "CA_CERT_PASS=$(CA_CERT_PASS)"
 	@echo "ELASTICSEARCH_PASSWORD=$(ELASTICSEARCH_PASSWORD)"
 	@echo "ELASTIC_HAPROXY_STATS_PASSWORD=$(ELASTIC_HAPROXY_STATS_PASSWORD)"
+	@echo "KIBANA_VIEWER_PASSWORD=$(KIBANA_VIEWER_PASSWORD)"
 
 install: check_hosts check_elastic_secrets ## Install elastic
 	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/install.yml \
