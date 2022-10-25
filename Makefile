@@ -3,8 +3,8 @@ MAKEFLAGS += --no-print-directory
 .PHONY: elastic
 
 PLAYBOOKS_HOSTS ?= all
-INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml
-JOBS_DIR=resources/jobs
+INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
+JOBS_DIR = resources/jobs
 ANSIBLE_COLLECTIONS_PATHS ?=
 PLAYBOOKS_ROOT_DIR ?=
 INVENTORY_FILE ?= inventory.yml
@@ -40,7 +40,7 @@ vars_recursive:
 	@$(foreach file, $(wildcard $(JOBS_DIR)/*), make vars -f $(file); echo "";)
 
 ping: check-env ## Ping Ansible targets
-	@ansible all -i $(INVENTORY_FILE) -m ping -l $(PLAYBOOKS_HOSTS)
+	@ansible all -i $(INVENTORY) -m ping -l $(PLAYBOOKS_HOSTS)
 
 install_collections:  ## Install dependent ansible collections
 	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \

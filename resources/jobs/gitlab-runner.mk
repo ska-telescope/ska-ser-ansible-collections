@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
-INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml
+INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 
 -include $(BASE_PATH)/PrivateRules.mak
 
@@ -21,7 +21,7 @@ vars:
 
 install: check_hosts check_gitlab_runner_secrets ## Deploy gitlab-runner
 	@ansible-playbook ./ansible_collections/ska_collections/gitlab_runner/playbooks/deploy.yml \
-	-i $(INVENTORY_FILE) \
+	-i $(INVENTORY) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars " \
 		target_hosts=$(PLAYBOOKS_HOSTS) \
@@ -30,7 +30,7 @@ install: check_hosts check_gitlab_runner_secrets ## Deploy gitlab-runner
 
 destroy: check_hosts check_gitlab_runner_secrets ## Destroy gitlab-runner
 	@ansible-playbook ./ansible_collections/ska_collections/gitlab_runner/playbooks/undeploy.yml \
-	-i $(INVENTORY_FILE) \
+	-i $(INVENTORY) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars " \
 		target_hosts=$(PLAYBOOKS_HOSTS) \

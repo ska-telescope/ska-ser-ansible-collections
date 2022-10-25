@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
-INVENTORY_FILE ?= $(PLAYBOOKS_ROOT_DIR)/inventory.yml 
+INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 
 -include $(BASE_PATH)/PrivateRules.mak
 
@@ -24,7 +24,7 @@ vars:
 
 install: check_hosts check_logging_secrets ## Install logging
 	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/logging.yml \
-	-i $(INVENTORY_FILE) \
+	-i $(INVENTORY) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars " \
 		target_hosts=$(PLAYBOOKS_HOSTS) \
