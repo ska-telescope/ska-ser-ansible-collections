@@ -41,7 +41,7 @@
       ownca_privatekey_passphrase: "{{ ca_cert_pass }}"
       ownca_not_after: +365d # valid for one year
       ownca_not_before: "-1d" # valid since yesterday
-    delegate_to:  "{{ gateway_hostname }}"
+    delegate_to: "{{ gateway_hostname }}"
     register: certificate
 
   - name: Write certificate file on client host

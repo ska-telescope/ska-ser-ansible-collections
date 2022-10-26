@@ -26,3 +26,7 @@ log_options:
 # labelling on container runtime
 container_labels:
   org.ska.app.group: frontend
+
+# kibana IP for TechOps
+kibana_ip: 192.168.99.191
+kibana_port: 5601

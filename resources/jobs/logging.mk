@@ -1,9 +1,14 @@
+.DEFAULT_GOAL := help
+ANSIBLE_PLAYBOOK_ARGUMENTS ?=
+
+-include $(BASE_PATH)/PrivateRules.mak
+
 check_hosts:
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 
-check_ca_pass:
+check_secrets:
 ifndef CA_CERT_PASS
 	$(error CA_CERT_PASS is undefined)
 endif
