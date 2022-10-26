@@ -78,7 +78,7 @@ prometheus: check_hosts ## Install Prometheus Server
 		-e "project_id='$(PROM_OS_PROJECT_ID)' auth_url='$(PROM_OS_AUTH_URL)' kubeconfig='$(KUBECONFIG)'" \
 		-e "username='$(PROM_OS_USERNAME)' password='$(PROM_OS_PASSWORD)'" $(PROMETHEUS_EXTRAVARS) \
 		-e "prometheus_gitlab_ci_pipelines_exporter_token=$(GITLAB_TOKEN)" \
-		-e "ca_cert_pass=$(CA_CERT_PASSWORD)" \
+		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
 		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
 		-e @$(PROM_CONFIGS_PATH)/../environments/$(ENVIRONMENT)/installation/group_vars/prometheus.yml \
@@ -113,7 +113,7 @@ thanos: check_hosts ## Install Thanos query and query front-end
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		--extra-vars "mode='thanos'" \
-		-e "ca_cert_pass=$(CA_CERT_PASSWORD)" \
+		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
 		-e "project_id='$(PROM_OS_PROJECT_ID)' auth_url='$(PROM_OS_AUTH_URL)'" \
 		-e "username='$(PROM_OS_USERNAME)' password='$(PROM_OS_PASSWORD)'" \
 		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \

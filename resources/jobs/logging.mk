@@ -10,8 +10,8 @@ ifndef PLAYBOOKS_HOSTS
 endif
 
 check_logging_secrets:
-ifndef CA_CERT_PASS
-	$(error CA_CERT_PASS is undefined)
+ifndef CA_CERT_PASSWORD
+	$(error CA_CERT_PASSWORD is undefined)
 endif
 ifndef ELASTICSEARCH_PASSWORD
         $(error ELASTICSEARCH_PASSWORD is undefined)
@@ -21,7 +21,7 @@ vars:
 	@echo "\033[36mLogging:\033[0m"
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
-	@echo "CA_CERT_PASS=$(CA_CERT_PASS)"
+	@echo "CA_CERT_PASSWORD=$(CA_CERT_PASSWORD)"
 
 install: check_hosts check_logging_secrets ## Install logging
 	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/logging.yml \
@@ -29,7 +29,7 @@ install: check_hosts check_logging_secrets ## Install logging
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars " \
 		target_hosts=$(PLAYBOOKS_HOSTS) \
-		ca_cert_pass=$(CA_CERT_PASS) \
+		ca_cert_password=$(CA_CERT_PASSWORD) \
 		elasticsearch_password=$(ELASTICSEARCH_PASSWORD) \
 	"
 

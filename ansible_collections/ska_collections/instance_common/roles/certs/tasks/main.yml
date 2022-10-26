@@ -37,7 +37,7 @@
         provider: ownca
         ownca_path: "{{ certificates_dir }}/ca-certificate.crt"
         ownca_privatekey_path: "{{ certificates_dir }}/ca-certificate.key"
-        ownca_privatekey_passphrase: "{{ ca_cert_pass }}"
+        ownca_privatekey_passphrase: "{{ ca_cert_password }}"
         ownca_not_after: +365d # valid for one year
         ownca_not_before: "-1d" # valid since yesterday
       delegate_to: "{{ gateway_hostname }}"
