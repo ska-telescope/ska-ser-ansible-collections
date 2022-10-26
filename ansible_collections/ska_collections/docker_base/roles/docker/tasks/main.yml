@@ -51,7 +51,6 @@
   ansible.builtin.apt:
     update_cache: true
 
-
 - name: Docker install
   ansible.builtin.include_tasks: install.yml
   loop: "{{ docker_deb_pkgs }}"
@@ -120,7 +119,6 @@
     - Reload systemd
     - Restart docker
 
-# run the docker system prune everyday
 - name: Add cron job for docker system prune
   ansible.builtin.lineinfile:
     path: /etc/crontab

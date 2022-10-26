@@ -12,4 +12,7 @@ python-versions = "^3.8"
 content-hash = "d25899f94f491d1f3cf6ef3a6937150ac8bbcaf88ba45245c466985e9f044186"
 
 [metadata.files]
-mitogen = []
+mitogen = [
+    {file = "mitogen-0.3.3-py2.py3-none-any.whl", hash = "sha256:3f99570109534afc077cd69ae1c96dd5eead0eb253c561047b305aa6119ae629"},
+    {file = "mitogen-0.3.3.tar.gz", hash = "sha256:db9dbc1ca8acb59f8f70c25a0fbdf11698b1a8b8355f39a8c540e0874496fb34"},
+]

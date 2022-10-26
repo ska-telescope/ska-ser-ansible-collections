@@ -51,7 +51,7 @@ logging_elasticsearch_addresses:
   - http://192.168.99.183:9200
 
 logging_loadbalancer_username: "elastic"
-logging_loadbalancer_password: "{{ elastic_password }}"
+logging_loadbalancer_password: "{{ elasticsearch_password }}"
 logging_loadbalancer_address: "https://{{ logging_loadbalancer_username }}:{{ logging_loadbalancer_password }}@logging.stfc.skao.int:9200"
 
 java_mem: 8g
