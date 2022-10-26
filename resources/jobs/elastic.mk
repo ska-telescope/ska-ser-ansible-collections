@@ -28,7 +28,7 @@ vars:
 
 install: check_hosts check_secrets ## Install elastic
 	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/install.yml \
-	-i $(PLAYBOOKS_ROOT_DIR) \
+	-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars " \
 		target_hosts=$(PLAYBOOKS_HOSTS) \
@@ -40,7 +40,7 @@ install: check_hosts check_secrets ## Install elastic
 
 destroy: check_hosts ## Destroy elastic cluster
 	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/destroy.yml \
-	-i $(PLAYBOOKS_ROOT_DIR) \
+	-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 

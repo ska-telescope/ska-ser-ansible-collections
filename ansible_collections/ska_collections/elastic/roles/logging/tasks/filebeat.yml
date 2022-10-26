@@ -50,20 +50,21 @@
             src: /etc/ska_log_parsing_pipeline.json
           register: ska_log_parsing_pipeline_file
 
-        # curl -XPUT --retry-connrefused --connect-timeout 5 --retry 999 \
-        #  --retry-delay 1 "http://$${ip}:9200"/_ingest/pipeline/ska_log_parsing_pipeline \
-        #  -H "kbn-xsrf: true" -H "Content-Type: application/json" -d @./tools/ska_log_parsing_pipeline.json;
         - name: update pipeline config
           uri:
-            url: "{{ logging_elasticsearch_addresses[0] }}/_ingest/pipeline/{{ filebeat_pipeline }}"
+            url: "{{ logging_loadbalancer_address }}/_ingest/pipeline/{{ filebeat_pipeline }}"
+            client_cert: "{{ certificates_dir }}/{{ filebeat_certificate_name }}.crt"
+            client_key: "{{ certificates_dir }}/{{ filebeat_private_key_name }}.key"
             method: PUT
             return_content: true
             body: "{{ ska_log_parsing_pipeline_file['content'] | b64decode }}"
             status_code: 200
             body_format: json
+          environment:
+            SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
           when: ska_log_parsing_pipeline_conf.changed
 
-      when: "filebeat_pipeline and 'elkmasters' in groups and inventory_hostname == groups['elkmasters'][0]"
+      when: filebeat_pipeline
 
     - name: scope for index initialisation
       block:

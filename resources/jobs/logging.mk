@@ -13,16 +13,23 @@ ifndef CA_CERT_PASS
 	$(error CA_CERT_PASS is undefined)
 endif
 
+ifndef ELASTIC_PASSWORD
+        $(error ELASTIC_PASSWORD is undefined)
+endif
+
 vars:
 	@echo "\033[36mLogging:\033[0m"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 	@echo "CA_CERT_PASS=$(CA_CERT_PASS)"
-
-install: check_hosts check_secrets ## Install logging
+	
+install: check_hosts ## Install logging
 	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/logging.yml \
-	-i $(PLAYBOOKS_ROOT_DIR) \
-	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) ca_cert_pass=$(CA_CERT_PASS)"
+	-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) elastic_password=$(ELASTIC_PASSWORD) ca_cert_pass=$(CA_CERT_PASS)"
+destroy: check_hosts ## Destroy logging - only the containers
+	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/logging.yml \
+	-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) elastic_password=$(ELASTIC_PASSWORD) ca_cert_pass=$(CA_CERT_PASS)"
 
 help: ## Show Help
 	@echo "Logging targets - make playbooks logging <target>:"

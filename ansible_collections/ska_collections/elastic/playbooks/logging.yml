@@ -13,5 +13,5 @@
   become: true
   roles:
     - ska_collections.instance_common.init
-    - ska_collections.docker_base.docker
+    - ska_collections.docker_base.podman
     - ska_collections.elastic.logging

@@ -14,19 +14,19 @@ vars:
 
 docker: check_hosts ## Install docker
 	ansible-playbook ./ansible_collections/ska_collections/docker_base/playbooks/docker.yml \
-	-i $(PLAYBOOKS_ROOT_DIR)\
+	-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 	
 containerd: check_hosts ## Install containerd
 	ansible-playbook ./ansible_collections/ska_collections/docker_base/playbooks/containerd.yml \
-	-i $(PLAYBOOKS_ROOT_DIR) \
+	-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 	
 podman: check_hosts ## Install podman
 	ansible-playbook ./ansible_collections/ska_collections/docker_base/playbooks/podman.yml \
-	-i $(PLAYBOOKS_ROOT_DIR) \
+	-i $(PLAYBOOKS_ROOT_DIR)/$(INVENTORY_FILE) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
