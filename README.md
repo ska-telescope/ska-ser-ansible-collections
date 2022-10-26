@@ -1,6 +1,6 @@
 # SKA Ansible Collections
 
-This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html), that can be reused to install and/or config toservices.
+This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html), that can be reused to install and/or config services.
 
 
 | Collection            | Roles                                 | Description                                               |
