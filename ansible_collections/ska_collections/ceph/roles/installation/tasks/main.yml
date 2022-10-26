@@ -18,9 +18,3 @@
 - name: "Run cephadm commands"
   include_role:
     name: stackhpc.cephadm.commands
-
-#- name: "Apply commands"
-#  vars:
-#    cephadm_commands: "{{ var }}"
-#  include_role:
-#    name: stackhpc.cephadm.commands

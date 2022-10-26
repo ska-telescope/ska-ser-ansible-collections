@@ -91,14 +91,14 @@
       ansible.builtin.file:
         path: "/etc/haproxy"
         state: directory
-        mode: "0755"
+        mode: 0755
       become: true
 
     - name: Add proxy config
       ansible.builtin.template:
         src: haproxy.cfg.j2
         dest: /etc/haproxy/haproxy-minikube.cfg
-        mode: "0644"
+        mode: 0644
       become: true
 
     - name: "Pull haproxy image {{ minikube_haproxy_image }}"

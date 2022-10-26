@@ -1,0 +1,48 @@
+---
+- name: Create configuration directory
+  ansible.builtin.file:
+    path: "{{ gitlab_runner_configuration_dir }}"
+    state: directory
+    mode: 0644
+
+- name: Check if gitlab-runner config exists
+  ansible.builtin.stat:
+    path: "{{ gitlab_runner_configuration_dir }}/config.toml"
+  register: unregister_config
+
+- name: Unregister runner
+  when: unregister_config.stat.exists
+  block:
+    - name: Unregister runner
+      community.general.docker_container:
+        name: "{{ gitlab_runner_name }}-unregister"
+        image: "{{ gitlab_runner_image }}"
+        restart_policy: "False"
+        command:
+          - unregister
+          - --config "/etc/gitlab-runner/config.toml"
+          - "{{ gitlab_runner_unregister_all | ternary('--name ' + gitlab_runner_name, '--all-runners') }}"
+        state: started
+        ulimits:
+          - "memlock:-1:-1"
+          - "nofile:65536:65536"
+        labels: "{{ gitlab_runner_labels }}"
+        log_driver: "{{ gitlab_runner_log_driver }}"
+        log_options: "{{ gitlab_runner_log_options }}"
+        volumes:
+          - "{{ gitlab_runner_configuration_dir }}:/etc/gitlab-runner"
+
+    - name: "Wait for {{ gitlab_runner_name }} to terminate"
+      command: docker wait {{ gitlab_runner_name }}-unregister
+      changed_when: true
+
+- name: Get unregister result
+  community.general.docker_container_info:
+    name: "{{ gitlab_runner_name }}-unregister"
+  register: unregister
+
+- name: Remove gitlab-runner config
+  ansible.builtin.file:
+    path: "{{ gitlab_runner_configuration_dir }}/config.toml"
+    state: absent
+  when: not unregister.failed and unregister.container != None and unregister.container.State.ExitCode == 0

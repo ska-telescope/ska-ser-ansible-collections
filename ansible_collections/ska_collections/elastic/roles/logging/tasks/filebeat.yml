@@ -1,7 +1,6 @@
 ---
 - name: Deploy the filebeat logger
   block:
-
     - name: Install crun as default runtime
       ansible.builtin.package:
         name: crun
@@ -118,7 +117,7 @@
         state: directory
         owner: root
         group: root
-        mode: "0755"
+        mode: 0755
 
     # make sure that the store version file exists
     - name: check if meta.json file exists

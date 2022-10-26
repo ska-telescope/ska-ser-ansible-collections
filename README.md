@@ -3,12 +3,15 @@
 This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html), that can be reused to install and/or config services.
 
 
-| Collection      | Roles                                                                                                                       | Description                                                                                                                                                                                                                                                                                                                            |
-|-----------------|-----------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| oci             | containerd <br> docker <br> podman                                                                                          | install specific OCI engine                                                                                                                                                                                                                                                                                                            |
-| instance_common | init <br> certs                                                                                                             | VM initialization                                                                                                                                                                                                                                                                                                                      |
-| elastic         | stack <br> haproxy <br> logging                                                                                             | Elasticsearch cluster roles                                                                                                                                                                                                                                                                                                            |
-| k8s             | charts, <br> haproxy, <br> helm, <br> join, <br> k8s, <br> kubectl, <br> resources, <br> metallb ,<br> binderhub, <br> ping | default SKA helm charts <br> haproxy Kubernetes LoadBalancer <br> helm client <br> join node to HA cluster <br> Kubernetes packages <br> Kubernetes client <br> Create Namespaces and Apply Limits and Quotas <br> Load balancer for kubernetes <br> Service to share Jupyter notebooks in the cloud <br> Ping service to test ingress |
+| Collection            | Roles                                 | Description                                               |
+| --------------------- | --------------------------------------| ----------------------------------------------------------|
+| instance_common       | init <br> certs                       | VM initialization (common packages, mount volumes, etc)   |
+| docker_base           | containerd <br> docker <br> podman    | Install specific OCI engine                               |
+| elastic               | stack <br> logging <br> haproxy       | Elasticsearch and Kibana cluster roles                    |
+| monitoring            | custom_metrics <br> node_exporter <br> prometheus <br> updatehosts | Install prometheus-based metrics services |
+| minikube              | minikube <br> setup <br> velero        | Install minikube and associated tools                    |
+| gitlab_runner         | runner                                 | Install docker-based Gitlab-runner                       |
+| ceph                  | installation                          | Ceph roles                                                |
 
 ## Usage
 
@@ -56,6 +59,7 @@ project - umbrella repository
 
 Finally, this repo has make targets to run the desired collections with all the files and configurations added with
 little setup.
+
 ### Make Targets
 
 The table bellow, iterates all the targets available on the main Makefile. 
@@ -67,8 +71,8 @@ The table bellow, iterates all the targets available on the main Makefile.
 | ping                  | ping all hosts on a specific inventory  | PLAYBOOKS_ROOT_DIR <br> PLAYBOOKS_HOSTS <br> ANSIBLE_CONFIG |
 | install_collections   | pulls collections from requirements.yml | ANSIBLE_COLLECTIONS_PATHS                                   |
 
-All the targets specific to a collection such as ElasticSearch or OCI engine, 
-it will be separated on their own **.mk** file on **resources/jobs** folder.
+All the targets specific to a collection such as **elastic** or **oci** engine, 
+will be separated on their own **.mk** file on **resources/jobs** folder.
 
 The make command must have a specific format to trigger the targets bellow, like:
 
@@ -76,15 +80,26 @@ The make command must have a specific format to trigger the targets bellow, like
 make <collection> <job> <VARS>
 ```
 
-| Collection | Job        | Description                                                | Role Dependency                               |
-|------------|------------|------------------------------------------------------------|-----------------------------------------------|
-| elastic    | install    | Install ElasticSearch cluster via OCI containers           | common.init <br> common.certs <br> oci.docker |
-| elastic    | destroy    | Destroy ElasticSearch cluster                              |                                               |
-| oci        | docker     | Install Docker                                             |                                               |
-| oci        | podman     | Install Podman                                             |                                               |
-| oci        | containerd | Install containerd                                         |                                               |
-| common     | init       | Update APT <br> Install common packages <br> Mount volumes |                                               |
-| common     | certs      | Generate certificates from the Terminus CA                 |                                               |
+| Collection | Job        | Description                                                | Role Dependency                                |
+|------------|------------|------------------------------------------------------------|----------------------------------------------- |
+| common     | install    | Update APT, install common packages and mounts volumes     |                                                |
+| oci        | docker     | Install Docker                                             |                                                |
+| oci        | podman     | Install Podman                                             |                                                |
+| oci        | containerd | Install containerd                                         |                                                |
+| common     | init       | Update APT <br> Install common packages <br> Mount volumes |                                                |
+| common     | certs      | Generate certificates from the Terminus CA                 |                                                |
+| ceph       | install    | Install ceph                                               | stackhp cephadm (run install_collections)      |
+| elastic    | install    | Install elasticsearch cluster via OCI containers           | instance_common.init <br> intance_common.certs <br> docker_base.docker  |
+| elastic    | destroy    | Destroy elasticsearch cluster                              |                                                |
+| logging    | install    | Deploy filebeat into nodes                                 |                                                |
+| logging    | destroy    | Remove filebeat from nodes                                 |                                                |
+| monitoring    | prometheus       | Install prometheus                                |                                                |
+| monitoring    | thanos           | Install thanos                                    |                                                |
+| monitoring    | node-exporter    | Install node-exporter                             |                                                |
+| monitoring    | update_metadata  | Update nodes metadata for scrapers                |                                                |
+| monitoring    | update_scrapers  | Update prometheus scrapers                        |                                                |
+| gitlab_runner | install  | Install and register gitlab runner                        |  instance_common.init <br> docker_base.docker  |
+| gitlab_runner | destroy  | Destroy and unregister gitlab runner                      |                                                |
 
 ### Mandatory Environment Variables
 

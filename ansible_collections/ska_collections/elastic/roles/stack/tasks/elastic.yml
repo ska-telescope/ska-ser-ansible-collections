@@ -9,8 +9,8 @@
 
 - name: Create list of nodes to be added into container's /etc/hosts file
   ansible.builtin.set_fact:
-    masters_etc_hosts: "{{ masters_etc_hosts|default({}) | combine( {item: hostvars[item].ansible_default_ipv4.address} ) }}"
-  with_items: "{{ groups[target_hosts]}}"
+    node_hosts: "{{ node_hosts|default({}) | combine( {item: hostvars[item].ansible_default_ipv4.address} ) }}"
+  with_items: "{{ groups[target_hosts] }}"
 
 - name: Cleans elasticsearch data volume
   ansible.builtin.file:
@@ -45,12 +45,12 @@
 - name: Change {{ certificates_dir }} ownership
   ansible.builtin.file:
     path: "{{ certificates_dir }}"
-    mode: "0770"
+    mode: 0770
 
 - name: Change private key ownership
   ansible.builtin.file:
     path: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
-    mode: "0640"
+    mode: 0640
 
 - name: Run Elasticsearch container
   community.general.docker_container:
@@ -60,7 +60,7 @@
     user: elasticsearch
     memory: "{{ elasticsearch_memory }}"
     hostname: "{{ inventory_hostname }}"
-    etc_hosts: "{{ masters_etc_hosts }}" # TODO:Review
+    etc_hosts: "{{ node_hosts }}"
     restart_policy: false
     image: "{{ elasticsearch_image }}"
     state: started
