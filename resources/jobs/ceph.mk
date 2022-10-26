@@ -7,6 +7,11 @@ ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 
+vars:
+	@echo "\033[36mCeph:\033[0m"
+	@echo "INVENTORY=$(INVENTORY)"
+	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
+
 install: check_hosts ## Install ceph
 	@ansible-playbook ./ansible_collections/ska_collections/ceph/playbooks/install.yml \
 	-i $(INVENTORY) \

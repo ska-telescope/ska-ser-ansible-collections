@@ -40,6 +40,9 @@ vars_recursive:
 	@$(foreach file, $(wildcard $(JOBS_DIR)/*), make vars -f $(file); echo "";)
 
 ping: check-env ## Ping Ansible targets
+ifndef PLAYBOOKS_HOSTS
+	$(error PLAYBOOKS_HOSTS is undefined)
+endif
 	@ansible all -i $(INVENTORY) -m ping -l $(PLAYBOOKS_HOSTS)
 
 install_collections:  ## Install dependent ansible collections

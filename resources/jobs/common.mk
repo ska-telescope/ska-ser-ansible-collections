@@ -25,14 +25,14 @@ vars:
 	@echo "AZUREAD_TENANT_ID=$(AZUREAD_TENANT_ID)"
 
 install: check_hosts ## Run common tasks (setup host(s), mount volumes)
-	ansible-playbook ./ansible_collections/ska_collections/instance_common/playbooks/common.yml \
+	@ansible-playbook ./ansible_collections/ska_collections/instance_common/playbooks/common.yml \
 	-i $(INVENTORY) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 reverseproxy: check_hosts ## Install nginx reverse proxy
-	ansible-playbook $(PLAYBOOK_PATH)/proxy.yml \
-	-i $(INVENTORY_FILE) \
+	@ansible-playbook $(PLAYBOOK_PATH)/proxy.yml \
+	-i $(INVENTORY) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	-e @../$(BIFROST_VARS) \
 	--extra-vars " \
