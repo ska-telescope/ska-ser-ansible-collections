@@ -49,6 +49,7 @@ vars:  ## Variables
 	@echo "PROMETHEUS_NODE=$(PROMETHEUS_NODE)"
 	@echo "GITLAB_TOKEN=$(GITLAB_TOKEN)"
 	@echo "KUBECONFIG=$(KUBECONFIG)"
+	@echo "NODES=$(NODES)"
 
 lint: ## Lint playbooks
 	@yamllint -d "{extends: relaxed, rules: {line-length: {max: 350}}}" \

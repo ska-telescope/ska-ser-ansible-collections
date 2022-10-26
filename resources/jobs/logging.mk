@@ -13,8 +13,8 @@ check_logging_secrets:
 ifndef CA_CERT_PASS
 	$(error CA_CERT_PASS is undefined)
 endif
-ifndef ELASTIC_PASSWORD
-        $(error ELASTIC_PASSWORD is undefined)
+ifndef ELASTICSEARCH_PASSWORD
+        $(error ELASTICSEARCH_PASSWORD is undefined)
 endif
 
 vars:
@@ -30,6 +30,7 @@ install: check_hosts check_logging_secrets ## Install logging
 	--extra-vars " \
 		target_hosts=$(PLAYBOOKS_HOSTS) \
 		ca_cert_pass=$(CA_CERT_PASS) \
+		elasticsearch_password=$(ELASTICSEARCH_PASSWORD) \
 	"
 
 help: ## Show Help

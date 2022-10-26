@@ -21,12 +21,12 @@ vars:
 	@echo "GITLAB_RUNNER_REGISTRATION_TOKEN=$(GITLAB_RUNNER_REGISTRATION_TOKEN)"
 
 install: check_hosts check_gitlab_runner_secrets ## Deploy gitlab-runner
-	@ansible-playbook ./ansible_collections/ska_collections/gitlab_runner/playbooks/deploy.yml \
+	ansible-playbook ./ansible_collections/ska_collections/gitlab_runner/playbooks/deploy.yml \
 	-i $(INVENTORY) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars " \
 		target_hosts=$(PLAYBOOKS_HOSTS) \
-		gitlab_runner_registration_token=$(GITLAB_RUNNER_REGISTRATION_TOKEN)
+		gitlab_runner_registration_token=$(GITLAB_RUNNER_REGISTRATION_TOKEN) \
 	"
 
 destroy: check_hosts check_gitlab_runner_secrets ## Destroy gitlab-runner
