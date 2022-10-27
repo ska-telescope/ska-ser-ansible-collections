@@ -5,4 +5,4 @@ private_key_name: private_key
 certificate_name: certificate
 dns_alt_name: skao.stfc
 organization_name: SKAO
-ca_host: certificate_authority
+ca_host: ca
