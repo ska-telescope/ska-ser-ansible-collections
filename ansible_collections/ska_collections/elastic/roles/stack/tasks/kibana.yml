@@ -44,6 +44,28 @@
     mode: 0600
   when: not kibana_secrets_file.stat.exists
 
+- name: Create custom kibana privileges role
+  ansible.builtin.uri:
+    url: "https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}/_security/role/{{ kibana_privileges_role }}"
+    url_username: elastic
+    url_password: "{{ elasticsearch_password }}"
+    body_format: "json"
+    body:
+      applications: [
+        {
+          "application": "kibana-.kibana",
+          "privileges": "{{ kibana_application_privileges }}",
+          "resources": [ "space:default" ]
+        }
+      ]
+    client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+    client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+    force: true
+    method: PUT
+    status_code: 200
+  environment:
+    SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+
 - name: Create kibana user with viewer roles
   ansible.builtin.uri:
     url: "https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}/_security/user/{{ kibana_viewer_user }}"
