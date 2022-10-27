@@ -1,5 +1,6 @@
 .DEFAULT_GOAL := help
 MAKEFLAGS += --no-print-directory
+VAULT_VARIABLE?=vault
 .PHONY: elastic
 
 PLAYBOOKS_HOSTS ?= all
@@ -18,26 +19,45 @@ include .make/ansible.mk
 -include $(BASE_PATH)/PrivateRules.mak
 
 check-env:
+ifndef DATACENTRE
+	$(error DATACENTRE is undefined)
+endif
 ifndef ENVIRONMENT
 	$(error ENVIRONMENT is undefined)
 endif
 
 vars:  ## Variables
-	@echo "ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS)"
-	@echo "PLAYBOOKS_ROOT_DIR=$(PLAYBOOKS_ROOT_DIR)"
-	@echo "ANSIBLE_LINT_PARAMETERS=$(ANSIBLE_LINT_PARAMETERS)"
-	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
+	@echo "INVENTORY=$(INVENTORY)"
 	@echo "ANSIBLE_CONFIG=$(ANSIBLE_CONFIG)"
-	@echo "CA_CERT_PASSWORD=$(CA_CERT_PASSWORD)"
-	@echo "ELASTICSEARCH_PASSWORD=$(ELASTICSEARCH_PASSWORD)"
-	@echo "ELASTIC_HAPROXY_STATS_PASSWORD=$(ELASTIC_HAPROXY_STATS_PASSWORD)"
-
-vars_recursive:
-	@make vars;
+	@echo "ANSIBLE_SSH_ARGS=$(ANSIBLE_SSH_ARGS)"
+	@echo "ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS)"
+	@echo "ANSIBLE_LINT_PARAMETERS=$(ANSIBLE_LINT_PARAMETERS)"
+	@echo "ANSIBLE_VAULT_EXTRA_ARGS=$(ANSIBLE_VAULT_EXTRA_ARGS)"
 	@echo ""
-	@echo -e "\033[33m--------- Installation Jobs ------------\033[0m"
-	@echo ""
-	@$(foreach file, $(wildcard $(JOBS_DIR)/*), make vars -f $(file); echo "";)
+	@echo -e "\033[33m--------- Global Secrets ------------\033[0m"
+	@echo -e $$(ansible -o -m ansible.builtin.debug \
+		-a msg="_s_{{ ($(VAULT_VARIABLE).shared | to_nice_yaml) | default("") }}_e_" \
+		$(ANSIBLE_VAULT_EXTRA_ARGS) localhost 2>/dev/null | grep -v "FAILED" | \
+		sed 's#.*_s_\(.*\)_e_.*#\1#');
+	@echo -e "\033[33m------- Environment Secrets-----------\033[0m"
+	@echo -e $$(ansible -o -m ansible.builtin.debug \
+		-a msg="_s_{{ ($(VAULT_VARIABLE)['$(DATACENTRE)']['$(ENVIRONMENT)'] | to_nice_yaml) | default("") }}_e_" \
+		$(ANSIBLE_VAULT_EXTRA_ARGS) localhost 2>/dev/null | grep -v "FAILED" | \
+		sed 's#.*_s_\(.*\)_e_.*#\1#');
+	@echo -e "\033[33m----------- Job Secrets --------------\033[0m"
+	@JOBS_LIST="$$(find $(JOBS_DIR) -name '*.mk')"; for JOB in $$JOBS_LIST; do \
+		make vars -f $$JOB; \
+		JOB_NAME=$$(basename $$JOB | sed 's#.mk##'); echo ""; \
+		echo -e $$(ansible -o -m ansible.builtin.debug \
+		-a msg="_s_{{ ($(VAULT_VARIABLE).shared['$$JOB_NAME'] | to_nice_yaml) | default("")}}_e_" \
+		$(ANSIBLE_VAULT_EXTRA_ARGS) localhost 2>/dev/null | grep -v "FAILED" | \
+		sed 's#.*_s_\(.*\)_e_.*#\1#'); \
+		echo -e $$(ansible -o -m ansible.builtin.debug \
+		-a msg="_s_{{ ($(VAULT_VARIABLE)['$(DATACENTRE)']['$(ENVIRONMENT)']['$$JOB_NAME'] | to_nice_yaml) | default("") }}_e_" \
+		$(ANSIBLE_VAULT_EXTRA_ARGS) localhost 2>/dev/null | grep -v "FAILED" | \
+		sed 's#.*_s_\(.*\)_e_.*#\1#'); \
+	done
+	@
 
 ping: check-env ## Ping Ansible targets
 ifndef PLAYBOOKS_HOSTS
@@ -72,14 +92,17 @@ elastic: check-env ## elastic targets
 logging: check-env ## logging targets
 	$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/logging.mk
 
+reverseproxy: check-env ## reverseproxy targets
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/reverseproxy.mk
+
 monitoring: check-env ## monitoring targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/monitoring.mk
 
 ceph: check-env ## ceph targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/ceph.mk
 
-gitlab-runner: check-env ## gitlab-runner targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/gitlab-runner.mk
+gitlab-runner: check-env ## gitlab_runner targets
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/gitlab_runner.mk
 
 print_targets: ## Show Help
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {p=index($$1,":")} {printf "\033[36m%-30s\033[0m %s\n", substr($$1,p+1), $$2}';

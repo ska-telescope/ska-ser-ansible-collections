@@ -1,6 +1,9 @@
+.PHONY: check_hosts check_logging_secrets vars install destroy help
 .DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
+ANSIBLE_VAULT_EXTRA_ARGS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
+PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/elastic/playbooks
 
 -include $(BASE_PATH)/PrivateRules.mak
 
@@ -9,29 +12,18 @@ ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 
-check_logging_secrets:
-ifndef CA_CERT_PASSWORD
-	$(error CA_CERT_PASSWORD is undefined)
-endif
-ifndef ELASTICSEARCH_PASSWORD
-        $(error ELASTICSEARCH_PASSWORD is undefined)
-endif
-
 vars:
 	@echo "\033[36mLogging:\033[0m"
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
-	@echo "CA_CERT_PASSWORD=$(CA_CERT_PASSWORD)"
 
-install: check_hosts check_logging_secrets ## Install logging
-	ansible-playbook ./ansible_collections/ska_collections/elastic/playbooks/logging.yml \
-	-i $(INVENTORY) \
-	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
-	--extra-vars " \
-		target_hosts=$(PLAYBOOKS_HOSTS) \
-		ca_cert_password=$(CA_CERT_PASSWORD) \
-		elasticsearch_password=$(ELASTICSEARCH_PASSWORD) \
-	"
+install: check_hosts ## Install logging
+	ansible-playbook $(PLAYBOOKS_DIR)/logging.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_VAULT_EXTRA_ARGS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+destroy: check_hosts
+	@echo "logging: destroy not implemented"
 
 help: ## Show Help
 	@echo "Logging targets - make playbooks logging <target>:"

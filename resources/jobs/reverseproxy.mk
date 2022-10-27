@@ -1,4 +1,4 @@
-.PHONY: check_hosts vars install help
+.PHONY: check_hosts vars install destroy help
 .DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_VAULT_EXTRA_ARGS ?=
@@ -17,11 +17,14 @@ vars:
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
-install: check_hosts ## Run common tasks (setup host(s), mount volumes)
-	ansible-playbook $(PLAYBOOKS_DIR)/common.yml \
+install: check_hosts ## Install reverseproxy's nginx and oauth2 containers
+	@ansible-playbook $(PLAYBOOKS_DIR)/proxy.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_VAULT_EXTRA_ARGS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
+destroy: check_hosts ## Destroy reverseproxy's nginx and oauth2 containers
+	@echo "reverseproxy: destroy not implemented"
+
 help: ## Show Help
-	@echo "Common targets - make playbooks common <target>:"
+	@echo "Reverseproxy targets - make playbooks reverseproxy <target>:"
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

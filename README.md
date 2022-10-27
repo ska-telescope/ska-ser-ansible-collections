@@ -10,7 +10,7 @@ This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/
 | elastic               | stack <br> logging <br> haproxy       | Elasticsearch and Kibana cluster roles                    |
 | monitoring            | custom_metrics <br> node_exporter <br> prometheus <br> updatehosts | Install prometheus-based metrics services |
 | minikube              | minikube <br> setup <br> velero        | Install minikube and associated tools                    |
-| gitlab_runner         | runner                                 | Install docker-based Gitlab-runner                       |
+| gitlab_runner         | runner                                 | Install docker-based Gitlab runner                       |
 | ceph                  | installation                          | Ceph roles                                                |
 
 ## Usage
