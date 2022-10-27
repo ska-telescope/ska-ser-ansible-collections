@@ -6,7 +6,7 @@
 namespace: ska_collections
 
 # The name of the collection. Has the same character restrictions as 'namespace'
-name: elastic
+name: gitlab_runner
 
 # The version of the collection. Must be compatible with semantic versioning
 version: 0.0.1
@@ -23,11 +23,12 @@ authors:
 ### OPTIONAL but strongly recommended
 
 # A short summary description of the collection
-description: Core roles for installing Elasticsearch stack
+description: Core roles for installing gitlab runners
 
 # Either a single license or a list of licenses for content inside of a collection. Ansible Galaxy currently only
 # accepts L(SPDX,https://spdx.org/licenses/) licenses. This key is mutually exclusive with 'license_file'
-license: ["BSD-3-Clause"]
+license:
+  - Apache-2.0
 
 # The path to the license file for the collection. This path is relative to the root of the collection. This key is
 # mutually exclusive with 'license'

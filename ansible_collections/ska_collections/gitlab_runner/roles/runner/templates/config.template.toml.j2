@@ -1,0 +1,8 @@
+[[runners]]
+  name = "{{ gitlab_runner_name }}"
+  [runners.docker]
+    host = "unix:///var/run/docker.sock"
+    image = "{{ gitlab_runner_base_image }}"
+    privileged = false
+    [runners.docker.sysctls]
+      "net.ipv4.ip_forward" = "1"

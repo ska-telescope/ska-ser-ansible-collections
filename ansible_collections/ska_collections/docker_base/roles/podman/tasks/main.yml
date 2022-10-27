@@ -62,7 +62,6 @@
         regexp: '^mountopt = .*'
         replace: 'mountopt = "nodev"'
         backup: true
-# this file apparently does not exist when using alvistack
       when: result_storage.stat.exists
 
     - name: Enable service docker and ensure it is not masked

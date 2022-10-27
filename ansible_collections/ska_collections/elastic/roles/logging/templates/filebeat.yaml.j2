@@ -73,9 +73,7 @@ filebeat:
 output:
   elasticsearch:
     hosts:
-{% for adr in logging_elasticsearch_addresses %}
-      - {{ adr }}
-{% endfor %}
+      - {{ logging_loadbalancer_address }}
     ssl.certificate_authorities: ["{{ certificates_dir }}/ca-certificate.crt"]
     ssl.certificate: "{{ certificates_dir }}/{{ filebeat_certificate_name }}.crt" # certificate for SSL client authentication to be copied from terminus
     ssl.key: "{{ certificates_dir }}/{{ filebeat_private_key_name }}.key" # client certificate key to be copied from terminus
