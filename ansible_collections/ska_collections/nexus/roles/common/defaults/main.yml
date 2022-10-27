@@ -1,0 +1,26 @@
+---
+# change if required or override at runtime using --extra-vars
+
+common_packages:
+  - man-db
+  - vim
+  - sysstat
+  - lsof
+  - netcat
+  - chrony
+  - iotop
+  - unzip
+  - curl
+  - wget
+  - ifenslave
+  - xfsprogs
+  - rsyslog
+  - libssl-dev
+  - dnsutils
+  - iperf
+
+update_grub: "/usr/sbin/update-grub"
+
+ntp_service: chrony
+ntp_sync_server: 1.fedora.pool.ntp.org
+ntp_sync: "/usr/sbin/chronyd -q 'server {{ ntp_sync_server }} iburst'"

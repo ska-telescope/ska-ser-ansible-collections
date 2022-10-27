@@ -1,0 +1,114 @@
+- name: create /etc/ha_config directory
+  ansible.builtin.file:
+    path: /etc/hap_config
+    state: directory
+    mode: 0755
+
+- name: create HAproxy config
+  ansible.builtin.template:
+    src: haproxyConfig.j2
+    dest: /etc/hap_config/haproxy.cfg
+    mode: "0644"
+  register: hapconfig
+
+- name: create /etc/ncs_config directory
+  ansible.builtin.file:
+    path: /etc/ncs_config
+    state: directory
+    mode: 0644
+
+- name: create ncs config
+  ansible.builtin.template:
+    src: fastapi-plugins.conf.yaml.j2
+    dest: /etc/ncs_config/fastapi-plugins.conf.yaml
+    mode: "0644"
+  register: ncsconfig
+
+- name: "docker pull image for {{ haproxy_container_image }}"
+  docker_image:
+    source: pull
+    name: "{{ haproxy_container_image }}"
+  register: hapimage
+
+- name: "docker pull image for {{ conan_search_container_image }}"
+  docker_image:
+    source: pull
+    name: "{{ conan_search_container_image }}"
+  register: ncsimage
+
+- name: Get haproxy container info
+  docker_container_info:
+    name: "{{ haproxy_name }}"
+  register: hainfo
+
+- name: Get conan search container info
+  docker_container_info:
+    name: "{{ conan_search_name }}"
+  register: ncsinfo
+
+- name: run conan search in a container  # noqa 503
+  docker_container:
+    name: "{{ conan_search_name }}"
+    image: "{{ conan_search_container_image }}"
+    # restart: yes
+    recreate: true
+    restart_policy: always
+    state: started
+    privileged: true
+    network_mode: host
+    exposed_ports:
+      - "{{ nexus_conan_search_proxy_port }}"
+    labels: "{{ container_labels }}"
+    log_driver: "{{ log_driver }}"
+    log_options: "{{ log_options }}"
+    volumes:
+      - /etc/ncs_config:/etc/ncs_config
+    command: "uvicorn app.main:app --proxy-headers --host 0.0.0.0 --port {{ nexus_conan_search_proxy_port }}"
+    env:
+      NEXUS_URL: "{{ nexus_conan_search_url }}"
+      NEXUS_REPOSITORY: "{{ nexus_conan_search_repository }}"
+      GITLAB_API_REQUESTER: ""
+      GITLAB_API_PRIVATE_TOKEN: ""
+      SLACK_BOT_TOKEN: ""
+      SLACK_SIGNING_SECRET: ""
+      SLACK_CLIENT_SECRET: ""
+      JIRA_USERNAME: ""
+      JIRA_URL: ""
+      JIRA_PASSWORD: ""
+      GITLAB_TOKEN: ""
+      GITLAB_HEADER: "X-Gitlab-Token"
+      UNLEASH_API_URL: ""
+      UNLEASH_INSTANCE_ID: ""
+      UNLEASH_ENVIRONMENT: ""
+      RTD_TOKEN: "mandatory"
+      GOOGLE_API_KEY: ""
+      GOOGLE_SPREADSHEET_ID: ""
+      NEXUS_HMAC_SIGNATURE_SECRET: ""
+      OPENID_SECRET: ""
+      GITLAB_CLIENT_ID: ""
+      GITLAB_CLIENT_SECRET: ""
+      KEEP_ALIVE: "50"
+      LOG_LEVEL: "INFO"
+      MAX_WORKERS: "10"
+      JSON_CONFIG_PATH: "/etc/ncs_config/fastapi-plugins.conf.yaml"
+  when: ncsconfig.changed or ncsimage.changed or not ncsinfo.exists or not ncsinfo.container.State.Running
+
+- name: run haproxy in a container  # noqa 503
+  docker_container:
+    name: "{{ haproxy_name }}"
+    image: "{{ haproxy_container_image }}"
+    # restart: yes
+    recreate: true
+    restart_policy: always
+    state: started
+    privileged: true
+    network_mode: host
+    exposed_ports:
+      - "{{ ha_proxy_port }}"
+    labels: "{{ container_labels }}"
+    log_driver: "{{ log_driver }}"
+    log_options: "{{ log_options }}"
+    volumes:
+      - /etc/hap_config/:/usr/local/etc/haproxy/
+    command: -f /usr/local/etc/haproxy/haproxy.cfg
+  when: hapconfig.changed or hapimage.changed or not hainfo.exists or not hainfo.container.State.Running

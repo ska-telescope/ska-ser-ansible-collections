@@ -1,0 +1,970 @@
+# !/usr/bin/env ansible-playbook
+---
+# extracted from https://github.com/ansible-ThoTeam/nexus3-oss#example-playbook
+# additional configuration of conan proxy - https://help.sonatype.com/repomanager3/formats/conan-repositories
+# conan hosted activation - https://issues.sonatype.org/browse/NEXUS-23629
+# nexus.conan.hosted.enabled=true in /var/lib/nexus/nexus/nexus-latest/etc/nexus-default.properties
+# Nexus config - oss https://github.com/sonatype/nexus-public/blob/master/assemblies/nexus-base-template/src/main/resources/overlay/etc/nexus-default.properties
+# https://gitlab.cern.ch/vcs/nexus-cern-apb.git
+# Nexus section
+# nexus-edition=nexus-oss-edition
+# nexus-features=\
+# nexus-core-feature,\
+# nexus-cma-feature
+#
+# Also see: https://github.com/vjda/nexus3-casc-cli
+
+- name: Nexus
+  hosts: nexus
+  become: true
+
+  vars:
+    nexus_upgrade: false
+    nexus_version: '3.41.1-01'
+    nexus_timezone: 'UTC'
+    nexus_download_url: 'https://download.sonatype.com/nexus/3'
+    # eg: https://download.sonatype.com/nexus/3/nexus-3.34.0-01-unix.tar.gz
+    nexus_admin_password: "{{ vault_nexus_admin_password }}"
+    nexus_user_password_gitlab: "{{ vault_nexus_user_password_gitlab }}"
+    nexus_user_password_publisher: "{{ vault_nexus_user_password_publisher }}"
+    nexus_user_password_quarantiner: "{{ vault_nexus_user_password_quarantiner }}"
+    nexus_public_hostname: 'artefact.skatelescope.org'
+    nexus_public_scheme: https
+    httpd_setup_enable: false
+    nexus_default_port: 8881
+    nexus_docker_hosted_port: 9080
+    nexus_docker_proxy_port: 9081
+    nexus_docker_group_port: 9082
+    nexus_docker_quarantine_port: 9083
+    nexus_application_host: '{{ httpd_setup_enable | ternary("127.0.0.1", "0.0.0.0") }}'
+    nexus_default_context_path: '/'
+    nexus_os_group: 'nexus'
+    nexus_os_user: 'nexus'
+    nexus_os_user_home_dir: '/home/nexus'
+    nexus_installation_dir: '/var/lib/nexus/nexus'
+    nexus_data_dir: '/var/lib/nexus/data'
+    nexus_backup_dir: '/var/lib/nexus/backup'
+    nexus_backup_rotate: true  # Shall we rotate backups
+    nexus_backup_rotate_first: false  # Shall we rotate before making the current backup ?
+    nexus_backup_keep_rotations: 2
+    nexus_tmp_dir: "{{ (ansible_os_family == 'RedHat') | ternary('/var/nexus-tmp', '/tmp/nexus') }}"
+    nexus_min_heap_size: "1200M"
+    nexus_max_heap_size: "{{ nexus_min_heap_size }}"
+    nexus_max_direct_memory: "2G"
+    nexus_plugin_urls: []
+    nexus_onboarding_wizard: false
+    # nexus_admin_password: 'changeme'
+    nexus_anonymous_access: true
+    nexus_api_hostname: localhost
+    nexus_api_scheme: http
+    nexus_api_validate_certs: "{{ nexus_api_scheme == 'https' }}"
+    nexus_api_context_path: "{{ nexus_default_context_path }}"
+    nexus_api_port: "{{ nexus_default_port }}"
+    nexus_channel_email_address: prometheus-alerts-aaaab4hruv46exq5oy5mqhl6ea@skasoftware.slack.com
+
+    # email server
+    nexus_email_server_enabled: true
+    nexus_email_server_host: "mailrelay.skatelescope.org"
+    nexus_email_server_port: 587
+    nexus_email_server_username: "nexus-artefact@skatelescope.org"
+    nexus_email_server_password: "{{ vault_nexus_email_server_password }}"
+    nexus_email_from_address: "nexus-artefact@skatelescope.org"
+    nexus_email_subject_prefix: "[Nexus]"
+    nexus_email_tls_enabled: true
+    nexus_email_tls_required: false
+    nexus_email_ssl_on_connect_enabled: false
+    nexus_email_ssl_check_server_identity_enabled: false
+    nexus_email_trust_store_enabled: false
+
+    nexus_branding_header: ""
+    nexus_branding_footer: ""
+
+    nexus_audit_enabled: true  # this is generating lots of data that is never rotated, do not enable by default
+
+    # httpd_ssl_certificate_file: "{{ vault_httpd_ssl_certificate_file }}"
+    # httpd_ssl_certificate_key_file: "{{ vault_httpd_ssl_certificate_key_file }}"
+
+    nexus_ldap_realm: true
+    ldap_connections:
+      - ldap_name: 'SKAO HQ AD'  # used as a key to update the ldap config
+        ldap_protocol: 'ldap'  # ldap or ldaps
+        ldap_hostname: 'dc-ad-euwest2-2.ad.skatelescope.org'
+        ldap_port: 389
+        ldap_auth: 'simple'
+        ldap_auth_username: 'svc_NexusDirAuth'
+        ldap_auth_password: "{{ vault_nexus_ldap_conn_passwd }}"
+        ldap_search_base: 'dc=ad,dc=skatelescope,dc=org'
+        ldap_user_base_dn: 'OU=SKAUsers,OU=SKA'
+        ldap_user_filter: |-
+          (|(memberOf=CN=skao-nexus-users,OU=SKAUserGroups,OU=SKASecurityGroups,OU=SKA,DC=ad,DC=skatelescope,DC=org)
+          (memberOf=CN=ITDept,OU=SKAUserGroups,OU=SKASecurityGroups,OU=SKA,DC=ad,DC=skatelescope,DC=org))
+        ldap_user_object_class: 'user'
+        ldap_user_id_attribute: 'sAMAccountName'
+        ldap_user_real_name_attribute: 'displayName'
+        ldap_user_email_attribute: 'mail'
+        ldap_user_subtree: true
+        ldap_map_groups_as_roles: true
+        ldap_map_groups_as_roles_type: 'dynamic'
+        ldap_group_member_attribute: 'memberOf'
+        ldap_group_subtree: true
+
+    nexus_content_selectors:
+      - name: docker-login
+        description: Selector for docker login privilege
+        search_expression: format=="docker" and path=~"/v2/"
+
+    nexus_privileges:
+      - name: ska-all-repos-read
+        description: 'Read & Browse access to all repos'
+        repository: '*'
+        format: '*'
+        actions:
+          - read
+          - browse
+      - name: ska-project-deploy
+        description: 'Deployments to all ska-projects'
+        format: '*'
+        repository: '*'
+        actions:
+          - add
+          - edit
+          - update
+      - name: docker-login-privilege
+        type: repository-content-selector
+        contentSelector: docker-login
+        description: 'Login to Docker registry'
+        repository: '*'
+        actions:
+          - read
+          - browse
+
+    nexus_roles:
+      - id: SKAAdmins  # maps to the LDAP group
+        name: skaadmins
+        description: All SKA Admins
+        privileges:
+          - nx-all
+        roles: []
+      - id: 'skao-nexus-users'  # can map to a LDAP group id, also used as a key to update a role
+        name: 'skao-nexus-users'
+        description: 'LDAP skao-nexus-users mapping for admin privileges'
+        privileges:
+          - nx-all
+        roles: []
+      - id: 'ITDept'  # can map to a LDAP group id, also used as a key to update a role
+        name: 'ITDept'
+        description: 'LDAP SKAO IT mapping for admin privileges'
+        privileges:
+          - nx-all
+        roles: []
+      - id: SKADeveloppers  # maps to the LDAP group
+        name: skadevelopers
+        description: All SKA developers
+        privileges:
+          - nx-search-read
+          - nx-component-upload
+          - nx-repository-view-apt-apt-bionic-internal-add
+          - nx-repository-view-apt-apt-bionic-internal-browse
+          - nx-repository-view-apt-apt-bionic-internal-edit
+          - nx-repository-view-apt-apt-bionic-internal-read
+          - nx-repository-view-apt-*-add
+          - nx-repository-view-apt-*-browse
+          - nx-repository-view-apt-*-edit
+          - nx-repository-view-apt-*-read
+          - nx-repository-view-conan-*-add
+          - nx-repository-view-conan-*-browse
+          - nx-repository-view-conan-*-edit
+          - nx-repository-view-conan-*-read
+          - nx-repository-view-conda-*-add
+          - nx-repository-view-conda-*-browse
+          - nx-repository-view-conda-*-edit
+          - nx-repository-view-conda-*-read
+          - nx-repository-view-docker-docker-internal-add
+          - nx-repository-view-docker-docker-internal-browse
+          - nx-repository-view-docker-docker-internal-edit
+          - nx-repository-view-docker-docker-internal-read
+          - nx-repository-view-docker-docker-proxy-add
+          - nx-repository-view-docker-docker-proxy-browse
+          - nx-repository-view-docker-docker-proxy-edit
+          - nx-repository-view-docker-docker-proxy-read
+          - nx-repository-view-gitlfs-*-add
+          - nx-repository-view-gitlfs-*-browse
+          - nx-repository-view-gitlfs-*-edit
+          - nx-repository-view-gitlfs-*-read
+          - nx-repository-view-go-*-add
+          - nx-repository-view-go-*-browse
+          - nx-repository-view-go-*-edit
+          - nx-repository-view-go-*-read
+          - nx-repository-view-helm-helm-internal-add
+          - nx-repository-view-helm-helm-internal-browse
+          - nx-repository-view-helm-helm-internal-edit
+          - nx-repository-view-helm-helm-internal-read
+          - nx-repository-view-helm-helm-proxy-add
+          - nx-repository-view-helm-helm-proxy-browse
+          - nx-repository-view-helm-helm-proxy-edit
+          - nx-repository-view-helm-helm-proxy-read
+          - nx-repository-view-maven2-*-add
+          - nx-repository-view-maven2-*-browse
+          - nx-repository-view-maven2-*-edit
+          - nx-repository-view-maven2-*-read
+          - nx-repository-view-npm-*-add
+          - nx-repository-view-npm-*-browse
+          - nx-repository-view-npm-*-edit
+          - nx-repository-view-npm-*-read
+          - nx-repository-view-pypi-pypi-internal-add
+          - nx-repository-view-pypi-pypi-internal-browse
+          - nx-repository-view-pypi-pypi-internal-edit
+          - nx-repository-view-pypi-pypi-internal-read
+          - nx-repository-view-pypi-pypi-proxy-add
+          - nx-repository-view-pypi-pypi-proxy-browse
+          - nx-repository-view-pypi-pypi-proxy-edit
+          - nx-repository-view-pypi-pypi-proxy-read
+          - nx-repository-view-raw-ansible-internal-add
+          - nx-repository-view-raw-ansible-internal-browse
+          - nx-repository-view-raw-ansible-internal-edit
+          - nx-repository-view-raw-ansible-internal-read
+          - nx-repository-view-raw-k8s-ci-creds-internal-add
+          - nx-repository-view-raw-k8s-ci-creds-internal-browse
+          - nx-repository-view-raw-k8s-ci-creds-internal-edit
+          - nx-repository-view-raw-k8s-ci-creds-internal-read
+          - nx-repository-view-raw-raw-internal-add
+          - nx-repository-view-raw-raw-internal-browse
+          - nx-repository-view-raw-raw-internal-edit
+          - nx-repository-view-raw-raw-internal-read
+          - nx-repository-view-raw-raw-telmodel-add
+          - nx-repository-view-raw-raw-telmodel-browse
+          - nx-repository-view-raw-raw-telmodel-edit
+          - nx-repository-view-raw-raw-telmodel-read
+          - nx-repository-view-raw-ubuntu-archive-add
+          - nx-repository-view-raw-ubuntu-archive-browse
+          - nx-repository-view-raw-ubuntu-archive-edit
+          - nx-repository-view-raw-ubuntu-archive-read
+          - nx-repository-view-yum-rpm-internal-add
+          - nx-repository-view-yum-rpm-internal-browse
+          - nx-repository-view-yum-rpm-internal-edit
+          - nx-repository-view-yum-rpm-internal-read
+          - nx-repository-view-yum-*-add
+          - nx-repository-view-yum-*-browse
+          - nx-repository-view-yum-*-edit
+          - nx-repository-view-yum-*-read
+          - nx-repository-view-conan-conan-internal-add
+          - nx-repository-view-conan-conan-internal-browse
+          - nx-repository-view-conan-conan-internal-edit
+          - nx-repository-view-conan-conan-internal-read
+        roles: []
+      - id: ReadOnly  # maps to the LDAP group
+        name: readonly
+        description: Read only access
+        privileges:
+          - nx-search-read
+          - nx-repository-view-apt-apt-bionic-internal-browse
+          - nx-repository-view-apt-apt-bionic-internal-read
+          - nx-repository-view-apt-*-browse
+          - nx-repository-view-apt-*-read
+          - nx-repository-view-conan-*-browse
+          - nx-repository-view-conan-*-read
+          - nx-repository-view-conda-*-browse
+          - nx-repository-view-conda-*-read
+          - nx-repository-view-docker-docker-internal-browse
+          - nx-repository-view-docker-docker-internal-read
+          - nx-repository-view-docker-docker-proxy-browse
+          - nx-repository-view-docker-docker-proxy-read
+          - nx-repository-view-gitlfs-*-browse
+          - nx-repository-view-gitlfs-*-read
+          - nx-repository-view-go-*-browse
+          - nx-repository-view-go-*-read
+          - nx-repository-view-helm-helm-internal-browse
+          - nx-repository-view-helm-helm-internal-read
+          - nx-repository-view-helm-helm-proxy-browse
+          - nx-repository-view-helm-helm-proxy-read
+          - nx-repository-view-maven2-*-browse
+          - nx-repository-view-maven2-*-read
+          - nx-repository-view-npm-*-browse
+          - nx-repository-view-npm-*-read
+          - nx-repository-view-pypi-pypi-internal-browse
+          - nx-repository-view-pypi-pypi-internal-read
+          - nx-repository-view-pypi-pypi-proxy-browse
+          - nx-repository-view-pypi-pypi-proxy-read
+          - nx-repository-view-raw-ansible-internal-browse
+          - nx-repository-view-raw-ansible-internal-read
+          - nx-repository-view-raw-k8s-ci-creds-internal-browse
+          - nx-repository-view-raw-k8s-ci-creds-internal-read
+          - nx-repository-view-raw-raw-internal-browse
+          - nx-repository-view-raw-raw-internal-read
+          - nx-repository-view-raw-raw-telmodel-browse
+          - nx-repository-view-raw-raw-telmodel-read
+          - nx-repository-view-raw-ubuntu-archive-browse
+          - nx-repository-view-raw-ubuntu-archive-read
+          - nx-repository-view-yum-rpm-internal-browse
+          - nx-repository-view-yum-rpm-internal-read
+          - nx-repository-view-yum-*-browse
+          - nx-repository-view-yum-*-read
+          - nx-repository-view-conan-conan-internal-browse
+          - nx-repository-view-conan-conan-internal-read
+        roles: []
+      - id: SKAReadWrite  # maps to the LDAP group
+        name: skareadwrite
+        description: SKA Read write access
+        privileges:
+          - nx-search-read
+          - nx-component-upload
+          - nx-repository-view-apt-apt-bionic-internal-add
+          - nx-repository-view-apt-apt-bionic-internal-browse
+          - nx-repository-view-apt-apt-bionic-internal-edit
+          - nx-repository-view-apt-apt-bionic-internal-read
+          - nx-repository-view-apt-*-add
+          - nx-repository-view-apt-*-browse
+          - nx-repository-view-apt-*-edit
+          - nx-repository-view-apt-*-read
+          - nx-repository-view-conan-*-add
+          - nx-repository-view-conan-*-browse
+          - nx-repository-view-conan-*-edit
+          - nx-repository-view-conan-*-read
+          - nx-repository-view-conda-*-add
+          - nx-repository-view-conda-*-browse
+          - nx-repository-view-conda-*-edit
+          - nx-repository-view-conda-*-read
+          - nx-repository-view-docker-docker-internal-add
+          - nx-repository-view-docker-docker-internal-browse
+          - nx-repository-view-docker-docker-internal-edit
+          - nx-repository-view-docker-docker-internal-read
+          - nx-repository-view-docker-docker-proxy-add
+          - nx-repository-view-docker-docker-proxy-browse
+          - nx-repository-view-docker-docker-proxy-edit
+          - nx-repository-view-docker-docker-proxy-read
+          - nx-repository-view-gitlfs-*-add
+          - nx-repository-view-gitlfs-*-browse
+          - nx-repository-view-gitlfs-*-edit
+          - nx-repository-view-gitlfs-*-read
+          - nx-repository-view-go-*-add
+          - nx-repository-view-go-*-browse
+          - nx-repository-view-go-*-edit
+          - nx-repository-view-go-*-read
+          - nx-repository-view-helm-helm-internal-add
+          - nx-repository-view-helm-helm-internal-browse
+          - nx-repository-view-helm-helm-internal-edit
+          - nx-repository-view-helm-helm-internal-read
+          - nx-repository-view-helm-helm-proxy-add
+          - nx-repository-view-helm-helm-proxy-browse
+          - nx-repository-view-helm-helm-proxy-edit
+          - nx-repository-view-helm-helm-proxy-read
+          - nx-repository-view-maven2-*-add
+          - nx-repository-view-maven2-*-browse
+          - nx-repository-view-maven2-*-edit
+          - nx-repository-view-maven2-*-read
+          - nx-repository-view-npm-*-add
+          - nx-repository-view-npm-*-browse
+          - nx-repository-view-npm-*-edit
+          - nx-repository-view-npm-*-read
+          - nx-repository-view-pypi-pypi-internal-add
+          - nx-repository-view-pypi-pypi-internal-browse
+          - nx-repository-view-pypi-pypi-internal-edit
+          - nx-repository-view-pypi-pypi-internal-read
+          - nx-repository-view-pypi-pypi-proxy-add
+          - nx-repository-view-pypi-pypi-proxy-browse
+          - nx-repository-view-pypi-pypi-proxy-edit
+          - nx-repository-view-pypi-pypi-proxy-read
+          - nx-repository-view-raw-ansible-internal-add
+          - nx-repository-view-raw-ansible-internal-browse
+          - nx-repository-view-raw-ansible-internal-edit
+          - nx-repository-view-raw-ansible-internal-read
+          - nx-repository-view-raw-k8s-ci-creds-internal-add
+          - nx-repository-view-raw-k8s-ci-creds-internal-browse
+          - nx-repository-view-raw-k8s-ci-creds-internal-edit
+          - nx-repository-view-raw-k8s-ci-creds-internal-read
+          - nx-repository-view-raw-raw-internal-add
+          - nx-repository-view-raw-raw-internal-browse
+          - nx-repository-view-raw-raw-internal-edit
+          - nx-repository-view-raw-raw-internal-read
+          - nx-repository-view-raw-raw-telmodel-add
+          - nx-repository-view-raw-raw-telmodel-browse
+          - nx-repository-view-raw-raw-telmodel-edit
+          - nx-repository-view-raw-raw-telmodel-delete
+          - nx-repository-view-raw-raw-telmodel-read
+          - nx-repository-view-raw-ubuntu-archive-add
+          - nx-repository-view-raw-ubuntu-archive-browse
+          - nx-repository-view-raw-ubuntu-archive-edit
+          - nx-repository-view-raw-ubuntu-archive-read
+          - nx-repository-view-yum-rpm-internal-add
+          - nx-repository-view-yum-rpm-internal-browse
+          - nx-repository-view-yum-rpm-internal-edit
+          - nx-repository-view-yum-rpm-internal-read
+          - nx-repository-view-yum-*-add
+          - nx-repository-view-yum-*-browse
+          - nx-repository-view-yum-*-edit
+          - nx-repository-view-yum-*-read
+          - nx-repository-view-conan-conan-internal-add
+          - nx-repository-view-conan-conan-internal-browse
+          - nx-repository-view-conan-conan-internal-edit
+          - nx-repository-view-conan-conan-internal-read
+        roles: []
+      - id: SKAQuarantine
+        name: skaquarantine
+        description: SKA quarantine access
+        privileges:
+          - nx-component-upload
+          - nx-repository-view-apt-apt-bionic-internal-browse
+          - nx-repository-view-apt-apt-bionic-internal-delete
+          - nx-repository-view-apt-apt-bionic-internal-read
+          # - nx-repository-view-apt-apt-bionic-quarantine-*
+          - nx-repository-view-docker-docker-internal-browse
+          - nx-repository-view-docker-docker-internal-delete
+          - nx-repository-view-docker-docker-internal-read
+          - nx-repository-view-docker-docker-quarantine-*
+          - nx-repository-view-helm-helm-internal-browse
+          - nx-repository-view-helm-helm-internal-delete
+          - nx-repository-view-helm-helm-internal-read
+          - nx-repository-view-helm-helm-quarantine-*
+          - nx-repository-view-pypi-pypi-internal-browse
+          - nx-repository-view-pypi-pypi-internal-delete
+          - nx-repository-view-pypi-pypi-internal-read
+          - nx-repository-view-pypi-pypi-quarantine-*
+          - nx-repository-view-raw-ansible-internal-browse
+          - nx-repository-view-raw-ansible-internal-delete
+          - nx-repository-view-raw-ansible-internal-read
+          - nx-repository-view-raw-ansible-quarantine-*
+          - nx-repository-view-raw-raw-internal-browse
+          - nx-repository-view-raw-raw-internal-delete
+          - nx-repository-view-raw-raw-internal-read
+          - nx-repository-view-raw-raw-quarantine-*
+          - nx-repository-view-yum-rpm-internal-browse
+          - nx-repository-view-yum-rpm-internal-delete
+          - nx-repository-view-yum-rpm-internal-read
+          - nx-repository-view-yum-rpm-quarantine-*
+          - nx-repository-view-conan-conan-internal-browse
+          - nx-repository-view-conan-conan-internal-delete
+          - nx-repository-view-conan-conan-internal-read
+          - nx-repository-view-conan-conan-quarantine-*
+
+        roles: []
+
+    nexus_local_users:
+      - username: gitlab  # used as key to update
+        first_name: gitlab
+        last_name: CI
+        email: system-team-support@skatelescope.org
+        password: "{{ nexus_user_password_gitlab }}"
+        roles:
+          - SKADeveloppers  # role ID here
+      - username: publisher  # used as key to update
+        first_name: publisher
+        last_name: CI
+        email: system-team-support@skatelescope.org
+        password: "{{ nexus_user_password_publisher }}"
+        roles:
+          - SKAReadWrite  # role ID here
+      - username: quarantiner
+        first_name: quarantiner
+        last_name: CI
+        email: system-team-support@skatelescope.org
+        password: "{{ nexus_user_password_quarantiner }}"
+        roles:
+          - SKAQuarantine
+
+    nexus_blobstores: []
+    # nexus_blobstores:
+    #   - name: ska-artefacts
+    #     path: /var/lib/nexus/blobs/ska-artefacts
+
+    nexus_scheduled_tasks:
+      - name: compact-blobstore
+        cron: '0 0 22 * * ?'
+        typeId: blobstore.compact
+        task_alert_email: "{{ nexus_channel_email_address }}"  # optional
+        taskProperties:
+          blobstoreName: 'default'
+      - name: Purge unused docker manifests and images
+        cron: '0 0 21 * * ?'
+        typeId: "repository.docker.gc"
+        task_alert_email: "{{ nexus_channel_email_address }}"  # optional
+        taskProperties:
+          repositoryName: "*"  # * for all repos. Change to a repository name if you only want a specific one
+      - name: Purge incomplete docker uploads
+        cron: '0 0 0 * * ?'
+        typeId: "repository.docker.upload-purge"
+        task_alert_email: "{{ nexus_channel_email_address }}"  # optional
+        taskProperties:
+          age: "24"
+      # use built-in db.backup task
+      - name: database-backup
+        cron: '0 0 19 * * ?'
+        typeId: db.backup
+        task_alert_email: "{{ nexus_channel_email_address }}"
+        taskProperties:
+          location: '{{ nexus_backup_dir }}'
+      # we only need to keep the latest backup in the filesystem, since the filesystem itself
+      # is backed up by Openshift PV backup.
+      - name: delete-old-database-backups
+        cron: '0 0 20 * * ?'
+        typeId: script
+        taskProperties:
+          language: groovy
+          source: |+
+            import java.time.LocalDateTime
+            import org.apache.commons.io.FileUtils
+            import java.time.format.DateTimeFormatter
+            import java.util.concurrent.TimeUnit
+            import static groovy.io.FileType.FILES
+
+            nexusBackupDirPath = "/var/lib/nexus/backup"
+            maxFileAgeInDays = "2".toInteger()
+
+            File sourceFolder = new File(nexusBackupDirPath)
+            assert sourceFolder.exists(): "${sourceFolder} does not exist"
+
+            try {
+                log.info("Backup directory is {}, deleting any backup file older than {} days", nexusBackupDirPath, maxFileAgeInDays)
+
+                dateThreshold = new Date().minus(maxFileAgeInDays)
+
+                sourceFolder.eachFileRecurse(FILES) { file ->
+                  // find *.bak files in nexusBackupDirPath
+                  if (file.name.endsWith('.bak')) {
+                    log.info("Checking file {} - {}", file.name, file.lastModified())
+                    if (new Date(file.lastModified()) < dateThreshold) {
+                      log.info("Deleting old backup file {}", file.name)
+                      file.delete()
+                    } else {
+                      log.info("Keeping backup file {}", file.name)
+                    }
+                  }
+                }
+            } catch (Exception e) {
+                log.error(e.toString())
+            }
+      - name: add-webhooks-to-internal-repositories
+        schedule_type: once
+        typeId: script
+        taskProperties:
+          language: groovy
+          source: |+
+            import org.sonatype.nexus.capability.CapabilityReference
+            import org.sonatype.nexus.capability.CapabilityType
+            import org.sonatype.nexus.internal.capability.DefaultCapabilityReference
+            import org.sonatype.nexus.internal.capability.DefaultCapabilityRegistry
+
+            // Repositories to add webhooks to
+            def repos = ['apt-bionic-internal', 'pypi-internal', 'helm-internal', 'docker-internal',
+                        'ansible-internal', 'raw-internal', 'conan-internal', 'rpm-internal']
+
+            // Loopup the capability registry
+            def capabilityRegistry = container.lookup(DefaultCapabilityRegistry.class.getName())
+
+            // Set webhook common values
+            def capabilityType = CapabilityType.capabilityType("webhook.repository")
+            def capabilityNotes = 'Configured through scripting api'
+
+            // Remove old webhooks
+            capabilityRegistry.getAll().each { DefaultCapabilityReference capability ->
+              if(capability.type.equals(capabilityType)) {
+                log.info('Capability removed: {}', capabilityRegistry.remove(capability.id).toString())
+              }
+            }
+
+            // For each repo
+            repos.each { repoName ->
+              // Define the webhook properties
+              def capabilityProps = ['names':'component','repository':repoName,'secret':'{{ nexus_webhook_secret_key }}','url':'{{ nexus_webhook_url }}']
+
+              // Add new webhook
+              log.info('Capability created as: {}', capabilityRegistry.add(capabilityType, true, capabilityNotes, capabilityProps).toString())
+            }
+
+
+    nexus_delete_default_repos: true
+    nexus_config_maven: false
+    nexus_config_pypi: true
+    nexus_config_docker: true
+    nexus_config_raw: true
+    nexus_config_rubygems: false
+    nexus_config_bower: false
+    nexus_config_npm: true
+    nexus_config_gitlfs: true
+    nexus_config_yum: true
+    nexus_config_apt: true
+    nexus_config_helm: true
+    nexus_config_conan: true
+    nexus_config_r: false
+    nexus_config_p2: false
+    nexus_config_conda: true
+    nexus_config_go: true
+
+    nexus_npm_bearer_token_realm: true
+    nexus_docker_bearer_token_realm: true  # required for docker anonymous access
+    nexus_nuget_api_key_realm: false  # no .Net
+    nexus_rut_auth_realm: false
+    # nexus_rut_auth_header: "X-Remote-User"
+
+    nexus_repos_cleanup_policies:
+      - name: mvn_cleanup
+        format: maven2
+        mode:
+        notes: ""
+        criteria:
+          lastBlobUpdated: 60
+          lastDownloaded: 120
+      - name: delete-quarantined-ansible
+        format: raw
+        mode:
+        notes: "This policy deletes quarantined ansible files after 30 days"
+        criteria:
+          lastBlobUpdated: 30
+      - name: delete-quarantined-apt
+        format: apt
+        mode:
+        notes: "This policy deletes quarantined apt files after 30 days"
+        criteria:
+          lastBlobUpdated: 30
+      - name: delete-quarantined-raw
+        format: raw
+        mode:
+        notes: "This policy deletes quarantined raw files after 30 days"
+        criteria:
+          lastBlobUpdated: 30
+      - name: delete-quarantined-rpm
+        format: yum
+        mode:
+        notes: "This policy deletes quarantined rpm files after 30 days"
+        criteria:
+          lastBlobUpdated: 30
+      - name: delete-quarantined-conan
+        format: conan
+        mode:
+        notes: "This policy deletes quarantined conan files after 30 days"
+        criteria:
+          lastBlobUpdated: 30
+      - name: delete-quarantined-docker
+        format: docker
+        mode:
+        notes: "This policy deletes quarantined docker files after 30 days"
+        criteria:
+          lastBlobUpdated: 30
+      - name: delete-quarantined-helm
+        format: helm
+        mode:
+        notes: "This policy deletes quarantined helm files after 30 days"
+        criteria:
+          lastBlobUpdated: 30
+      - name: delete-quarantined-pypi
+        format: pypi
+        mode:
+        notes: "This policy deletes quarantined pypi files after 30 days"
+        criteria:
+          lastBlobUpdated: 30
+      - name: delete-k8s-creds
+        format: raw
+        mode:
+        notes: "This policy deletes k8s credentials after 1 day they are uploaded (i.e. created)"
+        criteria:
+          lastBlobUpdated: 1
+      - name: docker_latest_cleanup
+        format: docker
+        mode:
+        notes: "Purge :latest tags/images"
+        criteria:
+          regexKey: ".*latest"
+
+    nexus_repos_conda_proxy:
+      - name: conda-proxy
+        remote_url: 'https://repo.continuum.io/pkgs/'
+
+    nexus_repos_go_proxy:
+      - name: go-proxy
+        remote_url: 'https://golang.org/pkg/'
+
+    nexus_repos_helm_hosted:
+      - name: helm-internal
+        write_policy: allow_once  # one of "allow", "allow_once" or "deny"
+      - name: helm-quarantine
+        write_policy: allow
+        cleanup_policies:
+          - delete-quarantined-helm
+
+    nexus_repos_helm_proxy:
+      - name: helm-proxy
+        remote_url: https://charts.helm.sh/stable
+
+
+    nexus_repos_pypi_hosted:
+      - name: pypi-internal
+        version_policy: release
+        write_policy: allow_once  # one of "allow", "allow_once" or "deny"
+      - name: pypi-quarantine
+        write_policy: allow
+        cleanup_policies:
+          - delete-quarantined-pypi
+
+    nexus_repos_pypi_group:
+      - name: pypi-all
+        member_repos:
+          - pypi-internal
+          - pypi-proxy
+
+    nexus_repos_pypi_proxy:
+      - name: pypi-proxy
+        remote_url: 'https://pypi.python.org/'
+        # maximum_component_age: 1440
+        # maximum_metadata_age: 1440
+        # negative_cache_enabled: true
+        # negative_cache_ttl: 1440
+
+    nexus_repos_conan_hosted:
+      - name: conan-internal
+        write_policy: allow  # one of "allow", "allow_once" or "deny"
+        blobStoreName: "default"
+        blob_store: "default"
+        strict_content_validation: true
+      - name: conan-quarantine
+        write_policy: allow
+        blobStoreName: "default"
+        blob_store: "default"
+        strict_content_validation: true
+        cleanup_policies:
+          - delete-quarantined-conan
+
+    nexus_repos_conan_proxy:
+      - name: conan-proxy
+        blob_store: "default"
+        strict_content_validation: true
+        remote_url: "https://center.conan.io"
+        version_policy: release  # release, snapshot or mixed
+        layout_policy: strict  # strict or permissive
+        write_policy: allow_once  # one of "allow", "allow_once" or "deny"
+        maximum_component_age: 1440  # Nexus gui default. For proxies only
+        maximum_metadata_age: 1440  # Nexus gui default. For proxies only
+        negative_cache_enabled: true  # Nexus gui default. For proxies only
+        negative_cache_ttl: 1440  # Nexus gui default. For proxies only
+
+    nexus_repos_npm_hosted:
+      - name: npm-internal
+        blob_store: "{{ nexus_blob_names.npm.blob }}"
+
+    nexus_repos_npm_group:
+      - name: npm-all
+        blob_store: "{{ nexus_blob_names.npm.blob }}"
+        member_repos:
+          - npm-internal
+          - npm-proxy
+
+    nexus_repos_raw_hosted:
+      - name: raw-telmodel
+        write_policy: allow
+      - name: raw-internal
+        version_policy: release
+        write_policy: allow_once  # one of "allow", "allow_once" or "deny"
+      - name: raw-quarantine
+        write_policy: allow
+        cleanup_policies:
+          - delete-quarantined-raw
+      - name: ansible-internal
+        version_policy: release
+        write_policy: allow_once  # one of "allow", "allow_once" or "deny"
+      - name: ansible-quarantine
+        write_policy: allow  # one of "allow", "allow_once" or "deny"
+        cleanup_policies:
+          - delete-quarantined-ansible
+      - name: k8s-ci-creds-internal
+        version_policy: release
+        write_policy: allow  # one of "allow", "allow_once" or "deny"
+        cleanup_policies:
+          - delete-k8s-creds
+
+    nexus_repos_apt_hosted:
+      - name: apt-bionic-internal
+        distribution: bionic
+        keypair: |-
+          {{ nexus_apt_bionic_internal_key }}
+        passphrase: "{{ nexus_apt_bionic_internal_key_passphrase }}"
+      - name: apt-bionic-quarentine
+        distribution: bionic
+        keypair: |-
+          {{ nexus_apt_bionic_quarentine_key }}
+        passphrase: "{{ nexus_apt_bionic_quarentine_key_passphrase }}"
+
+    nexus_repos_apt_proxy:
+      - name: ubuntu18.04-proxy
+        remote_url: http://archive.ubuntu.com/ubuntu/
+        distribution: bionic
+        maximum_component_age: -1
+        maximum_metadata_age: -1
+        negative_cache_ttl: 60
+      - name: ubuntu20.04-proxy
+        remote_url: http://archive.ubuntu.com/ubuntu/
+        distribution: focal
+        maximum_component_age: -1
+        maximum_metadata_age: -1
+        negative_cache_ttl: 60
+
+    # nexus_repos_raw_proxy:
+    #   - name: ubuntu-archive
+    #     remote_url: 'http://archive.ubuntu.com/ubuntu/'
+    #     # maximum_component_age: 1440
+    #     # maximum_metadata_age: 1440
+    #     # negative_cache_enabled: true
+    #     # negative_cache_ttl: 1440
+
+    # nexus_repos_raw_group:
+    #   - name: raw-all
+    #     member_repos:
+    #       - raw-internal
+    #       - ubuntu-archive
+
+    nexus_repos_yum_hosted:
+      - name: yum_centos_7-internal
+        repodata_depth: 1
+      - name: yum_centos_8-internal
+        repodata_depth: 1
+      - name: rpm-internal
+        repodata_depth: 0
+        layout_policy: permissive  # strict or permissive
+        write_policy: allow_once  # one of "allow", "allow_once" or "deny"
+      - name: rpm-quarantine
+        repodata_depth: 0
+        layout_policy: permissive  # strict or permissive
+        write_policy: allow
+        cleanup_policies:
+          - delete-quarantined-rpm
+    nexus_repos_yum_proxy:
+      - name: epel_centos_7_x86_64
+        remote_url: http://download.fedoraproject.org/pub/epel/7/x86_64
+        maximum_component_age: -1
+        maximum_metadata_age: -1
+        negative_cache_ttl: 60
+      - name: epel_centos_8_x86_64
+        remote_url: http://download.fedoraproject.org/pub/epel/8/Everything/x86_64
+        maximum_component_age: -1
+        maximum_metadata_age: -1
+        negative_cache_ttl: 60
+
+    nexus_repos_yum_group:
+      - name: centos7-all
+        member_repos:
+          - yum_centos_7-internal
+          - epel_centos_7_x86_64
+      - name: centos8-all
+        member_repos:
+          - yum_centos_8-internal
+          - epel_centos_8_x86_64
+
+    nexus_repos_docker_hosted:
+      - name: docker-internal
+        http_port: "{{ nexus_docker_hosted_port }}"
+        v1_enabled: true
+        write_policy: allow_once  # one of "allow", "allow_once" or "deny"
+        force_basic_auth: false  # enable anonymous access by disabling basic auth
+        cleanup_policies:
+          - docker_latest_cleanup
+      - name: docker-quarantine
+        http_port: "{{ nexus_docker_quarantine_port }}"
+        v1_enabled: true
+        write_policy: allow
+        force_basic_auth: false  # enable anonymous access by disabling basic auth
+        cleanup_policies:
+          - delete-quarantined-docker
+
+    nexus_repos_docker_group:
+      - name: docker-all
+        http_port: "{{ nexus_docker_group_port }}"
+        v1_enabled: true
+        member_repos:
+          - docker-internal
+          - docker-proxy
+
+    nexus_repos_gitlfs_hosted:
+      - name: gitlfs-internal
+        blob_store: "default"
+
+    nexus_repos_maven_proxy:
+      - name: maven-central-proxy
+        remote_url: 'https://repo1.maven.org/maven2/'
+        layout_policy: permissive
+        cleanup_policies:
+          - mvn_cleanup
+      - name: maven-jboss-proxy
+        remote_url: 'https://repository.jboss.org/nexus/content/groups/public-jboss/'
+        cleanup_policies:
+          - mvn_cleanup
+
+    nexus_repos_maven_hosted:
+      - name: maven-internal
+        blob_store: default
+        version_policy: mixed
+        write_policy: allow_once  # one of "allow", "allow_once" or "deny"
+        cleanup_policies:
+          - mvn_cleanup
+
+    nexus_repos_maven_group:
+      - name: maven-all
+        member_repos:
+          - maven-internal
+          - maven-central-proxy
+          - maven-jboss-proxy
+
+  # ensure JDK 1.8 is installed before nexus
+  pre_tasks:
+    - name: install JDK 1.8
+      ansible.builtin.apt:
+        name: "openjdk-8-jre-headless"
+        update_cache: true
+        state: present
+      register: apt_res
+      retries: 30
+      delay: 30
+      until: apt_res is success
+      when: ansible_os_family == "Debian"
+
+    - name: install rsync
+      ansible.builtin.apt:
+        name: "rsync"
+        update_cache: true
+        install_recommends: false
+        state: present
+      register: apt_res
+      retries: 30
+      delay: 30
+      until: apt_res is success
+      when: ansible_os_family == "Debian"
+
+  # run roles for Nexus install
+  roles:
+    - {role: common, tags: ['init']}
+    - {role: ska_cicd.docker_base.docker, tags: ['init']}
+    - {role: ansible-thoteam.nexus3-oss, tags: ['nexus']}
+    - {role: haproxy}
+
+  tasks:
+    - name: Get path to default settings
+      ansible.builtin.set_fact:
+        nexus_default_settings_file: "{{ nexus_installation_dir }}/nexus-latest/etc/nexus-default.properties"
+
+    - name: Activate the Conan plugin
+      ansible.builtin.lineinfile:
+        path: "{{ nexus_default_settings_file }}"
+        regexp: "^nexus.conan.hosted.enabled=.*"
+        line: "nexus.conan.hosted.enabled=true"
+      notify:
+        - nexus-service-restart
+        - wait-for-nexus
+        - wait-for-nexus-port
+
+  handlers:
+    - name: nexus systemd service restart
+      ansible.builtin.systemd:
+        name: nexus.service
+        state: restarted
+        no_block: true
+      listen: nexus-service-restart
+
+    - name: wait-for-nexus
+      ansible.builtin.wait_for:
+        path: "{{ nexus_data_dir }}/log/nexus.log"
+        search_regex: "Started Sonatype Nexus .*"
+        timeout: 1800
+
+    - name: wait-for-nexus-port
+      ansible.builtin.wait_for:
+        port: "{{ nexus_default_port }}"
+        timeout: "{{ nexus_wait_for_port_timeout | default(omit) }}"
+      retries: "{{ nexus_wait_for_port_retries | default(omit) }}"
+      register: wait_for_result
+      until: wait_for_result is success
