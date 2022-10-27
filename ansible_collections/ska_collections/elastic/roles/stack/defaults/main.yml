@@ -117,7 +117,7 @@ kibana_secrets_directory: "/etc/kibana"
 kibana_secrets_file_path: "{{ kibana_secrets_directory }}/kibana.secrets"
 kibana_service_account_path: "{{ kibana_secrets_directory }}/kibana.serviceaccount"
 kibana_privileges_role: "kibana_data_view_management"
-kibana_application_privileges: 
+kibana_application_privileges:
   - "feature_discover.read"
   - "feature_dashboard.read"
   - "feature_canvas.read"
