@@ -1,5 +1,4 @@
 ---
-# determine whether hostnames should be changed
 change_hostnames: true
 
 common_packages:

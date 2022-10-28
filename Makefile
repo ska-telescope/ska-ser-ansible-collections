@@ -90,7 +90,7 @@ elastic: check-env ## elastic targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/elastic.mk
 
 logging: check-env ## logging targets
-	$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/logging.mk
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/logging.mk
 
 reverseproxy: check-env ## reverseproxy targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/reverseproxy.mk
@@ -101,7 +101,7 @@ monitoring: check-env ## monitoring targets
 ceph: check-env ## ceph targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/ceph.mk
 
-gitlab-runner: check-env ## gitlab_runner targets
+gitlab_runner: check-env ## gitlab_runner targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/gitlab_runner.mk
 
 print_targets: ## Show Help

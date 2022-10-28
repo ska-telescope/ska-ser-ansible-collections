@@ -1,24 +1,35 @@
 ---
+# undefined variables:
+# - containerd_proxy_env
+
 debug: false
-
-containerd_version: 1.6.6-1
-crictl_version: v1.24.2
-
-activate_nvidia: false
-ignore_nvidia_fail: false
 
 debian_arch: "{{ {'x86_64': 'amd64', 'aarch64': 'arm64'}[ansible_architecture] | default(ansible_architecture) }}"
 docker_deb_repo_url: "deb https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
 docker_deb_repo_key_url: https://download.docker.com/linux/ubuntu/gpg
 docker_deb_repo_key_id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+docker_yum_repo_url: "{% if ansible_distribution == 'CentOS'
+  %}https://download.docker.com/linux/centos/docker-ce.repo{%
+  else %}https://download.docker.com/linux/fedora/docker-ce.repo{% endif %}"
 
-docker_hub_mirror: "http://192.168.99.204:9082"  # default to STFC Nexus Cache
-central_nexus_mirror: "http://192.168.99.204:9082"  # default to STFC Nexus Cache
-gitlab_nexus_mirror: "http://192.168.99.204:9082"  # default to STFC Nexus Cache
-nexus_hosted_cache_url: "http://192.168.99.204:9080" # default to STFC Nexus Cache (docker-internal)
-nexus_hosted_cache: "192.168.99.204:9080"
+nexus_schema: "http"
+nexus: "{{ _ | mandatory('`nexus` definition is mandatory') }}"
+nexus_docker_hosted_port: 9080
+nexus_docker_group_port: 9082
 
-debian_containerd_dependencies:
+containerd_version: 1.6.6-1
+containerd_crictl_version: v1.24.2
+
+containerd_activate_nvidia: false
+containerd_ignore_nvidia_fail: false
+
+containerd_docker_hub_mirror: "{{ nexus_schema }}:{{ nexus }}:{{ nexus_docker_group_port }}"
+containerd_central_nexus_mirror: "{{ nexus_schema }}://{{ nexus }}:{{ nexus_docker_group_port }}"
+containerd_gitlab_nexus_mirror: "{{ nexus_schema }}://{{ nexus }}:{{ nexus_docker_group_port }}"
+containerd_nexus_hosted_cache: "{{ nexus }}:{{ nexus_docker_hosted_port }}"
+containerd_nexus_hosted_cache_url: "{{ nexus_schema }}://{{ nexus }}:{{ nexus_docker_hosted_port }}"
+
+containerd_deb_dependencies:
   - apt-transport-https
   - ca-certificates
   - curl
@@ -27,13 +38,8 @@ debian_containerd_dependencies:
   - python3-pip
 
 # hard dependency because of docker 3:19.03.8-3.el7
-redhat_containerd_dependency: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.13-3.1.el7.x86_64.rpm
-
-docker_yum_repo_url: "{% if ansible_distribution == 'CentOS'
-  %}https://download.docker.com/linux/centos/docker-ce.repo{%
-  else %}https://download.docker.com/linux/fedora/docker-ce.repo{% endif %}"
-
-redhat_containerd_dependencies:
+containerd_redhat_package: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.13-3.1.el7.x86_64.rpm
+containerd_redhat_dependencies:
   - dnf-plugins-core
   - yum-utils
   - device-mapper-persistent-data

@@ -3,7 +3,7 @@
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_VAULT_EXTRA_ARGS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
-PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/instance_common/playbooks
+PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/reverseproxy/playbooks
 
 -include $(BASE_PATH)/PrivateRules.mak
 
@@ -18,12 +18,14 @@ vars:
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
 install: check_hosts ## Install reverseproxy's nginx and oauth2 containers
-	@ansible-playbook $(PLAYBOOKS_DIR)/proxy.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/install.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_VAULT_EXTRA_ARGS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 destroy: check_hosts ## Destroy reverseproxy's nginx and oauth2 containers
-	@echo "reverseproxy: destroy not implemented"
+	ansible-playbook $(PLAYBOOKS_DIR)/destroy.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_VAULT_EXTRA_ARGS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 help: ## Show Help
 	@echo "Reverseproxy targets - make playbooks reverseproxy <target>:"

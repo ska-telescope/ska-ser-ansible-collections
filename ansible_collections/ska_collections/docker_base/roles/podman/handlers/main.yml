@@ -1,6 +1,3 @@
 ---
-- name: Restart dbus
-  ansible.builtin.service: name=dbus scope=user enabled=true state=restarted
-
 - name: Restart procps
   ansible.builtin.service: name=procps enabled=true state=restarted

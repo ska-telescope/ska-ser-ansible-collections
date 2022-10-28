@@ -1,0 +1,55 @@
+---
+kubernetes_haproxy_api_port: 6443
+kubernetes_haproxy_ingress_port: 80
+kubernetes_haproxy_minio_port: 9000
+thanos_sidecar_port: 10901
+grafana_port: 3000
+kibana_port: 5601
+kibana_basepath: "/kibana"
+
+reverseproxy_kubernetes_haproxy_server: null
+reverseproxy_thanos_sidecar_server: null
+reverseproxy_grafana_server: null
+reverseproxy_kibana_server: null
+
+reverseproxy_nginx_exposed_ports:
+  - "80"
+  - "443"
+  - "9443" # exposes minio_port
+  - "{{ kubernetes_haproxy_api_port }}"
+  - "{{ thanos_sidecar_port }}"
+
+reverseproxy_nginx_config_dir: /etc/nginx
+reverseproxy_nginx_name: reverseproxy
+reverseproxy_nginx_image: nginx:1.23
+reverseproxy_nginx_log_driver: json-file
+reverseproxy_nginx_log_max_size: "10m"
+reverseproxy_nginx_log_max_file: "3"
+reverseproxy_nginx_log_options:
+  max-size: "{{  reverseproxy_nginx_log_max_size }}"
+  max-file: "{{ reverseproxy_nginx_log_max_file }}"
+  labels: "org.ska.app.group"
+
+reverseproxy_oauth2proxy_enabled: true
+reverseproxy_oauth2proxy_name: oauth2proxy
+reverseproxy_oauth2proxy_image: quay.io/oauth2-proxy/oauth2-proxy:v7.2.1
+reverseproxy_oauth2proxy_port: 4180
+reverseproxy_oauth2proxy_log_driver: json-file
+reverseproxy_oauth2proxy_log_max_size: "10m"
+reverseproxy_oauth2proxy_log_max_file: "3"
+reverseproxy_oauth2proxy_log_options:
+  max-size: "{{  reverseproxy_oauth2proxy_log_max_size }}"
+  max-file: "{{ reverseproxy_oauth2proxy_log_max_file }}"
+  labels: "org.ska.app.group"
+
+reverseproxy_labels:
+  org.ska.app.group: reverseproxy
+
+reverseproxy_dns_name: "{{ _ | mandatory('`reverseproxy_dns_name` definition is mandatory') }}"
+reverseproxy_oauth2proxy_client_id: "{{ _ | mandatory('`reverseproxy_oauth2proxy_client_id` definition is mandatory') }}"
+reverseproxy_oauth2proxy_tenant_id: "{{ _ | mandatory('`reverseproxy_oauth2proxy_tenant_id` definition is mandatory') }}"
+
+# Valuted variables
+
+reverseproxy_oauth2proxy_client_secret: "{{ _ | mandatory('`reverseproxy_oauth2proxy_client_secret` definition is mandatory') }}"
+reverseproxy_oauth2proxy_cookie_secret: "{{ _ | mandatory('`reverseproxy_oauth2proxy_cookie_secret` definition is mandatory') }}"

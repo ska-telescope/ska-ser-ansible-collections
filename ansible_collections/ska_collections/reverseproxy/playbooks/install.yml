@@ -1,0 +1,16 @@
+---
+- name: Install nginx reverseproxy and oauth2proxy
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: Install oauth2proxy
+      ansible.builtin.import_role:
+        name: ska_collections.reverseproxy.reverseproxy
+        tasks_from: oauth2proxy
+      when: reverseproxy_oauth2proxy_enabled
+    - name: Install nginx reverseproxy
+      ansible.builtin.import_role:
+        name: ska_collections.reverseproxy.reverseproxy
+        tasks_from: reverseproxy

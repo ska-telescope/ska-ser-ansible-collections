@@ -7,31 +7,35 @@ worker_processes  1;
 error_log  /var/log/nginx/error.log warn;
 pid        /var/run/nginx.pid;
 
-
 events {
     worker_connections  1024;
 }
 
-# passthru API Server
 stream {
-    upstream api_server {
+{% if reverseproxy_kubernetes_haproxy_server is not none %}
+    upstream kubernetes_api {
         # Our web server, listening for SSL traffic
         # Note the web server will expect traffic
-        server {{ hostvars[groups['loadbalancers'][0]]["ansible_host"] }}:{{ ha_api_proxy_port }};
+        server {{ hostvars[reverseproxy_kubernetes_haproxy_server].ip }}:{{ kubernetes_haproxy_api_port }};
     }
 
     server {
-        listen {{ ha_api_proxy_port }};
-        proxy_pass api_server;
+        listen {{ kubernetes_haproxy_api_port }};
+        proxy_pass kubernetes_api;
     }
+{% endif %}
 
+{% if reverseproxy_thanos_sidecar_server is not none %}
     upstream thanos_sidecar {
-        server {{ hostvars[groups['prometheus_prometheus'][0]]["ansible_host"] }}:10901 max_fails=3 fail_timeout=10s;
+        server {{ hostvars[reverseproxy_thanos_sidecar_server].ip }}:{{ thanos_sidecar_port }} max_fails=3 fail_timeout=10s;
     }
+
     server {
-        listen 10901;
+        listen {{ thanos_sidecar_port }};
         proxy_pass thanos_sidecar;
     }
+{% endif %}
+
 }
 
 http {
@@ -58,7 +62,7 @@ http {
         listen 80 default_server;
         listen [::]:80 default_server;
 
-        # server_name {{ nginx_server_name }};
+        # server_name {{ reverseproxy_dns_name }};
 
         return 301 https://$host$request_uri;
     }
@@ -66,11 +70,12 @@ http {
     server {
         listen 443 ssl http2;
         listen [::]:443 ssl http2;
-        # server_name {{ nginx_server_name }};
+
+        # server_name {{ reverseproxy_dns_name }};
 
         ### Best practice SSL configuration
-        ssl_certificate /etc/nginx/{{ nginx_server_name }}.crt;
-        ssl_certificate_key /etc/nginx/{{ nginx_server_name }}.key;
+        ssl_certificate /etc/nginx/{{ reverseproxy_dns_name }}.crt;
+        ssl_certificate_key /etc/nginx/{{ reverseproxy_dns_name }}.key;
         ssl_session_timeout 1d;
         ssl_session_cache shared:MozSSL:10m;  # about 40000 sessions
         ssl_session_tickets off;
@@ -92,15 +97,15 @@ http {
         ssl_stapling_verify on;
 
         # verify chain of trust of OCSP response using Root CA and Intermediate certs
-        ssl_trusted_certificate /etc/nginx/{{ nginx_server_name }}-ca.crt;
+        ssl_trusted_certificate /etc/nginx/{{ reverseproxy_dns_name }}-ca.crt;
 
         # replace with the IP address of your resolver
         resolver 127.0.0.1;
 
-        ### auth proxy configuration part 1
-
+{% if reverseproxy_oauth2proxy_enabled %}
+        ### auth proxy configuration
         location /oauth2/ {
-          proxy_pass       http://127.0.0.1:4180;
+          proxy_pass       http://127.0.0.1:{{ reverseproxy_oauth2proxy_port }};
           proxy_set_header Host                    $host;
           proxy_set_header X-Real-IP               $remote_addr;
           proxy_set_header X-Scheme                $scheme;
@@ -115,8 +120,9 @@ http {
           proxy_busy_buffers_size    256k;
           proxy_temp_file_write_size 256k;
         }
+
         location = /oauth2/auth {
-          proxy_pass       http://127.0.0.1:4180;
+          proxy_pass       http://127.0.0.1:{{ reverseproxy_oauth2proxy_port }};
           proxy_set_header Host             $host;
           proxy_set_header X-Real-IP        $remote_addr;
           proxy_set_header X-Scheme         $scheme;
@@ -128,11 +134,13 @@ http {
           proxy_busy_buffers_size    256k;
           proxy_temp_file_write_size 256k;
         }
-        ### end of auth proxy configuration part 1
+        ### end of auth proxy configuration
+{% endif %}
 
-{% if kibana_ip is defined %}
-        ## proxy kibana requests to the monitoring instance
+{% if reverseproxy_kibana_server is not none %}
+        ## proxy kibana requests to the kibana instance
         location /kibana/ {
+{% if reverseproxy_oauth2proxy_enabled %}
           ### auth proxy configuration part 2
           auth_request /oauth2/auth;
           error_page 401 = /oauth2/sign_in;
@@ -176,6 +184,7 @@ http {
               add_header Set-Cookie $auth_cookie_name_1;
           }
           ### end of auth proxy configuration part 2
+{% endif %}
 
           ### Proxy to K8s configuration
           proxy_set_header        Host $host;
@@ -187,7 +196,7 @@ http {
           proxy_ssl_session_reuse off;
 
           # Fix the “It appears that your reverse proxy set up is broken" error.
-          proxy_pass          http://{{ kibana_ip }}:{{ kibana_port }}/kibana/;
+          proxy_pass          http://{{ hostvars[reverseproxy_kibana_server].ip }}:{{ kibana_port }}{{ kibana_basepath }}/;
           proxy_http_version 1.1;
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection "upgrade";
@@ -199,9 +208,14 @@ http {
         }
 {% endif %}
         
-
+{% if reverseproxy_grafana_server is not none %}
         ## proxy grafana requests directly to the grafana instance
         location /grafana/ {
+{% if reverseproxy_oauth2proxy_enabled %}
+          ### auth proxy configuration part 2
+          auth_request /oauth2/auth;
+          error_page 401 = /oauth2/sign_in;
+
           # pass information via X-User and X-Email headers to backend,
           # requires running with --set-xauthrequest flag
           auth_request_set $user   $upstream_http_x_auth_request_user;
@@ -241,6 +255,7 @@ http {
               add_header Set-Cookie $auth_cookie_name_1;
           }
           ### end of auth proxy configuration part 2
+{% endif %}
 
           ### Proxy to K8s configuration
           proxy_set_header        Host $host;
@@ -253,7 +268,7 @@ http {
 
           # Fix the “It appears that your reverse proxy set up is broken" error.
           rewrite  ^/grafana/(.*)  /$1 break;
-          proxy_pass          http://{{ hostvars[groups['prometheus_prometheus'][0]]["ansible_host"] }}:3000/;
+          proxy_pass          http://{{ hostvars[reverseproxy_grafana_server].ip }}:{{ grafana_port }}/;
           proxy_http_version 1.1;
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection "upgrade";
@@ -263,9 +278,12 @@ http {
 
           proxy_redirect off;
         }
+{% endif %}
 
+{% if reverseproxy_kubernetes_haproxy_server is not none %}
         ## default proxy everything to k8s Ingress
         location / {
+{% if reverseproxy_oauth2proxy_enabled %}
           ### auth proxy configuration part 2
           auth_request /oauth2/auth;
           error_page 401 = /oauth2/sign_in;
@@ -304,6 +322,7 @@ http {
               add_header Set-Cookie $auth_cookie_name_1;
           }
           ### end of auth proxy configuration part 2
+{% endif %}
 
           ### Proxy to K8s configuration
           proxy_set_header        Host $host;
@@ -315,7 +334,7 @@ http {
           proxy_ssl_session_reuse off;
 
           # Fix the “It appears that your reverse proxy set up is broken" error.
-          proxy_pass          http://{{ hostvars[groups['loadbalancers'][0]]["ansible_host"] }}:{{ nginx_https_proxy_port }};
+          proxy_pass          http://{{ hostvars[reverseproxy_kubernetes_haproxy_server].ip }}:{{ kubernetes_haproxy_ingress_port }};
           proxy_http_version 1.1;
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection "upgrade";
@@ -330,19 +349,16 @@ http {
 
           proxy_redirect off;
         }
-
-
+{% endif %}
     }
-
-
 
     server {
         listen 9443 ssl http2;
         listen [::]:9443 ssl http2;
 
         ### Best practice SSL configuration
-        ssl_certificate /etc/nginx/{{ nginx_server_name }}.crt;
-        ssl_certificate_key /etc/nginx/{{ nginx_server_name }}.key;
+        ssl_certificate /etc/nginx/{{ reverseproxy_dns_name }}.crt;
+        ssl_certificate_key /etc/nginx/{{ reverseproxy_dns_name }}.key;
         ssl_session_timeout 1d;
         ssl_session_cache shared:MozSSL:10m;  # about 40000 sessions
         ssl_session_tickets off;
@@ -364,7 +380,7 @@ http {
         ssl_stapling_verify on;
 
         # verify chain of trust of OCSP response using Root CA and Intermediate certs
-        ssl_trusted_certificate /etc/nginx/{{ nginx_server_name }}-ca.crt;
+        ssl_trusted_certificate /etc/nginx/{{ reverseproxy_dns_name }}-ca.crt;
 
         # replace with the IP address of your resolver
         resolver 127.0.0.1;
@@ -379,6 +395,7 @@ http {
         # To disable buffering
         proxy_buffering off;
 
+{% if reverseproxy_kubernetes_haproxy_server is not none %}
         ## default proxy everything to k8s Ingress
         location / {
 
@@ -392,13 +409,13 @@ http {
           proxy_ssl_session_reuse off;
 
           # Fix the “It appears that your reverse proxy set up is broken" error.
-          proxy_pass          http://{{ hostvars[groups['loadbalancers'][0]]["ansible_host"] }}:9000;
+          proxy_pass          http://{{ hostvars[reverseproxy_kubernetes_haproxy_server].ip }}:{{ kubernetes_haproxy_minio_port }};
           proxy_http_version 1.1;
           proxy_set_header Connection "";
           chunked_transfer_encoding off;
           proxy_read_timeout 86400;
           proxy_connect_timeout 300;
         }
-
+{% endif %}
     }
 }

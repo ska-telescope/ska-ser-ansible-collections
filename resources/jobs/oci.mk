@@ -17,6 +17,11 @@ vars:
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
+install: check_hosts ## Install oci stack
+	ansible-playbook $(PLAYBOOKS_DIR)/containers.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_VAULT_EXTRA_ARGS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
 docker: check_hosts ## Install docker
 	ansible-playbook $(PLAYBOOKS_DIR)/docker.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_VAULT_EXTRA_ARGS) \

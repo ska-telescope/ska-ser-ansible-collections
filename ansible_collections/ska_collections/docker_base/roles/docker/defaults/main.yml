@@ -1,27 +1,33 @@
 ---
+# undefined variables:
+# - docker_proxy_env
+# - docker_mtu
+
 debug: false
-
-docker_allow_upgrade: false
-
-activate_nvidia: false
-ignore_nvidia_fail: false
-
-docker_driver: overlay2
-
-docker_repo: localhost:5000
-nexus_hosted_cache: 192.168.99.204:9080
-
-docker_mtu: ""
-
-log_max_size: "10m"
-log_max_file: "3"
-log_driver: json-file
-
-registry_mirror: "http://192.168.99.204:9082"  # default to STFC Nexus Cache
 
 docker_deb_repo_url: "deb https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
 docker_deb_repo_key_url: https://download.docker.com/linux/ubuntu/gpg
 docker_deb_repo_key_id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+
+nexus_schema: "http"
+nexus: "{{ _ | mandatory('`nexus` definition is mandatory') }}"
+nexus_docker_hosted_port: 9080
+nexus_docker_group_port: 9082
+
+docker_allow_upgrade: false
+
+docker_activate_nvidia: false
+docker_ignore_nvidia_fail: false
+
+docker_driver: overlay2
+docker_repo: localhost:5000
+docker_metrics_port: 9323
+docker_registry_mirror: "{{ nexus_schema }}:{{ nexus }}:{{ nexus_docker_group_port }}"
+docker_nexus_hosted_cache: "{{ nexus }}:{{ nexus_docker_hosted_port }}"
+
+docker_log_max_size: "10m"
+docker_log_max_file: "3"
+docker_log_driver: json-file
 
 docker_deb_uninstall_pkgs:
   - docker
@@ -38,7 +44,6 @@ docker_deb_dependencies:
   - python3-pip
 
 docker_deb_version: 5:20.10.18~3-0~ubuntu-{{ ansible_distribution_release }}
-
 docker_deb_pkgs:
   - "docker-ce"
   - "docker-ce-cli"

@@ -13,6 +13,5 @@
   vars:
     target_hosts: localhost
   become: true
-  become_method: sudo
   roles:
     - ska_collections.instance_common.init
