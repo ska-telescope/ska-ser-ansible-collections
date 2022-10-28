@@ -1,24 +1,4 @@
 ---
-# change if required or override at runtime using --extra-vars
-
-common_packages:
-  - man-db
-  - vim
-  - sysstat
-  - lsof
-  - netcat
-  - chrony
-  - iotop
-  - unzip
-  - curl
-  - wget
-  - ifenslave
-  - xfsprogs
-  - rsyslog
-  - libssl-dev
-  - dnsutils
-  - iperf
-
 update_grub: "/usr/sbin/update-grub"
 
 ntp_service: chrony

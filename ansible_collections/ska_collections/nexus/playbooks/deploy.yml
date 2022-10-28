@@ -1,5 +1,52 @@
 # !/usr/bin/env ansible-playbook
 ---
+- name: Show debug info
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: "Show stack nodes info"
+      ansible.builtin.debug: var=hostvars[inventory_hostname]
+      when: debug
+
+- name: Retrieve stack defaults but keep the variable hierarchy
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: Retrieve default values
+      ansible.builtin.include_vars:
+        file: "../roles/stack/defaults/main.yml"
+    - name: Retrieve datacenter values
+      ansible.builtin.include_vars:
+        file: "{{ inventory_dir }}/group_vars/all.yml"
+
+- name: Apply the common and docker roles
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: Common role
+      include_role:
+        name: ska_collections.instance_common.init
+
+    - name: Docker role
+      include_role:
+        name: ska_collections.docker_base.docker
+
+    - name: Certificates role
+      include_role:
+        name: ska_collections.instance_common.certs
+      vars:
+        private_key_name: "{{ inventory_hostname }}"
+        certificate_name: "{{ inventory_hostname }}"
+        dns_alt_name: "{{ elasticsearch_dns | default(elastic_defaults.elasticsearch_dns) }}"
+  tags:
+    - common
+
 # extracted from https://github.com/ansible-ThoTeam/nexus3-oss#example-playbook
 # additional configuration of conan proxy - https://help.sonatype.com/repomanager3/formats/conan-repositories
 # conan hosted activation - https://issues.sonatype.org/browse/NEXUS-23629
@@ -13,7 +60,6 @@
 # nexus-cma-feature
 #
 # Also see: https://github.com/vjda/nexus3-casc-cli
-
 - name: Nexus
   hosts: nexus
   become: true
@@ -928,7 +974,6 @@
   # run roles for Nexus install
   roles:
     - {role: common, tags: ['init']}
-    - {role: ska_cicd.docker_base.docker, tags: ['init']}
     - {role: ansible-thoteam.nexus3-oss, tags: ['nexus']}
     - {role: haproxy}
 
