@@ -64,12 +64,12 @@ little setup.
 
 The table bellow, iterates all the targets available on the main Makefile. 
 
-| Target                | Description                             | Mandatory Variables                                         |
-|-----------------------|-----------------------------------------|-------------------------------------------------------------|
-| vars                  | Print relevant shell variables          |                                                             |
-| help                  | Help guide                              |                                                             |
-| ping                  | ping all hosts on a specific inventory  | PLAYBOOKS_ROOT_DIR <br> PLAYBOOKS_HOSTS <br> ANSIBLE_CONFIG |
-| install_collections   | pulls collections from requirements.yml | ANSIBLE_COLLECTIONS_PATHS                                   |
+| Target                | Description                                       | Mandatory Variables                                         |
+|-----------------------|---------------------------------------------------|-------------------------------------------------------------|
+| vars                  | Print relevant shell variables                    |                                                             |
+| help                  | Help guide                                        |                                                             |
+| ping                  | ping all hosts on a specific inventory            | PLAYBOOKS_ROOT_DIR <br> PLAYBOOKS_HOSTS <br> ANSIBLE_CONFIG |
+| install_dependencies  | pulls collections and roles from requirements.yml | ANSIBLE_COLLECTIONS_PATHS                                   |
 
 All the targets specific to a collection such as **elastic** or **oci** engine, 
 will be separated on their own **.mk** file on **resources/jobs** folder.

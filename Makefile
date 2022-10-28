@@ -45,9 +45,12 @@ ifndef PLAYBOOKS_HOSTS
 endif
 	@ansible all -i $(INVENTORY) -m ping -l $(PLAYBOOKS_HOSTS)
 
-install_collections:  ## Install dependent ansible collections
+install_dependencies:  ## Install dependent ansible collections and roles
 	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
 	ansible-galaxy collection install \
+	-r requirements.yml -p ./ansible_collections
+	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
+	ansible-galaxy role install \
 	-r requirements.yml -p ./ansible_collections
 
 JOBLIST := $(shell find $(JOBS_DIR) -iname '*.mk' -exec basename {} .mk ';')
