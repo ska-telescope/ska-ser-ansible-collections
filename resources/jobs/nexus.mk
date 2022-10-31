@@ -42,6 +42,7 @@ vars:  ## List Variables
 	@echo "NEXUS_APT_BIONIC_QUARENTINE_KEY_PASSPHRASE=$(NEXUS_APT_BIONIC_QUARENTINE_KEY_PASSPHRASE)"
 
 install: check_hosts apply-patch # apply-patch  ## Deploy Nexus
+	ANSIBLE_FILTER_PLUGINS=./ansible_collections/ansible-thoteam.nexus3-oss/filter_plugins \
 	ansible-playbook ./ansible_collections/ska_collections/nexus/playbooks/deploy.yml \
 	-i $(INVENTORY) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
