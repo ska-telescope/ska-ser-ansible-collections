@@ -1,0 +1,20 @@
+- name: nexus systemd service restart
+  ansible.builtin.systemd:
+    name: nexus.service
+    state: restarted
+    no_block: true
+  listen: nexus-service-restart
+
+- name: wait-for-nexus
+  ansible.builtin.wait_for:
+    path: "{{ nexus_data_dir }}/log/nexus.log"
+    search_regex: "Started Sonatype Nexus .*"
+    timeout: 1800
+
+- name: wait-for-nexus-port
+  ansible.builtin.wait_for:
+    port: "{{ nexus_default_port }}"
+    timeout: "{{ nexus_wait_for_port_timeout | default(omit) }}"
+  retries: "{{ nexus_wait_for_port_retries | default(omit) }}"
+  register: wait_for_result
+  until: wait_for_result is success
