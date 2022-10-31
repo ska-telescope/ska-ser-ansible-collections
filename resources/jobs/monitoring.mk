@@ -131,13 +131,13 @@ node-exporter: check_hosts ## Install Prometheus node exporter - pass INVENTORY 
 
 
 update_metadata: check_hosts ## OpenStack metadata for node_exporters - pass INVENTORY all format should be OK
-	@mkdir -p combined_inventory
-	@rm -f combined_inventory/*
-	@cp $(INVENTORY)/*inventory* combined_inventory/
-	@cat combined_inventory/*inventory* > all_inventory
-	@ansible -i $(INVENTORY) $(PROMETHEUS_NODE) $(ANSIBLE_PLAYBOOK_ARGUMENTS) -b -m copy -a 'src=all_inventory dest=/tmp/all_inventory'
-	@ansible -i $(INVENTORY) $(PROMETHEUS_NODE) $(ANSIBLE_PLAYBOOK_ARGUMENTS) -b -m shell -a 'export project_name=$(PROM_OS_PROJECT_NAME) project_id=$(PROM_OS_PROJECT_ID) auth_url=$(PROM_OS_AUTH_URL) username=$(PROM_OS_USERNAME) password=$(PROM_OS_PASSWORD)	os_region_name=RegionOne os_interface=public PROM_OS_PROJECT_ID=$(PROM_OS_PROJECT_ID)	os_user_domain_name=default	os_identity_api_version=3 && python3 /usr/local/bin/prom_helper.py -u /tmp/all_inventory'
-	@rm -rf combined_inventory all_inventory
+	@mkdir -p combined_inventory; \
+	rm -f combined_inventory/*; \
+	cp $(INVENTORY)/*inventory* combined_inventory/; \
+	cat combined_inventory/*inventory* > all_inventory; \
+	ansible -i $(INVENTORY) $(PROMETHEUS_NODE) $(ANSIBLE_PLAYBOOK_ARGUMENTS) -b -m copy -a 'src=all_inventory dest=/tmp/all_inventory'; \
+	ansible -i $(INVENTORY) $(PROMETHEUS_NODE) $(ANSIBLE_PLAYBOOK_ARGUMENTS) -b -m shell -a 'export project_name=$(PROM_OS_PROJECT_NAME) project_id=$(PROM_OS_PROJECT_ID) auth_url=$(PROM_OS_AUTH_URL) username=$(PROM_OS_USERNAME) password=$(PROM_OS_PASSWORD)	os_region_name=RegionOne os_interface=public PROM_OS_PROJECT_ID=$(PROM_OS_PROJECT_ID)	os_user_domain_name=default	os_identity_api_version=3 && python3 /usr/local/bin/prom_helper.py -u /tmp/all_inventory'; \
+	rm -rf combined_inventory all_inventory
 
 update_scrapers: check_hosts ## Force update of scrapers
 	@ansible -i $(INVENTORY) $(PROMETHEUS_NODE) $(ANSIBLE_PLAYBOOK_ARGUMENTS) -b -m shell -a 'export project_id=$(PROM_OS_PROJECT_ID) project_name=$(PROM_OS_PROJECT_NAME) auth_url=$(PROM_OS_AUTH_URL) username=$(PROM_OS_USERNAME) password=$(PROM_OS_PASSWORD) $(OPENSTACK_ENV_VARIABLES) && cd /etc/prometheus && python3 /usr/local/bin/prom_helper.py -g'
