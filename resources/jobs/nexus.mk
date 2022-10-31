@@ -2,7 +2,6 @@
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 
-NEXUS_NTP_SERVER ?= 1.fedora.pool.ntp.org
 VAULT_NEXUS_ADMIN_PASSWORD ?= 'whatwhat'
 VAULT_NEXUS_USER_PASSWORD_GITLAB ?= 'whatwhat'
 VAULT_NEXUS_USER_PASSWORD_PUBLISHER ?= 'whatwhat'
@@ -29,7 +28,6 @@ endif
 vars:  ## List Variables
 	@echo "Current variable settings:"
 	@echo "INVENTORY=$(INVENTORY)"
-	@echo "NEXUS_NTP_SERVER=$(NEXUS_NTP_SERVER)"
 	@echo "VAULT_NEXUS_ADMIN_PASSWORD=$(VAULT_NEXUS_ADMIN_PASSWORD)"
 	@echo "VAULT_NEXUS_USER_PASSWORD_GITLAB=$(VAULT_NEXUS_USER_PASSWORD_GITLAB)"
 	@echo "VAULT_NEXUS_USER_PASSWORD_PUBLISHER=$(VAULT_NEXUS_USER_PASSWORD_PUBLISHER)"
@@ -48,7 +46,6 @@ install: check_hosts apply-patch # apply-patch  ## Deploy Nexus
 	-i $(INVENTORY) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars " \
-		ntp_sync_server=$(NEXUS_NTP_SERVER) \
 		vault_nexus_admin_password=$(VAULT_NEXUS_ADMIN_PASSWORD) \
 		vault_nexus_user_password_gitlab=$(VAULT_NEXUS_USER_PASSWORD_GITLAB) \
 		vault_nexus_user_password_publisher=$(VAULT_NEXUS_USER_PASSWORD_PUBLISHER) \
