@@ -62,9 +62,7 @@ backend back-nexus-default-backend
   option http-server-close
   option dontlognull
   balance roundrobin
-  {%- for item in groups['nexus'] %}
-  server {{ item }} {{hostvars[item]["ansible_host"]}}:{{ nexus_http_proxy_port }} check
-  {%- endfor %}
+  server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_http_proxy_port }} check
   timeout connect 10s
   timeout server 1800s
 
@@ -73,9 +71,7 @@ backend back-nexus-api-backend
   option http-server-close
   option dontlognull
   balance roundrobin
-  {%- for item in groups['nexus'] %}
-  server {{ item }} {{hostvars[item]["ansible_host"]}}:{{ nexus_api_proxy_port }} check
-  {%- endfor %}
+  server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_api_proxy_port }} check
   timeout connect 10s
   timeout server 1800s
 
@@ -84,9 +80,7 @@ backend back-nexus-conan-backend
   option http-server-close
   option dontlognull
   balance roundrobin
-  {%- for item in groups['nexus'] %}
-  server {{ item }} {{hostvars[item]["ansible_host"]}}:{{ nexus_conan_search_proxy_port }} check
-  {%- endfor %}
+  server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_conan_search_proxy_port }} check
   timeout connect 10s
   timeout server 1800s
 
@@ -95,8 +89,6 @@ backend back-nexus-quarantine-api-backend
   option http-server-close
   option dontlognull
   balance roundrobin
-  {%- for item in groups['nexus'] %}
-  server {{ item }} {{hostvars[item]["ansible_host"]}}:{{ nexus_quarantine_api_proxy_port }} check
-  {%- endfor %}
+  server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_quarantine_api_proxy_port }} check
   timeout connect 10s
   timeout server 1800s
