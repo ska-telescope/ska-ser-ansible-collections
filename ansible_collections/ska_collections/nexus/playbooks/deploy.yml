@@ -54,6 +54,8 @@
 # Also see: https://github.com/vjda/nexus3-casc-cli
 - name: Nexus
   hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
   become: true
   # run roles for Nexus install
   roles:
