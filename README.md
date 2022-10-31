@@ -9,9 +9,10 @@ This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/
 | docker_base           | containerd <br> docker <br> podman    | Install specific OCI engine                               |
 | elastic               | stack <br> logging <br> haproxy       | Elasticsearch and Kibana cluster roles                    |
 | monitoring            | custom_metrics <br> node_exporter <br> prometheus <br> updatehosts | Install prometheus-based metrics services |
-| minikube              | minikube <br> setup <br> velero        | Install minikube and associated tools                    |
-| gitlab_runner         | runner                                 | Install docker-based Gitlab-runner                       |
+| minikube              | minikube <br> setup <br> velero       | Install minikube and associated tools                     |
+| gitlab_runner         | runner                                | Install docker-based Gitlab-runner                        |
 | ceph                  | installation                          | Ceph roles                                                |
+| nexus                 | common <br> nexus3-oss <br> haproxy   | Install Nexus Repository                                  |
 
 ## Usage
 
@@ -98,8 +99,9 @@ make <collection> <job> <VARS>
 | monitoring    | node-exporter    | Install node-exporter                             |                                                |
 | monitoring    | update_metadata  | Update nodes metadata for scrapers                |                                                |
 | monitoring    | update_scrapers  | Update prometheus scrapers                        |                                                |
-| gitlab_runner | install  | Install and register gitlab runner                        |  instance_common.init <br> docker_base.docker  |
-| gitlab_runner | destroy  | Destroy and unregister gitlab runner                      |                                                |
+| gitlab_runner | install | Install and register gitlab runner                         |  instance_common.init <br> docker_base.docker  |
+| gitlab_runner | destroy | Destroy and unregister gitlab runner                       |                                                |
+| nexus         | install | Install Nexus Repository                                   |  instance_common.init <br> docker_base.docker <br> ansible-thoteam.nexus3-oss  |
 
 ### Mandatory Environment Variables
 
