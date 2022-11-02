@@ -51,7 +51,7 @@
         name: ska_collections.nexus.common
         apply:
           tags:
-           - init
+            - init
 
 # extracted from https://github.com/ansible-ThoTeam/nexus3-oss#example-playbook
 # additional configuration of conan proxy - https://help.sonatype.com/repomanager3/formats/conan-repositories
@@ -128,7 +128,7 @@
     nexus_api_context_path: "{{ nexus_default_context_path }}"
     nexus_api_port: "{{ nexus_default_port }}"
     nexus_channel_email_address: prometheus-alerts-aaaab4hruv46exq5oy5mqhl6ea@skasoftware.slack.com
-    
+
     nexus_branding_header: ""
     nexus_branding_footer: ""
 
@@ -866,8 +866,6 @@
         maximum_metadata_age: -1
         negative_cache_ttl: 60
 
-
-
     nexus_repos_yum_hosted:
       - name: rpm-internal
         repodata_depth: 0
@@ -879,7 +877,7 @@
         write_policy: allow
         cleanup_policies:
           - delete-quarantined-rpm
-          
+
     nexus_repos_yum_proxy:
       - name: epel_centos_7_x86_64
         remote_url: http://download.fedoraproject.org/pub/epel/7/x86_64
@@ -954,9 +952,9 @@
         http_port: "{{ nexus_docker_group_port }}"
         v1_enabled: true
         member_repos:
-        - docker-internal
-        - central-proxy
-        - docker-proxy
+          - docker-internal
+          - central-proxy
+          - docker-proxy
 
     nexus_repos_gitlfs_hosted:
       - name: gitlfs-internal
@@ -994,7 +992,7 @@
         name: ansible-thoteam.nexus3-oss
         apply:
           tags:
-           - nexus
+            - nexus
 
 - name: Nexus Post-install
   hosts: "{{ target_hosts }}"
