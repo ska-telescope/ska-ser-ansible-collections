@@ -70,6 +70,65 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
+    ntp_sync_server: 1.fedora.pool.ntp.org
+    docker_deb_version: 5:20.10.21~3-0~ubuntu-jammy
+    containerd_version: 1.6.9-1
+    containerd_ubuntu_version: jammy
+    ubuntu_version: jammy
+
+    # Nexus Config
+    nexus_upgrade: true
+    nexus_version: '3.42.0-01'
+    nexus_timezone: 'UTC'
+    nexus_download_url: 'https://download.sonatype.com/nexus/3'
+    # eg: https://download.sonatype.com/nexus/3/nexus-3.34.0-01-unix.tar.gz
+    nexus_admin_password: "{{ vault_nexus_admin_password }}"
+    nexus_user_password_gitlab: "{{ vault_nexus_user_password_gitlab }}"
+    nexus_user_password_publisher: "{{ vault_nexus_user_password_publisher }}"
+    nexus_user_password_quarantiner: "{{ vault_nexus_user_password_quarantiner }}"
+    nexus_public_hostname: 'artefact.skatelescope.org'
+    nexus_public_scheme: http
+    httpd_setup_enable: false
+    nexus_default_port: 8881
+    nexus_docker_hosted_port: 9080
+    nexus_docker_proxy_port: 9081
+    nexus_docker_group_port: 9082
+    nexus_docker_quarantine_port: 9083
+    nexus_central_proxy_port: 9084
+    nexus_application_host: '{{ httpd_setup_enable | ternary("127.0.0.1", "0.0.0.0") }}'
+    nexus_default_context_path: '/'
+    nexus_os_group: 'nexus'
+    nexus_os_user: 'nexus'
+    nexus_os_user_home_dir: '/home/nexus'
+    nexus_installation_dir: '/var/lib/nexus/nexus'
+    nexus_data_dir: '/var/lib/nexus/data'
+    nexus_backup_dir: '/var/lib/nexus/backup'
+    nexus_backup_rotate: true  # Shall we rotate backups
+    nexus_backup_rotate_first: false  # Shall we rotate before making the current backup ?
+    nexus_backup_keep_rotations: 2
+    nexus_tmp_dir: "{{ (ansible_os_family == 'RedHat') | ternary('/var/nexus-tmp', '/tmp/nexus') }}"
+    nexus_min_heap_size: "1200M"
+    nexus_max_heap_size: "{{ nexus_min_heap_size }}"
+    nexus_max_direct_memory: "2G"
+    nexus_plugin_urls: []
+    nexus_onboarding_wizard: false
+    nexus_anonymous_access: true
+    nexus_api_hostname: localhost
+    nexus_api_scheme: http
+    nexus_api_validate_certs: "{{ nexus_api_scheme == 'https' }}"
+    nexus_api_context_path: "{{ nexus_default_context_path }}"
+    nexus_api_port: "{{ nexus_default_port }}"
+    nexus_channel_email_address: prometheus-alerts-aaaab4hruv46exq5oy5mqhl6ea@skasoftware.slack.com
+
+    # email server
+    nexus_email_server_enabled: false
+    
+    nexus_branding_header: ""
+    nexus_branding_footer: ""
+
+    nexus_audit_enabled: false  # this is generating lots of data that is never rotated, do not enable by default
+
+    nexus_ldap_realm: false
   become: True
   tasks:
     - name: Nexus role
