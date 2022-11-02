@@ -47,7 +47,7 @@
   tasks:
     - name: Nexus common role
       include_role:
-        name: ska_collections.nexus.common
+        name: common
         apply:
           tags:
             - init
@@ -988,14 +988,14 @@
   tasks:
     - name: Nexus role
       include_role:
-        name: ska_collections.nexus.nexus3-oss
+        name: nexus3-oss
         apply:
           tags:
             - nexus
 
     - name: Nexus conan role
       include_role:
-        name: ska_collections.nexus.nexus3-conan
+        name: nexus3-conan
 
 - name: Nexus Post-install
   hosts: "{{ target_hosts }}"
@@ -1005,4 +1005,4 @@
   tasks:
     - name: HAProxy role
       include_role:
-        name: ska_collections.nexus.haproxy
+        name: haproxy
