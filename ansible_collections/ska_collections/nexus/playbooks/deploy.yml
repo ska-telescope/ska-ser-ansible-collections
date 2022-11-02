@@ -989,10 +989,14 @@
   tasks:
     - name: Nexus role
       include_role:
-        name: ansible-thoteam.nexus3-oss
+        name: ska_collections.nexus.nexus3-oss
         apply:
           tags:
             - nexus
+
+    - name: Nexus conan role
+      include_role:
+        name: ska_collections.nexus.nexus3-conan
 
 - name: Nexus Post-install
   hosts: "{{ target_hosts }}"
@@ -1001,10 +1005,6 @@
   become: true
   # run roles for Nexus install
   tasks:
-    - name: Nexus conan role
-      include_role:
-        name: ska_collections.nexus.nexus-conan
-
     - name: HAProxy role
       include_role:
         name: ska_collections.nexus.haproxy
