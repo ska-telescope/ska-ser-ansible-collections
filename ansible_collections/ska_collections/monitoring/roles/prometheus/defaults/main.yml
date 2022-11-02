@@ -112,10 +112,10 @@ thanos_query_endpoints:
 
 grafana_provisioning_config_dir: /etc/grafana/provisioning
 grafana_data: /var/lib/grafana
-grafana_dashboard_version: nautilus
+grafana_ceph_dashboard_version: v17.2.5
 grafana_datasource: Prometheus
 grafana_dashboards_path: "{{ grafana_provisioning_config_dir }}/dashboards"
-grafana_dashboard_files:
+grafana_ceph_dashboard_files:
   - ceph-cluster.json
   - cephfs-overview.json
   - host-details.json
@@ -126,7 +126,9 @@ grafana_dashboard_files:
   - pool-overview.json
   - radosgw-detail.json
   - radosgw-overview.json
-  - rbd-overview.json
+  - radosgw-sync-overview.json
+  - rbd-details.json
+  - rbd-overview.json 
 grafana_plugins:
   - vonage-status-panel
   - grafana-piechart-panel
