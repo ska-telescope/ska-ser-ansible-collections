@@ -77,7 +77,7 @@
     ubuntu_version: jammy
 
     # Nexus Config
-    nexus_upgrade: true
+    nexus_upgrade: false
     nexus_version: '3.42.0-01'
     nexus_timezone: 'UTC'
     nexus_download_url: 'https://download.sonatype.com/nexus/3'
