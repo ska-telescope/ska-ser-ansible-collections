@@ -29,7 +29,7 @@
     target_hosts: localhost
   become: true
   tasks:
-    - name: Common role
+    - name: Instance common role
       include_role:
         name: ska_collections.instance_common.init
 
@@ -38,6 +38,20 @@
         name: ska_collections.docker_base.docker
   tags:
     - common
+
+- name: Nexus Pre-install
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  # run roles for Nexus install
+  tasks:
+    - name: Nexus common role
+      include_role:
+        name: ska_collections.nexus.common
+        apply:
+          tags:
+           - init
 
 # extracted from https://github.com/ansible-ThoTeam/nexus3-oss#example-playbook
 # additional configuration of conan proxy - https://help.sonatype.com/repomanager3/formats/conan-repositories
@@ -52,14 +66,30 @@
 # nexus-cma-feature
 #
 # Also see: https://github.com/vjda/nexus3-casc-cli
-- name: Nexus
+- name: Nexus install
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: True
+  tasks:
+    - name: Nexus role
+      include_role:
+        name: ansible-thoteam.nexus3-oss
+        apply:
+          tags:
+           - nexus
+
+- name: Nexus Post-install
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
   become: true
   # run roles for Nexus install
-  roles:
-    - { role: common, tags: ['init'] }
-    - { role: nexus3-oss, tags: ['nexus'] }
-    - { role: nexus3-conan }
-    - { role: haproxy }
+  tasks:
+    - name: Nexus conan role
+      include_role:
+        name: ska_collections.nexus.nexus-conan
+
+    - name: HAProxy role
+      include_role:
+        name: ska_collections.nexus.haproxy
