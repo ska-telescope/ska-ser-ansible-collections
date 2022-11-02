@@ -76,12 +76,12 @@
     containerd_ubuntu_version: jammy
     ubuntu_version: jammy
 
-    vault_nexus_admin_password: 'whatwhat'
-    vault_nexus_user_password_gitlab: 'whatwhat'
-    vault_nexus_user_password_publisher: 'whatwhat'
-    vault_nexus_user_password_quarantiner: 'whatwhat'
-    vault_nexus_ldap_conn_passwd: 'whatwhat'
-    vault_nexus_email_server_password: 'whatwhat'
+    nexus_vault_admin_password: 'whatwhat'
+    nexus_vault_user_password_gitlab: 'whatwhat'
+    nexus_vault_user_password_publisher: 'whatwhat'
+    nexus_vault_user_password_quarantiner: 'whatwhat'
+    nexus_vault_ldap_conn_passwd: 'whatwhat'
+    nexus_vault_email_server_password: 'whatwhat'
     nexus_webhook_url: 'http://localhost:8080'
     nexus_webhook_secret_key: 'whatwhat'
 
@@ -91,10 +91,10 @@
     nexus_timezone: 'UTC'
     nexus_download_url: 'https://download.sonatype.com/nexus/3'
     # eg: https://download.sonatype.com/nexus/3/nexus-3.34.0-01-unix.tar.gz
-    nexus_admin_password: "{{ vault_nexus_admin_password }}"
-    nexus_user_password_gitlab: "{{ vault_nexus_user_password_gitlab }}"
-    nexus_user_password_publisher: "{{ vault_nexus_user_password_publisher }}"
-    nexus_user_password_quarantiner: "{{ vault_nexus_user_password_quarantiner }}"
+    nexus_admin_password: "{{ nexus_vault_admin_password }}"
+    nexus_user_password_gitlab: "{{ nexus_vault_user_password_gitlab }}"
+    nexus_user_password_publisher: "{{ nexus_vault_user_password_publisher }}"
+    nexus_user_password_quarantiner: "{{ nexus_vault_user_password_quarantiner }}"
     nexus_public_hostname: 'artefact.skatelescope.org'
     nexus_public_scheme: http
     httpd_setup_enable: false
@@ -139,7 +139,7 @@
     nexus_email_server_host: "mailrelay.skatelescope.org"
     nexus_email_server_port: 587
     nexus_email_server_username: "nexus-artefact@skatelescope.org"
-    nexus_email_server_password: "{{ vault_nexus_email_server_password }}"
+    nexus_email_server_password: "{{ nexus_vault_email_server_password }}"
     nexus_email_from_address: "nexus-artefact@skatelescope.org"
     nexus_email_subject_prefix: "[Nexus]"
     nexus_email_tls_enabled: true
@@ -156,7 +156,7 @@
         ldap_port: 389
         ldap_auth: 'simple'
         ldap_auth_username: 'svc_NexusDirAuth'
-        ldap_auth_password: "{{ vault_nexus_ldap_conn_passwd }}"
+        ldap_auth_password: "{{ nexus_vault_ldap_conn_passwd }}"
         ldap_search_base: 'dc=ad,dc=skatelescope,dc=org'
         ldap_user_base_dn: 'OU=SKAUsers,OU=SKA'
         ldap_user_filter: |-
