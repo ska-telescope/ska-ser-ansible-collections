@@ -1,203 +1,227 @@
 ---
-- name: Deploy the filebeat logger
+- name: Podman container setup operations
   block:
-    - name: Install crun as default runtime
-      ansible.builtin.package:
-        name: crun
-        state: present
+  - name: Pull image for filebeat
+    containers.podman.podman_image:
+      name: "{{ filebeat_image }}"
 
-    - name: podman pull image for filebeat
-      containers.podman.podman_image:
-        name: "{{ filebeat_image }}"
+  - name: Remove filebeat containers
+    containers.podman.podman_container:
+      name: "{{ filebeat_name }}"
+      state: absent
+  when: filebeat_container_engine == "podman"
 
-    - name: filebeat remove containers
-      containers.podman.podman_container:
-        name: "{{ filebeat_name }}"
-        state: absent
+- name: Docker container setup operations
+  block:
+  - name: Pull image for filebeat
+    community.general.docker_image:
+      name: "{{ filebeat_image }}"
+      source: pull
 
-    - name: Write filebeat config
-      template:
-        src: filebeat.yaml.j2
-        dest: /etc/filebeat.yaml
-        mode: 0644
+  - name: Remove filebeat containers
+    community.general.docker_container:
+      name: "{{ filebeat_name }}"
+      state: absent
+  when: filebeat_container_engine == "docker"
 
-    - name: Write beat policy config
-      template:
-        src: policy.json.j2
-        dest: /etc/beat_policy.json
-        mode: 0644
+- name: Write filebeat config
+  ansible.builtin.template:
+    src: filebeat.yaml.j2
+    dest: /etc/filebeat.yaml
+    mode: 0644
 
-    - name: Certificates role
-      include_role:
-        name: ska_collections.instance_common.certs
-      vars:
-        private_key_name: "{{ filebeat_private_key_name }}"
-        certificate_name: "{{ filebeat_certificate_name }}"
-        dns_alt_name: "{{ filebeat_dns_alt_name }}"
+- name: Write filebeat policy config
+  ansible.builtin.template:
+    src: policy.json.j2
+    dest: /etc/beat_policy.json
+    mode: 0644
 
-    - name: scope for update pipeline
-      block:
-        - name: Write ska_log_parsing_pipeline config
-          template:
-            src: ska_log_parsing_pipeline.json.j2
-            dest: /etc/ska_log_parsing_pipeline.json
-            mode: 0644
-          register: ska_log_parsing_pipeline_conf
+- name: Certificates role
+  ansible.builtin.include_role:
+    name: ska_collections.instance_common.certs
+  vars:
+    private_key_name: "{{ filebeat_private_key_name }}"
+    certificate_name: "{{ filebeat_certificate_name }}"
+    dns_alt_name: "{{ filebeat_dns_alt_name }}"
 
-        - name: Slurp /etc/ska_log_parsing_pipeline.json file
-          slurp:
-            src: /etc/ska_log_parsing_pipeline.json
-          register: ska_log_parsing_pipeline_file
+- name: Scope for update pipeline
+  block:
+  - name: Write ska_log_parsing_pipeline config
+    ansible.builtin.template:
+      src: ska_log_parsing_pipeline.json.j2
+      dest: /etc/ska_log_parsing_pipeline.json
+      mode: 0644
+    register: ska_log_parsing_pipeline_conf
 
-        - name: update pipeline config
-          uri:
-            url: "{{ logging_loadbalancer_address }}/_ingest/pipeline/{{ filebeat_pipeline }}"
-            client_cert: "{{ certificates_dir }}/{{ filebeat_certificate_name }}.crt"
-            client_key: "{{ certificates_dir }}/{{ filebeat_private_key_name }}.key"
-            method: PUT
-            return_content: true
-            body: "{{ ska_log_parsing_pipeline_file['content'] | b64decode }}"
-            status_code: 200
-            body_format: json
-          environment:
-            SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
-          when: ska_log_parsing_pipeline_conf.changed
+  - name: Slurp /etc/ska_log_parsing_pipeline.json file
+    ansible.builtin.slurp:
+      src: /etc/ska_log_parsing_pipeline.json
+    register: ska_log_parsing_pipeline_file
 
-      when: filebeat_pipeline
+  - name: Update pipeline config
+    ansible.builtin.uri:
+      url: "{{ logging_loadbalancer_address }}/_ingest/pipeline/{{ filebeat_pipeline }}"
+      client_cert: "{{ certificates_dir }}/{{ filebeat_certificate_name }}.crt"
+      client_key: "{{ certificates_dir }}/{{ filebeat_private_key_name }}.key"
+      method: PUT
+      return_content: true
+      body: "{{ ska_log_parsing_pipeline_file['content'] | b64decode }}"
+      status_code: 200
+      body_format: json
+    environment:
+      SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+    when: ska_log_parsing_pipeline_conf.changed
+  when: filebeat_pipeline
 
-    - name: scope for index initialisation
-      block:
-        - name: Write filebeat config
-          template:
-            src: filebeat.yaml.j2
-            dest: /etc/filebeat_setup.yaml
-            mode: 0644
-          register: filebeat_conf
-      vars:
-        filebeat_template_overwrite: true
-      when: "'elkmasters' in groups and inventory_hostname == groups['elkmasters'][0]"
+- name: Scope for index initialisation
+  block:
+  - name: Write filebeat config
+    ansible.builtin.template:
+      src: filebeat.yaml.j2
+      dest: /etc/filebeat_setup.yaml
+      mode: 0644
+    register: filebeat_conf
+    vars:
+      filebeat_template_overwrite: true
+  when: "'elkmasters' in groups and inventory_hostname == groups['elkmasters'][0]"
 
-    # # should not need this
-    # # setup filebeat
-    # - name: Setup filebeat
-    #   containers.podman.podman_container:
-    #     name: "{{ filebeat_name }}_setup"
-    #     image: "{{ filebeat_image }}"
-    #     command: >
-    #       filebeat setup -e "output.elasticsearch.hosts=['http://{{ ansible_default_ipv4.address }}:9200']"
-    #        -e -strict.perms=false -e setup.ilm.enabled=auto -c /etc/filebeat_setup.yaml
-    #     # annotation:
-    #     #   run.oci.keep_original_groups: 1
-    #     restart_policy: "no"
-    #     state: started
-    #     recreate: true
-    #     detach: false
-    #     rm: true
-    #     user: root
-    #     memory: "512M"
-    #     labels: "{{ container_labels }}"
-    #     log_driver: "{{ log_driver }}"
-    #     log_options: "{{ log_options }}"
-    #     volumes:
-    #       - "/var/log:/var/log:ro"  # symlinks to pod logs and container logs
-    #       - "/var/run/docker.sock:/var/run/docker.sock:Z"
-    #       - "/var/lib/kubelet/pods:/var/lib/kubelet/pods:ro"  # kubelet logs
-    #       - "/var/lib/docker/containers:/var/lib/docker/containers:ro"  # docker logs
-    #       - "/var/lib/filebeat:/usr/share/filebeat/data/registry/filebeat:rw"  # persistent registry
-    #       - "/etc/hostname:/etc/hostname:ro"
-    #       - "/etc/machine-id:/etc/machine-id:ro"
-    #       - "/etc/filebeat_setup.yaml:/etc/filebeat_setup.yaml:ro"
-    #       - "/etc/beat_policy.json:/etc/beat_policy.json:ro"
-    #       - "{{ kubeconf_file }}:/kube_config:ro"
-    #   when: filebeat_conf.changed and 'elkmasters' in groups and inventory_hostname == groups['elkmasters'][0]
+- name: Creates directory for /var/lib/filebeat
+  ansible.builtin.file:
+    path: "/var/lib/filebeat"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
 
-    - name: Creates directory for /var/lib/filebeat
-      file:
-        path: "/var/lib/filebeat"
-        state: directory
-        owner: root
-        group: root
-        mode: 0755
+- name: Check if meta.json file exists
+  ansible.builtin.stat:
+    path: /var/lib/filebeat/meta.json
+  register: meta_json
 
-    # make sure that the store version file exists
-    - name: check if meta.json file exists
-      stat:
-        path: /var/lib/filebeat/meta.json
-      register: meta_json
+- name: Set version file for filebeat
+  ansible.builtin.lineinfile:
+    line: '{"version": "1"}'
+    dest: /var/lib/filebeat/meta.json
+    create: true
+    owner: root
+    group: root
+    mode: 0644
+  when: not meta_json.stat.exists
 
-    - name: Set version file for filebeat
-      lineinfile:
-        line: '{"version": "1"}'
-        dest: /var/lib/filebeat/meta.json
-        create: true
-        owner: root
-        group: root
-        mode: 0644
-      when: not meta_json.stat.exists
+- name: Podman filebeat deployment
+  block:
+  - name: Deploy elasticstack filebeat with k8s
+    containers.podman.podman_container:
+      name: "{{ filebeat_name }}"
+      image: "{{ filebeat_image }}"
+      command: "filebeat -e -strict.perms=false -c /etc/filebeat.yaml"
+      restart_policy: always
+      network_mode: host
+      user: root
+      memory: "512M"
+      labels: "{{ container_labels }}"
+      log_driver: "{{ log_driver }}"
+      log_options: "{{ log_options }}"
+      volumes:
+      - "/var/log:/var/log:ro"  # symlinks to pod logs and container logs
+      - "/var/run/docker.sock:/var/run/docker.sock:Z"
+      - "/var/lib/docker/containers:/var/lib/docker/containers:ro"  # docker logs
+      - "/var/lib/kubelet/pods:/var/lib/kubelet/pods:ro"  # kubernetes containers
+      - "/var/lib/filebeat:/usr/share/filebeat/data/registry/filebeat:rw"  # persistent registry
+      - "/etc/hostname:/etc/hostname:ro"
+      - "/etc/machine-id:/etc/machine-id:ro"
+      - "/etc/filebeat.yaml:/etc/filebeat.yaml:ro"
+      - "/etc/beat_policy.json:/etc/beat_policy.json:ro"
+      - "{{ kubeconf_file }}:/kube_config:ro"
+      - "/var/log/journal:/var/log/journal:ro"  # journal databases
+      - "/run/systemd:/run/systemd:ro"
+      - "/etc/pki/:/etc/pki/"
+    when: log_kubernetes
 
-    # deploy filebeat for ES logging
-    - name: Deploy ElasticStack filebeat with K8s
-      containers.podman.podman_container:
-        name: "{{ filebeat_name }}"
-        image: "{{ filebeat_image }}"
-        command: "filebeat -e -strict.perms=false -c /etc/filebeat.yaml"
-        # annotation:
-        #   run.oci.keep_original_groups: 1
-        # privileged: true
-        restart_policy: always
-        network_mode: host
-        user: root
-        memory: "512M"
-        # memory_swap: "1G" # can't use as swap is disabled by default
-        labels: "{{ container_labels }}"
-        log_driver: "{{ log_driver }}"
-        log_options: "{{ log_options }}"
-        volumes:
-          - "/var/log:/var/log:ro"  # symlinks to pod logs and container logs
-          - "/var/run/docker.sock:/var/run/docker.sock:Z"
-          - "/var/lib/docker/containers:/var/lib/docker/containers:ro"  # docker logs
-          - "/var/lib/kubelet/pods:/var/lib/kubelet/pods:ro"  # kubernetes containers
-          - "/var/lib/filebeat:/usr/share/filebeat/data/registry/filebeat:rw"  # persistent registry
-          - "/etc/hostname:/etc/hostname:ro"
-          - "/etc/machine-id:/etc/machine-id:ro"
-          - "/etc/filebeat.yaml:/etc/filebeat.yaml:ro"
-          - "/etc/beat_policy.json:/etc/beat_policy.json:ro"
-          - "{{ kubeconf_file }}:/kube_config:ro"
-          - "/var/log/journal:/var/log/journal:ro"  # journal databases
-          - "/run/systemd:/run/systemd:ro"
-          - "/etc/pki/:/etc/pki/"
-      when: log_kubernetes
-
-    # deploy filebeat for ES logging
-    - name: Deploy ElasticStack filebeat without K8s
-      containers.podman.podman_container:
-        name: "{{ filebeat_name }}"
-        image: "{{ filebeat_image }}"
-        command: "filebeat -e -strict.perms=false -c /etc/filebeat.yaml"
-        # annotation:
-        #   run.oci.keep_original_groups: 1
-        # privileged: true
-        restart_policy: always
-        network_mode: host
-        user: root
-        memory: "512M"
-        # memory_swap: "1G" # can't use as swap is disabled by default
-        labels: "{{ container_labels }}"
-        log_driver: "{{ log_driver }}"
-        log_options: "{{ log_options }}"
-        volumes:
-          - "/var/log:/var/log:ro"  # symlinks to pod logs and container logs
-          - "/var/run/docker.sock:/var/run/docker.sock:Z"
-          - "/var/lib/docker/containers:/var/lib/docker/containers:ro"  # docker logs
-          # - "/var/lib/kubelet/pods:/var/lib/kubelet/pods:ro"  # kubernetes containers
-          - "/var/lib/filebeat:/usr/share/filebeat/data/registry/filebeat:rw"  # persistent registry
-          - "/etc/hostname:/etc/hostname:ro"
-          - "/etc/machine-id:/etc/machine-id:ro"
-          - "/etc/filebeat.yaml:/etc/filebeat.yaml:ro"
-          - "/etc/beat_policy.json:/etc/beat_policy.json:ro"
-          - "/var/log/journal:/var/log/journal:ro"  # journal databases
-          - "/run/systemd:/run/systemd:ro"
-          - "/etc/pki/:/etc/pki/"
-      when: not log_kubernetes
+  - name: Deploy elasticstack filebeat without k8s
+    containers.podman.podman_container:
+      name: "{{ filebeat_name }}"
+      image: "{{ filebeat_image }}"
+      command: "filebeat -e -strict.perms=false -c /etc/filebeat.yaml"
+      restart_policy: always
+      network_mode: host
+      user: root
+      memory: "512M"
+      labels: "{{ container_labels }}"
+      log_driver: "{{ log_driver }}"
+      log_options: "{{ log_options }}"
+      volumes:
+      - "/var/log:/var/log:ro"  # symlinks to pod logs and container logs
+      - "/var/run/docker.sock:/var/run/docker.sock:Z"
+      - "/var/lib/docker/containers:/var/lib/docker/containers:ro"  # docker logs
+      - "/var/lib/filebeat:/usr/share/filebeat/data/registry/filebeat:rw"  # persistent registry
+      - "/etc/hostname:/etc/hostname:ro"
+      - "/etc/machine-id:/etc/machine-id:ro"
+      - "/etc/filebeat.yaml:/etc/filebeat.yaml:ro"
+      - "/etc/beat_policy.json:/etc/beat_policy.json:ro"
+      - "/var/log/journal:/var/log/journal:ro"  # journal databases
+      - "/run/systemd:/run/systemd:ro"
+      - "/etc/pki/:/etc/pki/"
+    when: not log_kubernetes
+  when: filebeat_container_engine == "podman"
   tags:
-    - filebeat
+  - filebeat
+
+- name: Docker filebeat deployment
+  block:
+  - name: Deploy elasticstack filebeat with k8s
+    community.general.docker_container:
+      name: "{{ filebeat_name }}"
+      image: "{{ filebeat_image }}"
+      command: "filebeat -e -strict.perms=false -c /etc/filebeat.yaml"
+      restart_policy: always
+      network_mode: host
+      user: root
+      memory: "512M"
+      labels: "{{ container_labels }}"
+      log_driver: "{{ log_driver }}"
+      log_options: "{{ log_options }}"
+      volumes:
+      - "/var/log:/var/log:ro"  # symlinks to pod logs and container logs
+      - "/var/run/docker.sock:/var/run/docker.sock:Z"
+      - "/var/lib/docker/containers:/var/lib/docker/containers:ro"  # docker logs
+      - "/var/lib/kubelet/pods:/var/lib/kubelet/pods:ro"  # kubernetes containers
+      - "/var/lib/filebeat:/usr/share/filebeat/data/registry/filebeat:rw"  # persistent registry
+      - "/etc/hostname:/etc/hostname:ro"
+      - "/etc/machine-id:/etc/machine-id:ro"
+      - "/etc/filebeat.yaml:/etc/filebeat.yaml:ro"
+      - "/etc/beat_policy.json:/etc/beat_policy.json:ro"
+      - "{{ kubeconf_file }}:/kube_config:ro"
+      - "/var/log/journal:/var/log/journal:ro"  # journal databases
+      - "/run/systemd:/run/systemd:ro"
+      - "/etc/pki/:/etc/pki/"
+    when: log_kubernetes
+
+  - name: Deploy elasticstack filebeat without k8s
+    community.general.docker_container:
+      name: "{{ filebeat_name }}"
+      image: "{{ filebeat_image }}"
+      command: "filebeat -e -strict.perms=false -c /etc/filebeat.yaml"
+      restart_policy: always
+      network_mode: host
+      user: root
+      memory: "512M"
+      labels: "{{ container_labels }}"
+      log_driver: "{{ log_driver }}"
+      log_options: "{{ log_options }}"
+      volumes:
+      - "/var/log:/var/log:ro"  # symlinks to pod logs and container logs
+      - "/var/run/docker.sock:/var/run/docker.sock:Z"
+      - "/var/lib/docker/containers:/var/lib/docker/containers:ro"  # docker logs
+      - "/var/lib/filebeat:/usr/share/filebeat/data/registry/filebeat:rw"  # persistent registry
+      - "/etc/hostname:/etc/hostname:ro"
+      - "/etc/machine-id:/etc/machine-id:ro"
+      - "/etc/filebeat.yaml:/etc/filebeat.yaml:ro"
+      - "/etc/beat_policy.json:/etc/beat_policy.json:ro"
+      - "/var/log/journal:/var/log/journal:ro"  # journal databases
+      - "/run/systemd:/run/systemd:ro"
+      - "/etc/pki/:/etc/pki/"
+    when: not log_kubernetes
+  when: filebeat_container_engine == "docker"
+  tags:
+  - filebeat

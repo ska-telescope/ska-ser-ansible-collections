@@ -14,7 +14,7 @@ ifndef CA_CERT_PASSWORD
 	$(error CA_CERT_PASSWORD is undefined)
 endif
 ifndef ELASTICSEARCH_PASSWORD
-        $(error ELASTICSEARCH_PASSWORD is undefined)
+	$(error ELASTICSEARCH_PASSWORD is undefined)
 endif
 
 vars:

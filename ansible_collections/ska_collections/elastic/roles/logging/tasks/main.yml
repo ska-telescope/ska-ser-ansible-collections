@@ -1,12 +1,9 @@
 ---
-
-# - include: common.yml
-
 - include: filebeat.yml
   when: log_kubernetes|bool or log_docker|bool
 
-- include: podlogrotate.yml
-  when: log_kubernetes|bool
+# - include: podlogrotate.yml
+#   when: log_kubernetes|bool
 
-- include: dockerlogrotate.yml
-  when: log_docker|bool
+# - include: dockerlogrotate.yml
+#   when: log_docker|bool

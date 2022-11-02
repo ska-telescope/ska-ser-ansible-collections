@@ -1,34 +1,29 @@
 ---
-
 - name: Deploy log rotation
   block:
-
     - name: Check that the daemon.json exists
-      stat:
+      ansible.builtin.stat:
         path: /etc/docker/daemon.json
       register: stat_result
 
     - name: Create daemon.json file
-      copy:
+      ansible.builtin.copy:
         dest: /etc/docker/daemon.json
         mode: 0644
         content: |
           {
-          {% if registry_mirror|length > 1 %}
-            "registry-mirrors": ["{{ registry_mirror }}", "{{ engage_registry_mirror }}"],
-          {% endif %}
             "metrics-addr" : "0.0.0.0:9323",
             "experimental" : true,
-            "log-driver": "{{ log_driver }}",
-            "log-opts": {
+              "log-driver": "{{ log_driver }}",
+              "log-opts": {
                 "max-size": "{{ log_max_size }}",
                 "max-file": "{{ log_max_file }}"
-                }
+              }
           }
       when: not stat_result.stat.exists
 
     - name: Load daemon.json from file
-      slurp:
+      ansible.builtin.slurp:
         src: /etc/docker/daemon.json
       register: daemon
 
@@ -36,7 +31,7 @@
       set_fact:
         daemon: "{{ daemon.content | b64decode | from_json }}"
 
-    - name: debug daemon
+    - name: Debug loaded daemon
       debug:
         var: daemon
       when: debug|bool
@@ -56,23 +51,13 @@
         daemon: "{{ daemon | default([]) | combine({ 'metrics-addr' : '0.0.0.0:9323', 'experimental' : true}) }}"
       when: daemon['metrics-addr'] is not defined
 
-    - name: Configure registry cache
-      set_fact:
-        daemon: "{{ daemon | default([]) | combine({ 'registry-mirrors': [ registry_mirror ]}) }}"
-      when: daemon['registry-mirrors'] is not defined and registry_mirror|length > 1
-
-    # - name: Configure mtu
-    #   set_fact:
-    #     daemon: "{{ daemon | default([]) | combine({ 'mtu' : 1450}) }}"
-    #   when: daemon['mtu'] is not defined
-
-    - name: daemon
+    - name: Debug daemon
       debug:
         var: daemon
       when: debug|bool
 
     - name: Remove journald entry
-      lineinfile:
+      ansible.builtin.lineinfile:
         line: "OPTIONS='--selinux-enabled --signature-verification=false'"
         regexp: '^OPTIONS='
         dest: /etc/sysconfig/docker
@@ -81,7 +66,7 @@
       notify: restart docker
 
     - name: Remove journald reference
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/systemd/system/docker.service.d/docker.conf
         regexp: '^(.*)--log-driver=journald(.*)$'
         line: '\1\2'
@@ -92,7 +77,7 @@
         - restart docker
 
     - name: Remove metrics-addr reference
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/systemd/system/docker.service.d/docker.conf
         regexp: '^(.*)--metrics-addr=0\.0\.0\.0:9323(.*)$'
         line: '\1\2'
@@ -103,7 +88,7 @@
         - restart docker
 
     - name: Remove experimental reference
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/systemd/system/docker.service.d/docker.conf
         regexp: '^(.*)--experimental=true(.*)$'
         line: '\1\2'
@@ -114,15 +99,13 @@
         - restart docker
 
     - name: Write daemon.json
-      copy:
+      ansible.builtin.copy:
         content: "{{ daemon | to_nice_json }}"
         dest: /etc/docker/daemon.json
         mode: 0644
       notify: restart docker
-
-
   tags:
     - rotate
 
-- name: do the meta
-  meta: flush_handlers
+- name: Run notified handler tasks
+  ansible.builtin.meta: flush_handlers
