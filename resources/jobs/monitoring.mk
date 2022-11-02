@@ -81,7 +81,7 @@ prometheus: check_hosts ## Install Prometheus Server
 		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
 		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
-		-e @$(PROM_CONFIGS_PATH)/../environments/$(ENVIRONMENT)/installation/group_vars/prometheus.yml \
+		-e @$(PROM_CONFIGS_PATH)/../datacentres/$(DATACENTRE)/$(ENVIRONMENT)/installation/group_vars/prometheus.yml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
@@ -93,7 +93,7 @@ grafana: check_hosts ## Install Grafana Server
 		--extra-vars="azuread_client_id='$(AZUREAD_CLIENT_ID)' azuread_client_secret='$(AZUREAD_CLIENT_SECRET)' azuread_tenant_id='$(AZUREAD_TENANT_ID)'" \
 		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
-		-e @$(PROM_CONFIGS_PATH)/../environments/$(ENVIRONMENT)/installation/group_vars/prometheus.yml \
+		-e @$(PROM_CONFIGS_PATH)/../datacentres/$(DATACENTRE)/$(ENVIRONMENT)/installation/group_vars/prometheus.yml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
@@ -104,7 +104,7 @@ alertmanager: check_hosts ## Install Prometheus Server
 		-e "mode='alert' slack_api_url='$(SLACK_API_URL)' slack_api_url_user='$(SLACK_API_URL_USER)'" \
 		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
-		-e @$(PROM_CONFIGS_PATH)/../environments/$(ENVIRONMENT)/installation/group_vars/prometheus.yml \
+		-e @$(PROM_CONFIGS_PATH)/../datacentres/$(DATACENTRE)/$(ENVIRONMENT)/installation/group_vars/prometheus.yml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
@@ -117,7 +117,7 @@ thanos: check_hosts ## Install Thanos query and query front-end
 		-e "project_id='$(PROM_OS_PROJECT_ID)' auth_url='$(PROM_OS_AUTH_URL)'" \
 		-e "username='$(PROM_OS_USERNAME)' password='$(PROM_OS_PASSWORD)'" \
 		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \
-		-e @$(PROM_CONFIGS_PATH)/../environments/$(ENVIRONMENT)/installation/group_vars/prometheus.yml \
+		-e @$(PROM_CONFIGS_PATH)/../datacentres/$(DATACENTRE)/$(ENVIRONMENT)/installation/group_vars/prometheus.yml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
