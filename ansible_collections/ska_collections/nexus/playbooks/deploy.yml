@@ -44,7 +44,6 @@
   vars:
     target_hosts: localhost
   become: true
-  # run roles for Nexus install
   tasks:
     - name: Nexus common role
       include_role:
@@ -1003,7 +1002,6 @@
   vars:
     target_hosts: localhost
   become: true
-  # run roles for Nexus install
   tasks:
     - name: HAProxy role
       include_role:
