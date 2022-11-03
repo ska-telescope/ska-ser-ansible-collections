@@ -18,7 +18,7 @@
   with_items:
     - alerts.json
 
-- name: Cadvisor-dashboard Write dashboards provisioning config file
+- name: Alerts-dashboard Write dashboards provisioning config file
   ansible.builtin.template:
     src: dashboards-alerts-dashboard.yml.j2
     dest: /etc/grafana/provisioning/dashboards/alerts-dashboard.yml

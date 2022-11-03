@@ -7,20 +7,19 @@
     recurse: true
   with_items:
     - "/etc/grafana/provisioning/datasources"
-    - "/etc/grafana/provisioning/dashboards/cadvisor-dashboard"
+    - "/etc/grafana/provisioning/dashboards/docker-dashboard"
     - "/etc/grafana/provisioning/notifiers"
 
-- name: Cadvisor-dashboard Copy up resource files
+- name: Docker dashboards copy up resource files
   ansible.builtin.copy:
     src: "{{ role_path }}/files/dashboards/cadvisor/{{ item }}"
-    dest: "/etc/grafana/provisioning/dashboards/cadvisor-dashboard/{{ item }}"
+    dest: "/etc/grafana/provisioning/dashboards/docker-dashboard/{{ item }}"
     mode: 0640
   with_items:
-    - cadvisor.json
     - summarised.json
 
-- name: Cadvisor-dashboard Write dashboards provisioning config file
+- name: docker-dashboard Write dashboards provisioning config file
   ansible.builtin.template:
-    src: dashboards-cadvisor-dashboard.yml.j2
-    dest: /etc/grafana/provisioning/dashboards/cadvisor-dashboard.yml
+    src: dashboards-docker-dashboard.yml.j2
+    dest: /etc/grafana/provisioning/dashboards/docker-dashboard.yml
     mode: 0640
