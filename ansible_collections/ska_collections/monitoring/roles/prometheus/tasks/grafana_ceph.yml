@@ -26,12 +26,8 @@
     - radosgw-detail.json
     - radosgw-overview.json
     - radosgw-sync-overview.json
-    # not working
-    #- host-details.json
-    #- rbd-details.json
-    #- rbd-overview.json
 
-- name: Ceph-dashboard Write dashboards provisioning config file
+- name: Ceph dashboard Write dashboards provisioning config file
   ansible.builtin.template:
     src: dashboards-ceph-dashboard.yml.j2
     dest: /etc/grafana/provisioning/dashboards/ceph-dashboard.yml
