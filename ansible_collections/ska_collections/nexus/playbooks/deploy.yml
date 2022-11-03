@@ -197,7 +197,6 @@
           - update
       - name: docker-login-privilege
         type: repository-content-selector
-        type: repository-view
         contentSelector: docker-login
         description: 'Login to Docker registry'
         repository: '*'
