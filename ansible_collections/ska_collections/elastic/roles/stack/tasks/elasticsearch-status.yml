@@ -1,0 +1,25 @@
+---
+- name: Elasticsearch transport port is opened
+  ansible.builtin.wait_for:
+    port: "{{ elasticsearch_transport_port | int }}"
+    host: "localhost"
+    timeout: 1
+  register: transport_check
+  ignore_errors: yes
+
+- name: Elasticsearch api port is opened
+  ansible.builtin.wait_for:
+    port: "{{ elasticsearch_api_port | int }}"
+    host: "localhost"
+    timeout: 1
+  register: api_check
+  ignore_errors: yes
+
+- name: Check elasticsearch data directory
+  ansible.builtin.stat:
+    path: "{{ elasticsearch_data_dir }}/_state"
+  register: state_check
+
+- name: Set elasticsearch status for the node
+  ansible.builtin.set_fact:
+    elasticsearch_deployed_on_node: "{{ (state_check.stat.exists and not transport_check.failed and not api_check.failed) | bool }}"

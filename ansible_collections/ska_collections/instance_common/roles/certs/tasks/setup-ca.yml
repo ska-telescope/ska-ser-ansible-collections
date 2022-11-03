@@ -1,0 +1,54 @@
+---
+- name: Create certificates directory
+  ansible.builtin.file:
+    path: "{{ certificates_dir }}"
+    state: directory
+    mode: 0700
+
+- name: Check if private key file exists
+  stat:
+    path: "{{ certificates_dir }}/ca-certificate.key"
+  register: private_key
+
+- name: Create private key with password protection
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates_dir }}/ca-certificate.key"
+    passphrase: "{{ ca_cert_password }}"
+    cipher: auto
+  when: private_key.stat.exists == False
+
+- name: Check if certificate file exists
+  stat:
+    path: "{{ certificates_dir }}/ca-certificate.crt"
+  register: cert_exists
+
+- name: Create certificate signing request (CSR) for CA certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ certificates_dir }}/ca-certificate.key"
+    privatekey_passphrase: "{{ ca_cert_password }}"
+    common_name: SKAO CA
+    country_name: UK
+    state_or_province_name: England
+    locality_name: Cheshire
+    organization_name: SKAO
+    organizational_unit_name: SKAO
+    email_address: enquiries@skao.int
+    use_common_name_for_san: false
+    basic_constraints:
+      - "CA:TRUE"
+    basic_constraints_critical: yes
+    key_usage:
+      - keyCertSign
+    key_usage_critical: true
+  register: ca_csr
+  changed_when: false
+  when: not cert_exists.stat.exists
+
+- name: Create self-signed CA certificate from CSR
+  community.crypto.x509_certificate:
+    path: "{{ certificates_dir }}/ca-certificate.crt"
+    csr_content: "{{ ca_csr.csr }}"
+    privatekey_path: "{{ certificates_dir }}/ca-certificate.key"
+    privatekey_passphrase: "{{ ca_cert_password }}"
+    provider: selfsigned
+  when: not cert_exists.stat.exists

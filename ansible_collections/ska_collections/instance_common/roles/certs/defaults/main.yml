@@ -11,4 +11,4 @@ ca_host: ca
 
 # Vaulted variables
 
-ca_cert_password: "{{ vault.shared.ca.password | mandatory }}"
+ca_cert_password: "{{ _ | mandatory('`ca_cert_password` definition is mandatory') }}"

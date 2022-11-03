@@ -22,6 +22,11 @@ install: check_hosts ## Run common tasks (setup host(s), mount volumes)
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_VAULT_EXTRA_ARGS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
+setup-ca: check_hosts ## Setup a CA for self-signed certificates
+	ansible-playbook $(PLAYBOOKS_DIR)/setup-ca.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_VAULT_EXTRA_ARGS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
 help: ## Show Help
 	@echo "Common targets - make playbooks common <target>:"
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

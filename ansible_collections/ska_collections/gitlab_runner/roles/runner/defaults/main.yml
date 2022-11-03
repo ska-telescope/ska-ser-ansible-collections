@@ -34,4 +34,4 @@ gitlab_runner_access_level: not_protected
 
 # Vaulted variables
 
-gitlab_runner_registration_token: "{{ vault.shared.gitlab_runner.registration_token | mandatory }}"
+gitlab_runner_registration_token: "{{ _ | mandatory('`gitlab_runner_registration_token` definition is mandatory') }}"

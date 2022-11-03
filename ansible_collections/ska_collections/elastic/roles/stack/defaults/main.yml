@@ -4,7 +4,7 @@ stack_data_dir: /var/lib/stack-data
 certificates_dir: /etc/pki/tls/private
 
 # Elasticsearch configurations
-elasticsearch_dns: logging.stfc.skao.int
+elasticsearch_dns_name: "{{ _ | mandatory('`elasticsearch_dns_name` definition is mandatory') }}"
 elasticsearch_cluster_name: "elasticsearch"
 elasticsearch_data_dir: "{{ stack_data_dir }}/elasticsearch"
 elasticsearch_name: "elasticsearch"
@@ -43,7 +43,7 @@ elasticsearch_log_options:
 
 elasticsearch_reinstall: false
 elasticsearch_clean_data_volume: false
-elasticsearch_first_install: false
+# undefined: elasticsearch_first_install
 elasticsearch_default_node_roles:
   - master
   - remote_cluster_client
@@ -63,6 +63,7 @@ elasticsearch_default_data_roles:
   - transform
 
 # Elasticsearch Exporter configurations
+elasticsearch_exporter_enabled: true
 elasticsearch_exporter_name: elasticsearch-exporter
 elasticsearch_exporter_image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.5.0
 elasticsearch_exporter_network_mode: "bridge"
@@ -74,6 +75,9 @@ elasticsearch_exporter_log_options:
   max-size: "{{  elasticsearch_exporter_log_max_size }}"
   max-file: "{{ elasticsearch_exporter_log_max_file }}"
   labels: "org.ska.app.group"
+
+elasticsearch_exporter_labels:
+  org.ska.app.group: logging
 
 elasticsearch_exporter_env_variables: {}
 elasticsearch_exporter_env_defaults:
@@ -115,3 +119,7 @@ kibana_viewer_user_roles:
 kibana_secrets_directory: "/etc/kibana"
 kibana_secrets_file_path: "{{ kibana_secrets_directory }}/kibana.secrets"
 kibana_service_account_path: "{{ kibana_secrets_directory }}/kibana.serviceaccount"
+
+# Valuted variables
+
+ca_cert_password: "{{ _ | mandatory('`ca_cert_password` definition is mandatory') }}"

@@ -9,7 +9,7 @@
   "registry-mirrors": ["{{ docker_registry_mirror }}"],
   {% endif %}
   "metrics-addr" : "0.0.0.0:{{ docker_metrics_port }}",
-  {% if docker_mtu is not none %}
+  {% if docker_mtu is defined %}
   "mtu" : {{ docker_mtu }},
   {% endif %}
   "experimental" : true,

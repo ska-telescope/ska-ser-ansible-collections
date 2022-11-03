@@ -42,6 +42,16 @@
   retries: 5
   delay: 5
 
+- name: "Docker pull {{ elasticsearch_exporter_image }}"
+  community.general.docker_image:
+    source: pull
+    name: "{{ elasticsearch_image }}"
+  register: docker_pull_retry
+  until: "docker_pull_retry is not failed"
+  retries: 5
+  delay: 5
+  when: elasticsearch_exporter_enabled
+
 - name: Change {{ certificates_dir }} ownership
   ansible.builtin.file:
     path: "{{ certificates_dir }}"
@@ -52,10 +62,10 @@
     path: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
     mode: 0640
 
-- name: Run Elasticsearch container
+- name: "Run {{ elasticsearch_name }} container"
   community.general.docker_container:
     name: "{{ elasticsearch_name }}"
-    network_mode: "{{ elasticsearch_network_mode }}"  # reverse DNS must work
+    network_mode: "{{ elasticsearch_network_mode }}"
     privileged: "{{ 'yes' if elasticsearch_network_mode == 'host' else 'no' }}"
     user: elasticsearch
     memory: "{{ elasticsearch_memory }}"
@@ -79,3 +89,19 @@
       - "{{ elasticsearch_transport_port }}:{{ elasticsearch_transport_port }}"
     env: "{{ elasticsearch_env_defaults | combine(elasticsearch_env_variables) }}"
     recreate: "{{ elasticsearch_reinstall }}"
+
+- name: "Run {{ elasticsearch_exporter_name }} container"
+  community.general.docker_container:
+    name: "{{ elasticsearch_exporter_name }}"
+    network_mode: "{{ elasticsearch_exporter_network_mode }}"
+    privileged: "{{ 'yes' if elasticsearch_exporter_network_mode == 'host' else 'no' }}"
+    restart_policy: always
+    image: "{{ elasticsearch_exporter_image }}"
+    state: "{{ elasticsearch_exporter_enabled | ternary('started', 'absent') }}"
+    labels: "{{ elasticsearch_exporter_labels }}"
+    log_driver: "{{ elasticsearch_exporter_log_driver }}"
+    log_options: "{{ elasticsearch_exporter_log_options }}"
+    ports:
+      - "{{ elasticsearch_exporter_port }}:{{ elasticsearch_exporter_port }}"
+    env: "{{ elasticsearch_exporter_env_defaults | combine(elasticsearch_exporter_env_variables) }}"
+    recreate: "{{ elasticsearch_exporter_reinstall }}"

@@ -15,5 +15,8 @@ elastic_haproxy_log_options:
 elastic_haproxy_elasticsearch_port: 9200
 elastic_haproxy_stats_port: 9090
 elastic_haproxy_stats_endpoint: "/haproxy_stats"
-elastic_haproxy_stats_user: stats
-elastic_haproxy_stats_passwd: loggingHA
+
+# Vaulted variables
+
+elastic_haproxy_stats_user: "{{ _ | mandatory('`elastic_haproxy_stats_user` definition is mandatory') }}"
+elastic_haproxy_stats_password: "{{ _ | mandatory('`elastic_haproxy_stats_password` definition is mandatory') }}"

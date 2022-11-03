@@ -27,6 +27,16 @@ destroy: check_hosts ## Destroy elastic cluster
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_VAULT_EXTRA_ARGS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
+update-apikeys: check_hosts ## Create/invalidate elastic api-keys
+	ansible-playbook $(PLAYBOOKS_DIR)/get-api-keys.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_VAULT_EXTRA_ARGS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+get-apikeys: check_hosts ## Get elastic api-keys
+	ansible-playbook $(PLAYBOOKS_DIR)/get-api-keys.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_VAULT_EXTRA_ARGS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
 help: ## Show Help
 	@echo "Elastic targets - make playbooks elastic <target>:"
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

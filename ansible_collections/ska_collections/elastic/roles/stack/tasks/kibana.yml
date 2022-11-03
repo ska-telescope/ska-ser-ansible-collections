@@ -98,10 +98,10 @@
     kibana_encryption_keys: "{{ kibana_secrets.stdout | from_json }}"
   register: kibana_config
 
-- name: Run kibana container
+- name: "Run {{ kibana_name }} container"
   community.general.docker_container:
     name: "{{ kibana_name }}"
-    network_mode: "{{ kibana_network_mode }}"  # reverse DNS must work
+    network_mode: "{{ kibana_network_mode }}"
     privileged: "{{ 'yes' if kibana_network_mode == 'host' else 'no' }}"
     user: kibana
     restart_policy: always
