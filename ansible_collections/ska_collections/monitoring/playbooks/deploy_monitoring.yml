@@ -6,7 +6,7 @@
     mode: "all"
   become: true
   become_method: sudo
-  become_flags: '-E -S -n'
+  become_flags: '-S -n'
   tasks:
     - name: Include node exporter role
       ansible.builtin.include_role:

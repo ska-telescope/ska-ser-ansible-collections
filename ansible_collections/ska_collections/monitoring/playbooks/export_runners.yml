@@ -6,6 +6,6 @@
     mode: "runner"
   become: true
   become_method: sudo
-  become_flags: '-E -S -n'
+  become_flags: '-S -n'
   roles:
     - prometheus

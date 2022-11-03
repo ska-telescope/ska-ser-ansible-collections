@@ -7,7 +7,7 @@
     mode: "exporter"
   become: true
   become_method: sudo
-  become_flags: '-E -S -n'
+  become_flags: '-S -n'
   roles:
     - node_exporter
     - custom_metrics
