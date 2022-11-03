@@ -12,7 +12,7 @@
     state: directory
     mode: 0766
     owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    group: "{{ localgroup }}"
   become: true
 
 - name: Ensure Prometheus configuration directory
@@ -21,7 +21,7 @@
     state: directory
     mode: 0755
     owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    group: "{{ localgroup }}"
   become: true
 
 - name: Ensure Prometheus rules configuration directory
@@ -30,7 +30,7 @@
     state: directory
     mode: 0755
     owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    group: "{{ localgroup }}"
   become: true
 
 - name: Copy prom_helper to /usr/local/bin
@@ -195,7 +195,7 @@
     dest: "{{ prometheus_config_dir }}/prometheus.yml"
     force: true
     owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    group: "{{ localgroup }}"
     mode: 0755
 
 - name: Create certificates for client communication
@@ -222,7 +222,7 @@
     src: "record.rules.j2"
     dest: "{{ prometheus_config_dir }}/rules/record.rules"
     owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    group: "{{ localgroup }}"
     mode: 0755
   when:
     - prometheus_record_rules != []
@@ -232,7 +232,7 @@
     src: "rules/ceph/ceph_dashboard.rules"
     dest: "/etc/prometheus/rules/ceph_dashboard.rules"
     owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    group: "{{ localgroup }}"
     mode: 0644
 
 - name: Copy elasticstack alerting rules
@@ -240,7 +240,7 @@
     src: "rules/elasticstack/elasticsearch.rules"
     dest: "/etc/prometheus/rules/elasticsearch.rules"
     owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    group: "{{ localgroup }}"
     mode: 0644
 
 - name: Copy kubernetes alerting rules
@@ -248,7 +248,7 @@
     src: "rules/kubernetes/{{ item }}"
     dest: "/etc/prometheus/rules/kubernetes_{{ item }}.rules"
     owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    group: "{{ localgroup }}"
     mode: 0644
   with_items:
     - prometheus_alerts.yaml

@@ -4,7 +4,7 @@
     state: directory
     mode: 0755
     owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    group: "{{ localgroup }}"
   become: true
 
 - name: Pull thanos image {{ thanos_docker_tags }}
@@ -35,7 +35,7 @@
     dest: "{{ thanos_config_dir }}/swift.yml"
     force: true
     owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    group: "{{ localgroup }}"
     mode: 0644
 
 - name: Start thanos container

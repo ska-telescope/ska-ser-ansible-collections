@@ -5,7 +5,7 @@
     state: directory
     mode: 0755
     owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    group: "{{ localgroup }}"
   become: true
 
 
@@ -15,7 +15,7 @@
     state: directory
     mode: 0755
     owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    group: "{{ localgroup }}"
   become: true
 
 - name: Generate Prometheus datasource on grafana
@@ -25,7 +25,7 @@
     dest: "{{ grafana_provisioning_config_dir }}/datasources/datasource.yaml"
     force: true
     owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    group: "{{ localgroup }}"
     mode: 0755
 
 - name: Pull grafana image {{ grafana_docker_tags }}
