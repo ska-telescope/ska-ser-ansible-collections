@@ -180,6 +180,7 @@
     nexus_privileges:
       - name: ska-all-repos-read
         description: 'Read & Browse access to all repos'
+        type: repository-view
         repository: '*'
         format: '*'
         actions:
@@ -187,6 +188,7 @@
           - browse
       - name: ska-project-deploy
         description: 'Deployments to all ska-projects'
+        type: repository-admin
         format: '*'
         repository: '*'
         actions:
@@ -195,6 +197,7 @@
           - update
       - name: docker-login-privilege
         type: repository-content-selector
+        type: repository-view
         contentSelector: docker-login
         description: 'Login to Docker registry'
         repository: '*'
