@@ -31,7 +31,7 @@
     - name: Set kernel.unprivileged_userns_clone=1
       ansible.builtin.sysctl: name=kernel.unprivileged_userns_clone value=1 state=present ignoreerrors=true
       notify:
-        - restart procps
+        - Restart procps
 
     - name: Set user.max_inotify_instances to 1048576
       sysctl: name=user.max_inotify_instances value=1048576 state=present ignoreerrors=true

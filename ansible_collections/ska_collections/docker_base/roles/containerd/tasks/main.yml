@@ -228,7 +228,7 @@
       45 */4     * * *   root    crictl rmi --prune
   become: true
   notify:
-    - restart cron
+    - Restart cron
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers
