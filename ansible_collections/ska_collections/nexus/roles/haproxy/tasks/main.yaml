@@ -24,32 +24,32 @@
     mode: "0644"
   register: ncsconfig
 
-- name: "docker pull image for {{ nexus_ha_proxy_container_image }}"
+- name: "docker pull image for {{ nexus_haproxy_container_image }}"
   docker_image:
     source: pull
-    name: "{{ nexus_ha_proxy_container_image }}"
+    name: "{{ nexus_haproxy_container_image }}"
   register: hapimage
 
-- name: "docker pull image for {{ nexus_conan_search_container_image }}"
+- name: "docker pull image for {{ nexus_haproxy_conan_search_container_image }}"
   docker_image:
     source: pull
-    name: "{{ nexus_conan_search_container_image }}"
+    name: "{{ nexus_haproxy_conan_search_container_image }}"
   register: ncsimage
 
 - name: Get haproxy container info
   docker_container_info:
-    name: "{{ nexus_ha_proxy_name }}"
+    name: "{{ nexus_haproxy_name }}"
   register: hainfo
 
 - name: Get conan search container info
   docker_container_info:
-    name: "{{ nexus_conan_search_name }}"
+    name: "{{ nexus_haproxy_conan_search_name }}"
   register: ncsinfo
 
 - name: run conan search in a container  # noqa 503
   docker_container:
-    name: "{{ nexus_conan_search_name }}"
-    image: "{{ nexus_conan_search_container_image }}"
+    name: "{{ nexus_haproxy_conan_search_name }}"
+    image: "{{ nexus_haproxy_conan_search_container_image }}"
     # restart: yes
     recreate: true
     restart_policy: always
@@ -57,16 +57,16 @@
     privileged: true
     network_mode: host
     exposed_ports:
-      - "{{ nexus_conan_search_proxy_port }}"
-    labels: "{{ nexus_container_labels }}"
-    nexus_container_log_driver: "{{ nexus_container_log_driver }}"
-    nexus_container_log_options: "{{ nexus_container_log_options }}"
+      - "{{ nexus_haproxy_conan_search_proxy_port }}"
+    labels: "{{ nexus_haproxy_container_labels }}"
+    nexus_haproxy_container_log_driver: "{{ nexus_haproxy_container_log_driver }}"
+    nexus_haproxy_container_log_options: "{{ nexus_haproxy_container_log_options }}"
     volumes:
       - /etc/ncs_config:/etc/ncs_config
-    command: "uvicorn app.main:app --proxy-headers --host 0.0.0.0 --port {{ nexus_conan_search_proxy_port }}"
+    command: "uvicorn app.main:app --proxy-headers --host 0.0.0.0 --port {{ nexus_haproxy_conan_search_proxy_port }}"
     env:
-      NEXUS_URL: "{{ nexus_conan_search_url }}"
-      NEXUS_REPOSITORY: "{{ nexus_conan_search_repository }}"
+      NEXUS_URL: "{{ nexus_haproxy_conan_search_url }}"
+      NEXUS_REPOSITORY: "{{ nexus_haproxy_conan_search_repository }}"
       GITLAB_API_REQUESTER: ""
       GITLAB_API_PRIVATE_TOKEN: ""
       SLACK_BOT_TOKEN: ""
@@ -95,8 +95,8 @@
 
 - name: run haproxy in a container  # noqa 503
   docker_container:
-    name: "{{ nexus_ha_proxy_name }}"
-    image: "{{ nexus_ha_proxy_container_image }}"
+    name: "{{ nexus_haproxy_name }}"
+    image: "{{ nexus_haproxy_container_image }}"
     # restart: yes
     recreate: true
     restart_policy: always
@@ -104,10 +104,10 @@
     privileged: true
     network_mode: host
     exposed_ports:
-      - "{{ nexus_ha_proxy_port }}"
-    labels: "{{ nexus_container_labels }}"
-    nexus_container_log_driver: "{{ nexus_container_log_driver }}"
-    nexus_container_log_options: "{{ nexus_container_log_options }}"
+      - "{{ nexus_haproxy_port }}"
+    labels: "{{ nexus_haproxy_container_labels }}"
+    nexus_haproxy_container_log_driver: "{{ nexus_haproxy_container_log_driver }}"
+    nexus_haproxy_container_log_options: "{{ nexus_haproxy_container_log_options }}"
     volumes:
       - /etc/hap_config/:/usr/local/etc/haproxy/
     command: -f /usr/local/etc/haproxy/haproxy.cfg

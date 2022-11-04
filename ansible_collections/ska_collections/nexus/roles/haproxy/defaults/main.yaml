@@ -1,32 +1,32 @@
 ---
 # stats user account
-nexus_ha_proxy_user: stats
-nexus_ha_proxy_passwd: nexusHA
+nexus_haproxy_user: stats
+nexus_haproxy_passwd: nexusHA
 
-nexus_ha_proxy_stats_port: "9000"
-nexus_ha_proxy_port: "8081"
-nexus_ha_quarantine_proxy_port: "8082"
-nexus_http_proxy_port: "8881"
-nexus_docker_group_port: "9082"
-nexus_gitlab_proxy_port: "9085"
-nexus_api_proxy_port: "9080"
-nexus_conan_search_proxy_port: "5000"
-nexus_quarantine_api_proxy_port: "9083"
-nexus_ha_proxy_container_image: haproxy:2.4
-nexus_conan_search_container_image: artefact.skao.int/ska-cicd-nexus-conan-search:0.1.3
+nexus_haproxy_stats_port: "9000"
+nexus_haproxy_port: "8081"
+nexus_haproxy_quarantine_proxy_port: "8082"
+nexus_haproxy_http_port: "8881"
+nexus_haproxy_docker_group_port: "9082"
+nexus_haproxy_gitlab_proxy_port: "9085"
+nexus_haproxy_api_port: "9080"
+nexus_haproxy_conan_search_proxy_port: "5000"
+nexus_haproxy_quarantine_api_proxy_port: "9083"
+nexus_haproxy_container_image: haproxy:2.4
+nexus_haproxy_conan_search_container_image: artefact.skao.int/ska-cicd-nexus-conan-search:0.1.3
 # go directly local instead of out through the AWS ELB to https://artefact.skao.int
-nexus_conan_search_url: "http://localhost:{{ nexus_ha_proxy_port }}"
-nexus_conan_search_repository: "conan-internal"
-nexus_ha_proxy_name: haproxy
-nexus_conan_search_name: nexus-conan-search
-nexus_container_log_max_size: "10m"
-nexus_container_log_max_file: "3"
-nexus_container_log_driver: json-file
-nexus_container_log_options:
-  max-size: "{{  nexus_container_log_max_size }}"
-  max-file: "{{ nexus_container_log_max_file }}"
+nexus_haproxy_conan_search_url: "http://localhost:{{ nexus_haproxy_port }}"
+nexus_haproxy_conan_search_repository: "conan-internal"
+nexus_haproxy_name: haproxy
+nexus_haproxy_conan_search_name: nexus-conan-search
+nexus_haproxy_container_log_max_size: "10m"
+nexus_haproxy_container_log_max_file: "3"
+nexus_haproxy_container_log_driver: json-file
+nexus_haproxy_container_log_options:
+  max-size: "{{  nexus_haproxy_container_log_max_size }}"
+  max-file: "{{ nexus_haproxy_container_log_max_file }}"
   labels: "org.ska.app.group"
 
 # labelling on container runtime
-nexus_container_labels:
+nexus_haproxy_container_labels:
   org.ska.app.group: frontend
