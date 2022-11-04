@@ -32,7 +32,7 @@
     network_mode: host
     exposed_ports:
       - "{{ elastic_haproxy_stats_port }}"
-      - "{{ elastic_haproxy_elasticsearch_port }}"
+      - "{{ elasticsearch_api_port }}"
     labels: "{{ elastic_haproxy_labels }}"
     log_driver: "{{ elastic_haproxy_log_driver }}"
     log_options: "{{ elastic_haproxy_log_options }}"

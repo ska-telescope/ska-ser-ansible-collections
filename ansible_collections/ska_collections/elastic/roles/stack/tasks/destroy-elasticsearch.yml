@@ -1,3 +1,4 @@
+---
 - name: "Destroy {{ elasticsearch_exporter_name }} container"
   community.general.docker_container:
     name: "{{ elasticsearch_exporter_name }}"

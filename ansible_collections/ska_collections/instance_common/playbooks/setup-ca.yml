@@ -6,7 +6,7 @@
     target_hosts: localhost
   become: true
   tasks:
-  - name: Set up CA
-    ansible.builtin.import_role:
-      name: ska_collections.instance_common.certs
-      tasks_from: setup-ca
+    - name: Set up CA
+      ansible.builtin.import_role:
+        name: ska_collections.instance_common.certs
+        tasks_from: setup-ca

@@ -6,7 +6,8 @@
       prompt: This will destroy the nginx reverseproxy and oauth2proxy. Confirm? [yes,no]
       private: false
   tasks:
-    - ansible.builtin.fail:
+    - name: Abort playbook
+      ansible.builtin.fail:
         msg: >
           "Exiting destroy playbook. To really do it, say 'yes' on the prompt"
       when: ireallymeanit != 'yes'

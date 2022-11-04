@@ -15,7 +15,7 @@
     path: "{{ certificates_dir }}/ca-certificate.key"
     passphrase: "{{ ca_cert_password }}"
     cipher: auto
-  when: private_key.stat.exists == False
+  when: not private_key.stat.exists
 
 - name: Check if certificate file exists
   stat:
@@ -36,7 +36,7 @@
     use_common_name_for_san: false
     basic_constraints:
       - "CA:TRUE"
-    basic_constraints_critical: yes
+    basic_constraints_critical: true
     key_usage:
       - keyCertSign
     key_usage_critical: true

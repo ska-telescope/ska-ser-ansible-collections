@@ -5,7 +5,7 @@
     host: "localhost"
     timeout: 1
   register: transport_check
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: Elasticsearch api port is opened
   ansible.builtin.wait_for:
@@ -13,7 +13,7 @@
     host: "localhost"
     timeout: 1
   register: api_check
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: Check elasticsearch data directory
   ansible.builtin.stat:

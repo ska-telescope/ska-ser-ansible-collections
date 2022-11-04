@@ -6,7 +6,7 @@
     target_hosts: localhost
   become: true
   tasks:
-  - name: Sign certificate using our CA 
-    ansible.builtin.import_role:
-      name: ska_collections.instance_common.certs
-      tasks_from: sign-cert
+    - name: Sign certificate using our CA
+      ansible.builtin.import_role:
+        name: ska_collections.instance_common.certs
+        tasks_from: sign-cert

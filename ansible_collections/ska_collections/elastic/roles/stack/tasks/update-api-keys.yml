@@ -1,0 +1,134 @@
+---
+- name: Get existing elasticsearch api keys
+  ansible.builtin.uri:
+    url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_list_apikeys_endpoint }}?pretty"
+    method: GET
+    force: true
+    return_content: true
+    status_code: [200]
+    client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+    client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+    url_username: elastic
+    url_password: "{{ elasticsearch_password }}"
+  environment:
+    SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+  register: apikeys_list
+  retries: 3
+  timeout: 60
+
+- name: Set issued_api_keys
+  ansible.builtin.set_fact:
+    valid_api_keys: {}
+    api_keys_to_create: []
+    api_keys_to_invalidate: []
+    issued_api_keys: "{{ apikeys_list.content | from_json | json_query('api_keys') |
+    selectattr('metadata.issuer', 'defined') |
+    selectattr('metadata.issuer', 'equalto', elasticsearch_api_key_issuer) }}"
+
+- name: Assess existing api keys
+  ansible.builtin.set_fact:
+    valid_api_key_names: "{{ issued_api_keys | selectattr('invalidated', 'equalto', false) | map(attribute='name') }}"
+    invalidated_api_keys: "{{ issued_api_keys | selectattr('invalidated', 'equalto', true) | map(attribute='name') }}"
+    declared_api_keys: "{{ (elasticsearch_api_keys | default({})) | dict2items }}"
+
+- name: Get valid api keys
+  ansible.builtin.set_fact:
+    valid_api_keys: "{{ valid_api_keys | combine({item.id: item.name}) }}"
+  with_items: "{{ issued_api_keys }}"
+  when: 'item.invalidated is false'
+  loop_control:
+    label: "{{ item.id }} ({{ item.name }}) is {{ item.invalidated | ternary('invalidated','valid') }}"
+
+- name: Set api_keys_to_create
+  ansible.builtin.set_fact:
+    api_keys_to_create: "{{ api_keys_to_create + [
+      {
+        'name': item.key,
+        'expiration': item.value.expiration | default(omit),
+        'role_descriptors': item.value.role_descriptors | default(omit),
+        'metadata': {
+          'issuer': elasticsearch_api_key_issuer,
+          'issued-at': ansible_date_time.iso8601_micro,
+          'description': item.value.description | default('api key for ' + item.key)
+        }
+      }
+    ]
+  }}"
+  with_items: "{{ declared_api_keys }}"
+  when: 'item.key not in valid_api_key_names'
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Set api_keys_to_invalidate
+  ansible.builtin.set_fact:
+    api_keys_to_invalidate: "{{ api_keys_to_invalidate + [item.key] }}"
+  with_items: "{{ valid_api_keys | dict2items }}"
+  when: 'item.value not in (declared_api_keys | map(attribute="key"))'
+  loop_control:
+    label: "{{ item.key }} ({{ item.value }})"
+
+- name: Invalidate api keys
+  ansible.builtin.uri:
+    url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_list_apikeys_endpoint }}"
+    method: DELETE
+    force: true
+    status_code: [200]
+    client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+    client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+    url_username: elastic
+    url_password: "{{ elasticsearch_password }}"
+    body_format: "json"
+    body:
+      ids: "{{ api_keys_to_invalidate }}"
+  environment:
+    SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+  retries: 3
+  timeout: 60
+  when: '(api_keys_to_invalidate|length) > 0'
+
+- name: Create elasticsearch_api_keys
+  ansible.builtin.uri:
+    url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_list_apikeys_endpoint }}"
+    method: POST
+    force: true
+    return_content: true
+    status_code: [200]
+    client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+    client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+    url_username: elastic
+    url_password: "{{ elasticsearch_password }}"
+    body_format: "json"
+    body: "{{ item }}"
+  environment:
+    SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+  register: apikeys_create_result
+  retries: 3
+  timeout: 60
+  with_items: "{{ api_keys_to_create }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Show created api keys
+  ansible.builtin.debug:
+    msg: "Issued api-key for '{{ item.json.name }}': {{ item.json.encoded }}"
+  with_items: "{{ apikeys_create_result.results }}"
+  loop_control:
+    label: "{{ item.json.id }}"
+
+- name: Validate created api keys
+  ansible.builtin.uri:
+    url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_health_endpoint }}"
+    method: GET
+    force: true
+    status_code: [200]
+    client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+    client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+    headers:
+      Authorization: "ApiKey {{ item.json.encoded }}"
+  environment:
+    SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+  retries: 3
+  timeout: 60
+  with_items: "{{ apikeys_create_result.results }}"
+  loop_control:
+    label: "{{ item.json.id }} => {{ item.json.encoded }}"

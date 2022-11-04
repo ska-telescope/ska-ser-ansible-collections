@@ -30,6 +30,19 @@ elasticsearch_doc_endpoint: "/_doc/"
 elasticsearch_doc_count_endpoint: "/_count"
 elasticsearch_doc_delete_endpoint: "/_delete_by_query"
 elasticsearch_kibana_sa_endpoint: "/_security/service/elastic/kibana/credential/token"
+elasticsearch_list_apikeys_endpoint: "/_security/api_key"
+
+elasticsearch_api_key_issuer: "system-team-auto-issuer"
+elasticsearch_api_keys: {}
+#
+# Declarative set of keys to issue. To invalidate a key, remove it from the set
+# To create a key, add one to the set, as follows:
+# <key name>:
+#   description: <optional, string description of the key>
+#   # for the fields below, check: https://www.elastic.co/guide/en/elasticsearch/reference/8.5/security-api-create-api-key.html
+#   expiration: <optional, defaults to not to expire>
+#   role_descriptors: <map of role_descriptors to restrict api-key scope, defaults to the issuing user (elastic)>
+#
 
 elasticsearch_discovery_type: "{% if (groups[target_hosts] | length) > 1 %}multi-node{% else %}single-node{% endif %}"
 

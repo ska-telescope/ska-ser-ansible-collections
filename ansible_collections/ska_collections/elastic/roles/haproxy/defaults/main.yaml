@@ -12,7 +12,6 @@ elastic_haproxy_log_options:
   max-file: "{{ elastic_haproxy_log_max_file }}"
   labels: "org.ska.app.group"
 
-elastic_haproxy_elasticsearch_port: 9200
 elastic_haproxy_stats_port: 9090
 elastic_haproxy_stats_endpoint: "/haproxy_stats"
 
@@ -20,3 +19,8 @@ elastic_haproxy_stats_endpoint: "/haproxy_stats"
 
 elastic_haproxy_stats_user: "{{ _ | mandatory('`elastic_haproxy_stats_user` definition is mandatory') }}"
 elastic_haproxy_stats_password: "{{ _ | mandatory('`elastic_haproxy_stats_password` definition is mandatory') }}"
+
+# Shared
+
+elasticsearch_api_port: 9200
+elasticsearch_health_endpoint: "/_cat/health"

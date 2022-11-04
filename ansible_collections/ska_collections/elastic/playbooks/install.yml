@@ -28,10 +28,10 @@
     - certificate
 
 - name: Check if elasticsearch is installed
-  hosts: "{{ groups[target_hosts + '-master'] + groups[target_hosts + '-data'] }}"
+  hosts: "{{ (groups[target_hosts + '-master'] | default([])) + (groups[target_hosts + '-data'] | default([])) }}"
   vars:
     target_hosts: localhost
-    elasticsearch_nodes: "{{ groups[target_hosts + '-master'] + groups[target_hosts + '-data'] }}"
+    elasticsearch_nodes: "{{ (groups[target_hosts + '-master'] | default([])) + (groups[target_hosts + '-kibana'] | default([])) }}"
   tasks:
     - name: Get elasticsearch node status
       ansible.builtin.import_role:
@@ -58,7 +58,9 @@
         name: ska_collections.elastic.stack
         tasks_from: elasticsearch
       vars:
-        elasticsearch_node_roles: "{{ elasticsearch_default_master_roles if ((groups[target_hosts + '-data'] | default([])) | length ) > 0 else elasticsearch_default_node_roles }}"
+        elasticsearch_node_roles: "{{ elasticsearch_default_master_roles
+        if ((groups[target_hosts + '-data'] | default([])) | length ) > 0
+        else elasticsearch_default_node_roles }}"
   tags:
     - elasticsearch
 
@@ -86,6 +88,7 @@
     - name: Install haproxy
       ansible.builtin.import_role:
         name: ska_collections.elastic.haproxy
+        tasks_from: install
   tags:
     - haproxy
 
@@ -100,7 +103,9 @@
         name: ska_collections.elastic.stack
         tasks_from: kibana
       vars:
-        elasticsearch_address: "{{ groups[target_hosts + '-loadbalancer'][0] if ((groups[target_hosts + '-loadbalancer'] | default([])) | length ) > 0 else groups[target_hosts + '-master'][0] }}"
+        elasticsearch_address: "{{ groups[target_hosts + '-loadbalancer'][0]
+        if ((groups[target_hosts + '-loadbalancer'] | default([])) | length ) > 0
+        else groups[target_hosts + '-master'][0] }}"
   tags:
     - kibana
 

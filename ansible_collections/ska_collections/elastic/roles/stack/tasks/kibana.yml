@@ -32,9 +32,9 @@
 - name: Create kibana encryption keys
   set_fact:
     kibana_encryption_keys:
-      reporting: "{{ lookup('password', target_hosts + '/reporting length=32 chars=ascii_letters') }}"
-      security: "{{ lookup('password', target_hosts + '/security length=32 chars=ascii_letters') }}"
-      encryptedSavedObjects: "{{ lookup('password', target_hosts + '/encryptedSavedObjects length=32 chars=ascii_letters') }}"
+      reporting: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,punctuation') }}"
+      security: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,punctuation') }}"
+      encryptedSavedObjects: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,punctuation') }}"
   when: not kibana_secrets_file.stat.exists
 
 - name: Store kibana encryption keys

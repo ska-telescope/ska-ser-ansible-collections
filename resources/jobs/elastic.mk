@@ -27,13 +27,13 @@ destroy: check_hosts ## Destroy elastic cluster
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_VAULT_EXTRA_ARGS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-update-apikeys: check_hosts ## Create/invalidate elastic api-keys
-	ansible-playbook $(PLAYBOOKS_DIR)/get-api-keys.yml \
+update-api-keys: check_hosts ## Create/invalidate elastic api-keys
+	ansible-playbook $(PLAYBOOKS_DIR)/update-api-keys.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_VAULT_EXTRA_ARGS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-get-apikeys: check_hosts ## Get elastic api-keys
-	ansible-playbook $(PLAYBOOKS_DIR)/get-api-keys.yml \
+list-api-keys: check_hosts ## List elastic api-keys
+	ansible-playbook $(PLAYBOOKS_DIR)/list-api-keys.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_VAULT_EXTRA_ARGS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 

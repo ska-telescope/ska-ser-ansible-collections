@@ -35,7 +35,7 @@ frontend stats
 #############################
 
 frontend front-elasticsearch-api-proxy
-  bind    *:{{ elastic_haproxy_elasticsearch_port }}
+  bind    *:{{ elasticsearch_api_port }}
   mode    tcp
   timeout client 1800s
   timeout client-fin 50s
