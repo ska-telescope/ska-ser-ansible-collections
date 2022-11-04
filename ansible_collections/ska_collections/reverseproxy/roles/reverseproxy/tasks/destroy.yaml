@@ -18,7 +18,7 @@
   with_items:
     - "{{ reverseproxy_oauth2proxy_name }}"
 
-- name: Destroy Nginx config directory
+- name: Destroy Nginx config file
   ansible.builtin.file:
-    path: "{{ reverseproxy_nginx_config_dir }}"
+    path: "{{ reverseproxy_nginx_config_dir }}/nginx.conf"
     state: absent

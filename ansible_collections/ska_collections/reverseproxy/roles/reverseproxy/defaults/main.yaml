@@ -49,6 +49,17 @@ reverseproxy_dns_name: "{{ _ | mandatory('`reverseproxy_dns_name` definition is 
 reverseproxy_oauth2proxy_client_id: "{{ _ | mandatory('`reverseproxy_oauth2proxy_client_id` definition is mandatory') }}"
 reverseproxy_oauth2proxy_tenant_id: "{{ _ | mandatory('`reverseproxy_oauth2proxy_tenant_id` definition is mandatory') }}"
 
+reverseproxy_use_self_signed_cert: false
+reverseproxy_tls_certs_dir: /etc/pki/tls
+reverseproxy_tls_ca_crt_path: "{{ reverseproxy_tls_certs_dir }}/{{ reverseproxy_dns_name }}-ca.crt"
+reverseproxy_tls_crt_path: "{{ reverseproxy_tls_certs_dir }}/{{ reverseproxy_dns_name }}.crt"
+reverseproxy_tls_key_path: "{{ reverseproxy_tls_certs_dir }}/{{ reverseproxy_dns_name }}.key"
+
+# Shared
+
+ca_host: ca
+certificates_dir: /etc/pki/tls/private
+
 # Valuted variables
 
 reverseproxy_oauth2proxy_client_secret: "{{ _ | mandatory('`reverseproxy_oauth2proxy_client_secret` definition is mandatory') }}"
