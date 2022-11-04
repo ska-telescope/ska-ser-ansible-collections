@@ -3,14 +3,8 @@ Description=Prometheus exporter for machine metrics
 Documentation=https://github.com/prometheus/node_exporter
 
 [Service]
+Type=simple
 Restart=always
+RestartSec=1
 User=root
-EnvironmentFile=/etc/default/prometheus-node-exporter
-ExecStart=
-ExecStart=/usr/bin/prometheus-node-exporter $ARGS
-ExecReload=/bin/kill -HUP $MAINPID
-TimeoutStopSec=20s
-SendSIGKILL=no
-
-[Install]
-WantedBy=multi-user.target
+ExecStart=/usr/bin/prometheus-node-exporter
