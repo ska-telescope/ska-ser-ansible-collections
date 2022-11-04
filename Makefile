@@ -1,17 +1,18 @@
 .DEFAULT_GOAL := help
 MAKEFLAGS += --no-print-directory
-VAULT_VARIABLE?=vault
+SECRETS_ROOT_VAR?=secrets
 .PHONY: elastic
 
-PLAYBOOKS_HOSTS ?= all
-INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
-JOBS_DIR = resources/jobs
+PLAYBOOKS_HOSTS?=all
+INVENTORY?=$(PLAYBOOKS_ROOT_DIR)
+JOBS_DIR=resources/jobs
 ANSIBLE_COLLECTIONS_PATHS ?=
 PLAYBOOKS_ROOT_DIR ?=
 INVENTORY_FILE ?= inventory.yml
-ANSIBLE_LINT_PARAMETERS = --exclude ansible_collections/ska_collections/monitoring/roles/prometheus/files
+ANSIBLE_LINT_PARAMETERS=--exclude ansible_collections/ska_collections/monitoring/roles/prometheus/files
 PLAYBOOKS_HOSTS ?=
 ANSIBLE_CONFIG ?=
+ANSIBLE_EXTRA_VARS ?=
 
 include .make/base.mk
 include .make/ansible.mk
@@ -32,29 +33,29 @@ vars:  ## Variables
 	@echo "ANSIBLE_SSH_ARGS=$(ANSIBLE_SSH_ARGS)"
 	@echo "ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS)"
 	@echo "ANSIBLE_LINT_PARAMETERS=$(ANSIBLE_LINT_PARAMETERS)"
-	@echo "ANSIBLE_VAULT_EXTRA_ARGS=$(ANSIBLE_VAULT_EXTRA_ARGS)"
+	@echo "ANSIBLE_EXTRA_VARS=$(ANSIBLE_EXTRA_VARS)"
 	@echo ""
 	@echo -e "\033[33m--------- Global Secrets ------------\033[0m"
 	@echo -e $$(ansible -o -m ansible.builtin.debug \
-		-a msg="_s_{{ ($(VAULT_VARIABLE).shared | to_nice_yaml) | default("") }}_e_" \
-		$(ANSIBLE_VAULT_EXTRA_ARGS) localhost 2>/dev/null | grep -v "FAILED" | \
+		-a msg="_s_{{ ($(SECRETS_ROOT_VAR).shared | to_nice_yaml) | default("") }}_e_" \
+		$(ANSIBLE_EXTRA_VARS) localhost 2>/dev/null | grep -v "FAILED" | \
 		sed 's#.*_s_\(.*\)_e_.*#\1#');
 	@echo -e "\033[33m------- Environment Secrets-----------\033[0m"
 	@echo -e $$(ansible -o -m ansible.builtin.debug \
-		-a msg="_s_{{ ($(VAULT_VARIABLE)['$(DATACENTRE)']['$(ENVIRONMENT)'] | to_nice_yaml) | default("") }}_e_" \
-		$(ANSIBLE_VAULT_EXTRA_ARGS) localhost 2>/dev/null | grep -v "FAILED" | \
+		-a msg="_s_{{ ($(SECRETS_ROOT_VAR)['$(DATACENTRE)']['$(ENVIRONMENT)'] | to_nice_yaml) | default("") }}_e_" \
+		$(ANSIBLE_EXTRA_VARS) localhost 2>/dev/null | grep -v "FAILED" | \
 		sed 's#.*_s_\(.*\)_e_.*#\1#');
-	@echo -e "\033[33m----------- Job Secrets --------------\033[0m"
+	@echo -e "\033[33m------------- Job Vars ---------------\033[0m"
 	@JOBS_LIST="$$(find $(JOBS_DIR) -name '*.mk')"; for JOB in $$JOBS_LIST; do \
 		make vars -f $$JOB; \
 		JOB_NAME=$$(basename $$JOB | sed 's#.mk##'); echo ""; \
 		echo -e $$(ansible -o -m ansible.builtin.debug \
-		-a msg="_s_{{ ($(VAULT_VARIABLE).shared['$$JOB_NAME'] | to_nice_yaml) | default("")}}_e_" \
-		$(ANSIBLE_VAULT_EXTRA_ARGS) localhost 2>/dev/null | grep -v "FAILED" | \
+		-a msg="_s_{{ ($(SECRETS_ROOT_VAR).shared['$$JOB_NAME'] | to_nice_yaml) | default("")}}_e_" \
+		$(ANSIBLE_EXTRA_VARS) localhost 2>/dev/null | grep -v "FAILED" | \
 		sed 's#.*_s_\(.*\)_e_.*#\1#'); \
 		echo -e $$(ansible -o -m ansible.builtin.debug \
-		-a msg="_s_{{ ($(VAULT_VARIABLE)['$(DATACENTRE)']['$(ENVIRONMENT)']['$$JOB_NAME'] | to_nice_yaml) | default("") }}_e_" \
-		$(ANSIBLE_VAULT_EXTRA_ARGS) localhost 2>/dev/null | grep -v "FAILED" | \
+		-a msg="_s_{{ ($(SECRETS_ROOT_VAR)['$(DATACENTRE)']['$(ENVIRONMENT)']['$$JOB_NAME'] | to_nice_yaml) | default("") }}_e_" \
+		$(ANSIBLE_EXTRA_VARS) localhost 2>/dev/null | grep -v "FAILED" | \
 		sed 's#.*_s_\(.*\)_e_.*#\1#'); \
 	done
 	@
