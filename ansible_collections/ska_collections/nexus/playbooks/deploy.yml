@@ -409,7 +409,7 @@
           - nx-repository-view-docker-gitlab-proxy-add
           - nx-repository-view-docker-gitlab-proxy-browse
           - nx-repository-view-docker-gitlab-proxy-edit
-          - nx-repository-view-docker-gitlab-proxy-read          
+          - nx-repository-view-docker-gitlab-proxy-read
           - nx-repository-view-gitlfs-*-add
           - nx-repository-view-gitlfs-*-browse
           - nx-repository-view-gitlfs-*-edit
