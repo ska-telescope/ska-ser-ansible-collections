@@ -59,8 +59,8 @@
     exposed_ports:
       - "{{ nexus_haproxy_conan_search_proxy_port }}"
     labels: "{{ nexus_haproxy_container_labels }}"
-    nexus_haproxy_container_log_driver: "{{ nexus_haproxy_container_log_driver }}"
-    nexus_haproxy_container_log_options: "{{ nexus_haproxy_container_log_options }}"
+    log_driver: "{{ nexus_haproxy_container_log_driver }}"
+    log_options: "{{ nexus_haproxy_container_log_options }}"
     volumes:
       - /etc/ncs_config:/etc/ncs_config
     command: "uvicorn app.main:app --proxy-headers --host 0.0.0.0 --port {{ nexus_haproxy_conan_search_proxy_port }}"
@@ -106,8 +106,8 @@
     exposed_ports:
       - "{{ nexus_haproxy_port }}"
     labels: "{{ nexus_haproxy_container_labels }}"
-    nexus_haproxy_container_log_driver: "{{ nexus_haproxy_container_log_driver }}"
-    nexus_haproxy_container_log_options: "{{ nexus_haproxy_container_log_options }}"
+    log_driver: "{{ nexus_haproxy_container_log_driver }}"
+    log_options: "{{ nexus_haproxy_container_log_options }}"
     volumes:
       - /etc/hap_config/:/usr/local/etc/haproxy/
     command: -f /usr/local/etc/haproxy/haproxy.cfg
