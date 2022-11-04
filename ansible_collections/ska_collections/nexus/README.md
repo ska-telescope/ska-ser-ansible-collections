@@ -6,7 +6,7 @@ Deploy Nexus OSS edition through Ansible.
 
 This collection deploys Nexus OSS edition using an adapted version of https://github.com/ansible-ThoTeam/nexus3-oss. The changes are found in the `./resources` directory, and are used to overwrite the `../../ansible_collections/ansible-thoteam.nexus3-oss` role.
 
-Add to your `./PrivateRules.mak` file the passwords for the Nexus user accounts `admin`,`gitlab`, `publisher` and `quarantiner`, the webhook url and secret key, and the APT keys and passphrases as follows:
+Add to your `./PrivateRules.mak` file the required passwords for the Nexus user accounts `admin`,`gitlab`, `publisher` and `quarantiner`, the webhook url and secret key, and the APT keys and passphrases needed as follows:
 ```
 NEXUS_VAULT_ADMIN_PASSWORD = 'whatwhat'
 NEXUS_VAULT_USER_PASSWORD_GITLAB = 'whatwhat'
@@ -24,7 +24,7 @@ NEXUS_APT_BIONIC_QUARENTINE_KEY_PASSPHRASE = 'whatwhat'
 
 Together with an Ansible inventory, Nexus can be installed from the collections root folder using:
 ```
-make install_dependencies
+make ac-install-dependencies
 make nexus install
 ```
 
