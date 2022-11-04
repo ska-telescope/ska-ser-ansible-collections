@@ -115,6 +115,7 @@
     nexus_docker_group_port: 9082
     nexus_docker_quarantine_port: 9083
     nexus_central_proxy_port: 9084
+    nexus_gitlab_proxy_port: 9085
     nexus_application_host: '{{ httpd_setup_enable | ternary("127.0.0.1", "0.0.0.0") }}'
     nexus_default_context_path: '/'
     nexus_os_group: 'nexus'
@@ -266,6 +267,10 @@
           - nx-repository-view-docker-docker-proxy-browse
           - nx-repository-view-docker-docker-proxy-edit
           - nx-repository-view-docker-docker-proxy-read
+          - nx-repository-view-docker-gitlab-proxy-add
+          - nx-repository-view-docker-gitlab-proxy-browse
+          - nx-repository-view-docker-gitlab-proxy-edit
+          - nx-repository-view-docker-gitlab-proxy-read
           - nx-repository-view-gitlfs-*-add
           - nx-repository-view-gitlfs-*-browse
           - nx-repository-view-gitlfs-*-edit
@@ -348,6 +353,8 @@
           - nx-repository-view-docker-docker-internal-read
           - nx-repository-view-docker-docker-proxy-browse
           - nx-repository-view-docker-docker-proxy-read
+          - nx-repository-view-docker-gitlab-proxy-browse
+          - nx-repository-view-docker-gitlab-proxy-read
           - nx-repository-view-gitlfs-*-browse
           - nx-repository-view-gitlfs-*-read
           - nx-repository-view-go-*-browse
@@ -411,6 +418,10 @@
           - nx-repository-view-docker-docker-proxy-browse
           - nx-repository-view-docker-docker-proxy-edit
           - nx-repository-view-docker-docker-proxy-read
+          - nx-repository-view-docker-gitlab-proxy-add
+          - nx-repository-view-docker-gitlab-proxy-browse
+          - nx-repository-view-docker-gitlab-proxy-edit
+          - nx-repository-view-docker-gitlab-proxy-read          
           - nx-repository-view-gitlfs-*-add
           - nx-repository-view-gitlfs-*-browse
           - nx-repository-view-gitlfs-*-edit
@@ -960,6 +971,20 @@
         maximum_metadata_age: 10080
         negative_cache_enabled: true
         negative_cache_ttl: 1440
+      - name: gitlab-proxy
+        http_port: "{{ nexus_gitlab_proxy_port }}"
+        blob_store: "default"
+        v1_enabled: True
+        index_type: "REGISTRY"
+        remote_url: "https://registry.gitlab.com"
+        use_nexus_certificates_to_access_index: false
+        cache_foreign_layers: true
+        foreign_layer_url_whitelist:
+          - ".*"
+        maximum_component_age: 10080
+        maximum_metadata_age: 10080
+        negative_cache_enabled: true
+        negative_cache_ttl: 1440
 
     nexus_repos_docker_group:
       - name: docker-all
@@ -968,6 +993,7 @@
         member_repos:
           - docker-internal
           - central-proxy
+          - gitlab-proxy
           - docker-proxy
 
     nexus_repos_gitlfs_hosted:

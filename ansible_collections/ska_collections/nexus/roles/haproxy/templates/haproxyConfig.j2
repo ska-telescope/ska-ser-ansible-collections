@@ -92,3 +92,21 @@ backend back-nexus-quarantine-api-backend
   server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_quarantine_api_proxy_port }} check
   timeout connect 10s
   timeout server 1800s
+
+backend back-docker-all-group-backend
+  mode http
+  option http-server-close
+  option dontlognull
+  balance roundrobin
+  server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_docker_group_port }} check
+  timeout connect 10s
+  timeout server 1800s
+
+backend back-gitlab-backend
+  mode http
+  option http-server-close
+  option dontlognull
+  balance roundrobin
+  server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_gitlab_proxy_port }} check
+  timeout connect 10s
+  timeout server 1800s
