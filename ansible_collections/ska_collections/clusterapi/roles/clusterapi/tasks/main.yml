@@ -1,0 +1,120 @@
+---
+
+- name: Calculate version vars
+  ansible.builtin.set_fact:
+    os_name: "{{ ansible_system | lower }}"
+    os_binary: "{% if ansible_facts.architecture == 'x86_64' %}amd64{% else %}unknown{% endif %}"
+    os_arch: "{{ ansible_facts.architecture | lower }}"
+    k9s_arch: "{{ ansible_facts.architecture | lower }}"
+
+- name: Install kubernetes dependency on pip3
+  ansible.builtin.pip:
+    executable: pip3
+    name: kubernetes
+  become: true
+
+- name: Check if clusterctl exists
+  ansible.builtin.stat:
+    path: "{{ clusterctl_exe_dir }}/clusterctl"
+  register: stat_clusterctl
+
+- name: Check if the clusterctl version is installed
+  ansible.builtin.command: "{{ clusterctl_exe_dir }}/clusterctl version -o short"
+  changed_when: false
+  register: clusterctl_version_check
+  ignore_errors: true
+
+- name: Clusterctl install
+  ansible.builtin.get_url:
+    url: "https://github.com/kubernetes-sigs/cluster-api/releases/download/{{ clusterctl_version }}/clusterctl-{{ os_name }}-{{ os_binary }}"
+    dest: "{{ clusterctl_exe_dir }}/clusterctl"
+    mode: "0755"
+  when: "not stat_clusterctl.stat.exists or
+    clusterctl_version_check.stdout.find(clusterctl_version) == -1"
+  become: true
+
+# - name: Check CAPO is running
+#   kubernetes.core.k8s_info:
+#     api_version: v1
+#     kind: Deployment
+#     name: capi-controller-manager
+#     namespace: capi-system
+#   register: capi_controller_check
+
+# - name: Start CAPO
+#   # CAPO is not started
+#   when: "not capi_controller_check.resources"
+#   block:
+
+#     - name: Start up CAPO
+#       ansible.builtin.command: "{{ clusterctl_exe_dir }}/clusterctl init --infrastructure openstack"
+#       changed_when: false
+#       register: clusterctl_capo_check
+
+#     - name: Wait clusterapi CRD
+#       kubernetes.core.k8s_info:
+#         kind: CustomResourceDefinition
+#         api_version: apiextensions.k8s.io/v1
+#         name: kubeadmconfigs.bootstrap.cluster.x-k8s.io
+#         wait: true
+#         wait_sleep: 15
+#         wait_timeout: 300
+#         wait_condition:
+#           type: Established
+
+#     - name: Wait for deploy/capi-kubeadm-bootstrap-controller-manager
+#       kubernetes.core.k8s_info:
+#         kind: Deployment
+#         api_version: v1
+#         name: capi-kubeadm-bootstrap-controller-manager
+#         namespace: capi-kubeadm-bootstrap-system
+#         wait: true
+#         wait_sleep: 10
+#         wait_timeout: 300
+#         wait_condition:
+#           type: Available
+#           # status: True
+#           # reason: MinimumReplicasAvailable
+
+#     - name: Wait for deploy/capi-controller-manager
+#       kubernetes.core.k8s_info:
+#         kind: Deployment
+#         api_version: v1
+#         name: capi-controller-manager
+#         namespace: capi-system
+#         wait: true
+#         wait_sleep: 10
+#         wait_timeout: 300
+#         wait_condition:
+#           type: Available
+
+#     - name: Wait for cert-manager
+#       kubernetes.core.k8s_info:
+#         kind: Deployment
+#         api_version: v1
+#         name: "{{ item }}"
+#         namespace: cert-manager
+#         wait: true
+#         wait_sleep: 10
+#         wait_timeout: 150
+#         wait_condition:
+#           type: Available
+#       with_items:
+#         - "cert-manager"
+#         - "cert-manager-cainjector"
+#         - "cert-manager-webhook"
+
+#     - name: Wait for deploy/capo-controller-manager
+#       kubernetes.core.k8s_info:
+#         kind: Deployment
+#         api_version: v1
+#         name: capo-controller-manager
+#         namespace: capo-system
+#         wait: true
+#         wait_sleep: 10
+#         wait_timeout: 300
+#         wait_condition:
+#           type: Available
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers

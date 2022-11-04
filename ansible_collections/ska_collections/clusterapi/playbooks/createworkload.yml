@@ -1,0 +1,9 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: "Apply the createworkload management cluster role to nodes"
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  roles:
+    - createworkload

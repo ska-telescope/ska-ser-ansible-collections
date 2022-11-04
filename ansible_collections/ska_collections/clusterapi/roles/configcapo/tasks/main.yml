@@ -1,0 +1,147 @@
+---
+- name: Include vars
+  ansible.builtin.include_vars:
+    file: ../clusterapi/defaults/main.yml
+  tags: [always]
+
+- name: Include the OS Config
+  ansible.builtin.include: os_config.yml
+
+- name: Set clusterapi config dir
+  ansible.builtin.file:
+    path: "{{ clusterapi_config_dir }}"
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: Clusterapi OS cloud config
+  ansible.builtin.template:
+    src: cloud-provider-conf.ini.j2
+    dest: "{{ clusterapi_config_dir }}/cloud-provider.ini"
+    mode: "0600"
+  become: true
+
+- name: Get current CAPO template verion  # noqa: command-instead-of-module
+  ansible.builtin.shell: |
+    set -e;
+    set -o pipefail;
+    curl -s -H "Accept: application/json" -L `clusterctl config repositories | grep openstack | awk '{print $3}'` | jq -r .tag_name
+  changed_when: false
+  register: capo_template_check
+
+- name: Current CAPO template verion
+  ansible.builtin.set_fact:
+    capo_template_version_latest: "{{ capo_template_check.stdout }}"
+
+- name: "Show the latest CAPO template version"
+  ansible.builtin.debug: var=capo_template_version_latest
+
+- name: Download CAPO template
+  ansible.builtin.get_url:
+    url: "https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/download/{{ capo_template_version }}/cluster-template.yaml"
+    dest: "{{ clusterapi_config_dir }}/cluster-template.orig.yaml"
+    mode: '0644'
+  become: true
+
+- name: Find the local running user
+  ansible.builtin.set_fact:
+    whoami: "{{ lookup('env', 'USER') }}"
+
+- name: Copy clusterapi CAPO template back
+  ansible.builtin.slurp:
+    src: "{{ clusterapi_config_dir }}/cluster-template.orig.yaml"
+  register: slurped_cluster_template
+  become: true
+
+- name: Output cluster template file  # noqa: template-instead-of-copy
+  ansible.builtin.copy:
+    content: "{{ slurped_cluster_template.content | b64decode }}"
+    dest: "{{ playbook_dir }}/../../../../../kustomize/base/cluster-template.orig.yaml"
+    mode: 0644
+  delegate_to: localhost
+
+- name: Check CAPO is running
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Deployment
+    name: capi-controller-manager
+    namespace: capi-system
+  register: capi_controller_check
+
+- name: Start CAPO
+  # CAPO is not started
+  when: "not capi_controller_check.resources"
+  block:
+
+    - name: Start up CAPO
+      ansible.builtin.command: "{{ clusterctl_exe_dir }}/clusterctl init --infrastructure openstack"
+      changed_when: false
+      register: clusterctl_capo_check
+
+    - name: Wait clusterapi CRD
+      kubernetes.core.k8s_info:
+        kind: CustomResourceDefinition
+        api_version: apiextensions.k8s.io/v1
+        name: kubeadmconfigs.bootstrap.cluster.x-k8s.io
+        wait: true
+        wait_sleep: 15
+        wait_timeout: 300
+        wait_condition:
+          type: Established
+
+    - name: Wait for deploy/capi-kubeadm-bootstrap-controller-manager
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        api_version: v1
+        name: capi-kubeadm-bootstrap-controller-manager
+        namespace: capi-kubeadm-bootstrap-system
+        wait: true
+        wait_sleep: 10
+        wait_timeout: 300
+        wait_condition:
+          type: Available
+          # status: True
+          # reason: MinimumReplicasAvailable
+
+    - name: Wait for deploy/capi-controller-manager
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        api_version: v1
+        name: capi-controller-manager
+        namespace: capi-system
+        wait: true
+        wait_sleep: 10
+        wait_timeout: 300
+        wait_condition:
+          type: Available
+
+    - name: Wait for cert-manager
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        api_version: v1
+        name: "{{ item }}"
+        namespace: cert-manager
+        wait: true
+        wait_sleep: 10
+        wait_timeout: 150
+        wait_condition:
+          type: Available
+      with_items:
+        - "cert-manager"
+        - "cert-manager-cainjector"
+        - "cert-manager-webhook"
+
+    - name: Wait for deploy/capo-controller-manager
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        api_version: v1
+        name: capo-controller-manager
+        namespace: capo-system
+        wait: true
+        wait_sleep: 10
+        wait_timeout: 300
+        wait_condition:
+          type: Available
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers
