@@ -16,7 +16,7 @@
     restart_policy: always
     image: "{{ elasticsearch_exporter_image }}"
     state: started
-    labels: "{{ elasticsearch_exporter_labels }}"
+    labels: "{{ elasticsearch_labels }}"
     log_driver: "{{ elasticsearch_exporter_log_driver }}"
     log_options: "{{ elasticsearch_exporter_log_options }}"
     ports:
