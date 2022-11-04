@@ -47,6 +47,7 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
+    nexus_common_ntp_sync_server: 1.fedora.pool.ntp.org
   become: true
   tasks:
     - name: Nexus common role
@@ -1029,7 +1030,6 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-    nexus_ntp_sync_server: 1.fedora.pool.ntp.org
   become: true
   tasks:
     - name: HAProxy role
