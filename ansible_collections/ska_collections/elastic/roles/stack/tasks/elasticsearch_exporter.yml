@@ -37,4 +37,3 @@
       - '--es.ca=/usr/share/elasticsearch/config/certificates/ca-certificate.crt'
       - '--es.client-private-key=/usr/share/elasticsearch/config/certificates/{{ inventory_hostname }}.key'
       - '--es.client-cert=/usr/share/elasticsearch/config/certificates/{{ inventory_hostname }}.crt'
-     

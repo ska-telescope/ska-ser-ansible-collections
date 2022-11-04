@@ -11,8 +11,8 @@
     var: metrics
 
 - name: Install node_exporter for RedHat/CentOS
-  when: 
-    - ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat' 
+  when:
+    - ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat'
     - metrics.status != 200
   block:
     - name: Download node exporter install script
