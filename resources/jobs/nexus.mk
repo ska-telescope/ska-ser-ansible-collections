@@ -51,7 +51,6 @@ install: check_hosts apply-patch # apply-patch  ## Deploy Nexus
 		nexus_vault_email_server_password=$(NEXUS_VAULT_EMAIL_SERVER_PASSWORD) \
 		nexus_vault_user_password_quarantiner=$(NEXUS_VAULT_USER_PASSWORD_QUARANTINER) \
 		nexus_vault_ldap_conn_passwd=$(NEXUS_VAULT_LDAP_CONN_PASSWD) \
-		nexus_webhook_url=$(NEXUS_WEBHOOK_URL) \
 		nexus_webhook_secret_key=$(NEXUS_WEBHOOK_SECRET_KEY) \
 		nexus_apt_bionic_internal_key=$(NEXUS_APT_BIONIC_INTERNAL_KEY) \
 		nexus_apt_bionic_internal_key_passphrase=$(NEXUS_APT_BIONIC_INTERNAL_KEY_PASSPHRASE) \
