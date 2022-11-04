@@ -114,7 +114,7 @@
         tasks_from: elastic
       vars:
         elasticsearch_node_roles: "{{ elasticsearch_default_data_roles }}"
-    
+
     - name: Install elasticsearch exporter
       ansible.builtin.import_role:
         name: ska_collections.elastic.stack
