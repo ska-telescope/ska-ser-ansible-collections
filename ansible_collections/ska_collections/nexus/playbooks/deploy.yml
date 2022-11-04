@@ -69,11 +69,23 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-    ntp_sync_server: 1.fedora.pool.ntp.org
-    docker_deb_version: 5:20.10.21~3-0~ubuntu-jammy
-    containerd_version: 1.6.9-1
-    containerd_ubuntu_version: jammy
-    ubuntu_version: jammy
+
+    nexus_debug: true
+    nexus_production: true
+    debug: "{{ nexus_debug }}"
+    production: "{{ nexus_production }}"
+
+    nexus_ntp_sync_server: 1.fedora.pool.ntp.org
+    nexus_docker_deb_version: 5:20.10.21~3-0~ubuntu-jammy
+    nexus_containerd_version: 1.6.9-1
+    nexus_containerd_ubuntu_version: jammy
+    nexus_ubuntu_version: jammy
+
+    ntp_sync_server: "{{ nexus_ntp_sync_server }}"
+    docker_deb_version: "{{ nexus_docker_deb_version }}"
+    containerd_version: "{{ nexus_containerd_version }}"
+    containerd_ubuntu_version: "{{ nexus_containerd_ubuntu_version }}"
+    ubuntu_version: "{{ nexus_ubuntu_version }}"
 
     nexus_vault_admin_password: 'whatwhat'
     nexus_vault_user_password_gitlab: 'whatwhat'
@@ -148,7 +160,7 @@
     nexus_email_trust_store_enabled: false
 
     nexus_ldap_realm: false
-    ldap_connections:
+    nexus_ldap_connections:
       - ldap_name: 'SKAO HQ AD'  # used as a key to update the ldap config
         ldap_protocol: 'ldap'  # ldap or ldaps
         ldap_hostname: 'dc-ad-euwest2-2.ad.skatelescope.org'
@@ -170,6 +182,7 @@
         ldap_map_groups_as_roles_type: 'dynamic'
         ldap_group_member_attribute: 'memberOf'
         ldap_group_subtree: true
+    ldap_connections: "{{ nexus_ldap_connections }}"
 
     # Nexus content
     nexus_content_selectors:

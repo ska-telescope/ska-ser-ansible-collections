@@ -22,27 +22,27 @@
   until: apt_res is success
   when: ansible_os_family == "Debian"
 
-- name: "Enable {{ ntp_service }} service"
+- name: "Enable {{ nexus_ntp_service }} service"
   ansible.builtin.service:
-    name: "{{ ntp_service }}"
+    name: "{{ nexus_ntp_service }}"
     enabled: true
 
 - name: Make sure the NTP service is stopped
   ansible.builtin.service:
-    name: "{{ ntp_service }}"
+    name: "{{ nexus_ntp_service }}"
     state: stopped
   tags:
     - notest
 
 - name: Force NTP sync
-  ansible.builtin.command: "{{ ntp_sync }}"
+  ansible.builtin.command: "{{ nexus_ntp_sync }}"
   changed_when: false
   tags:
     - notest
 
 - name: Start the NTP service
   ansible.builtin.service:
-    name: "{{ ntp_service }}"
+    name: "{{ nexus_ntp_service }}"
     state: started
     enabled: true
   tags:

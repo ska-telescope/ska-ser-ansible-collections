@@ -1,30 +1,30 @@
 ---
 # stats user account
-haproxy_user: stats
-haproxy_passwd: nexusHA
+nexus_ha_proxy_user: stats
+nexus_ha_proxy_passwd: nexusHA
 
-haproxy_stats_port: "9000"
-ha_proxy_port: "8081"
-ha_quarantine_proxy_port: "8082"
+nexus_ha_proxy_stats_port: "9000"
+nexus_ha_proxy_port: "8081"
+nexus_ha_quarantine_proxy_port: "8082"
 nexus_http_proxy_port: "8881"
 nexus_api_proxy_port: "9080"
 nexus_conan_search_proxy_port: "5000"
 nexus_quarantine_api_proxy_port: "9083"
-haproxy_container_image: haproxy:2.4
-conan_search_container_image: artefact.skao.int/ska-cicd-nexus-conan-search:0.1.3
+nexus_ha_proxy_container_image: haproxy:2.4
+nexus_conan_search_container_image: artefact.skao.int/ska-cicd-nexus-conan-search:0.1.3
 # go directly local instead of out through the AWS ELB to https://artefact.skao.int
-nexus_conan_search_url: "http://localhost:{{ ha_proxy_port }}"
+nexus_conan_search_url: "http://localhost:{{ nexus_ha_proxy_port }}"
 nexus_conan_search_repository: "conan-internal"
-haproxy_name: haproxy
-conan_search_name: nexus-conan-search
-log_max_size: "10m"
-log_max_file: "3"
-log_driver: json-file
-log_options:
-  max-size: "{{  log_max_size }}"
-  max-file: "{{ log_max_file }}"
+nexus_ha_proxy_name: haproxy
+nexus_conan_search_name: nexus-conan-search
+nexus_container_log_max_size: "10m"
+nexus_container_log_max_file: "3"
+nexus_container_log_driver: json-file
+nexus_container_log_options:
+  max-size: "{{  nexus_container_log_max_size }}"
+  max-file: "{{ nexus_container_log_max_file }}"
   labels: "org.ska.app.group"
 
 # labelling on container runtime
-container_labels:
+nexus_container_labels:
   org.ska.app.group: frontend

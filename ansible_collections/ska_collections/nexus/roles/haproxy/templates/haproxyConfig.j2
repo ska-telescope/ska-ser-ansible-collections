@@ -20,13 +20,13 @@ defaults
   timeout tunnel 1h
 
 frontend stats
-  bind *:{{haproxy_stats_port}}
+  bind *:{{nexus_ha_proxy_stats_port}}
   mode http
   stats enable
   stats hide-version
   stats realm Haproxy\ Statistics
   stats uri /haproxy_stats
-  stats auth {{ haproxy_user }}:{{ haproxy_passwd }}
+  stats auth {{ nexus_ha_proxy_user }}:{{ nexus_ha_proxy_passwd }}
   stats refresh 10s
   stats admin if LOCALHOST
 
@@ -36,7 +36,7 @@ frontend stats
 #############################
 
 frontend front-nexus-http-proxy
-  bind *:{{ ha_proxy_port }}
+  bind *:{{ nexus_ha_proxy_port }}
   mode http
   option httplog
   acl url_api path_beg /v2
@@ -48,7 +48,7 @@ frontend front-nexus-http-proxy
   timeout client-fin 50s
 
 frontend front-nexus-quarantine-http-proxy
-  bind *:{{ ha_quarantine_proxy_port }}
+  bind *:{{ nexus_ha_quarantine_proxy_port }}
   mode http
   option httplog
   acl url_api path_beg /v2

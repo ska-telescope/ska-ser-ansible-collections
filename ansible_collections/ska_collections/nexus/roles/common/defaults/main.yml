@@ -1,6 +1,6 @@
 ---
-update_grub: "/usr/sbin/update-grub"
+nexus_update_grub: "/usr/sbin/update-grub"
 
-ntp_service: chrony
-ntp_sync_server: 1.fedora.pool.ntp.org
-ntp_sync: "/usr/sbin/chronyd -q 'server {{ ntp_sync_server }} iburst'"
+nexus_ntp_service: chrony
+nexus_nexus_ntp_sync_server: 1.fedora.pool.ntp.org
+nexus_ntp_sync: "/usr/sbin/chronyd -q 'server {{ nexus_nexus_ntp_sync_server }} iburst'"
