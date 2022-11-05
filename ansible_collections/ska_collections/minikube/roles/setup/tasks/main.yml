@@ -6,17 +6,20 @@
     os_binary: "{% if ansible_facts.architecture == 'x86_64' %}amd64{% else %}unknown{% endif %}"
     os_arch: "{{ ansible_facts.architecture | lower }}"
     k9s_arch: "{{ ansible_facts.architecture | lower }}"
+  tags: [always]
 
 - name: Check if minikube exists
   ansible.builtin.stat:
     path: "{{ minikube_exe_dir }}/minikube"
   register: stat_minikube
+  tags: [minikube]
 
 - name: Check if the minikube version is installed
   ansible.builtin.command: "{{ minikube_exe_dir }}/minikube version --short"
   changed_when: false
   register: minikube_version_check
   ignore_errors: true
+  tags: [minikube]
 
 - name: Minikube install
   ansible.builtin.get_url:
@@ -25,17 +28,21 @@
     mode: "0755"
   when: "not stat_minikube.stat.exists or
     minikube_version_check.stdout.find(minikube_version) == -1"
+  tags: [minikube]
+  become: true
 
 - name: Check if kubectl exists
   ansible.builtin.stat:
     path: "{{ minikube_exe_dir }}/kubectl"
   register: stat_kubectl
+  tags: [kubectl]
 
 - name: Check if the kubectl version is installed
   ansible.builtin.command: "{{ minikube_exe_dir }}/kubectl  version --client --short 2>&1"
   changed_when: false
   register: kubectl_version_check
   ignore_errors: true
+  tags: [kubectl]
 
 - name: Kubectl install
   ansible.builtin.get_url:
@@ -44,22 +51,26 @@
     mode: "0755"
   when: "not stat_kubectl.stat.exists or
     kubectl_version_check.stdout.find(kubernetes_version) == -1"
+  tags: [kubectl]
+  become: true
 
 - name: Check if helm exists
   ansible.builtin.stat:
     path: "{{ minikube_exe_dir }}/helm"
   register: stat_helm
+  tags: [helm]
 
 - name: Check if the helm version
   ansible.builtin.command: "{{ minikube_exe_dir }}/helm  version --short"
   changed_when: false
   register: helm_version_check
   ignore_errors: true
+  tags: [helm]
 
 - name: Helm install
   when: "not stat_helm.stat.exists or
     helm_version_check.stdout.find(helm_version) == -1"
-  tags: [ helm ]
+  tags: [helm]
   block:
     - name: Set helm_archive fact
       ansible.builtin.set_fact:
@@ -81,6 +92,7 @@
         mode: "0755"
         extra_opts:
           - "--strip-components=1"
+      become: true
 
     - name: Tidy up helm download
       ansible.builtin.file:
@@ -91,16 +103,19 @@
   ansible.builtin.stat:
     path: "{{ minikube_exe_dir }}/k9s"
   register: stat_k9s
+  tags: [k9s]
 
 - name: Check if the k9s version
   ansible.builtin.command: "{{ minikube_exe_dir }}/k9s version --short"
   changed_when: false
   register: k9s_version_check
   ignore_errors: true
+  tags: [k9s]
 
 - name: K9s install
   when: "not stat_k9s.stat.exists or
     k9s_version_check.stdout.find(k9s_version) == -1"
+  tags: [k9s]
   block:
     - name: Set k9s_archive fact
       ansible.builtin.set_fact:
@@ -120,6 +135,7 @@
         remote_src: true
         dest: "{{ minikube_exe_dir }}/"
         mode: "0755"
+      become: true
 
     - name: Tidy up k9s download
       ansible.builtin.file:
@@ -130,12 +146,14 @@
   ansible.builtin.stat:
     path: "{{ minikube_exe_dir }}/yq"
   register: stat_yq
+  tags: [yq]
 
 - name: Check if the yq version is installed
   ansible.builtin.command: "{{ minikube_exe_dir }}/yq --version"
   changed_when: false
   register: yq_version_check
   ignore_errors: true
+  tags: [yq]
 
 - name: Yq install
   ansible.builtin.get_url:
@@ -144,6 +162,8 @@
     mode: "0755"
   when: "not stat_yq.stat.exists or
     yq_version_check.stdout.find(yq_version) == -1"
+  become: true
+  tags: [yq]
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers
