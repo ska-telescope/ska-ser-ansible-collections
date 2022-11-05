@@ -59,6 +59,7 @@
 - name: Helm install
   when: "not stat_helm.stat.exists or
     helm_version_check.stdout.find(helm_version) == -1"
+  tags: [ helm ]
   block:
     - name: Set helm_archive fact
       ansible.builtin.set_fact:

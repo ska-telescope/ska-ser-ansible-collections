@@ -23,9 +23,10 @@
 
 - name: Get current CAPO template verion  # noqa: command-instead-of-module
   ansible.builtin.shell: |
-    set -e;
-    set -o pipefail;
+    set -o pipefail && \
     curl -s -H "Accept: application/json" -L `clusterctl config repositories | grep openstack | awk '{print $3}'` | jq -r .tag_name
+  args:
+    executable: /usr/bin/bash
   changed_when: false
   register: capo_template_check
 

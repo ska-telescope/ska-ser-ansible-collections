@@ -8,7 +8,7 @@ podman_deb_repo_key_url: "http://downloadcontent.opensuse.org/repositories/home:
 
 podman_deb_podman_version: "100:4.2.1-1"
 podman_deb_buildah_version: "100:1.28.0-1"
-podman_deb_skopeo_version: "100:100:1.10.0-1"
+podman_deb_skopeo_version: "100:1.10.0-1"
 
 podman_deb_pkgs:
   - "podman={{ podman_deb_podman_version }}"
