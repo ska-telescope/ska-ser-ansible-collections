@@ -1,3 +1,5 @@
 ansible-lint-results.txt
 prometheus_node_metric_relabel_configs.yaml
 PrivateRules.mak
+**/tests/e2e/ssh.config
+**/tests/e2e/inventory.yml

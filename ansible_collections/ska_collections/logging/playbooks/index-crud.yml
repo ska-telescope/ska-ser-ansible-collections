@@ -1,0 +1,116 @@
+#!/usr/bin/env ansible-playbook
+- name: Elasticsearch client works with cluster
+  hosts: "{{ target_hosts + '-loadbalancer' }}"
+  become: true
+  tasks:
+  - name: Set test variables
+    set_fact:
+      elasticsearch_index: "{{ elasticsearch_cluster_name }}-index"
+      event_messages: ["these", "are", "messages"]
+
+  - name: Get index works
+    ansible.builtin.uri:
+      url: "https://{{ inventory_hostname }}:{{ elasticsearch_api_port }}/{{ elasticsearch_index }}"
+      method: GET
+      force: yes
+      status_code: [200, 404]
+      client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+      client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+      url_username: elastic
+      url_password: "{{ elasticsearch_password }}"
+    environment:
+      SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+    register: index_info
+
+  - name: Create index works
+    ansible.builtin.uri:
+      url: "https://{{ inventory_hostname }}:{{ elasticsearch_api_port }}/{{ elasticsearch_index }}"
+      method: PUT
+      body_format: json
+      body: |
+        {
+          "settings": {
+            "number_of_shards": 1,
+            "number_of_replicas": 0
+          }
+        }
+      force: yes
+      status_code: [200]
+      client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+      client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+      url_username: elastic
+      url_password: "{{ elasticsearch_password }}"
+    environment:
+      SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+    when: index_info.status == 404
+
+  - name: Get index works
+    ansible.builtin.uri:
+      url: "https://{{ inventory_hostname }}:{{ elasticsearch_api_port }}/{{ elasticsearch_index }}"
+      method: GET
+      force: yes
+      status_code: [200]
+      client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+      client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+      url_username: elastic
+      url_password: "{{ elasticsearch_password }}"
+    environment:
+      SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+
+  - name: Send data works
+    ansible.builtin.uri:
+      url: "https://{{ inventory_hostname }}:{{ elasticsearch_api_port }}/{{ elasticsearch_index }}{{ elasticsearch_doc_endpoint }}"
+      method: POST
+      body_format: json
+      body: |
+        {
+          "message": "{{ item }}"
+        }
+      force: yes
+      status_code: [201]
+      client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+      client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+      url_username: elastic
+      url_password: "{{ elasticsearch_password }}"
+    environment:
+      SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+    loop: "{{ event_messages }}"
+    register: index_info
+
+  - name: debug
+    debug:
+      msg: "{{ event_messages | length }}"
+
+  - name: Count docs works
+    ansible.builtin.uri:
+      url: "https://{{ inventory_hostname }}:{{ elasticsearch_api_port }}/{{ elasticsearch_index }}{{ elasticsearch_doc_count_endpoint }}"
+      method: GET
+      status_code: [200]
+      client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+      client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+      url_username: elastic
+      url_password: "{{ elasticsearch_password }}"
+    environment:
+      SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+    register: events
+    retries: 5
+    delay: 10
+    timeout: 60
+    until: '(events.json.count | int) == (event_messages | length)'
+
+  - name: debug
+    debug:
+      msg: "{{ events }}"
+
+  - name: Delete index works
+    ansible.builtin.uri:
+      url: "https://{{ inventory_hostname }}:{{ elasticsearch_api_port }}/{{ elasticsearch_index }}"
+      method: DELETE
+      force: yes
+      status_code: [200]
+      client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+      client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+      url_username: elastic
+      url_password: "{{ elasticsearch_password }}"
+    environment:
+      SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
