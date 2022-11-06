@@ -1,0 +1,21 @@
+---
+
+ib_deb_dependencies:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - software-properties-common
+  - make
+  - zip
+  - unzip
+  - qemu-utils
+  - qemu-system
+
+ib_git_repo: https://github.com/kubernetes-sigs/image-builder.git
+ib_repo_dest: /usr/src/image-builder
+ib_branch: master
+
+ib_kubernetes_version: 1.24.7
+ib_kubernetes_series: 1.24
+ib_ubuntu_version: 2004
+ib_os_image_name: "ubuntu-{{ ib_ubuntu_version }}-kube-v{{ ib_kubernetes_version }}"

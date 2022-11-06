@@ -1,0 +1,114 @@
+---
+# load shared vars with clusterapi
+- name: Include vars
+  ansible.builtin.include_vars:
+    file: "{{ item }}"
+  with_items:
+    - ../clusterapi/defaults/main.yml
+    - ../configcapo/defaults/main.yml
+  tags: [always]
+
+- name: Include the OS Config
+  ansible.builtin.include: "{{ role_path }}/../configcapo/tasks/os_config.yml"
+  tags: [always]
+
+- name: "Gather information about: {{ ib_os_image_name }}"
+  openstack.cloud.image_info:
+    cloud: "{{ capo_selected_cloud }}"
+    image: "{{ ib_os_image_name }}"
+  register: check_os_image
+
+- name: Abort playbook on OS image existing
+  ansible.builtin.fail:
+    msg: >
+      "OS image already exists: {{ ib_os_image_name }}"
+  when: check_os_image.openstack_images
+
+- name: Ensure that the apt cache is updated
+  ansible.builtin.apt:
+    update_cache: true
+  register: apt_res
+  retries: 5
+  until: apt_res is success
+  become: true
+
+- name: Install ansible with pip3
+  ansible.builtin.pip:
+    name: ["ansible", "openstacksdk<=0.98.999"]
+    executable: pip3
+    state: present
+
+- name: Install packages required for image-builder
+  ansible.builtin.apt:
+    name: "{{ ib_deb_dependencies }}"
+    state: present
+  become: true
+
+- name: Clone image-builder
+  ansible.builtin.git:
+    repo: "{{ ib_git_repo }}"
+    dest: "{{ ib_repo_dest }}"
+    single_branch: true
+    version: "{{ ib_branch }}"
+  become: true
+
+- name: Install image-builder deps-qemu
+  community.general.system.make:
+    chdir: "{{ ib_repo_dest }}/images/capi"
+    target: deps-qemu
+    params:
+      SETUPTOOLS_USE_DISTUTILS: stdlib
+  become: true
+
+- name: Packer custom config
+  ansible.builtin.template:
+    src: custom.json.j2
+    dest: "{{ ib_repo_dest }}/images/capi/custom.json"
+    mode: "0644"
+  become: true
+
+- name: "Remove capo image with same name: {{ ib_os_image_name }}"
+  openstack.cloud.image:
+    cloud: "{{ capo_selected_cloud }}"
+    name: "{{ ib_os_image_name }}"
+    state: absent
+
+- name: Recursively remove image directory
+  ansible.builtin.file:
+    path: "{{ ib_repo_dest }}/images/capi/output/{{ ib_os_image_name }}"
+    state: absent
+  become: true
+
+- name: Build capo image
+  community.general.system.make:
+    chdir: "{{ ib_repo_dest }}/images/capi"
+    target: build-qemu-ubuntu-2004
+    params:
+      PACKER_VAR_FILES: custom.json
+      ANSIBLE_SSH_ARGS: " -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedKeyTypes=+ssh-rsa"
+  become: true
+  environment:
+    ANSIBLE_SSH_ARGS: " -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedKeyTypes=+ssh-rsa"
+
+# openstack image create --disk-format qcow2 --container-format bare --shared --progress --file ./output/ubuntu-2004-kube-v1.24.3/ubuntu-2004-kube-v1.24.3 ubuntu-2004-kube-v1.24.3
+
+# Upload image for capo
+- name: "Upload capo image: {{ ib_os_image_name }}"
+  openstack.cloud.image:
+    cloud: "{{ capo_selected_cloud }}"
+    name: "{{ ib_os_image_name }}"
+    container_format: bare
+    disk_format: qcow2
+    is_public: false
+    state: present
+    filename: "{{ ib_repo_dest }}/images/capi/output/{{ ib_os_image_name }}/{{ ib_os_image_name }}"
+    # kernel: cirros-vmlinuz
+    # ramdisk: cirros-initrd
+    tags:
+      - capo
+    properties:
+      cpu_arch: x86_64
+      distro: ubuntu
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers
