@@ -35,6 +35,13 @@ clusterapi-destroy-management:
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--limit "management-cluster"  --tags "destroy"
 
+clusterapi-ib:
+	ansible-playbook ./ansible_collections/ska_collections/clusterapi/playbooks/imagebuilder.yml \
+	-i $(PLAYBOOKS_ROOT_DIR) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--limit "management-cluster" -vv
+
+
 clusterapi-velero-backups:
 	ansible-playbook ./ansible_collections/ska_collections/minikube/playbooks/velero_backups.yml \
 	-i $(PLAYBOOKS_ROOT_DIR) \
@@ -42,7 +49,6 @@ clusterapi-velero-backups:
 	--extra-vars "cloud_config=$(CLUSTERAPI_CLOUD_CONFIG)" \
 	--extra-vars "cloud=$(CLUSTERAPI_CLOUD)" \
 	--limit "management-cluster"
-
 
 # velero restore
 # velero restore create test \

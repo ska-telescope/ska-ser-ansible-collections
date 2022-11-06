@@ -10,8 +10,8 @@
     capo_selected_cloud: "{{ capo_ostack_cloud_yaml['clouds'][capo_cloud] }}"
     base64_capo_ostack_cloud_yaml: "{{ capo_ostack_cloud_yaml | to_yaml | b64encode }}"
 
-- name: "Show capo_selected_cloud"
-  ansible.builtin.debug: var=capo_selected_cloud
+# - name: "Show capo_selected_cloud"
+#   ansible.builtin.debug: var=capo_selected_cloud
 
 - name: Set selected cloud
   ansible.builtin.set_fact:
