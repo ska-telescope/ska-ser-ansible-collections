@@ -4,8 +4,6 @@ INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 
 ## EXECUTION VARIABLES
 NODES ?= all
-PRIVATE_VARS ?= extra_vars.yml
-EXTRA_VARS ?= extra_vars.yml
 PROMETHEUS_NODE ?= prometheus
 COLLECTIONS_PATHS ?= ./collections
 
@@ -126,11 +124,11 @@ thanos: check_hosts ## Install Thanos query and query front-end
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
 node-exporter: check_hosts ## Install Prometheus node exporter - pass INVENTORY and NODES
-	@ansible-playbook deploy_node_exporter.yml \
+	@ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_node_exporter.yml \
 	-i $(INVENTORY) \
+	-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	-e 'ansible_python_interpreter=/usr/bin/python3' \
-	-e @$(EXTRA_VARS) \
 	--limit $(NODES)
 
 
