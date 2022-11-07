@@ -34,11 +34,11 @@
   become: true
   tasks:
     - name: Instance common role
-      include_role:
+      ansible.builtin.include_role:
         name: ska_collections.instance_common.init
 
     - name: Docker role
-      include_role:
+      ansible.builtin.include_role:
         name: ska_collections.docker_base.docker
   tags:
     - common
@@ -51,7 +51,7 @@
   become: true
   tasks:
     - name: Nexus common role
-      include_role:
+      ansible.builtin.include_role:
         name: common
         apply:
           tags:
@@ -934,7 +934,7 @@
       - name: docker-proxy
         http_port: "{{ nexus_docker_proxy_port }}"
         blob_store: "default"
-        v1_enabled: True
+        v1_enabled: true
         index_type: "HUB"
         remote_url: "https://registry-1.docker.io"
         use_nexus_certificates_to_access_index: false
@@ -948,7 +948,7 @@
       - name: central-proxy
         http_port: "{{ nexus_central_proxy_port }}"
         blob_store: "default"
-        v1_enabled: True
+        v1_enabled: true
         index_type: "REGISTRY"
         remote_url: "https://artefact.skatelescope.org"
         use_nexus_certificates_to_access_index: false
@@ -962,7 +962,7 @@
       - name: gitlab-proxy
         http_port: "{{ nexus_gitlab_proxy_port }}"
         blob_store: "default"
-        v1_enabled: True
+        v1_enabled: true
         index_type: "REGISTRY"
         remote_url: "https://registry.gitlab.com"
         use_nexus_certificates_to_access_index: false
@@ -1013,17 +1013,17 @@
           - maven-internal
           - maven-central-proxy
           - maven-jboss-proxy
-  become: True
+  become: true
   tasks:
     - name: Nexus role
-      include_role:
+      ansible.builtin.include_role:
         name: nexus3-oss
         apply:
           tags:
             - nexus
 
     - name: Nexus conan role
-      include_role:
+      ansible.builtin.include_role:
         name: nexus3-conan
 
 - name: Nexus Post-install
@@ -1033,5 +1033,5 @@
   become: true
   tasks:
     - name: HAProxy role
-      include_role:
+      ansible.builtin.include_role:
         name: haproxy
