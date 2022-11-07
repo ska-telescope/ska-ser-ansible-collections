@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 MAKEFLAGS += --no-print-directory
-.PHONY: elastic
+.PHONY: logging
 
 PLAYBOOKS_HOSTS ?= all
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
@@ -45,9 +45,12 @@ ifndef PLAYBOOKS_HOSTS
 endif
 	@ansible all -i $(INVENTORY) -m ping -l $(PLAYBOOKS_HOSTS)
 
-ac-install-collections:  ## Install dependent ansible collections
+ac-install-dependencies:  ## Install dependent ansible collections and roles
 	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
 	ansible-galaxy collection install \
+	-r requirements.yml -p ./ansible_collections
+	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
+	ansible-galaxy role install \
 	-r requirements.yml -p ./ansible_collections
 
 JOBLIST := $(shell find $(JOBS_DIR) -iname '*.mk' -exec basename {} .mk ';')
@@ -69,9 +72,6 @@ common: ac-check-env ## common targets
 oci: ac-check-env ## oci targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/oci.mk
 
-elastic: ac-check-env ## elastic targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/elastic.mk
-
 logging: ac-check-env ## logging targets
 	$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/logging.mk
 
@@ -83,6 +83,9 @@ ceph: ac-check-env ## ceph targets
 
 gitlab-runner: ac-check-env ## gitlab-runner targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/gitlab-runner.mk
+
+nexus: ac-check-env ## nexus targets
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/nexus.mk
 
 ac-print-targets: ## Show Help
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {p=index($$1,":")} {printf "\033[36m%-30s\033[0m %s\n", substr($$1,p+1), $$2}';

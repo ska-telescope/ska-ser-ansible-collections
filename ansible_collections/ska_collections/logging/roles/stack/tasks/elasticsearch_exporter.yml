@@ -1,0 +1,39 @@
+---
+- name: "Docker pull {{ elasticsearch_exporter_image }}"
+  community.general.docker_image:
+    source: pull
+    name: "{{ elasticsearch_exporter_image }}"
+  register: docker_pull_retry
+  until: "docker_pull_retry is not failed"
+  retries: 5
+  delay: 5
+
+- name: Stop elasticsearch exporter container
+  community.docker.docker_container:
+    name: "{{ elasticsearch_exporter_name }}"
+    stop_timeout: 180
+    state: absent
+
+- name: Run elasticsearch exporter container
+  community.general.docker_container:
+    name: "{{ elasticsearch_exporter_name }}"
+    network_mode: "{{ elasticsearch_exporter_network_mode }}"  # reverse DNS must work
+    privileged: "{{ 'yes' if elasticsearch_exporter_network_mode == 'host' else 'no' }}"
+    restart_policy: always
+    image: "{{ elasticsearch_exporter_image }}"
+    user: root
+    state: started
+    labels: "{{ elasticsearch_labels }}"
+    log_driver: "{{ elasticsearch_exporter_log_driver }}"
+    log_options: "{{ elasticsearch_exporter_log_options }}"
+    ports:
+      - "{{ elasticsearch_exporter_port }}:{{ elasticsearch_exporter_port }}"
+    env: "{{ elasticsearch_exporter_env_defaults | combine(elasticsearch_exporter_env_variables) }}"
+    recreate: "{{ elasticsearch_exporter_reinstall }}"
+    volumes:
+      - "{{ certificates_dir }}:/usr/share/elasticsearch/config/certificates:rw"
+    command:
+      - '--es.uri=https://elastic:{{ elasticsearch_password }}@{{ ansible_default_ipv4.address }}:{{ elasticsearch_api_port }}'
+      - '--es.ca=/usr/share/elasticsearch/config/certificates/ca-certificate.crt'
+      - '--es.client-private-key=/usr/share/elasticsearch/config/certificates/{{ inventory_hostname }}.key'
+      - '--es.client-cert=/usr/share/elasticsearch/config/certificates/{{ inventory_hostname }}.crt'

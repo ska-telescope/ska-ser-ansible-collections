@@ -1,6 +1,19 @@
 ---
+
+- name: Check if node-exporter is already installed
+  ansible.builtin.uri:
+    url: "http://{{ ansible_host }}:9100/metrics"
+  ignore_errors: true
+  register: metrics
+
+- name: Print service facts
+  ansible.builtin.debug:
+    var: metrics
+
 - name: Install node_exporter for RedHat/CentOS
-  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat'
+  when:
+    - ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat'
+    - metrics.status != 200
   block:
     - name: Download node exporter install script
       ansible.builtin.get_url:
@@ -22,25 +35,43 @@
 - name: Install node_exporter for Debian
   when:
     - ansible_distribution == 'Ubuntu'
+    - metrics.status != 200
   block:
-    - name: Install prometheus-node-exporter
-      ansible.builtin.apt:
-        deb: "{{ node_exporter_apt_package }}"
+    - name: Download prometheus-node-exporter tarball
+      ansible.builtin.get_url:
+        url: "{{ prometheus_node_exporter_tarball }}"
+        dest: /tmp/node_exporter.tar.gz
+        mode: '0666'
 
-    - name: Create node_exporter service configuration directory
-      ansible.builtin.file:
-        path: /etc/systemd/system/prometheus-node-exporter.service.d
-        state: directory
-        mode: 0755
+    - name: Extract node_exporter.tar.gz into /usr/bin
+      ansible.builtin.unarchive:
+        remote_src: true
+        src: /tmp/node_exporter.tar.gz
+        dest: /usr/bin
 
-    - name: Fix node_exporter service configuration
+    - name: Rename node_exporter directory
+      ansible.builtin.shell: |
+        rm /usr/bin/prometheus-node-exporter
+        mv /usr/bin/node_exporter*/node_exporter /usr/bin/prometheus-node-exporter
+        rm -rf /usr/bin/node_exporter*
+        rm /tmp/node_exporter.tar.gz
+
+    - name: Create prometheus-node-exporter service
       become: true
       ansible.builtin.template:
         src: "prometheus-node-exporter.conf.j2"
-        dest: /etc/systemd/system/prometheus-node-exporter.service.d/prometheus-node-exporter.conf
+        dest: /etc/systemd/system/prometheus-node-exporter.service
         force: true
         mode: 0755
-      notify: restart prometheus-node-exporter
+      notify: Reload systemctl
+
+    - name: Restart prometheus-node-exporter service
+      ansible.builtin.service:
+        name: prometheus-node-exporter
+        state: restarted
+        daemon_reload: true
+        enabled: true
+      become: true
 
 - name: Flush handlers meta
   ansible.builtin.meta: flush_handlers
