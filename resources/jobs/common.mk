@@ -22,6 +22,11 @@ install: check_hosts ## Run common tasks (setup host(s), mount volumes)
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
+update-hosts: check_hosts ## Update /etc/hosts entries with the full inventory information
+	ansible-playbook $(PLAYBOOKS_DIR)/update-hosts.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
 setup-ca: check_hosts ## Setup a CA for self-signed certificates
 	ansible-playbook $(PLAYBOOKS_DIR)/setup-ca.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \

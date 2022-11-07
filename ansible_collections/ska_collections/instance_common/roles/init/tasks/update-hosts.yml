@@ -1,0 +1,11 @@
+---
+- name: Update /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '.*{{ hostvars[item].inventory_hostname }}.*'
+    line: "{{ hostvars[item].ip }} {{ hostvars[item].inventory_hostname }}"
+    state: present
+  with_items: '{{ groups["all"] }}'
+  when: not item == "localhost"
+  register: updatehosts
+  become: true
