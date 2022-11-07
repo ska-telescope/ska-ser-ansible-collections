@@ -68,7 +68,17 @@ install-beats: check_hosts check_logging_secrets ## Install logging
 		ca_cert_password=$(CA_CERT_PASSWORD) \
 		elasticsearch_password=$(ELASTICSEARCH_PASSWORD) \
 	"
-
+test_e2e: check_hosts check_elastic_secrets ## Install elastic
+	ansible-playbook ./ansible_collections/ska_collections/logging/tests/e2e/playbooks/main.yml \
+	-i $(INVENTORY) \
+	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+	--extra-vars " \
+		target_hosts=$(PLAYBOOKS_HOSTS) \
+		ca_cert_password=$(CA_CERT_PASSWORD) \
+		elasticsearch_password=$(ELASTICSEARCH_PASSWORD) \
+		elastic_haproxy_stats_passwd=$(ELASTIC_HAPROXY_STATS_PASSWORD) \
+		kibana_viewer_password=$(KIBANA_VIEWER_PASSWORD) \
+	"
 ## API targets
 check: ## Check Elastic API status
 	@ssh -qt -i $(PEM_FILE) ubuntu@$(LOADBALANCER_IP) \

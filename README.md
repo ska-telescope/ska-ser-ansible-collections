@@ -93,6 +93,7 @@ make <collection> <job> <VARS>
 | elastic    | destroy    | Destroy elasticsearch cluster                              |                                                |
 | logging    | install    | Deploy filebeat into nodes                                 |                                                |
 | logging    | destroy    | Remove filebeat from nodes                                 |                                                |
+| logging    | test_e2e   | Run e2e testing playbooks                                  |                                                |
 | monitoring    | prometheus       | Install prometheus                                |                                                |
 | monitoring    | thanos           | Install thanos                                    |                                                |
 | monitoring    | node-exporter    | Install node-exporter                             |                                                |

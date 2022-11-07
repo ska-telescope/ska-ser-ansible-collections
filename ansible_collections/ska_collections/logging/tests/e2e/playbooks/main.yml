@@ -1,0 +1,14 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: Elasticsearch is healthy
+  ansible.builtin.import_playbook: ../../../playbooks/cluster-health.yml
+  
+- name: Elasticsearch API access is configured
+  ansible.builtin.import_playbook: ../../../playbooks/client-health.yml
+
+- name: Elasticsearch loadbalancer is healthy
+  ansible.builtin.import_playbook: ../../../playbooks/loadbalancer-health.yml
+
+- name: Elasticsearch index CRUD and post events work
+  ansible.builtin.import_playbook: ../../../playbooks/index-crud.yml
