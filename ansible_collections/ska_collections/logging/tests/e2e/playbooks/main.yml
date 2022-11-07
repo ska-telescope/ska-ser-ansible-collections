@@ -3,7 +3,7 @@
 
 - name: Elasticsearch is healthy
   ansible.builtin.import_playbook: ../../../playbooks/cluster-health.yml
-  
+
 - name: Elasticsearch API access is configured
   ansible.builtin.import_playbook: ../../../playbooks/client-health.yml
 

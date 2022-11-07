@@ -1,6 +1,8 @@
 #!/usr/bin/env ansible-playbook
 - name: Elasticsearch api access requires authentication and encrytion
   hosts: "{{ target_hosts + '-loadbalancer' }}"
+  vars:
+    target_hosts: localhost
   become: true
   tasks:
   - name: Set elasticsearch nodes

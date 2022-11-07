@@ -1,6 +1,8 @@
 #!/usr/bin/env ansible-playbook
 - name: Elasticsearch client works with cluster
   hosts: "{{ target_hosts + '-loadbalancer' }}"
+  vars:
+    target_hosts: localhost
   become: true
   tasks:
   - name: Set test variables
