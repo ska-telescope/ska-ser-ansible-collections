@@ -1,0 +1,90 @@
+diff --git a/files/groovy/setup_realms.groovy b/files/groovy/setup_realms.groovy
+index e49d645..1e02e4c 100644
+--- a/files/groovy/setup_realms.groovy
++++ b/files/groovy/setup_realms.groovy
+@@ -19,3 +19,6 @@ realmManager.enableRealm("LdapRealm", parsed_args.ldap_realm)
+ 
+ // enable/disable the Docker Bearer Token Realm
+ realmManager.enableRealm("DockerToken", parsed_args.docker_bearer_token_realm)
++
++// enable the Conan Bearer Token Realm
++realmManager.enableRealm("org.sonatype.repository.conan.internal.security.token.ConanTokenRealm", true)
+diff --git a/tasks/nexus_install.yml b/tasks/nexus_install.yml
+index 6162646..e22e67c 100644
+--- a/tasks/nexus_install.yml
++++ b/tasks/nexus_install.yml
+@@ -304,6 +304,39 @@
+   notify:
+     - nexus-service-stop
+ 
++#nexus-features=\
++# nexus-core-feature,\
++# nexus-cma-feature
++
++- name: Remove pro config
++  lineinfile:
++    dest: "{{ nexus_default_settings_file }}"
++    state: absent
++    regexp: "{{ item.regexp }}"
++  with_items:
++    - { regexp: '^nexus-features=.*' }
++    - { regexp: '^\s+nexus-core-feature.*' }
++    - { regexp: '^\s+nexus-cma-feature.*' }
++    - { regexp: '^\s+nexus-pro-feature.*' }
++  notify:
++    - nexus-service-stop
++
++- name: Set nexus edition
++  lineinfile:
++    dest: "{{ nexus_default_settings_file }}"
++    regexp: "^nexus-edition=.*"
++    line: "nexus-edition=nexus-oss-edition"
++  notify:
++    - nexus-service-stop
++
++- name: Set nexus features
++  lineinfile:
++    dest: "{{ nexus_default_settings_file }}"
++    regexp: "^nexus-features=.*"
++    line: "nexus-features=nexus-core-feature,nexus-cma-feature,nexus-oss-feature"
++  notify:
++    - nexus-service-stop
++
+ - name: Set nexus context path
+   lineinfile:
+     dest: "{{ nexus_default_settings_file }}"
+@@ -332,6 +365,12 @@
+     - nexus-service-stop
+   when: nexus_version is version_compare('3.21.2', '>=')
+ 
++# - name: Commenting out all lines in config file
++#   replace:
++#     path: "{{ nexus_default_settings_file }}"
++#     regexp: '(.*)'
++#     replace: '#\1'
++
+ - name: Create systemd service configuration
+   template:
+     src: "nexus.service"
+diff --git a/tasks/process_repos_list.yml b/tasks/process_repos_list.yml
+index d5dd936..3a3956b 100644
+--- a/tasks/process_repos_list.yml
++++ b/tasks/process_repos_list.yml
+@@ -139,6 +139,17 @@
+             (nexus_repos_pypi_group | map('combine', {"format": "pypi", "type": "group"}) | list)
+           }}
+ 
++    - name: Add conan repositories to global repos list
++      set_fact:
++        _nexus_repos_global_list: >-
++          {{
++            _nexus_repos_global_list | default([])
++            +
++            (nexus_repos_conan_proxy | map('combine', {"format": "conan", "type": "proxy"}) | list)
++            +
++            (nexus_repos_conan_hosted | map('combine', {"format": "conan", "type": "hosted"}) | list)
++          }}
++
+ - name: Process definitions for raw repositories
+   when: nexus_config_raw | bool
+   block:

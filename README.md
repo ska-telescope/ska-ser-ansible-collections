@@ -9,9 +9,10 @@ This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/
 | docker_base           | containerd <br> docker <br> podman    | Install specific OCI engine                               |
 | elastic               | stack <br> logging <br> haproxy       | Elasticsearch and Kibana cluster roles                    |
 | monitoring            | custom_metrics <br> node_exporter <br> prometheus <br> updatehosts | Install prometheus-based metrics services |
-| minikube              | minikube <br> setup <br> velero        | Install minikube and associated tools                    |
-| gitlab_runner         | runner                                 | Install docker-based Gitlab-runner                       |
+| minikube              | minikube <br> setup <br> velero       | Install minikube and associated tools                     |
+| gitlab_runner         | runner                                | Install docker-based Gitlab-runner                        |
 | ceph                  | installation                          | Ceph roles                                                |
+| nexus                 | common <br> nexus3-oss <br> haproxy   | Install Nexus Repository                                  |
 
 ## Usage
 
@@ -64,12 +65,12 @@ little setup.
 
 The table bellow, iterates all the targets available on the main Makefile.
 
-| Target                | Description                             | Mandatory Variables                                         |
-|-----------------------|-----------------------------------------|-------------------------------------------------------------|
-| vars                  | Print relevant shell variables          |                                                             |
-| help                  | Help guide                              |                                                             |
-| ac-ping               | ping all hosts on a specific inventory  | PLAYBOOKS_ROOT_DIR <br> PLAYBOOKS_HOSTS <br> ANSIBLE_CONFIG |
-| ac-install-collections | pulls collections from requirements.yml | ANSIBLE_COLLECTIONS_PATHS                                   |
+| Target                   | Description                                       | Mandatory Variables                                         |
+|--------------------------|---------------------------------------------------|-------------------------------------------------------------|
+| vars                     | Print relevant shell variables                    |                                                             |
+| help                     | Help guide                                        |                                                             |
+| ping                     | ping all hosts on a specific inventory            | PLAYBOOKS_ROOT_DIR <br> PLAYBOOKS_HOSTS <br> ANSIBLE_CONFIG |
+| ac-install-dependencies  | pulls collections and roles from requirements.yml | ANSIBLE_COLLECTIONS_PATHS                                   |
 
 All the targets specific to a collection such as **elastic** or **oci** engine,
 will be separated on their own **.mk** file on **resources/jobs** folder.
@@ -88,7 +89,7 @@ make <collection> <job> <VARS>
 | oci        | containerd | Install containerd                                         |                                                |
 | common     | init       | Update APT <br> Install common packages <br> Mount volumes |                                                |
 | common     | certs      | Generate certificates from the Terminus CA                 |                                                |
-| ceph       | install    | Install ceph                                               | stackhp cephadm (run ac-install-collections)   |
+| ceph       | install    | Install ceph                                               | stackhp cephadm (run ac-install-dependencies)  |
 | elastic    | install    | Install elasticsearch cluster via OCI containers           | instance_common.init <br> intance_common.certs <br> docker_base.docker  |
 | elastic    | destroy    | Destroy elasticsearch cluster                              |                                                |
 | logging    | install    | Deploy filebeat into nodes                                 |                                                |
@@ -99,8 +100,9 @@ make <collection> <job> <VARS>
 | monitoring    | node-exporter    | Install node-exporter                             |                                                |
 | monitoring    | update_metadata  | Update nodes metadata for scrapers                |                                                |
 | monitoring    | update_scrapers  | Update prometheus scrapers                        |                                                |
-| gitlab_runner | install  | Install and register gitlab runner                        |  instance_common.init <br> docker_base.docker  |
-| gitlab_runner | destroy  | Destroy and unregister gitlab runner                      |                                                |
+| gitlab_runner | install | Install and register gitlab runner                         |  instance_common.init <br> docker_base.docker  |
+| gitlab_runner | destroy | Destroy and unregister gitlab runner                       |                                                |
+| nexus         | install | Install Nexus Repository                                   |  instance_common.init <br> docker_base.docker <br> ansible-thoteam.nexus3-oss (run ac-install-dependencies)  |
 
 ### Mandatory Environment Variables
 

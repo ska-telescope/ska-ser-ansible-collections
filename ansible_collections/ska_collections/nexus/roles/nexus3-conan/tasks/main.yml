@@ -1,0 +1,14 @@
+---
+- name: Get path to default settings
+  ansible.builtin.set_fact:
+    nexus_default_settings_file: "{{ nexus_installation_dir }}/nexus-latest/etc/nexus-default.properties"
+
+- name: Activate the Conan plugin
+  ansible.builtin.lineinfile:
+    path: "{{ nexus_default_settings_file }}"
+    regexp: "^nexus.conan.hosted.enabled=.*"
+    line: "nexus.conan.hosted.enabled=true"
+  notify:
+    - nexus-service-restart
+    - wait-for-nexus
+    - wait-for-nexus-port

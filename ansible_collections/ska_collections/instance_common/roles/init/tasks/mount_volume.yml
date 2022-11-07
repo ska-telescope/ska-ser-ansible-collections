@@ -1,11 +1,11 @@
 ---
 - name: Begin volume mounting process
-  debug:
+  ansible.builtin.debug:
     msg: "{{ volume }}"
   when: debug
 
 - name: Check if volume is already mounted
-  command: /bin/mountpoint -q {{ volume.mount_point }}
+  ansible.builtin.command: /bin/mountpoint -q {{ volume.mount_point }}
   ignore_errors: true
   register: is_mounted
   changed_when: "is_mounted.rc != 0"
@@ -21,7 +21,7 @@
       register: uuid
       changed_when: false
     - name: Create mounting directory
-      file:
+      ansible.builtin.file:
         path: "{{ volume.mount_point }}"
         state: directory
         mode: 0755

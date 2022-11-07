@@ -4,13 +4,13 @@
     state: started
 
 - name: run update-grub
-  ansible.builtin.command: "{{ update_grub }}"
+  ansible.builtin.command: "{{ nexus_common_update_grub }}"
   when: ansible_distribution_major_version|int > 6
 
 - name: restart rsyslog
-  ansible.builtin.service: name=rsyslog state=restarted enabled=true
+  ansible.builtin.service: name=rsyslog state=restarted enabled=yes
   become: true
 
 - name: restart journald
-  ansible.builtin.service: name=systemd-journald state=restarted enabled=true
+  ansible.builtin.service: name=systemd-journald state=restarted enabled=yes
   become: true

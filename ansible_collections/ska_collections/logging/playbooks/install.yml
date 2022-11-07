@@ -93,7 +93,7 @@
 
     - name: Install elasticsearch exporter
       ansible.builtin.import_role:
-        name: ska_collections.elastic.stack
+        name: ska_collections.logging.stack
         tasks_from: elasticsearch_exporter
   tags:
     - elasticsearch
@@ -117,7 +117,7 @@
 
     - name: Install elasticsearch exporter
       ansible.builtin.import_role:
-        name: ska_collections.elastic.stack
+        name: ska_collections.logging.stack
         tasks_from: elasticsearch_exporter
   tags:
     - elasticsearch

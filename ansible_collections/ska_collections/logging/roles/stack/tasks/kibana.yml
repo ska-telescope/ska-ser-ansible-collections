@@ -55,7 +55,7 @@
         {
           "application": "kibana-.kibana",
           "privileges": "{{ kibana_application_privileges }}",
-          "resources": [ "space:default" ]
+          "resources": ["space:default"]
         }
       ]
     client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"

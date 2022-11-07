@@ -3,7 +3,7 @@
 - name: Check if node-exporter is already installed
   ansible.builtin.uri:
     url: "http://{{ ansible_host }}:9100/metrics"
-  ignore_errors: yes
+  ignore_errors: true
   register: metrics
 
 - name: Print service facts
