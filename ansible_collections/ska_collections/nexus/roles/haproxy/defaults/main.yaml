@@ -30,3 +30,32 @@ nexus_haproxy_container_log_options:
 # labelling on container runtime
 nexus_haproxy_container_labels:
   org.ska.app.group: frontend
+
+nexus_haproxy_conan_search_env_variables: {} # meant to be overrided
+nexus_haproxy_conan_search_defaults:
+  NEXUS_URL: "{{ nexus_haproxy_conan_search_url }}"
+  NEXUS_REPOSITORY: "{{ nexus_haproxy_conan_search_repository }}"
+  GITLAB_API_REQUESTER: ""
+  GITLAB_API_PRIVATE_TOKEN: ""
+  SLACK_BOT_TOKEN: ""
+  SLACK_SIGNING_SECRET: ""
+  SLACK_CLIENT_SECRET: ""
+  JIRA_USERNAME: ""
+  JIRA_URL: ""
+  JIRA_PASSWORD: ""
+  GITLAB_TOKEN: ""
+  GITLAB_HEADER: "X-Gitlab-Token"
+  UNLEASH_API_URL: ""
+  UNLEASH_INSTANCE_ID: ""
+  UNLEASH_ENVIRONMENT: ""
+  RTD_TOKEN: "mandatory"
+  GOOGLE_API_KEY: ""
+  GOOGLE_SPREADSHEET_ID: ""
+  NEXUS_HMAC_SIGNATURE_SECRET: ""
+  OPENID_SECRET: ""
+  GITLAB_CLIENT_ID: ""
+  GITLAB_CLIENT_SECRET: ""
+  KEEP_ALIVE: "50"
+  LOG_LEVEL: "INFO"
+  MAX_WORKERS: "10"
+  JSON_CONFIG_PATH: "/etc/ncs_config/fastapi-plugins.conf.yaml"

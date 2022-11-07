@@ -1,52 +1,52 @@
-- name: create /etc/ha_config directory
+- name: Create /etc/ha_config directory
   ansible.builtin.file:
     path: /etc/hap_config
     state: directory
     mode: 0755
 
-- name: create HAproxy config
+- name: Create haproxy config
   ansible.builtin.template:
     src: haproxyConfig.j2
     dest: /etc/hap_config/haproxy.cfg
     mode: "0644"
   register: hapconfig
 
-- name: create /etc/ncs_config directory
+- name: Create /etc/ncs_config directory
   ansible.builtin.file:
     path: /etc/ncs_config
     state: directory
     mode: 0644
 
-- name: create ncs config
+- name: Create ncs config
   ansible.builtin.template:
     src: fastapi-plugins.conf.yaml.j2
     dest: /etc/ncs_config/fastapi-plugins.conf.yaml
     mode: "0644"
   register: ncsconfig
 
-- name: "docker pull image for {{ nexus_haproxy_container_image }}"
+- name: "Docker pull image for {{ nexus_haproxy_name }}"
   docker_image:
     source: pull
     name: "{{ nexus_haproxy_container_image }}"
   register: hapimage
 
-- name: "docker pull image for {{ nexus_haproxy_conan_search_container_image }}"
+- name: "Docker pull image for {{ nexus_haproxy_conan_search_container_image }}"
   docker_image:
     source: pull
     name: "{{ nexus_haproxy_conan_search_container_image }}"
   register: ncsimage
 
-- name: Get haproxy container info
+- name: "Get {{ nexus_haproxy_name }} container info"
   docker_container_info:
     name: "{{ nexus_haproxy_name }}"
   register: hainfo
 
-- name: Get conan search container info
+- name: "Get {{ nexus_haproxy_conan_search_name }} container info"
   docker_container_info:
     name: "{{ nexus_haproxy_conan_search_name }}"
   register: ncsinfo
 
-- name: run conan search in a container  # noqa 503
+- name: "Run {{ nexus_haproxy_conan_search_name }} container"  # noqa 503
   docker_container:
     name: "{{ nexus_haproxy_conan_search_name }}"
     image: "{{ nexus_haproxy_conan_search_container_image }}"
@@ -64,36 +64,10 @@
     volumes:
       - /etc/ncs_config:/etc/ncs_config
     command: "uvicorn app.main:app --proxy-headers --host 0.0.0.0 --port {{ nexus_haproxy_conan_search_proxy_port }}"
-    env:
-      NEXUS_URL: "{{ nexus_haproxy_conan_search_url }}"
-      NEXUS_REPOSITORY: "{{ nexus_haproxy_conan_search_repository }}"
-      GITLAB_API_REQUESTER: ""
-      GITLAB_API_PRIVATE_TOKEN: ""
-      SLACK_BOT_TOKEN: ""
-      SLACK_SIGNING_SECRET: ""
-      SLACK_CLIENT_SECRET: ""
-      JIRA_USERNAME: ""
-      JIRA_URL: ""
-      JIRA_PASSWORD: ""
-      GITLAB_TOKEN: ""
-      GITLAB_HEADER: "X-Gitlab-Token"
-      UNLEASH_API_URL: ""
-      UNLEASH_INSTANCE_ID: ""
-      UNLEASH_ENVIRONMENT: ""
-      RTD_TOKEN: "mandatory"
-      GOOGLE_API_KEY: ""
-      GOOGLE_SPREADSHEET_ID: ""
-      NEXUS_HMAC_SIGNATURE_SECRET: ""
-      OPENID_SECRET: ""
-      GITLAB_CLIENT_ID: ""
-      GITLAB_CLIENT_SECRET: ""
-      KEEP_ALIVE: "50"
-      LOG_LEVEL: "INFO"
-      MAX_WORKERS: "10"
-      JSON_CONFIG_PATH: "/etc/ncs_config/fastapi-plugins.conf.yaml"
+    env: "{{ nexus_env_defaults | combine(nexus_env_variables) }}"
   when: ncsconfig.changed or ncsimage.changed or not ncsinfo.exists or not ncsinfo.container.State.Running
 
-- name: run haproxy in a container  # noqa 503
+- name: "Run {{ nexus_haproxy_name }} in a container"  # noqa 503
   docker_container:
     name: "{{ nexus_haproxy_name }}"
     image: "{{ nexus_haproxy_container_image }}"
