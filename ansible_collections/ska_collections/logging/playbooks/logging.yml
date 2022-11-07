@@ -10,7 +10,7 @@
       debug: var=hostvars[inventory_hostname]
       when: debug
 
-- name: "Apply the logging role to the logging nodes"
+- name: "Apply the beats role to the logging nodes"
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
@@ -18,4 +18,4 @@
   roles:
     - ska_collections.instance_common.init
     - ska_collections.docker_base.podman
-    - ska_collections.elastic.logging
+    - ska_collections.logging.beats
