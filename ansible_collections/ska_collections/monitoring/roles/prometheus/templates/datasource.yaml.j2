@@ -13,7 +13,11 @@ datasources:
   type: 'prometheus'
   access: 'proxy'
   orgId: 1
+{% if hostvars[thanos_query_frontend] is defined %}
   url: https://{{ hostvars[thanos_query_frontend].ip }}:9095
+{% else %}
+  url: https://{{ ansible_fqdn | default(ansible_host) | default('localhost') }}:9095
+{% endif %}
   basicAuth: false
   isDefault: true
   editable: false

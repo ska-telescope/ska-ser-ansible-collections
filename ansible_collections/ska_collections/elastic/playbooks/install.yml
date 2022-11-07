@@ -90,6 +90,11 @@
         tasks_from: elastic
       vars:
         elasticsearch_node_roles: "{{ elasticsearch_default_master_roles if ((groups[target_hosts + '-data'] | default([])) | length ) > 0 else elasticsearch_default_node_roles }}"
+
+    - name: Install elasticsearch exporter
+      ansible.builtin.import_role:
+        name: ska_collections.elastic.stack
+        tasks_from: elasticsearch_exporter
   tags:
     - elasticsearch
 
@@ -109,6 +114,11 @@
         tasks_from: elastic
       vars:
         elasticsearch_node_roles: "{{ elasticsearch_default_data_roles }}"
+
+    - name: Install elasticsearch exporter
+      ansible.builtin.import_role:
+        name: ska_collections.elastic.stack
+        tasks_from: elasticsearch_exporter
   tags:
     - elasticsearch
 
