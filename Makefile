@@ -71,6 +71,16 @@ ifndef PLAYBOOKS_HOSTS
 endif
 	@ansible all -i $(INVENTORY) -m ping -l $(PLAYBOOKS_HOSTS)
 
+get-info: check-env ## Get Ansible targets' info
+ifndef PLAYBOOKS_HOSTS
+	$(error PLAYBOOKS_HOSTS is undefined)
+endif
+	@ansible all -i $(INVENTORY) -m debug -a "msg=[\
+		\"Alias: {{ inventory_hostname }}\",\
+		\"Host: {{ hostvars[inventory_hostname].ansible_host }}\",\
+		\"IP: {{ hostvars[inventory_hostname].ip }}\"\
+	]" -l $(PLAYBOOKS_HOSTS)
+
 install_collections:  ## Install dependent ansible collections
 	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
 	ansible-galaxy collection install \

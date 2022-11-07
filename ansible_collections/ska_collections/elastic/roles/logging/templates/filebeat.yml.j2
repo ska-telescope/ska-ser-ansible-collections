@@ -108,7 +108,7 @@ output:
     ssl.certificate: "/etc/{{ logging_filebeat_certificate_name }}.crt"
     ssl.key: "/etc/{{ logging_filebeat_certificate_key_name }}.key"
 {% if logging_filebeat_elasticsearch_auth_method == "api-key" %}
-    api_key: "{{ logging_filebeat_elasticsearch_api_key }}"
+    api_key: "{{ logging_filebeat_elasticsearch_password }}"
 {% else %}
     username: "{{ logging_filebeat_elasticsearch_user }}" 
     password: "{{ logging_filebeat_elasticsearch_password }}"

@@ -28,8 +28,8 @@ logging_filebeat_env_defaults: {}
 logging_filebeat_elasticsearch_address: "{{ _ | mandatory('`logging_filebeat_elasticsearch_address` definition is mandatory') }}"
 logging_filebeat_elasticsearch_url: "https://{{ logging_filebeat_elasticsearch_address }}:{{ elasticsearch_api_port }}"
 logging_filebeat_elasticsearch_auth_method: 'basic'
-logging_filebeat_elasticsearch_api_key: "{{ _ | mandatory('`logging_filebeat_api_key` definition is mandatory') }}"
 logging_filebeat_elasticsearch_user: 'elastic'
+# Can be an elasticsearch api-key when logging_filebeat_elasticsearch_auth_method: 'api-key'
 logging_filebeat_elasticsearch_password: "{{ _ | mandatory('`logging_filebeat_elasticsearch_password` definition is mandatory') }}"
 
 logging_filebeat_pipeline_name: "ska_log_parsing_pipeline"

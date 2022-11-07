@@ -31,5 +31,5 @@
   become: true
   roles:
     - containerd
-    - podman
     - docker
+    - podman
