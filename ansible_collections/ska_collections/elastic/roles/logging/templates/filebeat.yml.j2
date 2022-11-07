@@ -1,5 +1,6 @@
 name: {{ inventory_hostname }}
 
+# input configuration
 filebeat:
   inputs:
     - type: journald
@@ -7,7 +8,15 @@ filebeat:
       paths: []
       seek: cursor
       cursor_seek_fallback: tail
-{% if log_kubernetes|bool %}
+      processors:
+      - add_fields:
+          target: ''
+          fields:
+            ska.datacentre: {{ ska_datacentre }}
+            ska.environment: {{ ska_environment }}
+            ska.service: {{ ska_service | default(logging_service_default) }}
+            ska.application: journald
+{% if logging_filebeat_kubernetes_enabled|bool %}
     - type: container
       symlinks: true
       kube_config: /kube_config
@@ -36,12 +45,12 @@ filebeat:
       - add_fields:
           target: ''
           fields:
+            ska.datacentre: {{ ska_datacentre }}
             ska.environment: {{ ska_environment }}
-            ska.service: {{ ska_service }}
-            ska.deployment: {{ ska_deployment }}
+            ska.service: {{ ska_service | default(logging_service_default) }}
             ska.application: kubernetes
 {% endif %}
-{% if log_docker|bool %}
+{% if logging_filebeat_docker_enabled|bool %}
     - type: docker
       combine_partial: true
       exclude_files: ['\.gz$']
@@ -59,53 +68,57 @@ filebeat:
           when:
               and:
                 - equals:
-                    docker.container.name: {{ filebeat_name }}
-
+                    docker.container.name: {{ logging_filebeat_name }}
       - add_fields:
           target: ''
           fields:
+            ska.datacentre: {{ ska_datacentre }}
             ska.environment: {{ ska_environment }}
-            ska.service: {{ ska_service }}
-            ska.deployment: {{ ska_deployment }}
+            ska.service: {{ ska_service | default(logging_service_default) }}
             ska.application: docker
 {% endif %}
-
-output:
-  elasticsearch:
-    hosts:
-      - {{ logging_loadbalancer_address }}
-    ssl.certificate_authorities: ["{{ certificates_dir }}/ca-certificate.crt"]
-    ssl.certificate: "{{ certificates_dir }}/{{ filebeat_certificate_name }}.crt" # certificate for SSL client authentication to be copied from terminus
-    ssl.key: "{{ certificates_dir }}/{{ filebeat_private_key_name }}.key" # client certificate key to be copied from terminus
-    loadbalance: true
-    worker: 1
-    # bulk_max_size: 100
-    # compression_level: 9 # no - as this is bad for CPU
-    index: "filebeat-%{[agent.version]}"
-    # index: "filebeat"
-{% if filebeat_pipeline|length %}
-    pipeline: {{ filebeat_pipeline }}
+{% if logging_filebeat_podman_enabled|bool %}
+# TODO: Implement filebeat podman log collection
 {% endif %}
 
+# output configuration
+output:
+  elasticsearch:
+    hosts: ["{{ logging_filebeat_elasticsearch_url }}"]
+    ssl.certificate_authorities: ["/etc/ca-certificate.crt"]
+    ssl.certificate: "/etc/{{ logging_filebeat_certificate_name }}.crt"
+    ssl.key: "/etc/{{ logging_filebeat_certificate_key_name }}.key"
+{% if logging_filebeat_elasticsearch_auth_method == "api-key" %}
+    api_key: "{{ logging_filebeat_elasticsearch_api_key }}"
+{% else %}
+    username: "{{ logging_filebeat_elasticsearch_user }}" 
+    password: "{{ logging_filebeat_elasticsearch_password }}"
+{% endif %}
+    loadbalance: true
+    worker: 1
+    index: "filebeat-%{[agent.version]}"
+{% if logging_filebeat_pipeline_enabled|bool %}
+    pipeline: {{ logging_filebeat_pipeline_name }}
+{% endif %}
+
+# ilm configuration
 # https://www.elastic.co/guide/en/beats/filebeat/master/ilm.html#setup-ilm-check_exists-option
-setup.ilm.enabled: auto # not sure!!! should go for true
-# setup.ilm.rollover_alias: "filebeat"
+setup.ilm.enabled: true
 setup.ilm.rollover_alias: "filebeat-%{[agent.version]}"
 setup.ilm.pattern: "{now/d}-000001"
 setup.ilm.check_exists: true
 setup.ilm.overwrite: false
 setup.ilm.policy_name: "filebeat"
-setup.ilm.policy_file: /etc/beat_policy.json
-# setup.template.name: "filebeat-%{[agent.version]}" # version not needed as auto appended
-setup.template.name: "filebeat" # probably ignored because of setup.ilm.enabled
-# setup.template.pattern: "filebeat-%{[agent.version]}-*" # version not needed as auto appended
-setup.template.pattern: "filebeat-*" # probably ignored because of setup.ilm.enabled
+setup.ilm.policy_file: /etc/filebeat-ilm-policy.json
+
+# template configuration
+setup.template.name: "filebeat-%{[agent.version]}"
+setup.template.pattern: "filebeat-%{[agent.version]}-*"
 setup.template.enabled: true
-# setup.template.overwrite: {{ filebeat_template_overwrite | string | lower }}
 setup.template.overwrite: true
-{% if filebeat_pipeline|length %}
+{% if logging_filebeat_pipeline_enabled|bool %}
 setup.template.settings:
-  index.default_pipeline: "{{ filebeat_pipeline }}"
+  index.default_pipeline: "{{ logging_filebeat_pipeline_name }}"
 {% endif %}
 setup.template.append_fields:
 - name: ska_function
@@ -150,5 +163,3 @@ setup.template.append_fields:
   multi_fields:
     - type: keyword
       name: keyword
-
-setup.kibana.host: "{{ ansible_default_ipv4.address }}:5601"

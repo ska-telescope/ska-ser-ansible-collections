@@ -35,7 +35,12 @@ vars:  ## Variables
 	@echo "ANSIBLE_LINT_PARAMETERS=$(ANSIBLE_LINT_PARAMETERS)"
 	@echo "ANSIBLE_EXTRA_VARS=$(ANSIBLE_EXTRA_VARS)"
 	@echo ""
-	@echo -e "\033[33m--------- Global Secrets ------------\033[0m"
+	@echo -e "\033[33m--------- Secrets ------------\033[0m"
+	@echo -e $$(ansible -o -m ansible.builtin.debug \
+		-a msg="_s_{{ ($(SECRETS_ROOT_VAR) | to_nice_yaml) | default("") }}_e_" \
+		$(ANSIBLE_EXTRA_VARS) localhost 2>/dev/null | grep -v "FAILED" | \
+		sed 's#.*_s_\(.*\)_e_.*#\1#');
+	@echo -e "\033[33m--------- Shared Secrets ------------\033[0m"
 	@echo -e $$(ansible -o -m ansible.builtin.debug \
 		-a msg="_s_{{ ($(SECRETS_ROOT_VAR).shared | to_nice_yaml) | default("") }}_e_" \
 		$(ANSIBLE_EXTRA_VARS) localhost 2>/dev/null | grep -v "FAILED" | \

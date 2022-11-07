@@ -24,8 +24,6 @@
         certificate_name: "{{ inventory_hostname }}"
         certificate_key_name: "{{ inventory_hostname }}"
         certificate_dns_alt_name: "{{ elasticsearch_dns_name }}"
-  tags:
-    - certificate
 
 - name: Check if elasticsearch is installed
   hosts: "{{ (groups[target_hosts + '-master'] | default([])) + (groups[target_hosts + '-data'] | default([])) }}"

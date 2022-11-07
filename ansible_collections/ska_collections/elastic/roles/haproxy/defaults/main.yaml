@@ -13,11 +13,11 @@ elastic_haproxy_log_options:
   labels: "org.ska.app.group"
 
 elastic_haproxy_stats_port: 9090
+elastic_haproxy_stats_user: "stats"
 elastic_haproxy_stats_endpoint: "/haproxy_stats"
 
 # Vaulted variables
 
-elastic_haproxy_stats_user: "{{ _ | mandatory('`elastic_haproxy_stats_user` definition is mandatory') }}"
 elastic_haproxy_stats_password: "{{ _ | mandatory('`elastic_haproxy_stats_password` definition is mandatory') }}"
 
 # Shared

@@ -11,6 +11,13 @@ elasticsearch_image: docker.elastic.co/elasticsearch/elasticsearch:8.4.2
 elasticsearch_network_mode: "bridge"
 elasticsearch_memory: 16G
 elasticsearch_java_mem: 8g
+elasticsearch_log_driver: json-file
+elasticsearch_log_max_size: "10m"
+elasticsearch_log_max_file: "3"
+elasticsearch_log_options:
+  max-size: "{{  elasticsearch_log_max_size }}"
+  max-file: "{{ elasticsearch_log_max_file }}"
+  labels: "org.ska.app.group"
 elasticsearch_labels:
   org.ska.app.group: logging
 
@@ -44,15 +51,6 @@ elasticsearch_api_keys: {}
 #
 
 elasticsearch_discovery_type: "{% if (groups[target_hosts] | length) > 1 %}multi-node{% else %}single-node{% endif %}"
-
-elasticsearch_log_driver: json-file
-elasticsearch_log_max_size: "10m"
-elasticsearch_log_max_file: "3"
-elasticsearch_log_options:
-  max-size: "{{  elasticsearch_log_max_size }}"
-  max-file: "{{ elasticsearch_log_max_file }}"
-  labels: "org.ska.app.group"
-
 elasticsearch_reinstall: false
 elasticsearch_clean_data_volume: false
 
@@ -109,7 +107,6 @@ kibana_log_options:
   max-size: "{{  kibana_log_max_size }}"
   max-file: "{{ kibana_log_max_file }}"
   labels: "org.ska.app.group"
-
 kibana_labels:
   org.ska.app.group: logging
 
@@ -140,3 +137,5 @@ certificates_dir: /etc/pki/tls/private
 # Valuted variables
 
 ca_cert_password: "{{ _ | mandatory('`ca_cert_password` definition is mandatory') }}"
+elasticsearch_password: "{{ _ | mandatory('`elasticsearch_password` definition is mandatory') }}"
+kibana_viewer_password: "{{ _ | mandatory('`kibana_viewer_password` definition is mandatory') }}"

@@ -23,7 +23,9 @@ install: check_hosts ## Install logging
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 destroy: check_hosts
-	@echo "logging: destroy not implemented"
+	ansible-playbook $(PLAYBOOKS_DIR)/destroy-logging.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 help: ## Show Help
 	@echo "Logging targets - make playbooks logging <target>:"

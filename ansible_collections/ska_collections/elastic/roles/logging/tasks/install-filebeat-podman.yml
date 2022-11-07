@@ -1,0 +1,48 @@
+---
+- name: Collect facts about system services
+  service_facts:
+  register: services
+
+- name: Ensure Podman is running
+  ansible.builtin.assert:
+    that:
+      - "'podman.service' in services.ansible_facts.services"
+      - "'running' == services.ansible_facts.services['podman.service'].state"
+
+- name: "Podman pull {{ logging_filebeat_image }}"
+  containers.podman.podman_image:
+    name: "{{ logging_filebeat_image }}"
+  register: podman_pull_retry
+  until: "podman_pull_retry is not failed"
+  retries: 5
+  delay: 5
+#- name: Deploy ElasticStack filebeat without K8s
+#  containers.podman.podman_container:
+#    name: "{{ filebeat_name }}"
+#    image: "{{ filebeat_image }}"
+#    command: "filebeat -e -strict.perms=false -c /etc/filebeat.yaml"
+#    # annotation:
+#    #   run.oci.keep_original_groups: 1
+#    # privileged: true
+#    restart_policy: always
+#    network_mode: host
+#    user: root
+#    memory: "512M"
+#    # memory_swap: "1G" # can't use as swap is disabled by default
+#    labels: "{{ container_labels }}"
+#    log_driver: "{{ log_driver }}"
+#    log_options: "{{ log_options }}"
+#    volumes:
+#      - "/var/log:/var/log:ro"  # symlinks to pod logs and container logs
+#      - "/var/run/docker.sock:/var/run/docker.sock:Z"
+#      - "/var/lib/docker/containers:/var/lib/docker/containers:ro"  # docker logs
+#      # - "/var/lib/kubelet/pods:/var/lib/kubelet/pods:ro"  # kubernetes containers
+#      - "/var/lib/filebeat:/usr/share/filebeat/data/registry/filebeat:rw"  # persistent registry
+#      - "/etc/hostname:/etc/hostname:ro"
+#      - "/etc/machine-id:/etc/machine-id:ro"
+#      - "/etc/filebeat.yaml:/etc/filebeat.yaml:ro"
+#      - "/etc/beat_policy.json:/etc/beat_policy.json:ro"
+#      - "/var/log/journal:/var/log/journal:ro"  # journal databases
+#      - "/run/systemd:/run/systemd:ro"
+#      - "/etc/pki/:/etc/pki/"
+#  when: not log_kubernetes
