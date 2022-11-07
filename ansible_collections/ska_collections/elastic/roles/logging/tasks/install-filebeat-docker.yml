@@ -30,12 +30,11 @@
     labels: "{{ logging_filebeat_labels }}"
     log_driver: "{{ logging_filebeat_log_driver }}"
     log_options: "{{ logging_filebeat_log_options }}"
-    volumes: "{{ 
-      logging_filebeat_volumes + 
-      (logging_filebeat_kubernetes_enabled | ternary(logging_filebeat_kubernetes_volumes, [])) + 
-      (logging_filebeat_docker_enabled | ternary(logging_filebeat_docker_volumes, [])) + 
+    volumes: "{{
+      logging_filebeat_volumes +
+      (logging_filebeat_kubernetes_enabled | ternary(logging_filebeat_kubernetes_volumes, [])) +
+      (logging_filebeat_docker_enabled | ternary(logging_filebeat_docker_volumes, [])) +
       (logging_filebeat_podman_enabled | ternary(logging_filebeat_podman_volumes, []))
     }}"
     env: "{{ logging_filebeat_env_defaults | combine(logging_filebeat_env_variables) }}"
     recreate: true
-    

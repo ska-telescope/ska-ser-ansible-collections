@@ -30,7 +30,7 @@
         name: ska_collections.elastic.logging
         tasks_from: destroy-filebeat-podman
       when: 'logging_filebeat_oci_engine == "podman"'
-    
+
     - name: Destroy filebeat common
       ansible.builtin.import_role:
         name: ska_collections.elastic.logging
