@@ -64,7 +64,7 @@
     volumes:
       - /etc/ncs_config:/etc/ncs_config
     command: "uvicorn app.main:app --proxy-headers --host 0.0.0.0 --port {{ nexus_haproxy_conan_search_proxy_port }}"
-    env: "{{ nexus_env_defaults | combine(nexus_env_variables) }}"
+    env: "{{ nexus_haproxy_conan_search_defaults | combine(nexus_haproxy_conan_search_env_variables) }}"
   when: ncsconfig.changed or ncsimage.changed or not ncsinfo.exists or not ncsinfo.container.State.Running
 
 - name: "Run {{ nexus_haproxy_name }} in a container"  # noqa 503
