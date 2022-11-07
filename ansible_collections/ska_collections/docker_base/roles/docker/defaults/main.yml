@@ -9,7 +9,6 @@ docker_deb_repo_url: "deb https://download.docker.com/linux/ubuntu {{ ansible_di
 docker_deb_repo_key_url: https://download.docker.com/linux/ubuntu/gpg
 docker_deb_repo_key_id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
 
-nexus_schema: "http"
 nexus: "{{ _ | mandatory('`nexus` definition is mandatory') }}"
 nexus_docker_hosted_port: 9080
 nexus_docker_group_port: 9082
@@ -22,7 +21,7 @@ docker_ignore_nvidia_fail: false
 docker_driver: overlay2
 docker_repo: localhost:5000
 docker_metrics_port: 9323
-docker_registry_mirror: "{{ nexus_schema }}:{{ nexus }}:{{ nexus_docker_group_port }}"
+docker_registry_mirror: "http://{{ nexus }}:{{ nexus_docker_group_port }}"
 docker_nexus_hosted_cache: "{{ nexus }}:{{ nexus_docker_hosted_port }}"
 
 docker_log_max_size: "10m"

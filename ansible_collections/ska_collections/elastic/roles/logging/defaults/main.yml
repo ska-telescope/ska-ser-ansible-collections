@@ -57,18 +57,20 @@ logging_filebeat_volumes:
   # journal
   - "/var/log/journal:/var/log/journal:ro"
 
-logging_filebeat_kubernetes_enabled: false
+logging_filebeat_kubernetes_enabled: auto
 logging_filebeat_kubernetes_volumes:
   - "{{ logging_kubeconfig_path }}:/kube_config:ro"
   - "/var/lib/kubelet/pods:/var/lib/kubelet/pods:ro"
 
-logging_filebeat_docker_enabled: true
+logging_filebeat_docker_enabled: auto
 logging_filebeat_docker_volumes:
   - "/var/run/docker.sock:/var/run/docker.sock:Z"
   - "/var/lib/docker/containers:/var/lib/docker/containers:ro"
 
-logging_filebeat_podman_enabled: true
-logging_filebeat_podman_volumes: []
+logging_filebeat_podman_enabled: auto
+logging_filebeat_podman_volumes:
+  - "/var/run/podman/podman.sock:/var/run/podman/podman.sock:Z"
+  - "/var/lib/containers:/var/lib/containers:ro"
 
 # Shared
 

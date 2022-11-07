@@ -1,13 +1,8 @@
 ---
-- name: Collect facts about system services
-  service_facts:
-  register: services
-
 - name: Ensure Docker is running
   ansible.builtin.assert:
     that:
-      - "'docker.service' in services.ansible_facts.services"
-      - "'running' == services.ansible_facts.services['docker.service'].state"
+      - "docker_detected"
 
 - name: "Docker pull {{ logging_filebeat_image }}"
   community.general.docker_image:

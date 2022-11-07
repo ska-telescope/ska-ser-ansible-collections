@@ -51,15 +51,12 @@ filebeat:
             ska.application: kubernetes
 {% endif %}
 {% if logging_filebeat_docker_enabled|bool %}
-    - type: docker
+    - type: container
       combine_partial: true
       exclude_files: ['\.gz$']
       exclude_lines: ["^\\s+[\\-`('.|_]"]  # drop asciiart lines
-      containers:
-        path: "/var/lib/docker/containers"
-        stream: "stdout"
-        ids:
-          - "*"
+      stream: stdout
+      paths: ["/var/lib/docker/containers/*/*.log"]
       processors:
       - add_docker_metadata:
           host: "unix:///var/run/docker.sock"
@@ -78,7 +75,29 @@ filebeat:
             ska.application: docker
 {% endif %}
 {% if logging_filebeat_podman_enabled|bool %}
-# TODO: Implement filebeat podman log collection
+    - type: container
+      combine_partial: true
+      exclude_files: ['\.gz$']
+      exclude_lines: ["^\\s+[\\-`('.|_]"]  # drop asciiart lines
+      stream: stdout
+      paths: ["/var/lib/containers/storage/overlay-containers/*/*/*.log"]
+      processors:
+      - add_docker_metadata:
+          match_source_index: 5
+          host: "unix:///var/run/podman/podman.sock"
+# get rid of all filebeat/journalbeat related logs
+      - drop_event:
+          when:
+              and:
+                - equals:
+                    docker.container.name: {{ logging_filebeat_name }}
+      - add_fields:
+          target: ''
+          fields:
+            ska.datacentre: {{ ska_datacentre }}
+            ska.environment: {{ ska_environment }}
+            ska.service: {{ ska_service | default(logging_service_default) }}
+            ska.application: podman
 {% endif %}
 
 # output configuration
