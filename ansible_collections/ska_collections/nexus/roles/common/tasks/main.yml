@@ -1,5 +1,5 @@
 ---
-- name: install JDK 1.8
+- name: Install JDK 1.8
   ansible.builtin.apt:
     name: "openjdk-8-jre-headless"
     update_cache: true
@@ -10,7 +10,7 @@
   until: apt_res is success
   when: ansible_os_family == "Debian"
 
-- name: install rsync
+- name: Install rsync
   ansible.builtin.apt:
     name: "rsync"
     update_cache: true
