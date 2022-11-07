@@ -3,3 +3,5 @@ prometheus_node_metric_relabel_configs.yaml
 PrivateRules.mak
 stackhpc/
 ansible-thoteam.nexus3-oss/
+**/tests/e2e/ssh.config
+**/tests/e2e/inventory.yml

@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 MAKEFLAGS += --no-print-directory
-.PHONY: elastic
+.PHONY: logging
 
 PLAYBOOKS_HOSTS ?= all
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
@@ -68,9 +68,6 @@ common: ac-check-env ## common targets
 
 oci: ac-check-env ## oci targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/oci.mk
-
-elastic: ac-check-env ## elastic targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/elastic.mk
 
 logging: ac-check-env ## logging targets
 	$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/logging.mk
