@@ -5,7 +5,7 @@
   register: check_key
 
 - name: Check if certificate exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ certificates_dir }}/{{ certificate_name }}.crt"
   register: check_cert
 
@@ -44,7 +44,7 @@
       register: certificate
 
     - name: Write certificate file on client host
-      copy:
+      ansible.builtin.copy:
         dest: "{{ certificates_dir }}/{{ certificate_name }}.crt"
         content: "{{ certificate.certificate }}"
         mode: 0644
@@ -58,7 +58,11 @@
   register: capemfile
 
 - name: Write CA certificate file on client host
-  copy:
+  ansible.builtin.copy:
     content: "{{ capemfile['content'] | b64decode }}"
     dest: "{{ certificates_dir }}/ca-certificate.crt"
     mode: 0644
+
+- name: Set certificates_dir fact
+  ansible.builtin.set_fact:
+    certificates_dir: "{{ certificates_dir }}"

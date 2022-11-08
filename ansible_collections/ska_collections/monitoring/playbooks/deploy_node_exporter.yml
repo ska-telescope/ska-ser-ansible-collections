@@ -1,7 +1,7 @@
 ---
 
 - name: Deploy_node_exporter
-  hosts: all
+  hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
     mode: "exporter"
@@ -10,4 +10,3 @@
   become_flags: '-E -S -n'
   roles:
     - node_exporter
-    - custom_metrics

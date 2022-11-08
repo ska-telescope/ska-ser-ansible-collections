@@ -10,8 +10,9 @@ This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/
 | elastic               | stack <br> logging <br> haproxy       | Elasticsearch and Kibana cluster roles                    |
 | monitoring            | custom_metrics <br> node_exporter <br> prometheus <br> updatehosts | Install prometheus-based metrics services |
 | minikube              | minikube <br> setup <br> velero        | Install minikube and associated tools                    |
-| gitlab_runner         | runner                                 | Install docker-based Gitlab runner                       |
+| gitlab-runner         | runner                                 | Install docker-based Gitlab runner                       |
 | ceph                  | installation                          | Ceph roles                                                |
+| nexus                 | common <br> nexus3-oss <br> haproxy   | Install Nexus Repository                                  |
 
 ## Usage
 
@@ -30,24 +31,24 @@ playbooks are environment/cloud-agnostic.
 
 ```
 project - umbrella repository
-│   ...  
+│   ...
 │
 └─── ska-ser-ansible-collections (S)
-│   
+│
 └─── ...
 ```
 
-The ansible playbooks expect the *ansible.cfg* file ([example](https://gitlab.com/ska-telescope/sdi/ska-ser-infra-machinery/-/blob/e2531bfb5a4bc8600e29b2c2c00b024fcadb0794/environments/stfc-techops/installation/ansible.cfg)) 
-with all the ansible specific configurations, the ansible inventory and any playbook 
-variables with different values than the default ones. 
+The ansible playbooks expect the *ansible.cfg* file ([example](https://gitlab.com/ska-telescope/sdi/ska-ser-infra-machinery/-/blob/e2531bfb5a4bc8600e29b2c2c00b024fcadb0794/environments/stfc-techops/installation/ansible.cfg))
+with all the ansible specific configurations, the ansible inventory and any playbook
+variables with different values than the default ones.
 Following the project structure above, it is recommended to create a directory for these files.
 
 ```
 project - umbrella repository
-│   ...  
+│   ...
 │
 └─── ska-ser-ansible-collections (S)
-│   
+│
 └─── env-variables
     │   ansible.cfg
     │   inventory.yml
@@ -62,16 +63,16 @@ little setup.
 
 ### Make Targets
 
-The table bellow, iterates all the targets available on the main Makefile. 
+The table bellow, iterates all the targets available on the main Makefile.
 
-| Target                | Description                             | Mandatory Variables                                         |
-|-----------------------|-----------------------------------------|-------------------------------------------------------------|
-| vars                  | Print relevant shell variables          |                                                             |
-| help                  | Help guide                              |                                                             |
-| ping                  | ping all hosts on a specific inventory  | PLAYBOOKS_ROOT_DIR <br> PLAYBOOKS_HOSTS <br> ANSIBLE_CONFIG |
-| install_collections   | pulls collections from requirements.yml | ANSIBLE_COLLECTIONS_PATHS                                   |
+| Target                   | Description                                       | Mandatory Variables                                         |
+|--------------------------|---------------------------------------------------|-------------------------------------------------------------|
+| vars                     | Print relevant shell variables                    |                                                             |
+| help                     | Help guide                                        |                                                             |
+| ping                     | ping all hosts on a specific inventory            | PLAYBOOKS_ROOT_DIR <br> PLAYBOOKS_HOSTS <br> ANSIBLE_CONFIG |
+| ac-install-dependencies  | pulls collections and roles from requirements.yml | ANSIBLE_COLLECTIONS_PATHS                                   |
 
-All the targets specific to a collection such as **elastic** or **oci** engine, 
+All the targets specific to a collection such as **elastic** or **oci** engine,
 will be separated on their own **.mk** file on **resources/jobs** folder.
 
 The make command must have a specific format to trigger the targets bellow, like:
@@ -88,18 +89,20 @@ make <collection> <job> <VARS>
 | oci        | containerd | Install containerd                                         |                                                |
 | common     | init       | Update APT <br> Install common packages <br> Mount volumes |                                                |
 | common     | certs      | Generate certificates from the Terminus CA                 |                                                |
-| ceph       | install    | Install ceph                                               | stackhp cephadm (run install_collections)      |
+| ceph       | install    | Install ceph                                               | stackhp cephadm (run ac-install-dependencies)  |
 | elastic    | install    | Install elasticsearch cluster via OCI containers           | instance_common.init <br> intance_common.certs <br> docker_base.docker  |
 | elastic    | destroy    | Destroy elasticsearch cluster                              |                                                |
 | logging    | install    | Deploy filebeat into nodes                                 |                                                |
 | logging    | destroy    | Remove filebeat from nodes                                 |                                                |
+| logging    | test_e2e   | Run e2e testing playbooks                                  |                                                |
 | monitoring    | prometheus       | Install prometheus                                |                                                |
 | monitoring    | thanos           | Install thanos                                    |                                                |
 | monitoring    | node-exporter    | Install node-exporter                             |                                                |
 | monitoring    | update_metadata  | Update nodes metadata for scrapers                |                                                |
 | monitoring    | update_scrapers  | Update prometheus scrapers                        |                                                |
-| gitlab_runner | install  | Install and register gitlab runner                        |  instance_common.init <br> docker_base.docker  |
-| gitlab_runner | destroy  | Destroy and unregister gitlab runner                      |                                                |
+| gitlab-runner | install | Install and register gitlab runner                         |  instance_common.init <br> docker_base.docker  |
+| gitlab-runner | destroy | Destroy and unregister gitlab runner                       |                                                |
+| nexus         | install | Install Nexus Repository                                   |  instance_common.init <br> docker_base.docker <br> ansible-thoteam.nexus3-oss (run ac-install-dependencies)  |
 
 ### Mandatory Environment Variables
 
@@ -108,5 +111,5 @@ This repo expects these environment variables to run all make targets:
 * PLAYBOOKS_HOSTS
 * ANSIBLE_CONFIG
 
-These variables must be exported to your terminal shell or passed as 
+These variables must be exported to your terminal shell or passed as
 command line arguments.

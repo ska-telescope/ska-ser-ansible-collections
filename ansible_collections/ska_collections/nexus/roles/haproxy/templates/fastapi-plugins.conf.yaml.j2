@@ -1,0 +1,10 @@
+---
+plugins:
+  - name: "nexus_conan_search_search"
+    router:
+      module: "app.plugins.nexus_conan_search.routers"
+      class: "nexus_conan_search"
+    auth_type: "none"
+    prefix: "/repository/conan-internal/v1/conans"
+    tags:
+      - "nexus"

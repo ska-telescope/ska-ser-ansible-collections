@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 MAKEFLAGS += --no-print-directory
 SECRETS_ROOT_VAR?=secrets
-.PHONY: elastic
+.PHONY: ac-check-env vars ac-vars-recursive ac-ping ac-get-info ac-install-dependencies common oci logging reverseproxy monitoring ceph gitlab-runner nexus ac-print-targets help
 
 PLAYBOOKS_HOSTS?=all
 INVENTORY?=$(PLAYBOOKS_ROOT_DIR)
@@ -14,12 +14,12 @@ PLAYBOOKS_HOSTS ?=
 ANSIBLE_CONFIG ?=
 ANSIBLE_EXTRA_VARS ?=
 
-include .make/base.mk
-include .make/ansible.mk
+-include .make/base.mk
+-include .make/ansible.mk
 
 -include $(BASE_PATH)/PrivateRules.mak
 
-check-env:
+ac-check-env:
 ifndef DATACENTRE
 	$(error DATACENTRE is undefined)
 endif
@@ -50,6 +50,10 @@ vars:  ## Variables
 		-a msg="_s_{{ ($(SECRETS_ROOT_VAR)['$(DATACENTRE)']['$(ENVIRONMENT)'] | to_nice_yaml) | default("") }}_e_" \
 		$(ANSIBLE_EXTRA_VARS) localhost 2>/dev/null | grep -v "FAILED" | \
 		sed 's#.*_s_\(.*\)_e_.*#\1#');
+
+ac-vars-recursive:
+	@make vars;
+	@echo ""
 	@echo -e "\033[33m------------- Job Vars ---------------\033[0m"
 	@JOBS_LIST="$$(find $(JOBS_DIR) -name '*.mk')"; for JOB in $$JOBS_LIST; do \
 		make vars -f $$JOB; \
@@ -63,15 +67,14 @@ vars:  ## Variables
 		$(ANSIBLE_EXTRA_VARS) localhost 2>/dev/null | grep -v "FAILED" | \
 		sed 's#.*_s_\(.*\)_e_.*#\1#'); \
 	done
-	@
 
-ping: check-env ## Ping Ansible targets
+ac-ping: ac-check-env ## Ping Ansible targets
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 	@ansible all -i $(INVENTORY) -m ping -l $(PLAYBOOKS_HOSTS)
 
-get-info: check-env ## Get Ansible targets' info
+ac-get-info: ac-check-env ## Get Ansible targets' info
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
@@ -81,9 +84,12 @@ endif
 		\"IP: {{ hostvars[inventory_hostname].ip }}\"\
 	]" -l $(PLAYBOOKS_HOSTS)
 
-install_collections:  ## Install dependent ansible collections
+ac-install-dependencies:  ## Install dependent ansible collections and roles
 	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
 	ansible-galaxy collection install \
+	-r requirements.yml -p ./ansible_collections
+	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
+	ansible-galaxy role install \
 	-r requirements.yml -p ./ansible_collections
 
 JOBLIST := $(shell find $(JOBS_DIR) -iname '*.mk' -exec basename {} .mk ';')
@@ -96,31 +102,31 @@ ifneq ($(filter $(JOBLIST),$(firstword $(MAKECMDGOALS))),)
   $(eval $(TARGET_ARGS):;@:)
 endif
 
-common: check-env ## common targets
+common: ac-check-env ## common targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/common.mk
 
-oci: check-env ## oci targets
+oci: ac-check-env ## oci targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/oci.mk
 
-elastic: check-env ## elastic targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/elastic.mk
-
-logging: check-env ## logging targets
+logging: ac-check-env ## logging targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/logging.mk
 
-reverseproxy: check-env ## reverseproxy targets
+reverseproxy: ac-check-env ## reverseproxy targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/reverseproxy.mk
 
-monitoring: check-env ## monitoring targets
+monitoring: ac-check-env ## monitoring targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/monitoring.mk
 
-ceph: check-env ## ceph targets
+ceph: ac-check-env ## ceph targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/ceph.mk
 
-gitlab_runner: check-env ## gitlab_runner targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/gitlab_runner.mk
+gitlab-runner: ac-check-env ## gitlab_runner targets
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/gitlab-runner.mk
 
-print_targets: ## Show Help
+nexus: ac-check-env ## nexus targets
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/nexus.mk
+
+ac-print-targets: ## Show Help
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {p=index($$1,":")} {printf "\033[36m%-30s\033[0m %s\n", substr($$1,p+1), $$2}';
 	@echo ""
 	@echo "--------- Playbook Jobs ------------"
@@ -131,4 +137,4 @@ help: ## Show Help
 	@echo ""
 	@echo "Vars:"
 	@make vars;
-	@make print_targets
+	@make ac-print-targets

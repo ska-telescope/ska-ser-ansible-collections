@@ -3,7 +3,7 @@
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
-PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/elastic/playbooks
+PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/logging/playbooks
 
 -include $(BASE_PATH)/PrivateRules.mak
 
@@ -17,13 +17,38 @@ vars:
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
-install: check_hosts ## Install logging
+install: check_hosts ## Install elastic cluster
+	ansible-playbook $(PLAYBOOKS_DIR)/install.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+destroy: check_hosts ## Destroy elastic cluster
+	ansible-playbook $(PLAYBOOKS_DIR)/destroy.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+update-api-keys: check_hosts ## Create/invalidate elastic api-keys
+	ansible-playbook $(PLAYBOOKS_DIR)/update-api-keys.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+list-api-keys: check_hosts ## List elastic api-keys
+	ansible-playbook $(PLAYBOOKS_DIR)/list-api-keys.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+install-beats: check_hosts ## Install beats for log collection
 	ansible-playbook $(PLAYBOOKS_DIR)/logging.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-destroy: check_hosts
+destroy-beats: check_hosts ## Destroy beats for log collection
 	ansible-playbook $(PLAYBOOKS_DIR)/destroy-logging.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+test-e2e: check_hosts ## Test elastic cluster
+	ansible-playbook $(PLAYBOOKS_DIR)/tests/e2e/playbooks/main.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
