@@ -133,6 +133,6 @@ kibana_application_privileges:
 kibana_address: 192.168.99.191:5601
 kibana_default_dataview_name: "Default Data View"
 kibana_dataview_config:
-  "title" : "filebeat-*"
-  "name" : "{{ kibana_default_dataview_name }}"
-  "timeFieldName" : "@timestamp"
+  "title": "filebeat-*"
+  "name": "{{ kibana_default_dataview_name }}"
+  "timeFieldName": "@timestamp"
