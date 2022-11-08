@@ -69,7 +69,7 @@ install-beats: check_hosts check_logging_secrets ## Install logging
 		elasticsearch_password=$(ELASTICSEARCH_PASSWORD) \
 	"
 test_e2e: check_hosts check_elastic_secrets ## Install elastic
-	ansible-playbook ./ansible_collections/ska_collections/logging/tests/e2e/playbooks/main.yml \
+	ansible-playbook ./ansible_collections/ska_collections/logging/tests/e2e/main.yml \
 	-i $(INVENTORY) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars " \
