@@ -145,7 +145,7 @@
         name: ska_collections.logging.stack
         tasks_from: kibana
       vars:
-        elasticsearch_address: "{{ groups[target_hosts + '-loadbalancer'][0] if ((groups[target_hosts + '-loadbalancer'] | default([])) | length ) > 0 else groups[target_hosts + '-master'][0] }}"
+        elasticsearch_address: "{{ groups[target_hosts + '-loadbalancer'][0] if ((groups[target_hosts + '-loadbalancer'] | default([])) | length) > 0 else groups[target_hosts + '-master'][0] }}"
   tags:
     - kibana
 
@@ -161,11 +161,11 @@
         tasks_from: kibana
       vars:
         elasticsearch_address: "{{ inventory_hostname }}"
-      when: '((groups[target_hosts + "-kibana"] | default([])) | length ) == 0 and inventory_hostname == groups[target_hosts + "-master"][0]'
+      when: '((groups[target_hosts + "-kibana"] | default([])) | length) == 0 and inventory_hostname == groups[target_hosts + "-master"][0]'
     - name: Remove kibana if kibana only instance is present
       community.general.docker_container:
         name: "{{ kibana_name }}"
         state: absent
-      when: '((groups[target_hosts + "-kibana"] | default([])) | length ) > 0'
+      when: '((groups[target_hosts + "-kibana"] | default([])) | length) > 0'
   tags:
     - kibana

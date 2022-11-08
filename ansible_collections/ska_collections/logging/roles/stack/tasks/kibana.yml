@@ -1,5 +1,5 @@
 ---
-- name: "Docker pull {{ kibana_image }}"
+- name: "Docker pull kibana_image"
   community.general.docker_image:
     source: pull
     name: "{{ kibana_image }}"
@@ -8,7 +8,7 @@
   retries: 5
   delay: 5
 
-- name: Change {{ certificates_dir }} ownership
+- name: Change certificates_dir ownership
   ansible.builtin.file:
     path: "{{ certificates_dir }}"
     mode: 0770
@@ -30,7 +30,7 @@
   register: kibana_secrets_file
 
 - name: Create kibana encryption keys
-  set_fact:
+  ansible.builtin.set_fact:
     kibana_encryption_keys:
       reporting: "{{ lookup('password', target_hosts + '/reporting length=32 chars=ascii_letters') }}"
       security: "{{ lookup('password', target_hosts + '/security length=32 chars=ascii_letters') }}"
@@ -91,7 +91,7 @@
     url_password: "{{ kibana_viewer_password }}"
     body_format: "json"
     force: true
-    force_basic_auth: yes
+    force_basic_auth: true
     method: GET
     status_code: 200, 401
     headers:
@@ -105,7 +105,7 @@
     url_password: "{{ kibana_viewer_password }}"
     body_format: "json"
     force: true
-    force_basic_auth: yes
+    force_basic_auth: true
     method: GET
     status_code: 200
     headers:
@@ -120,7 +120,7 @@
     url_password: "{{ kibana_viewer_password }}"
     body_format: "json"
     force: true
-    force_basic_auth: yes
+    force_basic_auth: true
     method: GET
     status_code: 200
     headers:
@@ -136,15 +136,15 @@
     body:
       data_view: "{{ kibana_dataview_config }}"
     force: true
-    force_basic_auth: yes
-    return_content: yes
+    force_basic_auth: true
+    return_content: true
     method: POST
     status_code: 200
     headers:
       kbn-xsrf: true
   vars:
     kibana_dataviews_names: "{{ kibana_dataviews.json | json_query('data_view[*].name') }}"
-  when: '"{{ kibana_default_dataview_name }}" not in kibana_dataviews_names'
+  when: 'kibana_default_dataview_name not in kibana_dataviews_names'
   register: kibana_dataview_config
 
 - name: Set kibana default data view
@@ -159,7 +159,7 @@
       data_view_id: "{{ kibana_dataview_config.json.data_view.id }}"
       force: true
     force: true
-    force_basic_auth: yes
+    force_basic_auth: true
     method: POST
     status_code: 200
     headers:
@@ -168,7 +168,7 @@
     SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
   vars:
     kibana_dataviews_names: "{{ kibana_dataviews.json | json_query('data_view[*].name') }}"
-  when: '"{{ kibana_default_dataview_name }}" not in kibana_dataviews_names'
+  when: 'kibana_default_dataview_name not in kibana_dataviews_names'
 
 - name: Create kibana service account token
   ansible.builtin.uri:

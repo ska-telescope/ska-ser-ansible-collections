@@ -90,7 +90,7 @@ kibana_log_driver: json-file
 kibana_log_max_size: "10m"
 kibana_log_max_file: "3"
 kibana_log_options:
-  max-size: "{{  kibana_log_max_size }}"
+  max-size: "{{ kibana_log_max_size }}"
   max-file: "{{ kibana_log_max_file }}"
   labels: "org.ska.app.group"
 
