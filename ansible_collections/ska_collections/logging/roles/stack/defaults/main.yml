@@ -130,3 +130,9 @@ kibana_application_privileges:
   - "feature_uptime.read"
   - "feature_observabilityCases.read"
   - "feature_indexPatterns.all"
+kibana_address: 192.168.99.191:5601
+kibana_default_dataview_name: "Default Data View"
+kibana_dataview_config:
+  "title" : "filebeat-*"
+  "name" : "{{ kibana_default_dataview_name }}"
+  "timeFieldName" : "@timestamp"
