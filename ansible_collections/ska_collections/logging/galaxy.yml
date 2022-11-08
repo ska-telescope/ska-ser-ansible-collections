@@ -6,7 +6,7 @@
 namespace: ska_collections
 
 # The name of the collection. Has the same character restrictions as 'namespace'
-name: elastic
+name: logging
 
 # The version of the collection. Must be compatible with semantic versioning
 version: 0.0.1

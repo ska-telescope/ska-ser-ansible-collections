@@ -110,7 +110,7 @@ output:
 {% if logging_filebeat_elasticsearch_auth_method == "api-key" %}
     api_key: "{{ logging_filebeat_elasticsearch_password }}"
 {% else %}
-    username: "{{ logging_filebeat_elasticsearch_user }}" 
+    username: "{{ logging_filebeat_elasticsearch_user }}"
     password: "{{ logging_filebeat_elasticsearch_password }}"
 {% endif %}
     loadbalance: true

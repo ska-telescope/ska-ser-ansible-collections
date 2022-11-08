@@ -149,7 +149,7 @@ kibana_application_privileges:
 ca_host: ca
 certificates_dir: /etc/pki/tls/private
 
-# Valuted variables
+# Secrets
 
 ca_cert_password: "{{ _ | mandatory('`ca_cert_password` definition is mandatory') }}"
 elasticsearch_password: "{{ _ | mandatory('`elasticsearch_password` definition is mandatory') }}"

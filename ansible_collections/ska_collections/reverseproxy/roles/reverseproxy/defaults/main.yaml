@@ -60,7 +60,7 @@ reverseproxy_tls_key_path: "{{ reverseproxy_tls_certs_dir }}/{{ reverseproxy_dns
 ca_host: ca
 certificates_dir: /etc/pki/tls/private
 
-# Valuted variables
+# Secrets
 
 reverseproxy_oauth2proxy_client_secret: "{{ _ | mandatory('`reverseproxy_oauth2proxy_client_secret` definition is mandatory') }}"
 reverseproxy_oauth2proxy_cookie_secret: "{{ _ | mandatory('`reverseproxy_oauth2proxy_cookie_secret` definition is mandatory') }}"
