@@ -19,7 +19,7 @@
   when: activate_nvidia | bool and not ignore_nvidia_fail | bool and not nvidia_driver_exists | bool
 
 - name: Load containerd kernel drivers
-  ansible.builtin.modprobe:
+  community.general.system.modprobe:
     name: "{{ item }}"
     state: present
   with_items:
@@ -39,25 +39,25 @@
     - br_netfilter
 
 - name: Set net.bridge.bridge-nf-call-iptables to 1
-  ansible.builtin.sysctl: name=net.bridge.bridge-nf-call-iptables value=1 state=present ignoreerrors=true
+  ansible.posix.sysctl: name=net.bridge.bridge-nf-call-iptables value=1 state=present ignoreerrors=true
 
 - name: Set net.bridge.bridge-nf-call-ip6tables to 1
-  ansible.builtin.sysctl: name=net.bridge.bridge-nf-call-ip6tables value=1 state=present ignoreerrors=true
+  ansible.posix.sysctl: name=net.bridge.bridge-nf-call-ip6tables value=1 state=present ignoreerrors=true
 
 - name: Set net.bridge.bridge-nf-call-arptables to 1
-  ansible.builtin.sysctl: name=net.bridge.bridge-nf-call-arptables value=1 state=present ignoreerrors=true
+  ansible.posix.sysctl: name=net.bridge.bridge-nf-call-arptables value=1 state=present ignoreerrors=true
 
 - name: Set net.ipv4.ip_forward to 1
-  ansible.builtin.sysctl: name=net.ipv4.ip_forward value=1 state=present ignoreerrors=true
+  ansible.posix.sysctl: name=net.ipv4.ip_forward value=1 state=present ignoreerrors=true
 
 - name: Set user.max_inotify_instances to 1048576
-  ansible.builtin.sysctl: name=user.max_inotify_instances value=1048576 state=present ignoreerrors=true
+  ansible.posix.sysctl: name=user.max_inotify_instances value=1048576 state=present ignoreerrors=true
 
 - name: Set fs.inotify.max_user_watches to 1048576
-  ansible.builtin.sysctl: name=fs.inotify.max_user_watches value=1048576 state=present ignoreerrors=true
+  ansible.posix.sysctl: name=fs.inotify.max_user_watches value=1048576 state=present ignoreerrors=true
 
 - name: Set net.netfilter.nf_conntrack_max to 1000000
-  ansible.builtin.sysctl: name=net.netfilter.nf_conntrack_max value=1000000 state=present ignoreerrors=true
+  ansible.posix.sysctl: name=net.netfilter.nf_conntrack_max value=1000000 state=present ignoreerrors=true
 
 - name: Add containerd cri sysctl vars
   ansible.builtin.lineinfile:

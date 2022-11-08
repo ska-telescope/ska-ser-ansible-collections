@@ -29,7 +29,7 @@
         autoremove: true
 
     - name: Set kernel.unprivileged_userns_clone=1
-      ansible.builtin.sysctl: name=kernel.unprivileged_userns_clone value=1 state=present ignoreerrors=true
+      ansible.posix.sysctl: name=kernel.unprivileged_userns_clone value=1 state=present ignoreerrors=true
       notify:
         - restart procps
 
@@ -37,7 +37,7 @@
       sysctl: name=user.max_inotify_instances value=1048576 state=present ignoreerrors=true
 
     - name: Set fs.inotify.max_user_watches to 1048576
-      ansible.builtin.sysctl: name=fs.inotify.max_user_watches value=1048576 state=present ignoreerrors=true
+      ansible.posix.sysctl: name=fs.inotify.max_user_watches value=1048576 state=present ignoreerrors=true
 
     - name: Install podman CE (apt)
       ansible.builtin.apt:

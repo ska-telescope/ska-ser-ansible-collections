@@ -62,7 +62,7 @@
     groups: docker
 
 - name: Ensure that pip is install (CentOS 7)
-  ansible.builtin.easy_install:
+  community.general.packaging.language.easy_install:
     name: pip
     state: present
   when: ansible_distribution == "CentOS" and ansible_distribution_version is regex("^7\.")
@@ -123,7 +123,8 @@
   ansible.builtin.lineinfile:
     path: /etc/crontab
     line: >-
-      0 */4 * * *   root    docker ps --format='{{.ID}}'   | xargs -n 1 -r docker inspect -f '{{.ID}} {{.State.Running}} {{.State.StartedAt}}'   | awk '$2 == "true" && $3 <= "'$(date -d 'yesterday' -Ins --utc | sed 's/+0000/Z/')'" { print $1 }' | xargs sudo docker kill
+      0 */4 * * *   root    docker ps --format='{{.ID}}'   | xargs -n 1 -r docker inspect -f '{{.ID}} {{.State.Running}} {{.State.StartedAt}}'   \
+      | awk '$2 == "true" && $3 <= "'$(date -d 'yesterday' -Ins --utc | sed 's/+0000/Z/')'" { print $1 }' | xargs sudo docker kill
   become: true
   notify:
     - Restart cron
