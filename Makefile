@@ -3,15 +3,14 @@ MAKEFLAGS += --no-print-directory
 SECRETS_ROOT_VAR?=secrets
 .PHONY: ac-check-env vars ac-vars-recursive ac-ping ac-get-info ac-install-dependencies common oci logging reverseproxy monitoring ceph gitlab-runner nexus ac-print-targets help
 
-PLAYBOOKS_HOSTS?=all
 INVENTORY?=$(PLAYBOOKS_ROOT_DIR)
 JOBS_DIR=resources/jobs
 ANSIBLE_COLLECTIONS_PATHS ?=
 PLAYBOOKS_ROOT_DIR ?=
-INVENTORY_FILE ?= inventory.yml
 ANSIBLE_LINT_PARAMETERS=--exclude ansible_collections/ska_collections/monitoring/roles/prometheus/files
 PLAYBOOKS_HOSTS ?=
 ANSIBLE_CONFIG ?=
+ANSIBLE_SSH_ARGS ?=
 ANSIBLE_EXTRA_VARS ?=
 
 -include .make/base.mk
