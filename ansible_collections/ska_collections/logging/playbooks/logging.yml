@@ -27,17 +27,17 @@
 
     - name: Install filebeat common
       ansible.builtin.import_role:
-        name: ska_collections.logging.logging
+        name: ska_collections.logging.beats
         tasks_from: install-filebeat-common
 
     - name: Install filebeat on docker
       ansible.builtin.import_role:
-        name: ska_collections.logging.logging
+        name: ska_collections.logging.beats
         tasks_from: install-filebeat-docker
       when: 'logging_filebeat_oci_engine == "docker"'
 
     - name: Install filebeat on podman
       ansible.builtin.import_role:
-        name: ska_collections.logging.logging
+        name: ska_collections.logging.beats
         tasks_from: install-filebeat-podman
       when: 'logging_filebeat_oci_engine == "podman"'

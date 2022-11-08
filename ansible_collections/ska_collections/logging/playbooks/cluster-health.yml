@@ -21,8 +21,8 @@
       ansible.builtin.uri:
         url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_health_endpoint }}"
         method: GET
-        force: yes
-        return_content: yes
+        force: true
+        return_content: true
         status_code: [200]
         client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
         client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"

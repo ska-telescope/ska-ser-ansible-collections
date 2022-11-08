@@ -5,62 +5,66 @@
     target_hosts: localhost
   become: true
   tasks:
-  - name: Set elasticsearch nodes
-    set_fact:
-      nodes: "{{ groups[target_hosts + '-master'] + groups[target_hosts + '-data'] }}"
-  - name: Encrypted and authenticated access to api works
-    ansible.builtin.uri:
-      url: "https://{{ hostvars[item].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_health_endpoint }}"
-      method: GET
-      force: yes
-      status_code: [200]
-      client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
-      client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
-      url_username: elastic
-      url_password: "{{ elasticsearch_password }}"
-    environment:
-      SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
-    loop: "{{ nodes }}"
-  - name: Unencrypted (http) access to api fails
-    ansible.builtin.uri:
-      url: "http://{{ hostvars[item].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_health_endpoint }}"
-      method: GET
-      force: yes
-      status_code: [-1]
-      client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
-      client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
-      url_username: elastic
-      url_password: "{{ elasticsearch_password }}"
-    environment:
-      SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
-    register: response
-    failed_when: '"Remote end closed connection without response" not in response.msg'
-    timeout: 60
-    loop: "{{ nodes }}"
-  - name: Unauthenticated access to api fails
-    ansible.builtin.uri:
-      url: "https://{{ hostvars[item].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_health_endpoint }}"
-      method: GET
-      force: yes
-      status_code: [401]
-      client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
-      client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
-    environment:
-      SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
-    timeout: 60
-    loop: "{{ nodes }}"
-  - name: No mTLS access to api fails
-    ansible.builtin.uri:
-      url: "https://{{ hostvars[item].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_health_endpoint }}"
-      method: GET
-      force: yes
-      return_content: yes
-      status_code: [-1]
-      url_username: elastic
-      url_password: "{{ elasticsearch_password }}"
-    environment:
-      SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
-    register: response
-    failed_when: '"SSL: SSLV3_ALERT_BAD_CERTIFICATE" not in response.msg'
-    timeout: 60
-    loop: "{{ nodes }}"
+    - name: Set elasticsearch nodes
+      set_fact:
+        nodes: "{{ groups[target_hosts + '-master'] + groups[target_hosts + '-data'] }}"
+
+    - name: Encrypted and authenticated access to api works
+      ansible.builtin.uri:
+        url: "https://{{ hostvars[item].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_health_endpoint }}"
+        method: GET
+        force: true
+        status_code: [200]
+        client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+        client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+        url_username: elastic
+        url_password: "{{ elasticsearch_password }}"
+      environment:
+        SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+      loop: "{{ nodes }}"
+
+    - name: Unencrypted (http) access to api fails
+      ansible.builtin.uri:
+        url: "http://{{ hostvars[item].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_health_endpoint }}"
+        method: GET
+        force: true
+        status_code: [-1]
+        client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+        client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+        url_username: elastic
+        url_password: "{{ elasticsearch_password }}"
+      environment:
+        SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+      register: response
+      failed_when: '"Remote end closed connection without response" not in response.msg'
+      timeout: 60
+      loop: "{{ nodes }}"
+
+    - name: Unauthenticated access to api fails
+      ansible.builtin.uri:
+        url: "https://{{ hostvars[item].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_health_endpoint }}"
+        method: GET
+        force: true
+        status_code: [401]
+        client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+        client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+      environment:
+        SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+      timeout: 60
+      loop: "{{ nodes }}"
+
+    - name: No mTLS access to api fails
+      ansible.builtin.uri:
+        url: "https://{{ hostvars[item].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_health_endpoint }}"
+        method: GET
+        force: true
+        return_content: true
+        status_code: [-1]
+        url_username: elastic
+        url_password: "{{ elasticsearch_password }}"
+      environment:
+        SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+      register: response
+      failed_when: '"SSL: SSLV3_ALERT_BAD_CERTIFICATE" not in response.msg'
+      timeout: 60
+      loop: "{{ nodes }}"
