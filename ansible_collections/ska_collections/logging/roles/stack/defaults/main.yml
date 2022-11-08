@@ -91,7 +91,7 @@ elasticsearch_exporter_labels:
 
 elasticsearch_exporter_env_variables: {}
 elasticsearch_exporter_env_defaults:
-  ES_URI: "http://{{ ansible_default_ipv4.address }}:9200"
+  ES_URI: "http://{{ ansible_default_ipv4.address }}:{{ elasticsearch_api_port }}"
 
 elasticsearch_exporter_reinstall: false
 

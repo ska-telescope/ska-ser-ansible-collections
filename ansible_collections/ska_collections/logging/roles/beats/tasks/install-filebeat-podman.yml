@@ -18,7 +18,6 @@
     user: "{{ logging_filebeat_user }}"
     memory: "{{ logging_filebeat_memory }}"
     hostname: "{{ inventory_hostname }}"
-    network_mode: host
     restart_policy: always
     image: "{{ logging_filebeat_image }}"
     command: "{{ logging_filebeat_command }}"

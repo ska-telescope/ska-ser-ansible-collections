@@ -1,12 +1,7 @@
 ---
 - name: Destroy filebeat config
   ansible.builtin.file:
-    path: /etc/filebeat.yaml
-    state: absent
-
-- name: Destroy filebeat config
-  ansible.builtin.file:
-    path: /etc/filebeat.yaml
+    path: /etc/filebeat.yml
     state: absent
 
 - name: Destroy filebeat ilm policy config
