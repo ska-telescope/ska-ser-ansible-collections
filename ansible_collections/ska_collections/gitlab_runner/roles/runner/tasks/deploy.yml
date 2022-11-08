@@ -18,7 +18,7 @@
   register: default_config
 
 - name: Set default configuration checksum
-  set_fact:
+  ansible.builtin.set_fact:
     default_config_checksum: "{{ default_config.checksum }}"
     current_config_checksum: "{{ (config.stat | default({})).checksum | default('') }}"
 

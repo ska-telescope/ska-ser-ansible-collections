@@ -1,6 +1,6 @@
 ---
 - name: Ensure that the apt cache is updated
-  apt:
+  ansible.builtin.apt:
     update_cache: true
   register: apt_res
   retries: 30
@@ -8,13 +8,13 @@
   until: apt_res is success
 
 - name: Set hostname
-  hostname:
+  ansible.builtin.hostname:
     name: "{{ inventory_hostname }}"
   when: not inventory_hostname == "localhost" and change_hostnames
   become: true
 
 - name: Update /etc/hosts
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/hosts
     regexp: '.*{{ hostvars[item].inventory_hostname }}.*'
     line: "{{ hostvars[item].ip }} {{ hostvars[item].inventory_hostname }}"
@@ -32,7 +32,7 @@
   when: hostvars[inventory_hostname]['volumes'] is defined
 
 - name: Ensure required packages are installed (apt)
-  apt:
+  ansible.builtin.apt:
     name: "{{ common_packages|default([]) }}"
     update_cache: true
     state: present
@@ -43,7 +43,7 @@
   when: ansible_os_family == "Debian"
 
 - name: Upgrade all packages (apt)
-  apt:
+  ansible.builtin.apt:
     upgrade: dist
     autoremove: true
   when: ansible_os_family == "Debian"

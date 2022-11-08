@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 MAKEFLAGS += --no-print-directory
-.PHONY: elastic
+.PHONY: logging
 
 PLAYBOOKS_HOSTS ?= all
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
@@ -12,12 +12,12 @@ ANSIBLE_LINT_PARAMETERS = --exclude ansible_collections/ska_collections/monitori
 PLAYBOOKS_HOSTS ?=
 ANSIBLE_CONFIG ?=
 
-include .make/base.mk
-include .make/ansible.mk
+-include .make/base.mk
+-include .make/ansible.mk
 
 -include $(BASE_PATH)/PrivateRules.mak
 
-check-env:
+ac-check-env:
 ifndef ENVIRONMENT
 	$(error ENVIRONMENT is undefined)
 endif
@@ -32,22 +32,25 @@ vars:  ## Variables
 	@echo "ELASTICSEARCH_PASSWORD=$(ELASTICSEARCH_PASSWORD)"
 	@echo "ELASTIC_HAPROXY_STATS_PASSWORD=$(ELASTIC_HAPROXY_STATS_PASSWORD)"
 
-vars_recursive:
+ac-vars-recursive:
 	@make vars;
 	@echo ""
 	@echo -e "\033[33m--------- Installation Jobs ------------\033[0m"
 	@echo ""
-	@$(foreach file, $(wildcard $(JOBS_DIR)/*), make vars -f $(file); echo "";)
+	@$(foreach file, $(wildcard $(JOBS_DIR)/*.mk), make vars -f $(file); echo "";)
 
-ping: check-env ## Ping Ansible targets
+ac-ping: ac-check-env ## Ping Ansible targets
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 	@ansible all -i $(INVENTORY) -m ping -l $(PLAYBOOKS_HOSTS)
 
-install_collections:  ## Install dependent ansible collections
+ac-install-dependencies:  ## Install dependent ansible collections and roles
 	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
 	ansible-galaxy collection install \
+	-r requirements.yml -p ./ansible_collections
+	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
+	ansible-galaxy role install \
 	-r requirements.yml -p ./ansible_collections
 
 JOBLIST := $(shell find $(JOBS_DIR) -iname '*.mk' -exec basename {} .mk ';')
@@ -60,28 +63,28 @@ ifneq ($(filter $(JOBLIST),$(firstword $(MAKECMDGOALS))),)
   $(eval $(TARGET_ARGS):;@:)
 endif
 
-common: check-env ## common targets
+common: ac-check-env ## common targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/common.mk
 
-oci: check-env ## oci targets
+oci: ac-check-env ## oci targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/oci.mk
 
-elastic: check-env ## elastic targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/elastic.mk
-
-logging: check-env ## logging targets
+logging: ac-check-env ## logging targets
 	$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/logging.mk
 
-monitoring: check-env ## monitoring targets
+monitoring: ac-check-env ## monitoring targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/monitoring.mk
 
-ceph: check-env ## ceph targets
+ceph: ac-check-env ## ceph targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/ceph.mk
 
-gitlab-runner: check-env ## gitlab-runner targets
+gitlab-runner: ac-check-env ## gitlab-runner targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/gitlab-runner.mk
 
-print_targets: ## Show Help
+nexus: ac-check-env ## nexus targets
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/nexus.mk
+
+ac-print-targets: ## Show Help
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {p=index($$1,":")} {printf "\033[36m%-30s\033[0m %s\n", substr($$1,p+1), $$2}';
 	@echo ""
 	@echo "--------- Playbook Jobs ------------"
@@ -92,4 +95,4 @@ help: ## Show Help
 	@echo ""
 	@echo "Vars:"
 	@make vars;
-	@make print_targets
+	@make ac-print-targets

@@ -1,0 +1,89 @@
+---
+- name: Install JDK 1.8
+  ansible.builtin.apt:
+    name: "openjdk-8-jre-headless"
+    update_cache: true
+    state: present
+  register: apt_res
+  retries: 30
+  delay: 30
+  until: apt_res is success
+  when: ansible_os_family == "Debian"
+
+- name: Install rsync
+  ansible.builtin.apt:
+    name: "rsync"
+    update_cache: true
+    install_recommends: false
+    state: present
+  register: apt_res
+  retries: 30
+  delay: 30
+  until: apt_res is success
+  when: ansible_os_family == "Debian"
+
+- name: "Enable {{ nexus_common_ntp_service }} service"
+  ansible.builtin.service:
+    name: "{{ nexus_common_ntp_service }}"
+    enabled: true
+
+- name: Make sure the NTP service is stopped
+  ansible.builtin.service:
+    name: "{{ nexus_common_ntp_service }}"
+    state: stopped
+  tags:
+    - notest
+
+- name: Force NTP sync
+  ansible.builtin.command: "{{ nexus_common_ntp_sync }}"
+  changed_when: false
+  tags:
+    - notest
+
+- name: Start the NTP service
+  ansible.builtin.service:
+    name: "{{ nexus_common_ntp_service }}"
+    state: started
+    enabled: true
+  tags:
+    - notest
+
+- name: Set ulimits limits
+  ansible.builtin.lineinfile: dest=/etc/security/limits.conf
+              insertbefore="^# End of file"
+              state=present
+              line="{{ item }}"
+  with_items:
+    - "* soft nofile 65536"
+    - "* hard nofile 65536"
+    - "* soft memlock unlimited"
+    - "* hard memlock unlimited"
+    - "* soft nproc 65536"
+    - "* hard nproc 65536"
+
+- name: Set swappiness to 1
+  sysctl:
+    name: vm.swappiness
+    value: "1"
+    state: present
+    ignoreerrors: true
+
+- name: Disable Transparent Huge Pages in Grub 2
+  ansible.builtin.lineinfile:
+    dest: /etc/default/grub
+    state: present
+    line: 'GRUB_CMDLINE_LINUX=$GRUB_CMDLINE_LINUX" transparent_hugepage=never"'
+  # when: ansible_distribution_major_version|int > 6
+  notify: run update-grub
+  tags:
+    - notest
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Disable Transparent Huge Pages until reboot
+  ansible.builtin.command: echo never > /sys/kernel/mm/transparent_hugepage/enabled && echo never > /sys/kernel/mm/transparent_hugepage/defrag
+  failed_when: false
+  changed_when: false
+  tags:
+    - notest
