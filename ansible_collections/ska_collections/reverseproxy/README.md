@@ -13,7 +13,7 @@
 
 * **reverseproxy_oauth2proxy_cookie_secret**
   * Should be set to the cookie secret used for the oauth2proxy
-  * Define as: `ca_cert_password: "{{ lookup('ansible.builtin.env', 'OAUTH2PROXY_COOKIE_SECRET', default=secrets['oauth2proxy_cookie_secret']) | mandatory }}"`
+  * Define as: `reverseproxy_oauth2proxy_cookie_secret: "{{ lookup('ansible.builtin.env', 'AZUREAD_COOKIE_SECRET', default=secrets['azuread_cookie_secret']) | mandatory }}"`
 * **reverseproxy_oauth2proxy_client_secret**
   * Should be set to the client secret used for the oauth2proxy
-  * Define as: `"{{ lookup('ansible.builtin.env', 'OAUTH2PROXY_CLIENT_SECRET', default=secrets['oauth2proxy_client_secret']) | mandatory }}"`
+  * Define as: `reverseproxy_oauth2proxy_client_secret: "{{ lookup('ansible.builtin.env', 'AZUREAD_CLIENT_SECRET', default=secrets['azuread_client_secret']) | mandatory }}"`
