@@ -6,7 +6,7 @@
   become: true
   tasks:
     - name: Set test variables
-      set_fact:
+      ansible.builtin.set_fact:
         elasticsearch_index: "{{ elasticsearch_cluster_name }}-index"
         event_messages: ["these", "are", "messages"]
 
@@ -79,8 +79,8 @@
       loop: "{{ event_messages }}"
       register: index_info
 
-    - name: debug
-      debug:
+    - name: Show event messages
+      ansible.builtin.debug:
         msg: "{{ event_messages | length }}"
 
     - name: Count docs works
@@ -100,8 +100,8 @@
       timeout: 60
       until: '(events.json.count | int) == (event_messages | length)'
 
-    - name: debug
-      debug:
+    - name: Show event messages
+      ansible.builtin.debug:
         msg: "{{ events }}"
 
     - name: Delete index works

@@ -15,7 +15,7 @@ elasticsearch_log_driver: json-file
 elasticsearch_log_max_size: "10m"
 elasticsearch_log_max_file: "3"
 elasticsearch_log_options:
-  max-size: "{{  elasticsearch_log_max_size }}"
+  max-size: "{{ elasticsearch_log_max_size }}"
   max-file: "{{ elasticsearch_log_max_file }}"
   labels: "org.ska.app.group"
 elasticsearch_labels:
@@ -82,7 +82,7 @@ elasticsearch_exporter_log_driver: json-file
 elasticsearch_exporter_log_max_size: "10m"
 elasticsearch_exporter_log_max_file: "3"
 elasticsearch_exporter_log_options:
-  max-size: "{{  elasticsearch_exporter_log_max_size }}"
+  max-size: "{{ elasticsearch_exporter_log_max_size }}"
   max-file: "{{ elasticsearch_exporter_log_max_file }}"
   labels: "org.ska.app.group"
 

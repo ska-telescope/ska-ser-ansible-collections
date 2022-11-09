@@ -14,10 +14,10 @@
   become: true
 
 - name: Update /etc/hosts
-  include_tasks: "update-hosts.yml"
+  ansible.builtin.include_tasks: "update-hosts.yml"
 
 - name: Mount all volumes
-  include_tasks: "./mount_volume.yml"
+  ansible.builtin.include_tasks: "./mount_volume.yml"
   loop: "{{ hostvars[inventory_hostname]['volumes'] }}"
   loop_control:
     loop_var: volume
@@ -25,7 +25,7 @@
 
 - name: Ensure required packages are installed (apt)
   ansible.builtin.apt:
-    name: "{{ common_packages|default([]) }}"
+    name: "{{ common_packages | default([]) }}"
     update_cache: true
     state: present
   register: apt_res

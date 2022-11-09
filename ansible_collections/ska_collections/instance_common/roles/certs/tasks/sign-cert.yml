@@ -1,6 +1,6 @@
 ---
 - name: Check if private key exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ certificates_dir }}/{{ certificate_key_name }}.key"
   register: check_key
 
@@ -11,6 +11,7 @@
 
 - name: Create certificates
   become: true
+  when: not (check_key.stat.exists and check_cert.stat.exists) or certificate_recreate
   block:
     - name: Create certificates directory
       ansible.builtin.file:
@@ -48,8 +49,6 @@
         dest: "{{ certificates_dir }}/{{ certificate_name }}.crt"
         content: "{{ certificate.certificate }}"
         mode: 0644
-
-  when: not (check_key.stat.exists and check_cert.stat.exists) or certificate_recreate
 
 - name: Get CA certificate pem from our CA
   ansible.builtin.slurp:

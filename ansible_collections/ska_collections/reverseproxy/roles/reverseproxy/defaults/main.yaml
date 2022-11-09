@@ -26,7 +26,7 @@ reverseproxy_nginx_log_driver: json-file
 reverseproxy_nginx_log_max_size: "10m"
 reverseproxy_nginx_log_max_file: "3"
 reverseproxy_nginx_log_options:
-  max-size: "{{  reverseproxy_nginx_log_max_size }}"
+  max-size: "{{ reverseproxy_nginx_log_max_size }}"
   max-file: "{{ reverseproxy_nginx_log_max_file }}"
   labels: "org.ska.app.group"
 
@@ -38,7 +38,7 @@ reverseproxy_oauth2proxy_log_driver: json-file
 reverseproxy_oauth2proxy_log_max_size: "10m"
 reverseproxy_oauth2proxy_log_max_file: "3"
 reverseproxy_oauth2proxy_log_options:
-  max-size: "{{  reverseproxy_oauth2proxy_log_max_size }}"
+  max-size: "{{ reverseproxy_oauth2proxy_log_max_size }}"
   max-file: "{{ reverseproxy_oauth2proxy_log_max_file }}"
   labels: "org.ska.app.group"
 

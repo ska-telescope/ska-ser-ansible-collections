@@ -1,6 +1,6 @@
 ---
 - name: Update /etc/hosts
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/hosts
     regexp: '.*{{ hostvars[item].inventory_hostname }}.*'
     line: "{{ hostvars[item].ip }} {{ hostvars[item].inventory_hostname }}"

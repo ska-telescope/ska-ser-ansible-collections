@@ -25,29 +25,29 @@
   register: ncsconfig
 
 - name: "Docker pull image for {{ nexus_haproxy_name }}"
-  docker_image:
+  community.docker.docker_image:
     source: pull
     name: "{{ nexus_haproxy_container_image }}"
   register: hapimage
 
 - name: "Docker pull image for {{ nexus_haproxy_conan_search_container_image }}"
-  docker_image:
+  community.docker.docker_image:
     source: pull
     name: "{{ nexus_haproxy_conan_search_container_image }}"
   register: ncsimage
 
 - name: "Get {{ nexus_haproxy_name }} container info"
-  docker_container_info:
+  community.docker.docker_container_info:
     name: "{{ nexus_haproxy_name }}"
   register: hainfo
 
 - name: "Get {{ nexus_haproxy_conan_search_name }} container info"
-  docker_container_info:
+  community.docker.docker_container_info:
     name: "{{ nexus_haproxy_conan_search_name }}"
   register: ncsinfo
 
 - name: "Run {{ nexus_haproxy_conan_search_name }} container"  # noqa 503
-  docker_container:
+  community.docker.docker_container:
     name: "{{ nexus_haproxy_conan_search_name }}"
     image: "{{ nexus_haproxy_conan_search_container_image }}"
     # restart: yes
@@ -68,7 +68,7 @@
   when: ncsconfig.changed or ncsimage.changed or not ncsinfo.exists or not ncsinfo.container.State.Running
 
 - name: "Run {{ nexus_haproxy_name }} in a container"  # noqa 503
-  docker_container:
+  community.docker.docker_container:
     name: "{{ nexus_haproxy_name }}"
     image: "{{ nexus_haproxy_container_image }}"
     # restart: yes

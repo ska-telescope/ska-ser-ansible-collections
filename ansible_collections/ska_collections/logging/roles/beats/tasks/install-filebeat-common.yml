@@ -1,6 +1,6 @@
 ---
 - name: Collect facts about system services
-  service_facts:
+  ansible.builtin.service_facts:
   register: services
 
 - name: Look for Docker sock
@@ -67,6 +67,7 @@
   when: not meta_json.stat.exists
 
 - name: Create ska_log_parsing_pipeline ingest pipeline
+  when: logging_filebeat_pipeline_enabled
   block:
     - name: Create ska_log_parsing_pipeline config
       ansible.builtin.template:
@@ -103,4 +104,3 @@
     - name: Throw error
       ansible.builtin.fail:
         msg: "Tasks {{ ansible_failed_task.name }} failed: {{ ansible_failed_result }}"
-  when: logging_filebeat_pipeline_enabled

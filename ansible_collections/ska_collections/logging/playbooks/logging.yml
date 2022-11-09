@@ -7,7 +7,7 @@
   become: true
   tasks:
     - name: "Show logging nodes info"
-      debug: var=hostvars[inventory_hostname]
+      ansible.builtin.debug: var=hostvars[inventory_hostname]
       when: debug
 
 - name: Install beats for log collection on nodes

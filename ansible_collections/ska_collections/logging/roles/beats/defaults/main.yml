@@ -16,7 +16,7 @@ logging_filebeat_log_max_size: "10m"
 logging_filebeat_log_max_file: "3"
 logging_filebeat_memory: 512M
 logging_filebeat_log_options:
-  max-size: "{{  logging_filebeat_log_max_size }}"
+  max-size: "{{ logging_filebeat_log_max_size }}"
   max-file: "{{ logging_filebeat_log_max_file }}"
   labels: "org.ska.app.group"
 logging_filebeat_labels:

@@ -6,7 +6,7 @@
     mode: 0700
 
 - name: Check if private key file exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ certificates_dir }}/ca-certificate.key"
   register: private_key
 
@@ -18,7 +18,7 @@
   when: not private_key.stat.exists
 
 - name: Check if certificate file exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ certificates_dir }}/ca-certificate.crt"
   register: cert_exists
 

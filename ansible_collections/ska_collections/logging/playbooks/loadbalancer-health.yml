@@ -6,7 +6,7 @@
   become: true
   tasks:
     - name: Set elasticsearch nodes
-      set_fact:
+      ansible.builtin.set_fact:
         nodes: "{{ groups[target_hosts + '-master'] + groups[target_hosts + '-data'] }}"
 
     - name: Loadbalancer can reach elasticsearch API port

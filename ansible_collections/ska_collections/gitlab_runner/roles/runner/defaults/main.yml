@@ -6,7 +6,7 @@ gitlab_runner_log_driver: json-file
 gitlab_runner_log_max_size: "10m"
 gitlab_runner_log_max_file: "3"
 gitlab_runner_log_options:
-  max-size: "{{  gitlab_runner_log_max_size }}"
+  max-size: "{{ gitlab_runner_log_max_size }}"
   max-file: "{{ gitlab_runner_log_max_file }}"
   labels: "org.ska.app.group"
 gitlab_runner_labels:

@@ -9,7 +9,7 @@
 
 - name: Create list of nodes to be added into container's /etc/hosts file
   ansible.builtin.set_fact:
-    node_hosts: "{{ node_hosts|default({}) | combine( {item: hostvars[item].ansible_default_ipv4.address} ) }}"
+    node_hosts: "{{ node_hosts | default({}) | combine({item: hostvars[item].ansible_default_ipv4.address}) }}"
   with_items: "{{ groups[target_hosts] }}"
 
 - name: Cleans elasticsearch data volume
@@ -42,7 +42,7 @@
   retries: 5
   delay: 5
 
-- name: Change {{ certificates_dir }} ownership
+- name: "Change {{ certificates_dir }} ownership"
   ansible.builtin.file:
     path: "{{ certificates_dir }}"
     mode: 0770
