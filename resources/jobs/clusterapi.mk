@@ -4,45 +4,44 @@ endif
 
 .DEFAULT_GOAL := clusterapi
 
-clusterapi-install-base:
+clusterapi-install-base:  ## Install base for management server
 	ansible-playbook ./ansible_collections/ska_collections/docker_base/playbooks/containers.yml \
 	-i $(PLAYBOOKS_ROOT_DIR) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--limit "management-cluster"
 
-clusterapi-management: clusterapi-install-base
+clusterapi-management: clusterapi-install-base  ## Install Minikube management cluster
 	ansible-playbook ./ansible_collections/ska_collections/minikube/playbooks/minikube.yml \
 	-i $(PLAYBOOKS_ROOT_DIR) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--limit "management-cluster"   --tags "build"
+	--limit "management-cluster" --tags "build"
 
 # clusterapi:
-clusterapi: clusterapi-management clusterapi-velero-backups
+clusterapi: clusterapi-management clusterapi-velero-backups  ## Install clusterapi component
 	ansible-playbook ./ansible_collections/ska_collections/clusterapi/playbooks/clusterapi.yml \
 	-i $(PLAYBOOKS_ROOT_DIR) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--limit "management-cluster"
 
-clusterapi-createworkload:
+clusterapi-createworkload:  ## Template workload manifest and deploy
 	ansible-playbook ./ansible_collections/ska_collections/clusterapi/playbooks/createworkload.yml \
 	-i $(PLAYBOOKS_ROOT_DIR) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--limit "management-cluster"
 
-clusterapi-destroy-management:
+clusterapi-destroy-management:  ## Destroy Minikube management cluster
 	ansible-playbook ./ansible_collections/ska_collections/minikube/playbooks/minikube.yml \
 	-i $(PLAYBOOKS_ROOT_DIR) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--limit "management-cluster"  --tags "destroy"
+	--limit "management-cluster" --tags "destroy"
 
-clusterapi-ib:
+clusterapi-imagebuilder:  ## Build and upload OS Image Builder Kubernetes image
 	ansible-playbook ./ansible_collections/ska_collections/clusterapi/playbooks/imagebuilder.yml \
 	-i $(PLAYBOOKS_ROOT_DIR) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--limit "management-cluster" -vv
+	--limit "management-cluster" -v
 
-
-clusterapi-velero-backups:
+clusterapi-velero-backups:  ## Configure Velero backups on Minikube management cluster
 	ansible-playbook ./ansible_collections/ska_collections/minikube/playbooks/velero_backups.yml \
 	-i $(PLAYBOOKS_ROOT_DIR) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \

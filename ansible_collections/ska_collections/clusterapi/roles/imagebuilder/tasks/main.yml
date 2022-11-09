@@ -90,8 +90,6 @@
   environment:
     ANSIBLE_SSH_ARGS: " -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedKeyTypes=+ssh-rsa"
 
-# openstack image create --disk-format qcow2 --container-format bare --shared --progress --file ./output/ubuntu-2004-kube-v1.24.3/ubuntu-2004-kube-v1.24.3 ubuntu-2004-kube-v1.24.3
-
 # Upload image for capo
 - name: "Upload capo image: {{ ib_os_image_name }}"
   openstack.cloud.image:

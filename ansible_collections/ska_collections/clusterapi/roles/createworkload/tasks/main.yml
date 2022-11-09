@@ -160,7 +160,7 @@
     mode: 0644
   delegate_to: localhost
 
-- name: Apply CAPO Cluster maniffest
+- name: Apply CAPO Cluster manifest
   kubernetes.core.k8s:
     state: present
     apply: true
