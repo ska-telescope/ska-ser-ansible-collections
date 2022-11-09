@@ -73,7 +73,7 @@ ifndef PLAYBOOKS_HOSTS
 endif
 	@ansible all -i $(INVENTORY) -m ping -l $(PLAYBOOKS_HOSTS)
 
-ac-get-info: ac-check-env ## Get Ansible targets' info
+ac-info: ac-check-env ## Get Ansible targets' info
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
