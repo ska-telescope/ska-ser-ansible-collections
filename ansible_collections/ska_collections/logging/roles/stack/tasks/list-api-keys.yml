@@ -29,4 +29,4 @@
   with_items: "{{ issued_api_keys }}"
   when: 'item.invalidated is false'
   loop_control:
-    label: "{{ item.id }} ({{ item.name }}) is {{ item.invalidated | ternary('invalidated','valid') }}"
+    label: "{{ item.id }} ({{ item.name }}) is {{ item.invalidated | ternary('invalidated', 'valid') }}"

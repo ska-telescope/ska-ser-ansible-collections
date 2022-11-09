@@ -61,7 +61,7 @@
         tasks_from: elasticsearch
       vars:
         elasticsearch_node_roles: "{{ elasticsearch_default_master_roles
-        if ((groups[target_hosts + '-data'] | default([])) | length ) > 0
+        if ((groups[target_hosts + '-data'] | default([])) | length) > 0
         else elasticsearch_default_node_roles }}"
 
     - name: Install elasticsearch exporter
@@ -116,7 +116,7 @@
         tasks_from: kibana
       vars:
         elasticsearch_address: "{{ groups[target_hosts + '-loadbalancer'][0]
-        if ((groups[target_hosts + '-loadbalancer'] | default([])) | length ) > 0
+        if ((groups[target_hosts + '-loadbalancer'] | default([])) | length) > 0
         else groups[target_hosts + '-master'][0] }}"
   tags:
     - kibana
