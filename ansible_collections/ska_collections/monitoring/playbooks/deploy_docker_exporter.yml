@@ -5,7 +5,5 @@
     target_hosts: localhost
     mode: "docker"
   become: true
-  become_method: sudo
-  become_flags: '-S -n'
   roles:
     - prometheus
