@@ -31,7 +31,7 @@
     - "{{ target_hosts + '-data' }}"
   vars:
     target_hosts: localhost
-    elasticsearch_nodes: "{{ (groups[target_hosts + '-master'] | default([])) + (groups[target_hosts + '-kibana'] | default([])) }}"
+    elasticsearch_nodes: "{{ (groups[target_hosts + '-master'] | default([])) + (groups[target_hosts + '-data'] | default([])) }}"
   tasks:
     - name: Get elasticsearch node status
       ansible.builtin.import_role:

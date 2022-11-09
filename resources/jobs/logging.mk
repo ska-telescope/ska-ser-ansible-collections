@@ -4,6 +4,7 @@ ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/logging/playbooks
+TESTS_DIR ?= ./ansible_collections/ska_collections/logging/tests
 
 -include $(BASE_PATH)/PrivateRules.mak
 
@@ -48,7 +49,7 @@ destroy-beats: check_hosts ## Destroy beats for log collection
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 test-e2e: check_hosts ## Test elastic cluster
-	ansible-playbook $(PLAYBOOKS_DIR)/tests/e2e/main.yml \
+	ansible-playbook $(TESTS_DIR)/e2e/main.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
