@@ -26,7 +26,9 @@
         certificate_dns_alt_name: "{{ elasticsearch_dns_name }}"
 
 - name: Check if elasticsearch is installed
-  hosts: "{{ (groups[target_hosts + '-master'] | default([])) + (groups[target_hosts + '-data'] | default([])) }}"
+  hosts:
+    - "{{ target_hosts + '-master' }}"
+    - "{{ target_hosts + '-data' }}"
   vars:
     target_hosts: localhost
     elasticsearch_nodes: "{{ (groups[target_hosts + '-master'] | default([])) + (groups[target_hosts + '-kibana'] | default([])) }}"

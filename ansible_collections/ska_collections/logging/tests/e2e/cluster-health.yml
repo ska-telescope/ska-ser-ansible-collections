@@ -12,11 +12,13 @@
         port: "{{ elasticsearch_transport_port | int }}"
         host: "localhost"
         timeout: 60
+
     - name: Elasticsearch API running on all nodes
       ansible.builtin.wait_for:
         port: "{{ elasticsearch_api_port | int }}"
         host: "localhost"
         timeout: 60
+
     - name: Elasticsearch nodes respond to the api with a 'green' status
       ansible.builtin.uri:
         url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_health_endpoint }}"

@@ -12,7 +12,7 @@
 
 - name: List existing elasticsearch api keys
   hosts: "{{ (groups[target_hosts + '-loadbalancer'][0]
-        if ((groups[target_hosts + '-loadbalancer'] | default([])) | length ) > 0
+        if ((groups[target_hosts + '-loadbalancer'] | default([])) | length) > 0
         else groups[target_hosts + '-master'][0]) | default('localhost') }}"
   vars:
     target_hosts: localhost
