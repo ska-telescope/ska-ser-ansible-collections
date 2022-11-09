@@ -3,7 +3,16 @@
   hosts: lewisvm
   become: true
   tasks:
-  - name: Prometheus responds with HTTP 200 in response to health check request
+  - name: Inspect Prometheus container
+    command: "docker inspect prometheus"
+    register: output
+  - name: Check Prometheus container running
+    ansible.builtin.assert:
+      that:
+        - (output.stdout | from_json)[0].State.Status == "running"
+        - (output.stdout | from_json)[0].State.Running
+      fail_msg: "Prometheus container is not running"
+  - name: Prometheus responds with HTTP 200 to health check request
     ansible.builtin.uri:
       url: "https://{{ hostvars[inventory_hostname].ip }}:{{ prometheus_port }}/-/healthy"
       method: GET
