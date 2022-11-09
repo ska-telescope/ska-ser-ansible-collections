@@ -1,0 +1,82 @@
+---
+- name: Proxy environment
+  when: proxy_env is defined
+  block:
+    - name: Create containerd unit file drop-in folder
+      ansible.builtin.file:
+        path: /etc/systemd/system/containerd.service.d
+        state: directory
+        mode: "0755"
+    - name: Add proxy env vars to systemd drop-in
+      ansible.builtin.template:
+        src: proxy.conf.j2
+        dest: /etc/systemd/system/containerd.service.d/proxy.conf
+        mode: "0644"
+      notify:
+        - Restart containerd
+
+- name: Configure containerd server
+  ansible.builtin.template:
+    src: containerd-config.toml.j2
+    dest: "/etc/containerd/config.toml"
+    mode: "0644"
+  notify:
+    - Restart containerd
+    - Restart docker
+
+- name: Check if crictl exists
+  ansible.builtin.stat:
+    path: /usr/local/bin/crictl
+  register: stat_crictl
+
+- name: Check if the crictl version
+  ansible.builtin.command: /usr/local/bin/crictl --version
+  changed_when: false
+  register: crictl_version_check
+  ignore_errors: true
+
+- name: Crictl install
+  when: "not stat_crictl.stat.exists or
+    crictl_version_check.stdout.find(crictl_version) == -1"
+  block:
+    - name: Set crictl_archive fact
+      ansible.builtin.set_fact:
+        crictl_archive: "crictl-{{ crictl_version }}-linux-{{ debian_arch }}.tar.gz"
+
+    - name: Download crictl
+      ansible.builtin.get_url:
+        url: "https://github.com/kubernetes-sigs/cri-tools/releases/download/{{ crictl_version }}/{{ crictl_archive }}"
+        dest: "/tmp/{{ crictl_archive }}"
+        mode: "0755"
+        tmp_dest: "/tmp/"
+
+    - name: Unpack crictl
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ crictl_archive }}"
+        remote_src: true
+        dest: /usr/local/bin
+        mode: "0755"
+
+    - name: Tidy up crictl download
+      ansible.builtin.file:
+        path: "/tmp/{{ crictl_archive }}"
+        state: absent
+
+- name: Configure crictl for containerd
+  ansible.builtin.template:
+    src: crictl.yaml.j2
+    dest: "/etc/crictl.yaml"
+    mode: "0644"
+
+- name: Add cron job for crictl system prune
+  ansible.builtin.lineinfile:
+    path: /etc/crontab
+    regexp: 'crictl rmi'
+    line: >-
+      45 */4     * * *   root    crictl rmi --prune
+  become: true
+  notify:
+    - Restart cron
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers
