@@ -1,0 +1,16 @@
+---
+debug: false
+
+cloud_provider_config: /etc/kubernetes/cloud.conf
+
+cloud_provider_storage_classes:
+  - apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: cinder-block
+    provisioner: cinder.csi.openstack.org
+  - apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: bds2
+    provisioner: cinder.csi.openstack.org
