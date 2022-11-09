@@ -43,7 +43,7 @@
       vars:
         private_key_name: "{{ inventory_hostname }}"
         certificate_name: "{{ inventory_hostname }}"
-        dns_alt_name: "{{ elasticsearch_dns | default(elastic_defaults.elasticsearch_dns) }}"
+        dns_alt_name: "{{ elasticsearch_dns }}"
   tags:
     - common
 
