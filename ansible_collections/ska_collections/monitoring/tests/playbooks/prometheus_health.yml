@@ -1,0 +1,16 @@
+#!/usr/bin/env ansible-playbook
+- name: Prometheus health check
+  hosts: lewisvm
+  become: true
+  tasks:
+  - name: Prometheus responds with HTTP 200 in response to health check request
+    ansible.builtin.uri:
+      url: "https://{{ hostvars[inventory_hostname].ip }}:{{ prometheus_port }}/-/healthy"
+      method: GET
+      force: yes
+      return_content: yes
+      status_code: [200]
+      client_cert: "{{ certificates_dir }}/prometheus.crt"
+      client_key: "{{ certificates_dir }}/prometheus.key"
+    environment:
+      SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"

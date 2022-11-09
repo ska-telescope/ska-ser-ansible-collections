@@ -1,0 +1,12 @@
+#!/usr/bin/env ansible-playbook
+- name: Grafana health check
+  hosts: lewisvm
+  become: true
+  tasks:
+  - name: Grafana responds with HTTP 200 in response to health check request
+    ansible.builtin.uri:
+      url: "http://{{ hostvars[inventory_hostname].ip }}:{{ grafana_port }}/api/health"
+      method: GET
+      force: yes
+      return_content: yes
+      status_code: [200]

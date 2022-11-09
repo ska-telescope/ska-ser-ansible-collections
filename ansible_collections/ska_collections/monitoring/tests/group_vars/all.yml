@@ -1,0 +1,4 @@
+prometheus_port: 9090
+thanos_query_frontend_port: 9095
+grafana_port: 3000
+certificates_dir: "/etc/pki/tls/private"

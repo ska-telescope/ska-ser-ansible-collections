@@ -1,0 +1,7 @@
+all:
+  hosts:
+    lewisvm:
+      ansible_host: 192.168.99.246
+      ip: 192.168.99.246
+      ansible_python_interpreter: python3
+      ansible_user: ubuntu
