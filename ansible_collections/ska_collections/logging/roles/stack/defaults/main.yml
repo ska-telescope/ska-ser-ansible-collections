@@ -104,7 +104,7 @@ kibana_log_driver: json-file
 kibana_log_max_size: "10m"
 kibana_log_max_file: "3"
 kibana_log_options:
-  max-size: "{{  kibana_log_max_size }}"
+  max-size: "{{ kibana_log_max_size }}"
   max-file: "{{ kibana_log_max_file }}"
   labels: "org.ska.app.group"
 kibana_labels:
@@ -143,6 +143,13 @@ kibana_application_privileges:
   - "feature_uptime.read"
   - "feature_observabilityCases.read"
   - "feature_indexPatterns.all"
+kibana_ip: "{{ ansible_default_ipv4.address }}"
+kibana_address: "{{ kibana_ip }}:{{ kibana_port }}"
+kibana_default_dataview_name: "Default Data View"
+kibana_dataview_config:
+  "title": "filebeat-*"
+  "name": "{{ kibana_default_dataview_name }}"
+  "timeFieldName": "@timestamp"
 
 # Shared
 
