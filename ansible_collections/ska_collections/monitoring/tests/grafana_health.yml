@@ -1,7 +1,6 @@
 #!/usr/bin/env ansible-playbook
 - name: Grafana health check
-  hosts: lewisvm
-  become: true
+  hosts: "{{ target_hosts }}"
   tasks:
   - name: Inspect Grafana container
     command: "docker inspect grafana"
@@ -14,7 +13,7 @@
       fail_msg: "Grafana container is not running"
   - name: Grafana responds with HTTP 200 to health check request
     ansible.builtin.uri:
-      url: "http://{{ hostvars[inventory_hostname].ip }}:{{ grafana_port }}/api/health"
+      url: "http://{{ hostvars[inventory_hostname].ip }}:3000/api/health"
       method: GET
       force: yes
       return_content: yes

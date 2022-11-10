@@ -1,6 +1,6 @@
 #!/usr/bin/env ansible-playbook
 - name: Prometheus health check
-  hosts: lewisvm
+  hosts: "{{ target_hosts }}"
   become: true
   tasks:
   - name: Inspect Prometheus container
@@ -14,12 +14,12 @@
       fail_msg: "Prometheus container is not running"
   - name: Prometheus responds with HTTP 200 to health check request
     ansible.builtin.uri:
-      url: "https://{{ hostvars[inventory_hostname].ip }}:{{ prometheus_port }}/-/healthy"
+      url: "https://{{ hostvars[inventory_hostname].ip }}:9090/-/healthy"
       method: GET
       force: yes
       return_content: yes
       status_code: [200]
-      client_cert: "{{ certificates_dir }}/prometheus.crt"
-      client_key: "{{ certificates_dir }}/prometheus.key"
+      client_cert: "/etc/pki/tls/private/prometheus.crt"
+      client_key: "/etc/pki/tls/private/prometheus.key"
     environment:
-      SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+      SSL_CERT_FILE: "/etc/pki/tls/private/ca-certificate.crt"
