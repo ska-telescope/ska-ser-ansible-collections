@@ -1,0 +1,13 @@
+#!/usr/bin/env ansible-playbook
+- name: Thanos Sidecar health check
+  hosts: "{{ target_hosts }}"
+  tasks:
+  - name: Inspect Thanos Sidecar container
+    command: "docker inspect thanos_sidecar"
+    register: output
+  - name: Check Thanos Sidecar container running
+    ansible.builtin.assert:
+      that:
+        - (output.stdout | from_json)[0].State.Status == "running"
+        - (output.stdout | from_json)[0].State.Running
+      fail_msg: "Thanos Sidecar container is not running"

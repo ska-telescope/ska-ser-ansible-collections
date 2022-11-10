@@ -1,0 +1,13 @@
+#!/usr/bin/env ansible-playbook
+- name: Alertmanager health check
+  hosts: "{{ target_hosts }}"
+  tasks:
+  - name: Inspect Alertmanager container
+    command: "docker inspect alertmanager"
+    register: output
+  - name: Check Alertmanager container running
+    ansible.builtin.assert:
+      that:
+        - (output.stdout | from_json)[0].State.Status == "running"
+        - (output.stdout | from_json)[0].State.Running
+      fail_msg: "Alertmanager container is not running"
