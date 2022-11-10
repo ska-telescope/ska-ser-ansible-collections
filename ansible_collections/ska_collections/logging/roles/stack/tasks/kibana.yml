@@ -158,7 +158,7 @@
     headers:
       kbn-xsrf: true
   register: kibana_default_dataview
-  until: kibana_default_dataview.status != -1
+  until: kibana_default_dataview.status == 200
   retries: 6
   delay: 10
 
