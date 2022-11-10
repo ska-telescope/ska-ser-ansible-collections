@@ -1,12 +1,9 @@
+.PHONY: check_hosts vars install help
 .DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
+ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
-PLAYBOOK_PATH ?= ./ansible_collections/ska_collections/instance_common/playbooks
-
-BIFROST_VARS ?= ./environments/$(ENVIRONMENT)/installation/group_vars/bifrost.yml
-BIFROST_CLUSTER_NAME ?= terminus
-BIFROST_EXTRA_VARS ?= jump_host=' -F $(PLAYBOOKS_ROOT_DIR)/ssh.config $(BIFROST_CLUSTER_NAME) '
-ANSIBLE_PLAYBOOK_ARGUMENTS ?=
+PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/instance_common/playbooks
 
 -include $(BASE_PATH)/PrivateRules.mak
 
@@ -19,33 +16,22 @@ vars:
 	@echo "\033[36mCommon:\033[0m"
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
-	@echo "AZUREAD_CLIENT_ID=$(AZUREAD_CLIENT_ID)"
-	@echo "AZUREAD_CLIENT_SECRET=$(AZUREAD_CLIENT_SECRET)"
-	@echo "AZUREAD_COOKIE_SECRET=$(AZUREAD_COOKIE_SECRET)"
-	@echo "AZUREAD_TENANT_ID=$(AZUREAD_TENANT_ID)"
 
-install: check_hosts ## Run common tasks (setup host(s), mount volumes)
-	@ansible-playbook ./ansible_collections/ska_collections/instance_common/playbooks/common.yml \
-	-i $(INVENTORY) \
-	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+init: check_hosts ## Run common tasks (setup host(s), mount volumes)
+	ansible-playbook $(PLAYBOOKS_DIR)/common.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-reverseproxy: check_hosts ## Install nginx reverse proxy
-	@ansible-playbook $(PLAYBOOK_PATH)/proxy.yml \
-	-i $(INVENTORY) \
-	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
-	-e @../$(BIFROST_VARS) \
-	--extra-vars " \
-		target_hosts=$(PLAYBOOKS_HOSTS) \
-		oauth2proxy_client_id=$(AZUREAD_CLIENT_ID) \
-		oauth2proxy_client_secret=$(AZUREAD_CLIENT_SECRET) \
-		oauth2proxy_cookie_secret=$(AZUREAD_COOKIE_SECRET) \
-		oauth2proxy_tenant_id=$(AZUREAD_TENANT_ID) \
-		ansible_python_interpreter='/usr/bin/python3' \
-		$(BIFROST_EXTRA_VARS) \
-	"
+update-hosts: check_hosts ## Update /etc/hosts entries with the full inventory information
+	ansible-playbook $(PLAYBOOKS_DIR)/update-hosts.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+setup-ca: check_hosts ## Setup a CA for self-signed certificates
+	ansible-playbook $(PLAYBOOKS_DIR)/setup-ca.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 help: ## Show Help
 	@echo "Common targets - make playbooks common <target>:"
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
-

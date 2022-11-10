@@ -32,9 +32,9 @@
 - name: Create kibana encryption keys
   ansible.builtin.set_fact:
     kibana_encryption_keys:
-      reporting: "{{ lookup('password', target_hosts + '/reporting length=32 chars=ascii_letters') }}"
-      security: "{{ lookup('password', target_hosts + '/security length=32 chars=ascii_letters') }}"
-      encryptedSavedObjects: "{{ lookup('password', target_hosts + '/encryptedSavedObjects length=32 chars=ascii_letters') }}"
+      reporting: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters') }}"
+      security: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters') }}"
+      encryptedSavedObjects: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters') }}"
   when: not kibana_secrets_file.stat.exists
 
 - name: Store kibana encryption keys
@@ -84,92 +84,6 @@
   environment:
     SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
 
-- name: Check if kibana default data view exists
-  ansible.builtin.uri:
-    url: "http://{{ kibana_address }}/kibana/api/data_views/default"
-    url_username: "{{ kibana_viewer_user }}"
-    url_password: "{{ kibana_viewer_password }}"
-    body_format: "json"
-    force: true
-    force_basic_auth: true
-    method: GET
-    status_code: 200, 401
-    headers:
-      kbn-xsrf: true
-  register: kibana_default_dataview
-
-- name: Get kibana default data view details
-  ansible.builtin.uri:
-    url: "http://{{ kibana_address }}/kibana/api/data_views/data_view/{{ kibana_default_dataview.json.data_view_id }}"
-    url_username: "{{ kibana_viewer_user }}"
-    url_password: "{{ kibana_viewer_password }}"
-    body_format: "json"
-    force: true
-    force_basic_auth: true
-    method: GET
-    status_code: 200
-    headers:
-      kbn-xsrf: true
-  when: kibana_default_dataview
-  register: kibana_default_dataview_details
-
-- name: Get kibana data views
-  ansible.builtin.uri:
-    url: "http://{{ kibana_address }}/kibana/api/data_views"
-    url_username: "{{ kibana_viewer_user }}"
-    url_password: "{{ kibana_viewer_password }}"
-    body_format: "json"
-    force: true
-    force_basic_auth: true
-    method: GET
-    status_code: 200
-    headers:
-      kbn-xsrf: true
-  register: kibana_dataviews
-
-- name: Create new kibana data view
-  ansible.builtin.uri:
-    url: "http://{{ kibana_address }}/kibana/api/data_views/data_view"
-    url_username: "{{ kibana_viewer_user }}"
-    url_password: "{{ kibana_viewer_password }}"
-    body_format: "json"
-    body:
-      data_view: "{{ kibana_dataview_config }}"
-    force: true
-    force_basic_auth: true
-    return_content: true
-    method: POST
-    status_code: 200
-    headers:
-      kbn-xsrf: true
-  vars:
-    kibana_dataviews_names: "{{ kibana_dataviews.json | json_query('data_view[*].name') }}"
-  when: 'kibana_default_dataview_name not in kibana_dataviews_names'
-  register: kibana_dataview_config
-
-- name: Set kibana default data view
-  ansible.builtin.uri:
-    url: "http://{{ kibana_address }}/kibana/api/data_views/default"
-    url_username: elastic
-    url_password: "{{ elasticsearch_password }}"
-    client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
-    client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
-    body_format: "json"
-    body:
-      data_view_id: "{{ kibana_dataview_config.json.data_view.id }}"
-      force: true
-    force: true
-    force_basic_auth: true
-    method: POST
-    status_code: 200
-    headers:
-      kbn-xsrf: true
-  environment:
-    SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
-  vars:
-    kibana_dataviews_names: "{{ kibana_dataviews.json | json_query('data_view[*].name') }}"
-  when: 'kibana_default_dataview_name not in kibana_dataviews_names'
-
 - name: Create kibana service account token
   ansible.builtin.uri:
     url: "https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_kibana_sa_endpoint }}/{{ inventory_hostname }}?pretty"
@@ -206,10 +120,10 @@
     kibana_encryption_keys: "{{ kibana_secrets.stdout | from_json }}"
   register: kibana_config
 
-- name: Run kibana container
+- name: "Run {{ kibana_name }} container"
   community.general.docker_container:
     name: "{{ kibana_name }}"
-    network_mode: "{{ kibana_network_mode }}"  # reverse DNS must work
+    network_mode: "{{ kibana_network_mode }}"
     privileged: "{{ 'yes' if kibana_network_mode == 'host' else 'no' }}"
     user: kibana
     restart_policy: always
@@ -224,3 +138,83 @@
     ports:
       - "{{ kibana_port }}:{{ kibana_port }}"
     recreate: "{{ kibana_reinstall or kibana_config.changed | bool }}"
+
+- name: Kibana is running
+  ansible.builtin.wait_for:
+    host: "{{ kibana_ip }}"
+    port: "{{ kibana_port | int }}"
+    timeout: 120
+
+- name: Check if kibana default data view exists
+  ansible.builtin.uri:
+    url: "http://{{ kibana_address }}/kibana/api/data_views/default"
+    url_username: elastic
+    url_password: "{{ elasticsearch_password }}"
+    body_format: "json"
+    force: true
+    force_basic_auth: true
+    method: GET
+    status_code: 200
+    headers:
+      kbn-xsrf: true
+  register: kibana_default_dataview
+  until: kibana_default_dataview.status != -1
+  retries: 6
+  delay: 10
+
+- name: Get kibana data views
+  ansible.builtin.uri:
+    url: "http://{{ kibana_address }}/kibana/api/data_views"
+    url_username: elastic
+    url_password: "{{ elasticsearch_password }}"
+    body_format: "json"
+    force: true
+    force_basic_auth: true
+    method: GET
+    status_code: 200
+    headers:
+      kbn-xsrf: true
+  register: kibana_dataviews
+
+- name: Create new kibana data view
+  ansible.builtin.uri:
+    url: "http://{{ kibana_address }}/kibana/api/data_views/data_view"
+    url_username: elastic
+    url_password: "{{ elasticsearch_password }}"
+    body_format: "json"
+    body:
+      data_view: "{{ kibana_dataview_config }}"
+    force: true
+    force_basic_auth: true
+    return_content: true
+    method: POST
+    status_code: 200
+    headers:
+      kbn-xsrf: true
+  vars:
+    kibana_dataviews_names: "{{ kibana_dataviews.json | json_query('data_view[*].name') }}"
+  when: 'kibana_default_dataview_name not in kibana_dataviews_names'
+  register: kibana_dataview_create
+
+- name: Set kibana default data view
+  ansible.builtin.uri:
+    url: "http://{{ kibana_address }}/kibana/api/data_views/default"
+    url_username: elastic
+    url_password: "{{ elasticsearch_password }}"
+    client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+    client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+    body_format: "json"
+    body:
+      data_view_id: "{{ kibana_dataview_create.json.data_view.id }}"
+      force: true
+    force: true
+    force_basic_auth: true
+    method: POST
+    status_code: 200
+    headers:
+      kbn-xsrf: true
+  environment:
+    SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+  vars:
+    kibana_dataviews_names: "{{ kibana_dataviews.json | json_query('data_view[*].name') }}"
+  when: 'not (kibana_dataview_create.skipped | default(false))'

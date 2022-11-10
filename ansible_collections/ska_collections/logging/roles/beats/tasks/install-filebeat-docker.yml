@@ -1,0 +1,40 @@
+---
+- name: Ensure Docker is running
+  ansible.builtin.assert:
+    that:
+      - "docker_detected"
+
+- name: "Docker pull {{ logging_filebeat_image }}"
+  community.general.docker_image:
+    source: pull
+    name: "{{ logging_filebeat_image }}"
+  register: docker_pull_retry
+  until: "docker_pull_retry is not failed"
+  retries: 5
+  delay: 5
+
+- name: "Run {{ logging_filebeat_name }} container"
+  community.general.docker_container:
+    name: "{{ logging_filebeat_name }}"
+    user: "{{ logging_filebeat_user }}"
+    memory: "{{ logging_filebeat_memory }}"
+    hostname: "{{ inventory_hostname }}"
+    network_mode: host
+    restart_policy: always
+    image: "{{ logging_filebeat_image }}"
+    command: "{{ logging_filebeat_command }}"
+    state: started
+    ulimits:
+      - "memlock:-1:-1"
+      - "nofile:65536:65536"
+    labels: "{{ logging_filebeat_labels }}"
+    log_driver: "{{ logging_filebeat_log_driver }}"
+    log_options: "{{ logging_filebeat_log_options }}"
+    volumes: "{{
+      logging_filebeat_volumes +
+      (logging_filebeat_kubernetes_enabled | ternary(logging_filebeat_kubernetes_volumes, [])) +
+      (logging_filebeat_docker_enabled | ternary(logging_filebeat_docker_volumes, [])) +
+      (logging_filebeat_podman_enabled | ternary(logging_filebeat_podman_volumes, []))
+    }}"
+    env: "{{ logging_filebeat_env_defaults | combine(logging_filebeat_env_variables) }}"
+    recreate: true

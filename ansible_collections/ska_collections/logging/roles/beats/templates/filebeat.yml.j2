@@ -1,0 +1,184 @@
+name: {{ inventory_hostname }}
+
+# input configuration
+filebeat:
+  inputs:
+    - type: journald
+      id: everything
+      paths: []
+      seek: cursor
+      cursor_seek_fallback: tail
+      processors:
+      - add_fields:
+          target: ''
+          fields:
+            ska.datacentre: {{ ska_datacentre }}
+            ska.environment: {{ ska_environment }}
+            ska.service: {{ ska_service | default(logging_service_default) }}
+            ska.application: journald
+{% if logging_filebeat_kubernetes_enabled|bool %}
+    - type: container
+      symlinks: true
+      kube_config: /kube_config
+      paths:
+        - /var/log/containers/*.log
+      exclude_files: ['\.gz$']
+      exclude_lines: ["^\\s+[\\-`('.|_]"]  # drop asciiart lines
+      processors:
+      - add_kubernetes_metadata:
+          kube_config: /kube_config
+          host: {{ inventory_hostname }}
+          default_matchers.enabled: false
+          matchers:
+          - logs_path:
+              logs_path: "/var/log/containers/"
+# get rid of all fluentd related logs
+      - drop_event:
+          when:
+            or:
+              - equals:
+                  kubernetes.container.name: fluentd
+              - equals:
+                  container.labels.io_kubernetes_container_name: fluentd
+              - regexp:
+                  kubernetes.pod.name: "fluentd"
+      - add_fields:
+          target: ''
+          fields:
+            ska.datacentre: {{ ska_datacentre }}
+            ska.environment: {{ ska_environment }}
+            ska.service: {{ ska_service | default(logging_service_default) }}
+            ska.application: kubernetes
+{% endif %}
+{% if logging_filebeat_docker_enabled|bool %}
+    - type: container
+      combine_partial: true
+      exclude_files: ['\.gz$']
+      exclude_lines: ["^\\s+[\\-`('.|_]"]  # drop asciiart lines
+      stream: stdout
+      paths: ["/var/lib/docker/containers/*/*.log"]
+      processors:
+      - add_docker_metadata:
+          host: "unix:///var/run/docker.sock"
+# get rid of all filebeat/journalbeat related logs
+      - drop_event:
+          when:
+              and:
+                - equals:
+                    docker.container.name: {{ logging_filebeat_name }}
+      - add_fields:
+          target: ''
+          fields:
+            ska.datacentre: {{ ska_datacentre }}
+            ska.environment: {{ ska_environment }}
+            ska.service: {{ ska_service | default(logging_service_default) }}
+            ska.application: docker
+{% endif %}
+{% if logging_filebeat_podman_enabled|bool %}
+    - type: container
+      combine_partial: true
+      exclude_files: ['\.gz$']
+      exclude_lines: ["^\\s+[\\-`('.|_]"]  # drop asciiart lines
+      stream: stdout
+      paths: ["/var/lib/containers/storage/overlay-containers/*/*/*.log"]
+      processors:
+      - add_docker_metadata:
+          match_source_index: 5
+          host: "unix:///var/run/podman/podman.sock"
+# get rid of all filebeat/journalbeat related logs
+      - drop_event:
+          when:
+              and:
+                - equals:
+                    docker.container.name: {{ logging_filebeat_name }}
+      - add_fields:
+          target: ''
+          fields:
+            ska.datacentre: {{ ska_datacentre }}
+            ska.environment: {{ ska_environment }}
+            ska.service: {{ ska_service | default(logging_service_default) }}
+            ska.application: podman
+{% endif %}
+
+# output configuration
+output:
+  elasticsearch:
+    hosts: ["{{ logging_filebeat_elasticsearch_url }}"]
+    ssl.certificate_authorities: ["/etc/ca-certificate.crt"]
+    ssl.certificate: "/etc/{{ logging_filebeat_certificate_name }}.crt"
+    ssl.key: "/etc/{{ logging_filebeat_certificate_key_name }}.key"
+{% if logging_filebeat_elasticsearch_auth_method == "api-key" %}
+    api_key: "{{ logging_filebeat_elasticsearch_password }}"
+{% else %}
+    username: "{{ logging_filebeat_elasticsearch_user }}"
+    password: "{{ logging_filebeat_elasticsearch_password }}"
+{% endif %}
+    loadbalance: true
+    worker: 1
+    index: "filebeat-%{[agent.version]}"
+{% if logging_filebeat_pipeline_enabled|bool %}
+    pipeline: {{ logging_filebeat_pipeline_name }}
+{% endif %}
+
+# ilm configuration
+# https://www.elastic.co/guide/en/beats/filebeat/master/ilm.html#setup-ilm-check_exists-option
+setup.ilm.enabled: true
+setup.ilm.rollover_alias: "filebeat-%{[agent.version]}"
+setup.ilm.pattern: "{now/d}-000001"
+setup.ilm.check_exists: true
+setup.ilm.overwrite: false
+setup.ilm.policy_name: "filebeat"
+setup.ilm.policy_file: /etc/filebeat-ilm-policy.json
+
+# template configuration
+setup.template.name: "filebeat-%{[agent.version]}"
+setup.template.pattern: "filebeat-%{[agent.version]}-*"
+setup.template.enabled: true
+setup.template.overwrite: true
+{% if logging_filebeat_pipeline_enabled|bool %}
+setup.template.settings:
+  index.default_pipeline: "{{ logging_filebeat_pipeline_name }}"
+{% endif %}
+setup.template.append_fields:
+- name: ska_function
+  type: text
+  multi_fields:
+    - type: keyword
+      name: keyword
+- name: ska_line_loc
+  type: text
+  multi_fields:
+    - type: keyword
+      name: keyword
+- name: ska_log_message
+  type: text
+  multi_fields:
+    - type: keyword
+      name: keyword
+- name: ska_log_timestamp
+  type: date
+- name: ska_severity
+  type: text
+  multi_fields:
+    - type: keyword
+      name: keyword
+- name: ska_tags
+  type: text
+  multi_fields:
+    - type: keyword
+      name: keyword
+- name: ska_thread_id
+  type: text
+  multi_fields:
+    - type: keyword
+      name: keyword
+- name: ska_version
+  type: text
+  multi_fields:
+    - type: keyword
+      name: keyword
+- name: ska_transaction_id
+  type: text
+  multi_fields:
+    - type: keyword
+      name: keyword

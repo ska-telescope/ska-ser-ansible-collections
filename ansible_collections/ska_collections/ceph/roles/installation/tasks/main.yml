@@ -1,5 +1,4 @@
 ---
-
 - name: Ensure that the apt cache is updated
   ansible.builtin.apt:
     update_cache: true

@@ -8,12 +8,6 @@
   retries: 5
   delay: 5
 
-- name: Stop elasticsearch exporter container
-  community.docker.docker_container:
-    name: "{{ elasticsearch_exporter_name }}"
-    stop_timeout: 180
-    state: absent
-
 - name: Run elasticsearch exporter container
   community.general.docker_container:
     name: "{{ elasticsearch_exporter_name }}"
@@ -22,8 +16,8 @@
     restart_policy: always
     image: "{{ elasticsearch_exporter_image }}"
     user: root
-    state: started
-    labels: "{{ elasticsearch_labels }}"
+    state: "{{ elasticsearch_exporter_enabled | ternary('started', 'absent') }}"
+    labels: "{{ elasticsearch_exporter_labels }}"
     log_driver: "{{ elasticsearch_exporter_log_driver }}"
     log_options: "{{ elasticsearch_exporter_log_options }}"
     ports:

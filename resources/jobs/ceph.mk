@@ -1,6 +1,9 @@
+.PHONY: check_hosts vars install destroy help
 .DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
+ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
+PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/ceph/playbooks
 
 check_hosts:
 ifndef PLAYBOOKS_HOSTS
@@ -12,11 +15,13 @@ vars:
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
-install: check_hosts ## Install ceph
-	@ansible-playbook ./ansible_collections/ska_collections/ceph/playbooks/install.yml \
-	-i $(INVENTORY) \
-	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+install: check_hosts ## Install ceph cluster
+	ansible-playbook $(PLAYBOOKS_DIR)/install.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+destroy: check_hosts ## Destroy ceph cluster
+	@echo "ceph: destroy not implemented"
 
 help: ## Show Help
 	@echo "Ceph targets - make playbooks ceph <target>:"

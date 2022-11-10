@@ -41,7 +41,7 @@
     name: "{{ gitlab_runner_name }}-unregister"
   register: unregister
 
-- name: Remove gitlab-runner config
+- name: Remove gitlab runner config
   ansible.builtin.file:
     path: "{{ gitlab_runner_configuration_dir }}/config.toml"
     state: absent

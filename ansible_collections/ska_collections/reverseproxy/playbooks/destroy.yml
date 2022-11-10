@@ -1,0 +1,24 @@
+---
+- name: Check destroy playbook execution
+  hosts: localhost
+  vars_prompt:
+    - name: ireallymeanit
+      prompt: This will destroy the nginx reverseproxy and oauth2proxy. Confirm? [yes,no]
+      private: false
+  tasks:
+    - name: Abort playbook
+      ansible.builtin.fail:
+        msg: >
+          "Exiting destroy playbook. To really do it, say 'yes' on the prompt"
+      when: ireallymeanit != 'yes'
+
+- name: Destroy nginx reverseproxy and oauth2proxy
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: Destroy nginx reverseproxy and oauth2proxy
+      ansible.builtin.import_role:
+        name: ska_collections.reverseproxy.reverseproxy
+        tasks_from: destroy

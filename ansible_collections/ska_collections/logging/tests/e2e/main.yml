@@ -1,6 +1,5 @@
 #!/usr/bin/env ansible-playbook
 ---
-
 - name: Elasticsearch is healthy
   ansible.builtin.import_playbook: cluster-health.yml
 

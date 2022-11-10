@@ -2,6 +2,12 @@
 
 This collection registers and runs a single gitlab-runner using docker.
 
+## Required secrets
+
+* **gitlab_runner_registration_token**
+  * Should be set to the Gitlab Runner registration token
+  * Define as: `gitlab_runner_registration_token: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_REGISTRATION_TOKEN', default=secrets['gitlab_runner_registration_token']) | mandatory }}"`
+
 ## Deploy
 
 * Runs the undeploy tasks to unregister any running gitlab-runner

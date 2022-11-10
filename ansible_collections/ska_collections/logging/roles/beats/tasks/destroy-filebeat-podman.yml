@@ -1,0 +1,6 @@
+---
+- name: "Destroy {{ logging_filebeat_name }} container"
+  containers.podman.podman_container:
+    name: "{{ logging_filebeat_name }}"
+    state: absent
+    stop_timeout: 60
