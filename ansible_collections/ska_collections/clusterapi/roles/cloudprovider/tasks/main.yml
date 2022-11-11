@@ -26,7 +26,8 @@
         metadata:
           name: cloud-config
           namespace: kube-system
-        data: "{{ cloud_provider_config_ini.content }}"
+        data:
+          cloud.conf: "{{ cloud_provider_config_ini.content }}"
 
 - name: Download Cloud Provider manifests
   ansible.builtin.get_url:
