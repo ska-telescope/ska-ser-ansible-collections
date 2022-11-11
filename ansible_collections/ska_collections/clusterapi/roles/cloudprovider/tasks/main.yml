@@ -1,9 +1,10 @@
 ---
 
 - name: Load cloud config
-  ansible.builtin.include_vars:
-    file: "{{ cloud_provider_config }}"
-    name: "cloud_provider_config_yaml"
+  ansible.builtin.slurp:
+    src: "{{ cloud_provider_config }}"
+  register: cloud_provider_config_ini
+  become: true
 
 - name: Check Cloud Config Secret exist
   kubernetes.core.k8s_info:
@@ -25,7 +26,7 @@
         metadata:
           name: cloud-config
           namespace: kube-system
-        data: "{{ cloud_provider_config_yaml }}"
+        data: "{{ cloud_provider_config_ini.content | b64decode }}"
 
 - name: Download Cloud Provider manifests
   ansible.builtin.get_url:
