@@ -17,7 +17,7 @@
   when: "not cloud_provider_secret_check.resources"
   block:
   - name: Create Cloud Config Secret
-    community.kubernetes.k8s:
+    kubernetes.core.k8s:
       state: present
       definition:
         apiVersion: v1
