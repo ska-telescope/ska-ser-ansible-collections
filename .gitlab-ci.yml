@@ -33,7 +33,7 @@ include:
 
 ansible-lint:
   before_script:
-    - '[ -f .make/ansible.mk ] || (echo "File ansible.mk not included in Makefile; exit 1'
+    - '[ -f .make/ansible.mk ] || (echo "File ansible.mk not included in Makefile; exit 1")'
     - mkdir -p build/reports/
     - poetry config virtualenvs.create false
     - poetry install --no-root
