@@ -10,6 +10,8 @@ mitogen = "^0.3.3"
 ansible = "^6.5"
 jmespath = "^1.0.1"
 flake8 = "^5.0.4"
+lxml = "^4.9.1"
+ansible-lint-junit = "^0.17.7"
 
 [tool.poetry.dev-dependencies]
 ansible-lint = "^6.0"
