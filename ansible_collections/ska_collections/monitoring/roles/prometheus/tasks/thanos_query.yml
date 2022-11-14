@@ -64,7 +64,8 @@
     oci_command: "{{ command + endpoints }}"
 
 - name: Print oci_command
-  ansible.builtin.debug: var=oci_command
+  ansible.builtin.debug:
+    var: oci_command
 
 - name: Start thanos query
   community.docker.docker_container:

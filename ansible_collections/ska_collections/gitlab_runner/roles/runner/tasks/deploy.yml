@@ -29,7 +29,7 @@
     mode: 0644
   register: config_template
 
-- name: Register runner
+- name: Register runner # noqa no-handler
   when: not config.stat.exists or config_template.changed or default_config_checksum == config.stat.checksum or gitlab_runner_reregister
   block:
     - name: Unregister existing runner(s)

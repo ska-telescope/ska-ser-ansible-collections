@@ -1,20 +1,20 @@
 ---
-- name: Destroy filebeat config
+- name: "Destroy filebeat config"
   ansible.builtin.file:
     path: /etc/filebeat.yml
     state: absent
 
-- name: Destroy filebeat ilm policy config
+- name: "Destroy filebeat ilm policy config"
   ansible.builtin.file:
     path: /etc/filebeat-ilm-policy.json
     state: absent
 
-- name: Destroy ska_log_parsing_pipeline ingest pipeline config
+- name: "Destroy ska_log_parsing_pipeline ingest pipeline config"
   ansible.builtin.file:
     path: /etc/ska_log_parsing_pipeline.json
     state: absent
 
-- name: Destroy filebeat directory
+- name: "Destroy filebeat directory"
   ansible.builtin.file:
     path: "{{ logging_filebeat_data_dir }}"
     state: absent

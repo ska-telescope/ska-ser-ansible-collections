@@ -69,19 +69,19 @@
 - name: Create ska_log_parsing_pipeline ingest pipeline
   when: logging_filebeat_pipeline_enabled
   block:
-    - name: Create ska_log_parsing_pipeline config
+    - name: "Create ska_log_parsing_pipeline config"
       ansible.builtin.template:
         src: ska_log_parsing_pipeline.json.j2
         dest: /etc/ska_log_parsing_pipeline.json
         mode: 0644
       register: ska_log_parsing_pipeline_config
 
-    - name: Slurp /etc/ska_log_parsing_pipeline.json file
+    - name: "Slurp /etc/ska_log_parsing_pipeline.json file"
       ansible.builtin.slurp:
         src: /etc/ska_log_parsing_pipeline.json
       register: ska_log_parsing_pipeline_file
 
-    - name: Create filebeat ingest pipeline
+    - name: "Create filebeat ingest pipeline"
       ansible.builtin.uri:
         url: "{{ logging_filebeat_elasticsearch_url }}/_ingest/pipeline/{{ logging_filebeat_pipeline_name }}"
         method: PUT
@@ -97,10 +97,10 @@
         SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
       when: ska_log_parsing_pipeline_config.changed
   rescue:
-    - name: Delete config file due to failure
+    - name: "Delete config file due to failure"
       ansible.builtin.file:
         path: /etc/ska_log_parsing_pipeline.json
         state: absent
-    - name: Throw error
+    - name: "Throw error"
       ansible.builtin.fail:
         msg: "Tasks {{ ansible_failed_task.name }} failed: {{ ansible_failed_result }}"
