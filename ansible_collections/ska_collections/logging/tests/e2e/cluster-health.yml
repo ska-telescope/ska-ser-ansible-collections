@@ -1,0 +1,38 @@
+#!/usr/bin/env ansible-playbook
+- name: Elasticsearch cluster is healthy
+  hosts:
+    - "{{ target_hosts + '-master' }}"
+    - "{{ target_hosts + '-data' }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: Elasticsearch running on all nodes
+      ansible.builtin.wait_for:
+        port: "{{ elasticsearch_transport_port | int }}"
+        host: "localhost"
+        timeout: 60
+
+    - name: Elasticsearch API running on all nodes
+      ansible.builtin.wait_for:
+        port: "{{ elasticsearch_api_port | int }}"
+        host: "localhost"
+        timeout: 60
+
+    - name: Elasticsearch nodes respond to the api with a 'green' status
+      ansible.builtin.uri:
+        url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_health_endpoint }}"
+        method: GET
+        force: true
+        return_content: true
+        status_code: [200]
+        client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+        client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+        url_username: elastic
+        url_password: "{{ elasticsearch_password }}"
+      environment:
+        SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+      register: health_info
+      retries: 3
+      timeout: 60
+      until: "'green' in health_info.content or 'yellow' in health_info.content"

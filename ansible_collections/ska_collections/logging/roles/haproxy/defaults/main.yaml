@@ -8,12 +8,19 @@ elastic_haproxy_log_driver: json-file
 elastic_haproxy_log_max_size: "10m"
 elastic_haproxy_log_max_file: "3"
 elastic_haproxy_log_options:
-  max-size: "{{  elastic_haproxy_log_max_size }}"
+  max-size: "{{ elastic_haproxy_log_max_size }}"
   max-file: "{{ elastic_haproxy_log_max_file }}"
   labels: "org.ska.app.group"
 
-elastic_haproxy_elasticsearch_port: 9200
 elastic_haproxy_stats_port: 9090
+elastic_haproxy_stats_user: "stats"
 elastic_haproxy_stats_endpoint: "/haproxy_stats"
-elastic_haproxy_stats_user: stats
-elastic_haproxy_stats_passwd: loggingHA
+
+# Vaulted variables
+
+elastic_haproxy_stats_password: "{{ _ | mandatory('`elastic_haproxy_stats_password` definition is mandatory') }}"
+
+# Shared
+
+elasticsearch_api_port: 9200
+elasticsearch_health_endpoint: "/_cat/health"

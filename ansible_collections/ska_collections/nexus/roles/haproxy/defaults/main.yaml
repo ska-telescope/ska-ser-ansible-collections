@@ -23,7 +23,7 @@ nexus_haproxy_container_log_max_size: "10m"
 nexus_haproxy_container_log_max_file: "3"
 nexus_haproxy_container_log_driver: json-file
 nexus_haproxy_container_log_options:
-  max-size: "{{  nexus_haproxy_container_log_max_size }}"
+  max-size: "{{ nexus_haproxy_container_log_max_size }}"
   max-file: "{{ nexus_haproxy_container_log_max_file }}"
   labels: "org.ska.app.group"
 

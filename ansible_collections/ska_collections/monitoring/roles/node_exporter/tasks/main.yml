@@ -49,12 +49,13 @@
         src: /tmp/node_exporter.tar.gz
         dest: /usr/bin
 
-    - name: Rename node_exporter directory
+    - name: Rename node_exporter directory  # noqa deprecated-command-syntax
       ansible.builtin.shell: |
         rm /usr/bin/prometheus-node-exporter
         mv /usr/bin/node_exporter*/node_exporter /usr/bin/prometheus-node-exporter
         rm -rf /usr/bin/node_exporter*
         rm /tmp/node_exporter.tar.gz
+      changed_when: true
 
     - name: Create prometheus-node-exporter service
       become: true

@@ -1,0 +1,20 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Gather facts on full inventory
+  hosts: "{{ groups['all'] }}"
+  tasks:
+    - name: Show node info
+      ansible.builtin.debug:
+        msg: "{{ inventory_hostname }} at {{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
+      when: debug
+
+- name: Update hosts on target nodes
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: Update hosts on target nodes
+      ansible.builtin.import_role:
+        name: ska_collections.instance_common.init
+        tasks_from: update-hosts

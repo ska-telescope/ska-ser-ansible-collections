@@ -16,7 +16,7 @@
 - name: Check nvidia-driver installed when Nvidia support requested
   ansible.builtin.fail:
     msg: The Nvidia driver has not been found (nvidia-smi --query) - aborting.
-  when: activate_nvidia | bool and not ignore_nvidia_fail | bool and not nvidia_driver_exists | bool
+  when: containerd_activate_nvidia | bool and not containerd_ignore_nvidia_fail | bool and not nvidia_driver_exists | bool
 
 - name: Load containerd kernel drivers
   community.general.system.modprobe:
@@ -81,7 +81,7 @@
   block:
     - name: Install packages required for containerd
       ansible.builtin.apt:
-        name: "{{ debian_containerd_dependencies }}"
+        name: "{{ containerd_deb_dependencies }}"
         state: present
 
     - name: Add dockerproject apt key
@@ -122,7 +122,7 @@
   block:
     - name: Install packages required for docker
       ansible.builtin.dnf:
-        name: "{{ redhat_containerd_dependencies }}"
+        name: "{{ containerd_redhat_dependencies }}"
         state: present
 
     - name: Add RedHat repository control
@@ -145,14 +145,14 @@
 
     - name: Install containerd.io (dnf)
       ansible.builtin.dnf:
-        name: "{{ redhat_containerd_dependency }}"
+        name: "{{ containerd_redhat_package }}"
         state: present
         allow_downgrade: true
       notify:
         - Restart containerd
 
 - name: Proxy environment
-  when: proxy_env is defined
+  when: containerd_proxy_env is defined
   block:
     - name: Create containerd unit file drop-in folder
       ansible.builtin.file:
@@ -189,15 +189,15 @@
 
 - name: Crictl install
   when: "not stat_crictl.stat.exists or
-    crictl_version_check.stdout.find(crictl_version) == -1"
+    crictl_version_check.stdout.find(containerd_crictl_version) == -1"
   block:
     - name: Set crictl_archive fact
       ansible.builtin.set_fact:
-        crictl_archive: "crictl-{{ crictl_version }}-linux-{{ debian_arch }}.tar.gz"
+        crictl_archive: "crictl-{{ containerd_crictl_version }}-linux-{{ debian_arch }}.tar.gz"
 
     - name: Download crictl
       ansible.builtin.get_url:
-        url: "https://github.com/kubernetes-sigs/cri-tools/releases/download/{{ crictl_version }}/{{ crictl_archive }}"
+        url: "https://github.com/kubernetes-sigs/cri-tools/releases/download/{{ containerd_crictl_version }}/{{ crictl_archive }}"
         dest: "/tmp/{{ crictl_archive }}"
         mode: "0755"
         tmp_dest: "/tmp/"

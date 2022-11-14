@@ -33,9 +33,9 @@
   ansible.builtin.include_role:
     name: ska_collections.instance_common.certs
   vars:
-    private_key_name: "thanos_sidecar"
     certificate_name: "thanos_sidecar"
-    dns_alt_name: "{{ thanos_alt_name }}"
+    certificate_key_name: "thanos_sidecar"
+    certificate_dns_alt_name: "{{ thanos_alt_name }}"
     certificates_recreate: true
 
 - name: Generate thanos swift configuration

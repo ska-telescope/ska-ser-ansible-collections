@@ -14,9 +14,9 @@
   ansible.builtin.include_role:
     name: ska_collections.instance_common.certs
   vars:
-    private_key_name: "thanos_query_frontend"
     certificate_name: "thanos_query_frontend"
-    dns_alt_name: "{{ thanos_alt_name }}"
+    certificate_key_name: "thanos_query_frontend"
+    certificate_dns_alt_name: "{{ thanos_alt_name }}"
     certificates_recreate: true
 
 - name: Generate thanos tls configuration

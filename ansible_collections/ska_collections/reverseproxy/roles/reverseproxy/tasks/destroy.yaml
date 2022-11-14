@@ -1,0 +1,24 @@
+- name: Remove Nginx container
+  community.general.docker_container:
+    name: "{{ item }}"
+    state: absent
+    stop_timeout: 60
+    timeout: 120
+    force_kill: false
+  with_items:
+    - "{{ reverseproxy_nginx_name }}"
+
+- name: Remove oauth2proxy container
+  community.general.docker_container:
+    name: "{{ item }}"
+    state: absent
+    stop_timeout: 60
+    timeout: 120
+    force_kill: false
+  with_items:
+    - "{{ reverseproxy_oauth2proxy_name }}"
+
+- name: Destroy Nginx config file
+  ansible.builtin.file:
+    path: "{{ reverseproxy_nginx_config_dir }}/nginx.conf"
+    state: absent

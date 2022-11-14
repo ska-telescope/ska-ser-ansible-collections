@@ -1,8 +1,0 @@
-all:
-  hosts:
-    ca:
-      ansible_host: 130.246.214.45
-      ip: 130.246.214.45
-      ansible_python_interpreter: python3
-      ansible_user: ubuntu
-      ansible_ssh_extra_args: -F ../datacentres/shared/ca.ssh.config

@@ -1,21 +1,43 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: "Show debug info"
+- name: Show debug info
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
   become: true
   tasks:
     - name: "Show logging nodes info"
-      debug: var=hostvars[inventory_hostname]
+      ansible.builtin.debug: var=hostvars[inventory_hostname]
       when: debug
 
-- name: "Apply the beats role to the logging nodes"
+- name: Install beats for log collection on nodes
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
   become: true
-  roles:
-    - ska_collections.instance_common.init
-    - ska_collections.docker_base.podman
-    - ska_collections.logging.beats
+  tasks:
+    - name: Generate certificates for mTLS
+      ansible.builtin.import_role:
+        name: ska_collections.instance_common.certs
+        tasks_from: sign-cert
+      vars:
+        certificate_name: "{{ logging_filebeat_certificate_name }}"
+        certificate_key_name: "{{ logging_filebeat_certificate_key_name }}"
+        certificate_dns_alt_name: "{{ inventory_hostname }}"
+
+    - name: Install filebeat common
+      ansible.builtin.import_role:
+        name: ska_collections.logging.beats
+        tasks_from: install-filebeat-common
+
+    - name: Install filebeat on docker
+      ansible.builtin.import_role:
+        name: ska_collections.logging.beats
+        tasks_from: install-filebeat-docker
+      when: 'logging_filebeat_oci_engine == "docker"'
+
+    - name: Install filebeat on podman
+      ansible.builtin.import_role:
+        name: ska_collections.logging.beats
+        tasks_from: install-filebeat-podman
+      when: 'logging_filebeat_oci_engine == "podman"'
