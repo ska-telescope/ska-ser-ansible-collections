@@ -1,25 +1,23 @@
-#!/usr/bin/env ansible-playbook
 - name: Thanos Query Frontend health check
-  hosts: "{{ target_hosts }}"
   become: true
-  tasks:
-  - name: Inspect Thanos Query Frontend container
-    command: "docker inspect thanos_query_frontend"
-    register: output
-  - name: Check Thanos Query Frontend container running
-    ansible.builtin.assert:
-      that:
-        - (output.stdout | from_json)[0].State.Status == "running"
-        - (output.stdout | from_json)[0].State.Running
-      fail_msg: "Thanos Query Frontend container is not running"
-  - name: Thanos Query Frontend responds with HTTP 200 to health check request
-    ansible.builtin.uri:
-      url: "https://{{ hostvars[inventory_hostname].ip }}:9095/-/healthy"
-      method: GET
-      force: true
-      return_content: true
-      status_code: [200]
-      client_cert: "/etc/pki/tls/private/thanos_query_frontend.crt"
-      client_key: "/etc/pki/tls/private/thanos_query_frontend.key"
-    environment:
-      SSL_CERT_FILE: "/etc/pki/tls/private/ca-certificate.crt"
+  block:
+    - name: Inspect Thanos Query Frontend container
+      command: "docker inspect thanos_query_frontend"
+      register: output
+    - name: Check Thanos Query Frontend container running
+      ansible.builtin.assert:
+        that:
+          - (output.stdout | from_json)[0].State.Status == "running"
+          - (output.stdout | from_json)[0].State.Running
+        fail_msg: "Thanos Query Frontend container is not running"
+    - name: Thanos Query Frontend responds with HTTP 200 to health check request
+      ansible.builtin.uri:
+        url: "https://{{ hostvars[inventory_hostname].ip }}:9095/-/healthy"
+        method: GET
+        force: true
+        return_content: true
+        status_code: [200]
+        client_cert: "/etc/pki/tls/private/thanos_query_frontend.crt"
+        client_key: "/etc/pki/tls/private/thanos_query_frontend.key"
+      environment:
+        SSL_CERT_FILE: "/etc/pki/tls/private/ca-certificate.crt"

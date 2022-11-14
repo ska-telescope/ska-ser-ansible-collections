@@ -1,0 +1,8 @@
+- name: Prometheus main test playbook
+  hosts: "{{ target_hosts }}"
+  become: true
+  tasks:
+    - include: thanos_compactor_health.yml
+    - include: thanos_query_frontend_health.yml
+    - include: thanos_query_health.yml
+    - include: thanos_store_health.yml

@@ -1,20 +1,18 @@
-#!/usr/bin/env ansible-playbook
 - name: Thanos Query health check
-  hosts: "{{ target_hosts }}"
-  tasks:
-  - name: Inspect Thanos Query container
-    command: "docker inspect thanos_query"
-    register: output
-  - name: Check Thanos Query container running
-    ansible.builtin.assert:
-      that:
-        - (output.stdout | from_json)[0].State.Status == "running"
-        - (output.stdout | from_json)[0].State.Running
-      fail_msg: "Thanos Query container is not running"
-  - name: Thanos Query responds with HTTP 200 to health check request
-    ansible.builtin.uri:
-      url: "http://{{ hostvars[inventory_hostname].ip }}:9091/-/healthy"
-      method: GET
-      force: true
-      return_content: true
-      status_code: [200]
+  block:
+    - name: Inspect Thanos Query container
+      command: "docker inspect thanos_query"
+      register: output
+    - name: Check Thanos Query container running
+      ansible.builtin.assert:
+        that:
+          - (output.stdout | from_json)[0].State.Status == "running"
+          - (output.stdout | from_json)[0].State.Running
+        fail_msg: "Thanos Query container is not running"
+    - name: Thanos Query responds with HTTP 200 to health check request
+      ansible.builtin.uri:
+        url: "http://{{ hostvars[inventory_hostname].ip }}:9091/-/healthy"
+        method: GET
+        force: true
+        return_content: true
+        status_code: [200]
