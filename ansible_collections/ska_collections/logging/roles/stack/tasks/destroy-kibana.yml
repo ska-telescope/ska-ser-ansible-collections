@@ -1,5 +1,5 @@
 ---
-- name: "Destroy {{ kibana_name }} container"
+- name: "Destroy container {{ kibana_name }}"
   community.general.docker_container:
     name: "{{ kibana_name }}"
     state: absent

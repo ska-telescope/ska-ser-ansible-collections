@@ -1,5 +1,5 @@
 ---
-- name: "Destroy {{ elastic_haproxy_name }} container"
+- name: "Destroy container {{ elastic_haproxy_name }}"
   community.general.docker_container:
     name: "{{ elastic_haproxy_name }}"
     state: absent

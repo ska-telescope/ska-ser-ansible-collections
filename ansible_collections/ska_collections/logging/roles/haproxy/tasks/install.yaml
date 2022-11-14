@@ -17,12 +17,12 @@
     name: "{{ elastic_haproxy_image }}"
   register: elastic_haproxy_image_pull
 
-- name: "Get {{ elastic_haproxy_name }} container info"
+- name: "Get container info {{ elastic_haproxy_name }}"
   community.general.docker_container_info:
     name: "{{ elastic_haproxy_name }}"
   register: haproxy_info
 
-- name: "Run {{ elastic_haproxy_name }} container"  # noqa no-handler
+- name: "Run container {{ elastic_haproxy_name }}"
   community.general.docker_container:
     name: "{{ elastic_haproxy_name }}"
     image: "{{ elastic_haproxy_image }}"

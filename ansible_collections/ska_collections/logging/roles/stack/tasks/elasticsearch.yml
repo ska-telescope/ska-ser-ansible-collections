@@ -42,7 +42,7 @@
   retries: 5
   delay: 5
 
-- name: "Change {{ certificates_dir }} ownership"
+- name: "Change ownership {{ certificates_dir }}"
   ansible.builtin.file:
     path: "{{ certificates_dir }}"
     mode: 0770
@@ -52,7 +52,7 @@
     path: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
     mode: 0640
 
-- name: "Run {{ elasticsearch_name }} container"
+- name: "Run container {{ elasticsearch_name }}"
   community.general.docker_container:
     name: "{{ elasticsearch_name }}"
     network_mode: "{{ elasticsearch_network_mode }}"

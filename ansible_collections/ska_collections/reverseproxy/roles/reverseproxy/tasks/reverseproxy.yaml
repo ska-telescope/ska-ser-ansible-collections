@@ -48,17 +48,17 @@
     mode: 0440
     force: true
 
-- name: "Check if {{ reverseproxy_dns_name }}-ca.crt exists"
+- name: "Check if {{ reverseproxy_dns_name }}-ca.crt exists" # noqa name[template]
   ansible.builtin.file:
     path: "{{ reverseproxy_tls_ca_crt_path }}"
     state: file
 
-- name: "Check if {{ reverseproxy_dns_name }}.crt exists"
+- name: "Check if {{ reverseproxy_dns_name }}.crt exists" # noqa name[template]
   ansible.builtin.file:
     path: "{{ reverseproxy_tls_crt_path }}"
     state: file
 
-- name: "Check if {{ reverseproxy_dns_name }}.key exists"
+- name: "Check if {{ reverseproxy_dns_name }}.key exists" # noqa name[template]
   ansible.builtin.file:
     path: "{{ reverseproxy_tls_key_path }}"
     state: file

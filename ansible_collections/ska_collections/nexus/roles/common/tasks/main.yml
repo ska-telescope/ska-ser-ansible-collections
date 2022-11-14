@@ -22,7 +22,7 @@
   until: apt_res is success
   when: ansible_os_family == "Debian"
 
-- name: "Enable {{ nexus_common_ntp_service }} service"
+- name: "Enable service {{ nexus_common_ntp_service }}"
   ansible.builtin.service:
     name: "{{ nexus_common_ntp_service }}"
     enabled: true

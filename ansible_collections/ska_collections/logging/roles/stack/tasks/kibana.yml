@@ -120,7 +120,7 @@
     kibana_encryption_keys: "{{ kibana_secrets.stdout | from_json }}"
   register: kibana_config
 
-- name: "Run {{ kibana_name }} container"
+- name: "Run container {{ kibana_name }}"
   community.general.docker_container:
     name: "{{ kibana_name }}"
     network_mode: "{{ kibana_network_mode }}"

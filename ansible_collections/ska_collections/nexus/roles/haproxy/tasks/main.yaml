@@ -36,17 +36,17 @@
     name: "{{ nexus_haproxy_conan_search_container_image }}"
   register: ncsimage
 
-- name: "Get {{ nexus_haproxy_name }} container info"
+- name: "Get container info {{ nexus_haproxy_name }}"
   community.docker.docker_container_info:
     name: "{{ nexus_haproxy_name }}"
   register: hainfo
 
-- name: "Get {{ nexus_haproxy_conan_search_name }} container info"
+- name: "Get container info {{ nexus_haproxy_conan_search_name }}"
   community.docker.docker_container_info:
     name: "{{ nexus_haproxy_conan_search_name }}"
   register: ncsinfo
 
-- name: "Run {{ nexus_haproxy_conan_search_name }} container"  # noqa 503
+- name: "Run container {{ nexus_haproxy_conan_search_name }}"  # noqa 503
   community.docker.docker_container:
     name: "{{ nexus_haproxy_conan_search_name }}"
     image: "{{ nexus_haproxy_conan_search_container_image }}"
@@ -67,7 +67,7 @@
     env: "{{ nexus_haproxy_conan_search_defaults | combine(nexus_haproxy_conan_search_env_variables) }}"
   when: ncsconfig.changed or ncsimage.changed or not ncsinfo.exists or not ncsinfo.container.State.Running
 
-- name: "Run {{ nexus_haproxy_name }} in a container"  # noqa 503
+- name: "Run in a container {{ nexus_haproxy_name }}"  # noqa 503
   community.docker.docker_container:
     name: "{{ nexus_haproxy_name }}"
     image: "{{ nexus_haproxy_container_image }}"
