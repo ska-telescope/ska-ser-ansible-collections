@@ -6,7 +6,8 @@
   ignore_errors: true
 
 - name: Nvidia check
-  ansible.builtin.debug: var=nvidia_driver_check.rc
+  ansible.builtin.debug:
+    var: nvidia_driver_check.rc
   when: debug | bool
 
 - name: Set the facts
@@ -62,7 +63,7 @@
     groups: docker
 
 - name: Ensure that pip is install (CentOS 7)
-  ansible.builtin.easy_install:
+  community.general.packaging.language.easy_install:
     name: pip
     state: present
   when: ansible_distribution == "CentOS" and ansible_distribution_version is regex("^7\.")

@@ -1,9 +1,11 @@
 ---
 - name: Set variable
-  ansible.builtin.debug: var=ansible_default_ipv4.address
+  ansible.builtin.debug:
+    var: ansible_default_ipv4.address
 
 - name: Set hostname
-  ansible.builtin.debug: var=ansible_hostname
+  ansible.builtin.debug:
+    var: ansible_hostname
 
 - name: "Build hosts file"
   ansible.builtin.lineinfile:

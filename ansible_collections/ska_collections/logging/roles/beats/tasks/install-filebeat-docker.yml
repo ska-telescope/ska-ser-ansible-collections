@@ -1,5 +1,5 @@
 ---
-- name: Ensure Docker is running
+- name: "Ensure Docker is running"
   ansible.builtin.assert:
     that:
       - "docker_detected"
@@ -13,7 +13,7 @@
   retries: 5
   delay: 5
 
-- name: "Run {{ logging_filebeat_name }} container"
+- name: "Run the container {{ logging_filebeat_name }}"
   community.general.docker_container:
     name: "{{ logging_filebeat_name }}"
     user: "{{ logging_filebeat_user }}"

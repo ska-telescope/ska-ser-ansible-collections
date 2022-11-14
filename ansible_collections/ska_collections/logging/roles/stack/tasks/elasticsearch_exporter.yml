@@ -8,7 +8,7 @@
   retries: 5
   delay: 5
 
-- name: Run elasticsearch exporter container
+- name: "Run elasticsearch exporter container"
   community.general.docker_container:
     name: "{{ elasticsearch_exporter_name }}"
     network_mode: "{{ elasticsearch_exporter_network_mode }}"  # reverse DNS must work

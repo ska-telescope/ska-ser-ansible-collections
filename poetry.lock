@@ -184,6 +184,19 @@ docs = ["furo (>=2022.6.21)", "sphinx (>=5.1.1)", "sphinx-autodoc-typehints (>=1
 testing = ["covdefaults (>=2.2)", "coverage (>=6.4.2)", "pytest (>=7.1.2)", "pytest-cov (>=3)", "pytest-timeout (>=2.1)"]
 
 [[package]]
+name = "flake8"
+version = "5.0.4"
+description = "the modular source code checker: pep8 pyflakes and co"
+category = "main"
+optional = false
+python-versions = ">=3.6.1"
+
+[package.dependencies]
+mccabe = ">=0.7.0,<0.8.0"
+pycodestyle = ">=2.9.0,<2.10.0"
+pyflakes = ">=2.5.0,<2.6.0"
+
+[[package]]
 name = "importlib-resources"
 version = "5.10.0"
 description = "Read resources from Python packages"
@@ -247,6 +260,14 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
+name = "mccabe"
+version = "0.7.0"
+description = "McCabe checker, plugin for flake8"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
 name = "mitogen"
 version = "0.3.3"
 description = "Library for writing distributed self-replicating programs."
@@ -302,12 +323,28 @@ docs = ["furo (>=2022.9.29)", "proselint (>=0.13)", "sphinx-autodoc-typehints (>
 test = ["appdirs (==1.4.4)", "pytest-cov (>=4)", "pytest-mock (>=3.10)", "pytest (>=7.2)"]
 
 [[package]]
+name = "pycodestyle"
+version = "2.9.1"
+description = "Python style guide checker"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
 name = "pycparser"
 version = "2.21"
 description = "C parser in Python"
 category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+
+[[package]]
+name = "pyflakes"
+version = "2.5.0"
+description = "passive checker of Python programs"
+category = "main"
+optional = false
+python-versions = ">=3.6"
 
 [[package]]
 name = "pygments"
@@ -465,7 +502,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "flake8 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "ab2cc3fc48f94d2a96d48d3357cb807f86bd2ee209612cdc59dea8398c1ad724"
+content-hash = "c469f4508b0597b8174cf73cf52a45cfcb54cdcd9e90cf084cee8590740fccae"
 
 [metadata.files]
 ansible = []
@@ -481,18 +518,22 @@ colorama = []
 commonmark = []
 cryptography = []
 filelock = []
+flake8 = []
 importlib-resources = []
 jinja2 = []
 jmespath = []
 jsonschema = []
 markupsafe = []
+mccabe = []
 mitogen = []
 mypy-extensions = []
 packaging = []
 pathspec = []
 pkgutil-resolve-name = []
 platformdirs = []
+pycodestyle = []
 pycparser = []
+pyflakes = []
 pygments = []
 pyparsing = []
 pyrsistent = []

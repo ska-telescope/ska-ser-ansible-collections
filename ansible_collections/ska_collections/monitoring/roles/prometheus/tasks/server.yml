@@ -352,7 +352,7 @@
   when: not is_swapfile.stat.exists
 
 - name: Manage swap file in /etc/fstab
-  ansible.builtin.mount:
+  ansible.posix.mount:
     src: "{{ swapfile_path }}"
     name: "none"
     fstype: "swap"
