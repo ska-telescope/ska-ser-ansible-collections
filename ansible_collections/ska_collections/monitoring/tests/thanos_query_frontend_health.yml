@@ -16,8 +16,8 @@
     ansible.builtin.uri:
       url: "https://{{ hostvars[inventory_hostname].ip }}:9095/-/healthy"
       method: GET
-      force: yes
-      return_content: yes
+      force: true
+      return_content: true
       status_code: [200]
       client_cert: "/etc/pki/tls/private/thanos_query_frontend.crt"
       client_key: "/etc/pki/tls/private/thanos_query_frontend.key"
