@@ -4,17 +4,17 @@ INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 
 ## EXECUTION VARIABLES
 NODES ?= all
-PRIVATE_VARS ?= extra_vars.yml
-EXTRA_VARS ?= extra_vars.yml
 PROMETHEUS_NODE ?= prometheus
 COLLECTIONS_PATHS ?= ./collections
 
 ## OPENSTACK VARIABLES
 PROM_OS_PROJECT_ID ?=geral;system-team;admin
 PROM_OS_AUTH_URL ?= http://192.168.93.215:5000/v3/
+PROM_OS_USERNAME ?= "mandatory"
+PROM_OS_PASSWORD ?= "mandatory"
 
-SLACK_API_URL ?= ******************
-SLACK_API_URL_USER ?= ******************
+SLACK_API_URL ?= "mandatory"
+SLACK_API_URL_USER ?= "mandatory"
 PROM_CONFIGS_PATH ?= .
 
 KUBECONFIG ?= "mandatory"
@@ -22,9 +22,9 @@ GITLAB_TOKEN ?= "mandatory"
 CA_CERT_PASSWORD ?= "mandatory"
 
 # AzureAD vars
-AZUREAD_CLIENT_ID ?=
-AZUREAD_CLIENT_SECRET ?=
-AZUREAD_TENANT_ID ?=
+AZUREAD_CLIENT_ID ?= "mandatory"
+AZUREAD_CLIENT_SECRET ?= "mandatory"
+AZUREAD_TENANT_ID ?= "mandatory"
 
 PROMETHEUS_EXTRAVARS ?=
 
@@ -43,6 +43,7 @@ vars:  ## Variables
 	@echo "SLACK_API_URL_USER=$(SLACK_API_URL_USER)"
 	@echo "AZUREAD_CLIENT_ID=$(AZUREAD_CLIENT_ID)"
 	@echo "AZUREAD_CLIENT_SECRET=$(AZUREAD_CLIENT_SECRET)"
+	@echo "AZUREAD_TENANT_ID=$(AZUREAD_TENANT_ID)"
 	@echo "CA_CERT_PASSWORD=$(CA_CERT_PASSWORD)"
 	@echo "PROM_OS_PROJECT_ID=$(PROM_OS_PROJECT_ID)"
 	@echo "PROM_OS_AUTH_URL=$(PROM_OS_AUTH_URL)"
@@ -126,11 +127,11 @@ thanos: check_hosts ## Install Thanos query and query front-end
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
 node-exporter: check_hosts ## Install Prometheus node exporter - pass INVENTORY and NODES
-	@ansible-playbook deploy_node_exporter.yml \
+	@ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_node_exporter.yml \
 	-i $(INVENTORY) \
+	-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	-e 'ansible_python_interpreter=/usr/bin/python3' \
-	-e @$(EXTRA_VARS) \
 	--limit $(NODES)
 
 

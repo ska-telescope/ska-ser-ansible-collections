@@ -29,8 +29,7 @@
   vars:
     target_hosts: localhost
   become: true
-  become_method: sudo
   roles:
     - containerd
-    - podman
     - docker
+    - podman

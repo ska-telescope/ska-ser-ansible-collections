@@ -1,8 +1,14 @@
 ---
-certificates_recreate: false
 certificates_dir: /etc/pki/tls/private
-private_key_name: private_key
+
 certificate_name: certificate
-dns_alt_name: skao.stfc
-organization_name: SKAO
+certificate_dns_alt_name: skao.stfc
+certificate_recreate: false
+certificate_organization_name: SKAO
+certificate_key_name: "{{ certificate_name }}"
+
 ca_host: ca
+
+# Vaulted variables
+
+ca_cert_password: "{{ _ | mandatory('`ca_cert_password` definition is mandatory') }}"

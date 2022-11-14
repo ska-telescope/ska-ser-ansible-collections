@@ -5,12 +5,12 @@
     state: directory
     mode: 0644
 
-- name: Check if gitlab-runner config exists
+- name: Check if gitlab runner config exists
   ansible.builtin.stat:
     path: "{{ gitlab_runner_configuration_dir }}/config.toml"
   register: config
 
-- name: Create gitlab-runner default configuration
+- name: Create gitlab runner default configuration
   ansible.builtin.template:
     src: config.toml.j2
     dest: "{{ gitlab_runner_configuration_dir }}/default-config.toml"
@@ -18,11 +18,11 @@
   register: default_config
 
 - name: Set default configuration checksum
-  set_fact:
+  ansible.builtin.set_fact:
     default_config_checksum: "{{ default_config.checksum }}"
     current_config_checksum: "{{ (config.stat | default({})).checksum | default('') }}"
 
-- name: Create gitlab-runner template configuration
+- name: Create gitlab runner template configuration
   ansible.builtin.template:
     src: config.template.toml.j2
     dest: "{{ gitlab_runner_configuration_dir }}/config.template.toml"
@@ -30,6 +30,7 @@
   register: config_template
 
 - name: Register runner
+  when: not config.stat.exists or config_template.changed or default_config_checksum == config.stat.checksum or gitlab_runner_reregister
   block:
     - name: Unregister existing runner(s)
       ansible.builtin.import_tasks: unregister.yml
@@ -65,16 +66,14 @@
         volumes:
           - "{{ gitlab_runner_configuration_dir }}:/etc/gitlab-runner"
 
-    - name: Create gitlab-runner configuration with registration
+    - name: Create gitlab runner configuration with registration
       ansible.builtin.copy:
         src: "{{ gitlab_runner_configuration_dir }}/default-config.toml"
         dest: "{{ gitlab_runner_configuration_dir }}/config.toml"
         remote_src: true
         mode: 0644
 
-  when: not config.stat.exists or config_template.changed or default_config_checksum == config.stat.checksum or gitlab_runner_reregister
-
-- name: Check generated gitlab-runner configuration
+- name: Check generated gitlab runner configuration
   ansible.builtin.stat:
     path: "{{ gitlab_runner_configuration_dir }}/config.toml"
   register: config

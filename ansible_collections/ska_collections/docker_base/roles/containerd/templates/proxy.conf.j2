@@ -1,4 +1,4 @@
 [Service]
-{% for var, val in proxy_env.items() %}
+{% for var, val in containerd_proxy_env.items() %}
 Environment="{{ var }}={{ val }}"
 {% endfor %}

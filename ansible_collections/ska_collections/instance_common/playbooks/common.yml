@@ -4,7 +4,7 @@
   hosts: "{{ groups['all'] }}"
   tasks:
     - name: Show node info
-      debug:
+      ansible.builtin.debug:
         msg: "{{ inventory_hostname }} at {{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
       when: debug
 
@@ -13,6 +13,5 @@
   vars:
     target_hosts: localhost
   become: true
-  become_method: sudo
   roles:
     - ska_collections.instance_common.init

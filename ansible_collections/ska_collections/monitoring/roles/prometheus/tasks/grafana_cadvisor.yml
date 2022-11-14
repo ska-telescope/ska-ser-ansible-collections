@@ -18,7 +18,7 @@
   with_items:
     - summarised.json
 
-- name: docker-dashboard Write dashboards provisioning config file
+- name: Docker dashboard Write dashboards provisioning config file
   ansible.builtin.template:
     src: dashboards-docker-dashboard.yml.j2
     dest: /etc/grafana/provisioning/dashboards/docker-dashboard.yml

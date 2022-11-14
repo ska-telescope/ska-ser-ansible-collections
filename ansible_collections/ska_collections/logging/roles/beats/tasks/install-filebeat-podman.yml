@@ -1,0 +1,39 @@
+---
+- name: Ensure Podman is running
+  ansible.builtin.assert:
+    that:
+      - "podman_detected"
+
+- name: "Podman pull {{ logging_filebeat_image }}"
+  containers.podman.podman_image:
+    name: "{{ logging_filebeat_image }}"
+  register: podman_pull_retry
+  until: "podman_pull_retry is not failed"
+  retries: 5
+  delay: 5
+
+- name: "Run {{ logging_filebeat_name }} container"
+  containers.podman.podman_container:
+    name: "{{ logging_filebeat_name }}"
+    user: "{{ logging_filebeat_user }}"
+    memory: "{{ logging_filebeat_memory }}"
+    hostname: "{{ inventory_hostname }}"
+    restart_policy: always
+    image: "{{ logging_filebeat_image }}"
+    command: "{{ logging_filebeat_command }}"
+    state: started
+    ulimits:
+      - "memlock=-1:-1"
+      - "nofile=65536:65536"
+    labels: "{{ logging_filebeat_labels }}"
+    log_driver: "{{ logging_filebeat_log_driver }}"
+    log_options:
+      max_size: "{{ logging_filebeat_log_max_size }}"
+    volumes: "{{
+      logging_filebeat_volumes +
+      (logging_filebeat_kubernetes_enabled | ternary(logging_filebeat_kubernetes_volumes, [])) +
+      (logging_filebeat_docker_enabled | ternary(logging_filebeat_docker_volumes, [])) +
+      (logging_filebeat_podman_enabled | ternary(logging_filebeat_podman_volumes, []))
+    }}"
+    env: "{{ logging_filebeat_env_defaults | combine(logging_filebeat_env_variables) }}"
+    recreate: true

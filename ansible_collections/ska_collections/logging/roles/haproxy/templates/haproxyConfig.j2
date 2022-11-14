@@ -1,0 +1,60 @@
+#jinja2:trim_blocks:False
+global
+  log 127.0.0.1 local0
+  log 127.0.0.1 local1 notice
+  maxconn 4096
+  #ssl-default-bind-ciphers kEECDH+aRSA+AES:kRSA+AES:+AES256:RC4-SHA:!kEDH:!LOW:!EXP:!MD5:!aNULL:!eNULL
+  tune.ssl.default-dh-param 2048 # not sure
+  ssl-default-bind-ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:!kEDH:!LOW:!EXP:!MD5:!aNULL:!eNULL
+  ssl-default-bind-options ssl-min-ver TLSv1.2 no-tls-tickets
+
+defaults
+  log	    global
+  mode	  http
+  option	httplog
+  option	dontlognull
+  timeout connect 5s
+  timeout client 1800s
+  timeout client-fin 50s
+  timeout server 1800s
+  timeout tunnel 1h
+
+frontend stats
+  bind  *:{{ elastic_haproxy_stats_port }}
+  mode  http
+  stats enable
+  stats hide-version
+  stats realm Haproxy\ Statistics
+  stats uri {{ elastic_haproxy_stats_endpoint }}
+  stats auth {{ elastic_haproxy_stats_user }}:{{ elastic_haproxy_stats_password }}
+  stats refresh 10s
+  stats admin if LOCALHOST
+
+#############################
+#  elasticsearch configs
+#############################
+
+frontend front-elasticsearch-api-proxy
+  bind    *:{{ elasticsearch_api_port }}
+  mode    tcp
+  timeout client 1800s
+  timeout client-fin 50s
+  default_backend back-elasticsearch-api-proxy
+
+backend back-elasticsearch-api-proxy
+  mode    tcp
+  option  tcplog
+  balance roundrobin
+  option  log-health-checks
+  option ssl-hello-chk
+  http-check connect
+  http-check send meth GET uri {{ elasticsearch_health_endpoint }}
+  http-check expect status 200
+  default-server inter 10s fall 2
+  {%- for item in (groups[target_hosts ~ '-master'] + groups[target_hosts ~ '-data']) %}
+  server {{ item }} {{ hostvars[item].ip }}:{{ elasticsearch_api_port }} check
+  {%- endfor %}
+  timeout connect 10s
+  timeout server 1800s
+  timeout tunnel 1800s
+

@@ -33,7 +33,7 @@
           - "{{ gitlab_runner_configuration_dir }}:/etc/gitlab-runner"
 
     - name: "Wait for {{ gitlab_runner_name }} to terminate"
-      command: docker wait {{ gitlab_runner_name }}-unregister
+      ansible.builtin.command: docker wait {{ gitlab_runner_name }}-unregister
       changed_when: true
 
 - name: Get unregister result
@@ -41,7 +41,7 @@
     name: "{{ gitlab_runner_name }}-unregister"
   register: unregister
 
-- name: Remove gitlab-runner config
+- name: Remove gitlab runner config
   ansible.builtin.file:
     path: "{{ gitlab_runner_configuration_dir }}/config.toml"
     state: absent

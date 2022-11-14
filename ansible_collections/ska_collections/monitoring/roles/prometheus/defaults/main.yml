@@ -128,7 +128,7 @@ grafana_ceph_dashboard_files:
   - radosgw-overview.json
   - radosgw-sync-overview.json
   - rbd-details.json
-  - rbd-overview.json 
+  - rbd-overview.json
 grafana_plugins:
   - vonage-status-panel
   - grafana-piechart-panel

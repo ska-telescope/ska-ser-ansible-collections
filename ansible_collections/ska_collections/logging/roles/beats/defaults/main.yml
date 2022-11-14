@@ -1,0 +1,80 @@
+---
+logging_service_default: logging
+logging_kubeconfig_path: /etc/kubernetes/admin.conf
+
+logging_filebeat_oci_engine: docker
+logging_filebeat_data_dir: /var/lib/filebeat
+logging_filebeat_certificate_name: "{{ inventory_hostname }}-filebeat"
+logging_filebeat_certificate_key_name: "{{ logging_filebeat_certificate_name }}"
+
+logging_filebeat_name: filebeat
+logging_filebeat_image: docker.elastic.co/beats/filebeat:7.17.0
+logging_filebeat_user: root
+logging_filebeat_command: "filebeat -e -strict.perms=false -c /etc/filebeat.yml"
+logging_filebeat_log_driver: json-file
+logging_filebeat_log_max_size: "10m"
+logging_filebeat_log_max_file: "3"
+logging_filebeat_memory: 512M
+logging_filebeat_log_options:
+  max-size: "{{ logging_filebeat_log_max_size }}"
+  max-file: "{{ logging_filebeat_log_max_file }}"
+  labels: "org.ska.app.group"
+logging_filebeat_labels:
+  org.ska.app.group: logging
+
+logging_filebeat_env_variables: {}
+logging_filebeat_env_defaults: {}
+
+logging_filebeat_elasticsearch_address: "{{ _ | mandatory('`logging_filebeat_elasticsearch_address` definition is mandatory') }}"
+logging_filebeat_elasticsearch_url: "https://{{ logging_filebeat_elasticsearch_address }}:{{ elasticsearch_api_port }}"
+logging_filebeat_elasticsearch_auth_method: 'basic'
+logging_filebeat_elasticsearch_user: 'elastic'
+# Can be an elasticsearch api-key when logging_filebeat_elasticsearch_auth_method: 'api-key'
+logging_filebeat_elasticsearch_password: "{{ _ | mandatory('`logging_filebeat_elasticsearch_password` definition is mandatory') }}"
+
+logging_filebeat_pipeline_name: "ska_log_parsing_pipeline"
+logging_filebeat_pipeline_enabled: true
+
+logging_filebeat_hot_phase_rollover_age: 3d
+logging_filebeat_hot_phase_rollover_size: 5gb
+logging_filebeat_cold_phase_age: 2d
+logging_filebeat_delete_phase_age: 8d
+
+logging_filebeat_volumes:
+  # configurations
+  - "/etc/filebeat.yml:/etc/filebeat.yml:ro"
+  - "/etc/filebeat-ilm-policy.json:/etc/filebeat-ilm-policy.json:ro"
+  - "/var/lib/filebeat:/usr/share/filebeat/data/registry/filebeat:rw"
+  # pki
+  - "{{ certificates_dir }}/ca-certificate.crt:/etc/ca-certificate.crt:ro"
+  - "{{ certificates_dir }}/{{ logging_filebeat_certificate_name }}.crt:/etc/{{ logging_filebeat_certificate_name }}.crt:ro"
+  - "{{ certificates_dir }}/{{ logging_filebeat_certificate_key_name }}.key:/etc/{{ logging_filebeat_certificate_key_name }}.key:ro"
+  # machine info
+  - "/etc/hostname:/etc/hostname:ro"
+  - "/etc/machine-id:/etc/machine-id:ro"
+  # generic logs
+  - "/var/log:/var/log:ro"
+  # journal
+  - "/var/log/journal:/var/log/journal:ro"
+
+logging_filebeat_kubernetes_enabled: auto
+logging_filebeat_kubernetes_volumes:
+  - "{{ logging_kubeconfig_path }}:/kube_config:ro"
+  - "/var/lib/kubelet/pods:/var/lib/kubelet/pods:ro"
+
+logging_filebeat_docker_enabled: auto
+logging_filebeat_docker_volumes:
+  - "/var/run/docker.sock:/var/run/docker.sock:Z"
+  - "/var/lib/docker/containers:/var/lib/docker/containers:ro"
+
+logging_filebeat_podman_enabled: auto
+logging_filebeat_podman_volumes:
+  - "/var/run/podman/podman.sock:/var/run/podman/podman.sock:Z"
+  - "/var/lib/containers:/var/lib/containers:ro"
+
+# Shared
+
+ca_host: ca
+certificates_dir: /etc/pki/tls/private
+elasticsearch_api_port: 9200
+elasticsearch_password: "{{ _ | mandatory('`elasticsearch_password` definition is mandatory') }}"
