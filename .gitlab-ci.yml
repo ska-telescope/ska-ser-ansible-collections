@@ -30,3 +30,10 @@ include:
     # .post steps
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/finaliser.gitlab-ci.yml'
+
+ansible-lint:
+  before_script:
+    - '[ -f .make/ansible.mk ] || (echo "File ansible.mk not included in Makefile; exit 1'
+    - mkdir -p build/reports/
+    - poetry config virtualenvs.create false
+    - poetry install --no-root
