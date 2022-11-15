@@ -15,10 +15,10 @@ Type=notify
 # for containers run by docker
 ExecStart=
 ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock \
-           --storage-driver={{ docker_driver }} \
+           --storage-driver=overlay2 \
            --label nodetype={{ host_grouping }} \
            --insecure-registry={{ docker_repo }} \
-           --insecure-registry={{ docker_nexus_hosted_cache }}
+           --insecure-registry={{ nexus }}:{{ nexus_docker_hosted_port }}
 ExecReload=/bin/kill -s HUP $MAINPID
 TimeoutSec=0
 RestartSec=2

@@ -5,26 +5,15 @@
 debug: false
 
 debian_arch: "{{ {'x86_64': 'amd64', 'aarch64': 'arm64'}[ansible_architecture] | default(ansible_architecture) }}"
-docker_deb_repo_url: "deb https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
-docker_deb_repo_key_url: https://download.docker.com/linux/ubuntu/gpg
-docker_deb_repo_key_id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
-docker_yum_repo_url: "https://download.docker.com/linux/centos/docker-ce.repo"
 
 nexus: "{{ _ | mandatory('`nexus` definition is mandatory') }}"
 nexus_docker_hosted_port: 9080
 nexus_docker_group_port: 9082
 
-containerd_version: 1.6.6-1
 containerd_crictl_version: v1.24.2
 
 containerd_activate_nvidia: false
 containerd_ignore_nvidia_fail: false
-
-containerd_docker_hub_mirror: "http://{{ nexus }}:{{ nexus_docker_group_port }}"
-containerd_central_nexus_mirror: "http://{{ nexus }}:{{ nexus_docker_group_port }}"
-containerd_gitlab_nexus_mirror: "http://{{ nexus }}:{{ nexus_docker_group_port }}"
-containerd_nexus_hosted_cache: "{{ nexus }}:{{ nexus_docker_hosted_port }}"
-containerd_nexus_hosted_cache_url: "http://{{ nexus }}:{{ nexus_docker_hosted_port }}"
 
 containerd_deb_dependencies:
   - apt-transport-https

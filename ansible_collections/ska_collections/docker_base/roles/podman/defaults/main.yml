@@ -4,18 +4,8 @@ debug: false
 nexus: "{{ _ | mandatory('`nexus` definition is mandatory') }}"
 nexus_docker_group_port: 9082
 
-podman_registry_mirror: "{{ nexus }}:{{ nexus_docker_group_port }}"
-
-podman_deb_repo_url: "deb http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_{{ ansible_distribution_version }}/ /"
-podman_deb_repo_key_url: "http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_{{ ansible_distribution_version }}/Release.key"
-
-podman_deb_crun_version: "100:1.7-1"
-podman_deb_podman_version: "100:4.3.0-1"
-podman_deb_buildah_version: "100:1.28.0-1"
-podman_deb_skopeo_version: "100:1.10.0-1"
-
 podman_deb_pkgs:
-  - "crun={{ podman_deb_crun_version }}"
-  - "podman={{ podman_deb_podman_version }}"
-  - "buildah={{ podman_deb_buildah_version }}"
-  - "skopeo={{ podman_deb_skopeo_version }}"
+  - "crun=100:1.7-1"
+  - "podman=100:4.3.0-1"
+  - "buildah=100:1.28.0-1"
+  - "skopeo=100:1.10.0-1"
