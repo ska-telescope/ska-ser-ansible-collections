@@ -7,7 +7,7 @@
 
 - name: Install docker CE (apt)
   ansible.builtin.apt:
-    name: "{{ item }}={{ docker_deb_version }}"
+    name: "{{ item }}=5:20.10.18~3-0~ubuntu-{{ ansible_distribution_release }}"
     state: present
     allow_downgrade: true
   notify:

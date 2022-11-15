@@ -8,11 +8,11 @@
   block:
     - name: Add podman project apt key
       ansible.builtin.apt_key:
-        url: "{{ podman_deb_repo_key_url }}"
+        url: "http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_{{ ansible_distribution_version }}/Release.key"
 
     - name: Add podman project apt source
       ansible.builtin.lineinfile:
-        line: "{{ podman_deb_repo_url }}"
+        line: "deb http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_{{ ansible_distribution_version }}/ /"
         dest: /etc/apt/sources.list.d/podman.list
         create: true
         owner: root

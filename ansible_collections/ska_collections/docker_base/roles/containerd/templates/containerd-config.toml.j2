@@ -58,27 +58,27 @@ version = 2
       conf_template = ""
     [plugins."io.containerd.grpc.v1.cri".registry]
       [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-{% if containerd_docker_hub_mirror %}
+{% if nexus and nexus_docker_group_port %}
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-          endpoint = ["{{ containerd_docker_hub_mirror }}"]
+          endpoint = ["http://{{ nexus }}:{{ nexus_docker_group_port }}"]
         [plugins."io.containerd.grpc.v1.cri".registry.configs."docker.io".tls]
           insecure_skip_verify = true
 {% endif %}
-{% if containerd_central_nexus_mirror %}
+{% if nexus and nexus_docker_group_port %}
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."artefact.skao.int"]
-          endpoint = ["{{ containerd_central_nexus_mirror }}"]
+          endpoint = ["http://{{ nexus }}:{{ nexus_docker_group_port }}"]
         [plugins."io.containerd.grpc.v1.cri".registry.configs."artefact.skao.int".tls]
           insecure_skip_verify = true
 {% endif %}
-{% if containerd_gitlab_nexus_mirror %}
+{% if nexus and nexus_docker_group_port %}
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.gitlab.com"]
-          endpoint = ["{{ containerd_gitlab_nexus_mirror }}"]
+          endpoint = ["http://{{ nexus }}:{{ nexus_docker_group_port }}"]
         [plugins."io.containerd.grpc.v1.cri".registry.configs."registry.gitlab.com".tls]
           insecure_skip_verify = true
 {% endif %}
-{% if containerd_nexus_hosted_cache and containerd_nexus_hosted_cache_url %}
-        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ containerd_nexus_hosted_cache }}"]
-          endpoint = ["{{ containerd_nexus_hosted_cache_url }}"]
+{% if nexus and nexus_docker_hosted_port %}
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ nexus }}:{{ nexus_docker_hosted_port }}"]
+          endpoint = ["http://{{ nexus }}:{{ nexus_docker_hosted_port }}"]
 {% endif %}
     [plugins."io.containerd.grpc.v1.cri".x509_key_pair_streaming]
       tls_cert_file = ""

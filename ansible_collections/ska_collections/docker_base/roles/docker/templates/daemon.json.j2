@@ -5,18 +5,18 @@
         "size": 24
     }
   ],
-  {% if docker_registry_mirror|length > 1 %}
-  "registry-mirrors": ["{{ docker_registry_mirror }}"],
+  {% if nexus|length > 1 and nexus_docker_group_port|length > 1 %}
+  "registry-mirrors": ["http://{{ nexus }}:{{ nexus_docker_group_port }}"],
   {% endif %}
   "metrics-addr" : "0.0.0.0:{{ docker_metrics_port }}",
   {% if docker_mtu is defined %}
   "mtu" : {{ docker_mtu }},
   {% endif %}
   "experimental" : true,
-  "log-driver": "{{ docker_log_driver }}",
+  "log-driver": "json-file",
   "log-opts": {
-      "max-size": "{{ docker_log_max_size }}",
-      "max-file": "{{ docker_log_max_file }}"
+      "max-size": "10m",
+      "max-file": "3"
       },
 {% if docker_activate_nvidia|bool and nvidia_driver_exists|bool %}
   "exec-opts": ["native.cgroupdriver=cgroupfs"],
