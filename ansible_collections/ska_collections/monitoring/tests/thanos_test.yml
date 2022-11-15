@@ -1,4 +1,4 @@
-- name: Prometheus main test playbook
+- name: Thanos main test playbook
   hosts: "{{ target_hosts }}"
   become: true
   tasks:

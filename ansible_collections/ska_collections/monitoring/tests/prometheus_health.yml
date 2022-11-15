@@ -21,3 +21,23 @@
         client_key: "/etc/pki/tls/private/prometheus.key"
       environment:
         SSL_CERT_FILE: "/etc/pki/tls/private/ca-certificate.crt"
+    - name: Prometheus does not respond to health check request if no SSL_CERT_FILE passed
+      ansible.builtin.uri:
+        url: "https://{{ hostvars[inventory_hostname].ip }}:9090/-/healthy"
+        method: GET
+        force: true
+        return_content: true
+        status_code: [-1]
+        client_cert: "/etc/pki/tls/private/prometheus.crt"
+        client_key: "/etc/pki/tls/private/prometheus.key"
+    - name: Prometheus does not respond to health check request if no client_cert passed
+      ansible.builtin.uri:
+        url: "https://{{ hostvars[inventory_hostname].ip }}:9090/-/healthy"
+        method: GET
+        force: true
+        return_content: true
+        status_code: [-1]
+        client_key: "/etc/pki/tls/private/prometheus.key"
+      environment:
+        SSL_CERT_FILE: "/etc/pki/tls/private/ca-certificate.crt"
+        
