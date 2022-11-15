@@ -1,12 +1,12 @@
 ---
-- name: Create HAProxy config
+- name: "Create HAProxy config"
   ansible.builtin.template:
     src: haproxyConfig.j2
     dest: "/etc/haproxy.cfg"
     mode: 0644
   register: haproxy_config
 
-- name: Show HAProxy config
+- name: "Show HAProxy config"
   ansible.builtin.debug:
     var: haproxy_config
   when: debug
@@ -17,12 +17,12 @@
     name: "{{ elastic_haproxy_image }}"
   register: elastic_haproxy_image_pull
 
-- name: "Get container info {{ elastic_haproxy_name }}"
+- name: "Get the container info for {{ elastic_haproxy_name }}"
   community.general.docker_container_info:
     name: "{{ elastic_haproxy_name }}"
   register: haproxy_info
 
-- name: "Run container {{ elastic_haproxy_name }}"
+- name: "Run the container {{ elastic_haproxy_name }}"  # noqa no-handler
   community.general.docker_container:
     name: "{{ elastic_haproxy_name }}"
     image: "{{ elastic_haproxy_image }}"

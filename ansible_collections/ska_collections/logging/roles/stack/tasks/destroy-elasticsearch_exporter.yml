@@ -1,5 +1,5 @@
 ---
-- name: "Destroy container {{ elasticsearch_exporter_name }}"
+- name: "Destroy the container {{ elasticsearch_exporter_name }}"
   community.general.docker_container:
     name: "{{ elasticsearch_exporter_name }}"
     state: absent

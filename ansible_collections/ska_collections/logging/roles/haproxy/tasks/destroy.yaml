@@ -1,5 +1,5 @@
 ---
-- name: "Destroy container {{ elastic_haproxy_name }}"
+- name: "Destroy the container {{ elastic_haproxy_name }}"
   community.general.docker_container:
     name: "{{ elastic_haproxy_name }}"
     state: absent
@@ -7,7 +7,7 @@
     timeout: 120
     force_kill: false
 
-- name: Destroy HAProxy config
+- name: "Destroy HAProxy config"
   ansible.builtin.file:
     path: /etc/haproxy.cfg
     state: absent

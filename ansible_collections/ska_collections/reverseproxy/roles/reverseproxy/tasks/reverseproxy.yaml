@@ -1,14 +1,14 @@
 ---
-- name: Create Nginx configuration directory
+- name: "Create Nginx configuration directory"
   ansible.builtin.file:
     path: "{{ reverseproxy_nginx_config_dir }}"
     state: directory
     mode: 0644
 
-- name: Generate self-signed certificate
+- name: "Generate self-signed certificate"
   when: reverseproxy_use_self_signed_cert
   block:
-    - name: Generate self-signed certificate
+    - name: "Generate self-signed certificate"
       ansible.builtin.import_role:
         name: ska_collections.instance_common.certs
         tasks_from: sign-cert
@@ -16,54 +16,54 @@
         certificate_name: "{{ reverseproxy_dns_name }}"
         certificate_key_name: "{{ reverseproxy_dns_name }}"
         certificate_dns_alt_name: "{{ reverseproxy_dns_name }}"
-    - name: Copy self-signed ca
+    - name: "Copy self-signed ca"
       ansible.builtin.copy:
         src: "{{ certificates_dir }}/ca-certificate.crt"
         dest: "{{ reverseproxy_tls_ca_crt_path }}"
         remote_src: true
         mode: 0644
-    - name: Copy self-signed tls certificate
+    - name: "Copy self-signed tls certificate"
       ansible.builtin.copy:
         src: "{{ certificates_dir }}/{{ reverseproxy_dns_name }}.crt"
         dest: "{{ reverseproxy_tls_crt_path }}"
         remote_src: true
         mode: 0644
-    - name: Copy self-signed tls key
+    - name: "Copy self-signed tls key"
       ansible.builtin.copy:
         src: "{{ certificates_dir }}/{{ reverseproxy_dns_name }}.key"
         dest: "{{ reverseproxy_tls_key_path }}"
         remote_src: true
         mode: 0644
 
-- name: Create Nginx configuration directory
+- name: "Create Nginx configuration directory"
   ansible.builtin.file:
     path: "{{ reverseproxy_nginx_config_dir }}"
     state: directory
     mode: 0644
 
-- name: Get /etc/nginx/dhparam
+- name: "Get /etc/nginx/dhparam"
   ansible.builtin.get_url:
     url: 'https://ssl-config.mozilla.org/ffdhe2048.txt'
     dest: "{{ reverseproxy_nginx_config_dir }}/dhparam"
     mode: 0440
     force: true
 
-- name: "Check if {{ reverseproxy_dns_name }}-ca.crt exists" # noqa name[template]
+- name: "Check existence of ca cert {{ reverseproxy_dns_name }}"
   ansible.builtin.file:
     path: "{{ reverseproxy_tls_ca_crt_path }}"
     state: file
 
-- name: "Check if {{ reverseproxy_dns_name }}.crt exists" # noqa name[template]
+- name: "Check existence of cert {{ reverseproxy_dns_name }}"
   ansible.builtin.file:
     path: "{{ reverseproxy_tls_crt_path }}"
     state: file
 
-- name: "Check if {{ reverseproxy_dns_name }}.key exists" # noqa name[template]
+- name: "Check existence of key {{ reverseproxy_dns_name }}"
   ansible.builtin.file:
     path: "{{ reverseproxy_tls_key_path }}"
     state: file
 
-- name: Create Nginx config
+- name: "Create Nginx config"
   ansible.builtin.template:
     src: nginx.conf.j2
     dest: "{{ reverseproxy_nginx_config_dir }}/nginx.conf"
@@ -75,7 +75,7 @@
     source: pull
     name: "{{ reverseproxy_nginx_image }}"
 
-- name: Remove oauth2proxy container
+- name: "Remove oauth2proxy container"
   community.general.docker_container:
     name: "{{ reverseproxy_oauth2proxy_name }}"
     state: absent
@@ -84,7 +84,7 @@
     force_kill: false
   when: not reverseproxy_oauth2proxy_enabled
 
-- name: Run Nginx reverse proxy # noqa no-handler
+- name: "Run Nginx reverse proxy" # noqa no-handler
   community.general.docker_container:
     name: "{{ reverseproxy_nginx_name }}"
     image: "{{ reverseproxy_nginx_image }}"

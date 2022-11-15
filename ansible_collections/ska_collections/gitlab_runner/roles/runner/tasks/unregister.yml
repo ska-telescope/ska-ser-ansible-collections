@@ -32,7 +32,7 @@
         volumes:
           - "{{ gitlab_runner_configuration_dir }}:/etc/gitlab-runner"
 
-    - name: "Unregister {{ gitlab_runner_name }}"
+    - name: "Wait for the termination of {{ gitlab_runner_name }}"
       ansible.builtin.command: docker wait {{ gitlab_runner_name }}-unregister
       changed_when: true
 

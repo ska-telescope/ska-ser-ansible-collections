@@ -1,5 +1,5 @@
 ---
-- name: Ensure Podman is running
+- name: "Ensure Podman is running"
   ansible.builtin.assert:
     that:
       - "podman_detected"
@@ -12,7 +12,7 @@
   retries: 5
   delay: 5
 
-- name: "Run container {{ logging_filebeat_name }}"
+- name: "Run the container {{ logging_filebeat_name }}"
   containers.podman.podman_container:
     name: "{{ logging_filebeat_name }}"
     user: "{{ logging_filebeat_user }}"

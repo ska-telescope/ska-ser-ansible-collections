@@ -1,23 +1,23 @@
-- name: Create /etc/ha_config directory
+- name: "Create /etc/ha_config directory"
   ansible.builtin.file:
     path: /etc/hap_config
     state: directory
     mode: 0755
 
-- name: Create haproxy config
+- name: "Create haproxy config"
   ansible.builtin.template:
     src: haproxyConfig.j2
     dest: /etc/hap_config/haproxy.cfg
     mode: "0644"
   register: hapconfig
 
-- name: Create /etc/ncs_config directory
+- name: "Create /etc/ncs_config directory"
   ansible.builtin.file:
     path: /etc/ncs_config
     state: directory
     mode: 0644
 
-- name: Create ncs config
+- name: "Create ncs config"
   ansible.builtin.template:
     src: fastapi-plugins.conf.yaml.j2
     dest: /etc/ncs_config/fastapi-plugins.conf.yaml
@@ -36,17 +36,17 @@
     name: "{{ nexus_haproxy_conan_search_container_image }}"
   register: ncsimage
 
-- name: "Get container info {{ nexus_haproxy_name }}"
+- name: "Get container info of {{ nexus_haproxy_name }}"
   community.docker.docker_container_info:
     name: "{{ nexus_haproxy_name }}"
   register: hainfo
 
-- name: "Get container info {{ nexus_haproxy_conan_search_name }}"
+- name: "Get container info of {{ nexus_haproxy_conan_search_name }}"
   community.docker.docker_container_info:
     name: "{{ nexus_haproxy_conan_search_name }}"
   register: ncsinfo
 
-- name: "Run container {{ nexus_haproxy_conan_search_name }}"  # noqa 503
+- name: "Run container {{ nexus_haproxy_conan_search_name }}"  # noqa no-handler
   community.docker.docker_container:
     name: "{{ nexus_haproxy_conan_search_name }}"
     image: "{{ nexus_haproxy_conan_search_container_image }}"
@@ -67,7 +67,7 @@
     env: "{{ nexus_haproxy_conan_search_defaults | combine(nexus_haproxy_conan_search_env_variables) }}"
   when: ncsconfig.changed or ncsimage.changed or not ncsinfo.exists or not ncsinfo.container.State.Running
 
-- name: "Run in a container {{ nexus_haproxy_name }}"  # noqa 503
+- name: "Run container with {{ nexus_haproxy_name }}"  # noqa no-handler
   community.docker.docker_container:
     name: "{{ nexus_haproxy_name }}"
     image: "{{ nexus_haproxy_container_image }}"
