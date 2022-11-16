@@ -106,7 +106,7 @@ output:
     hosts: ["{{ logging_filebeat_elasticsearch_url }}"]
     ssl.certificate_authorities: ["/etc/ca-certificate.crt"]
     ssl.certificate: "/etc/{{ logging_filebeat_certificate_name }}.crt"
-    ssl.key: "/etc/{{ logging_filebeat_certificate_key_name }}.key"
+    ssl.key: "/etc/{{ logging_filebeat_certificate_name }}.key"
 {% if logging_filebeat_elasticsearch_auth_method == "api-key" %}
     api_key: "{{ logging_filebeat_elasticsearch_password }}"
 {% else %}

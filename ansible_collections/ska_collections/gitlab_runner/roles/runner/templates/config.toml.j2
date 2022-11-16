@@ -1,4 +1,4 @@
-concurrent = {{ gitlab_runner_concurrent_jobs }}
-check_interval = {{ gitlab_runner_check_interval }}
-log_level = '{{ gitlab_runner_log_level }}'
+concurrent = 10
+check_interval = 3
+log_level = "info"
 listen_address = '0.0.0.0:{{ gitlab_runner_metrics_port }}'

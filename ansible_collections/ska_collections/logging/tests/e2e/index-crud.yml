@@ -61,7 +61,7 @@
 
     - name: Send data works
       ansible.builtin.uri:
-        url: "https://{{ inventory_hostname }}:{{ elasticsearch_api_port }}/{{ elasticsearch_index }}{{ elasticsearch_doc_endpoint }}"
+        url: "https://{{ inventory_hostname }}:{{ elasticsearch_api_port }}/{{ elasticsearch_index }}/_doc/"
         method: POST
         body_format: json
         body: |
@@ -85,7 +85,7 @@
 
     - name: Count docs works
       ansible.builtin.uri:
-        url: "https://{{ inventory_hostname }}:{{ elasticsearch_api_port }}/{{ elasticsearch_index }}{{ elasticsearch_doc_count_endpoint }}"
+        url: "https://{{ inventory_hostname }}:{{ elasticsearch_api_port }}/{{ elasticsearch_index }}/_count"
         method: GET
         status_code: [200]
         client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"

@@ -68,7 +68,7 @@
       - "memlock:-1:-1"
       - "nofile:65536:65536"
     labels: "{{ elasticsearch_labels }}"
-    log_driver: "{{ elasticsearch_log_driver }}"
+    log_driver: "json-file"
     log_options: "{{ elasticsearch_log_options }}"
     volumes:
       - "{{ elasticsearch_data_dir }}:/usr/share/elasticsearch/data"

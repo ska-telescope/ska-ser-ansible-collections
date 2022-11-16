@@ -48,7 +48,7 @@ backend back-elasticsearch-api-proxy
   option  log-health-checks
   option ssl-hello-chk
   http-check connect
-  http-check send meth GET uri {{ elasticsearch_health_endpoint }}
+  http-check send meth GET uri /_cat/health
   http-check expect status 200
   default-server inter 10s fall 2
   {%- for item in (groups[target_hosts ~ '-master'] + groups[target_hosts ~ '-data']) %}
