@@ -18,7 +18,7 @@
 
     - name: Loadbalanced access to api works
       ansible.builtin.uri:
-        url: "https://{{ inventory_hostname }}:{{ elasticsearch_api_port }}{{ elasticsearch_health_endpoint }}"
+        url: "https://{{ inventory_hostname }}:{{ elasticsearch_api_port }}/_cat/health"
         method: GET
         force: true
         return_content: true

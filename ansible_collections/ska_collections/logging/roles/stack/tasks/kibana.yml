@@ -84,9 +84,9 @@
   environment:
     SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
 
-- name: "Create kibana service account token"
+- name: "Create kibana service account token" # noqa yaml[line-length]
   ansible.builtin.uri:
-    url: "https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_kibana_sa_endpoint }}/{{ inventory_hostname }}?pretty"
+    url: "https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}/_security/service/elastic/kibana/credential/token/{{ inventory_hostname }}"
     url_username: elastic
     url_password: "{{ elasticsearch_password }}"
     client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
@@ -130,7 +130,7 @@
     image: "{{ kibana_image }}"
     state: started
     labels: "{{ kibana_labels }}"
-    log_driver: "{{ kibana_log_driver }}"
+    log_driver: "json-file"
     log_options: "{{ kibana_log_options }}"
     volumes:
       - /etc/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
@@ -141,7 +141,7 @@
 
 - name: "Kibana is running"
   ansible.builtin.wait_for:
-    host: "{{ kibana_ip }}"
+    host: "{{ ansible_default_ipv4.address }}"
     port: "{{ kibana_port | int }}"
     timeout: 120
 

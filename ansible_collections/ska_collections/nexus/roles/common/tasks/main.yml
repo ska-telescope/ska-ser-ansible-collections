@@ -35,7 +35,7 @@
     - notest
 
 - name: "Force NTP sync"
-  ansible.builtin.command: "{{ nexus_common_ntp_sync }}"
+  ansible.builtin.command: "/usr/sbin/chronyd -q 'server 1.fedora.pool.ntp.org iburst'"
   changed_when: false
   tags:
     - notest

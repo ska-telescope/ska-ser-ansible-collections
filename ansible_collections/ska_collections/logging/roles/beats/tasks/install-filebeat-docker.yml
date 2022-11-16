@@ -17,18 +17,18 @@
   community.general.docker_container:
     name: "{{ logging_filebeat_name }}"
     user: "{{ logging_filebeat_user }}"
-    memory: "{{ logging_filebeat_memory }}"
+    memory: "512M"
     hostname: "{{ inventory_hostname }}"
     network_mode: host
     restart_policy: always
     image: "{{ logging_filebeat_image }}"
-    command: "{{ logging_filebeat_command }}"
+    command: "filebeat -e -strict.perms=false -c /etc/filebeat.yml"
     state: started
     ulimits:
       - "memlock:-1:-1"
       - "nofile:65536:65536"
     labels: "{{ logging_filebeat_labels }}"
-    log_driver: "{{ logging_filebeat_log_driver }}"
+    log_driver: json-file
     log_options: "{{ logging_filebeat_log_options }}"
     volumes: "{{
       logging_filebeat_volumes +

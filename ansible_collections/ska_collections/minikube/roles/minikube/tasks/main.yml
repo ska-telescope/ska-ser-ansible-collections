@@ -39,16 +39,16 @@
       ansible.builtin.command: |
         {{ minikube_exe_dir }}/minikube \
         start \
-        --driver={{ minikube_driver }} \
-        --container-runtime={{ minikube_runtime }} \
+        --driver=docker \
+        --container-runtime=docker \
         --kubernetes-version={{ kubernetes_version }} \
-        --cpus={{ minikube_cpus }} \
-        --memory={{ minikube_mem }} \
+        --cpus=4 \
+        --memory=8192 \
         --apiserver-port=6443 \
         --apiserver-names={{ ansible_hostname }} \
         --apiserver-names={{ ansible_fqdn }} \
         --apiserver-ips={{ ansible_default_ipv4.address }} \
-        --nodes={{ minikube_nodes }} \
+        --nodes=1 \
         --addons=logviewer \
         --addons=metrics-server \
         --addons=ingress \

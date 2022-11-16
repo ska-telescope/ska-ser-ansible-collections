@@ -27,7 +27,7 @@
           - "memlock:-1:-1"
           - "nofile:65536:65536"
         labels: "{{ gitlab_runner_labels }}"
-        log_driver: "{{ gitlab_runner_log_driver }}"
+        log_driver: json-file
         log_options: "{{ gitlab_runner_log_options }}"
         volumes:
           - "{{ gitlab_runner_configuration_dir }}:/etc/gitlab-runner"
