@@ -7,6 +7,7 @@
   tasks:
     - name: Set elasticsearch nodes
       ansible.builtin.set_fact:
+        elasticsearch_lb_domain_name: "{{ elasticsearch_dns_name | default(inventory_hostname) }}"
         nodes: "{{ groups[target_hosts + '-master'] + groups[target_hosts + '-data'] }}"
 
     - name: Loadbalancer can reach elasticsearch API port
@@ -18,7 +19,7 @@
 
     - name: Loadbalanced access to api works
       ansible.builtin.uri:
-        url: "https://{{ inventory_hostname }}:9200/_cat/health"
+        url: "https://{{ elasticsearch_lb_domain_name }}:9200/_cat/health"
         method: GET
         force: true
         return_content: true

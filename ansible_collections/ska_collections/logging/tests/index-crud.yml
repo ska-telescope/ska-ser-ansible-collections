@@ -7,12 +7,13 @@
   tasks:
     - name: Set test variables
       ansible.builtin.set_fact:
+        elasticsearch_lb_domain_name: "{{ elasticsearch_dns_name | default(inventory_hostname) }}"
         elasticsearch_index: "{{ elasticsearch_cluster_name }}-test-index"
         event_messages: ["these", "are", "messages"]
 
     - name: Get index works
       ansible.builtin.uri:
-        url: "https://{{ inventory_hostname }}:9200/{{ elasticsearch_index }}"
+        url: "https://{{ elasticsearch_lb_domain_name }}:9200/{{ elasticsearch_index }}"
         method: GET
         force: true
         status_code: [200, 404]
@@ -26,7 +27,7 @@
 
     - name: Create index works
       ansible.builtin.uri:
-        url: "https://{{ inventory_hostname }}:9200/{{ elasticsearch_index }}"
+        url: "https://{{ elasticsearch_lb_domain_name }}:9200/{{ elasticsearch_index }}"
         method: PUT
         body_format: json
         body: |
@@ -48,7 +49,7 @@
 
     - name: Get index works
       ansible.builtin.uri:
-        url: "https://{{ inventory_hostname }}:9200/{{ elasticsearch_index }}"
+        url: "https://{{ elasticsearch_lb_domain_name }}:9200/{{ elasticsearch_index }}"
         method: GET
         force: true
         status_code: [200]
@@ -61,7 +62,7 @@
 
     - name: Send data works
       ansible.builtin.uri:
-        url: "https://{{ inventory_hostname }}:9200/{{ elasticsearch_index }}/_doc/"
+        url: "https://{{ elasticsearch_lb_domain_name }}:9200/{{ elasticsearch_index }}/_doc/"
         method: POST
         body_format: json
         body: |
@@ -85,7 +86,7 @@
 
     - name: Count docs works
       ansible.builtin.uri:
-        url: "https://{{ inventory_hostname }}:9200/{{ elasticsearch_index }}/_count"
+        url: "https://{{ elasticsearch_lb_domain_name }}:9200/{{ elasticsearch_index }}/_count"
         method: GET
         status_code: [200]
         client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
@@ -106,7 +107,7 @@
 
     - name: Delete index works
       ansible.builtin.uri:
-        url: "https://{{ inventory_hostname }}:9200/{{ elasticsearch_index }}"
+        url: "https://{{ elasticsearch_lb_domain_name }}:9200/{{ elasticsearch_index }}"
         method: DELETE
         force: true
         status_code: [200]
