@@ -1,24 +1,27 @@
 #!/usr/bin/env ansible-playbook
-- name: Elasticsearch loadbalancer works with cluster
-  hosts: "{{ target_hosts + '-loadbalancer' }}"
+- name: Elasticsearch cluster is healthy
+  hosts:
+    - "{{ target_hosts + '-master' }}"
+    - "{{ target_hosts + '-data' }}"
   vars:
     target_hosts: localhost
   become: true
   tasks:
-    - name: Set elasticsearch nodes
-      ansible.builtin.set_fact:
-        nodes: "{{ groups[target_hosts + '-master'] + groups[target_hosts + '-data'] }}"
-
-    - name: Loadbalancer can reach elasticsearch API port
+    - name: Elasticsearch running on all nodes
       ansible.builtin.wait_for:
-        port: "{{ elasticsearch_api_port | int }}"
-        host: "{{ hostvars[item]['ip'] }}"
+        port: 9300
+        host: "localhost"
         timeout: 60
-      loop: "{{ nodes }}"
 
-    - name: Loadbalanced access to api works
+    - name: Elasticsearch API running on all nodes
+      ansible.builtin.wait_for:
+        port: 9200
+        host: "localhost"
+        timeout: 60
+
+    - name: Elasticsearch nodes respond to the api with a 'green' status
       ansible.builtin.uri:
-        url: "https://{{ inventory_hostname }}:{{ elasticsearch_api_port }}/_cat/health"
+        url: "https://{{ hostvars[inventory_hostname].ip }}:9200/_cat/health"
         method: GET
         force: true
         return_content: true

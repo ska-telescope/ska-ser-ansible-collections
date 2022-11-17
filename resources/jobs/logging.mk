@@ -48,8 +48,8 @@ destroy-beats: check_hosts ## Destroy beats for log collection
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-test-e2e: check_hosts ## Test elastic cluster
-	ansible-playbook $(TESTS_DIR)/e2e/main.yml \
+test: check_hosts ## Test elastic cluster
+	ansible-playbook $(TESTS_DIR)/logging.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 

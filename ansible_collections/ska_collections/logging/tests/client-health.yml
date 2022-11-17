@@ -11,7 +11,7 @@
 
     - name: Encrypted and authenticated access to api works
       ansible.builtin.uri:
-        url: "https://{{ hostvars[item].ip }}:{{ elasticsearch_api_port }}/_cat/health"
+        url: "https://{{ hostvars[item].ip }}:9200/_cat/health"
         method: GET
         force: true
         status_code: [200]
@@ -25,7 +25,7 @@
 
     - name: Unencrypted (http) access to api fails
       ansible.builtin.uri:
-        url: "http://{{ hostvars[item].ip }}:{{ elasticsearch_api_port }}/_cat/health"
+        url: "http://{{ hostvars[item].ip }}:9200/_cat/health"
         method: GET
         force: true
         status_code: [-1]
@@ -42,7 +42,7 @@
 
     - name: Unauthenticated access to api fails
       ansible.builtin.uri:
-        url: "https://{{ hostvars[item].ip }}:{{ elasticsearch_api_port }}/_cat/health"
+        url: "https://{{ hostvars[item].ip }}:9200/_cat/health"
         method: GET
         force: true
         status_code: [401]
@@ -55,7 +55,7 @@
 
     - name: No mTLS access to api fails
       ansible.builtin.uri:
-        url: "https://{{ hostvars[item].ip }}:{{ elasticsearch_api_port }}/_cat/health"
+        url: "https://{{ hostvars[item].ip }}:9200/_cat/health"
         method: GET
         force: true
         return_content: true
