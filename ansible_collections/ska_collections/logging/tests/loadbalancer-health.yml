@@ -32,4 +32,4 @@
       register: health_info
       retries: 3
       timeout: 60
-      until: "'green' in health_info.content or 'yellow' in health_info.content"
+      until: "'green' in health_info.content"
