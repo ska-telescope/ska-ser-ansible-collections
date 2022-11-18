@@ -23,7 +23,7 @@ Tested with the current Ansible 6.5.x releases.
 The production Nexus instance for the Central Artefact Repository is hosted at https://artefact.skatelescope.org/.  This is integrated with SKAO LDAP based authentication for administration access - all other service accounts are maintained as local users.
 ## Installation
 
-### SKA Nexus Repository
+
 
 Before using the collection, you need to install the collection with the `ansible-galaxy` CLI:
 
