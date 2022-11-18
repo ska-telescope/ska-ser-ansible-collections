@@ -38,9 +38,7 @@ Playbooks can be found in the [playbooks/](./playbooks) folder in the following 
 | [deploy_docker_exporter.yml](./playbooks/deploy_docker_exporter.yml) | Deploys docker exporter  |
 | [deploy_monitoring.yml](./playbooks/deploy_monitoring.yml) | Installs Prometheus, Thanos and Grafana|
 | [deploy_node_exporter.yml](./playbooks/deploy_node_exporter.yml) | Deploys node exporter|
-| [list-api-keys.yml](./playbooks/list-api-keys.yml) | Lists Elasticsearch API keys |
-| [export_runners.yml](./playbooks/export_runners.yml) | Installs Filebeat|
-| [update-api-keys.yml](./playbooks/monitoring.yml) | Exports runners |
+| [export_runners.yml](./playbooks/export_runners.yml) | Export runners |
 
 In order to run these playbooks, it's needed to specify the Ansible Inventory location and the respective group/hosts ***target_hosts*** variable.
 
