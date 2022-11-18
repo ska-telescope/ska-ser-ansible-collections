@@ -3,24 +3,24 @@
 This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html), that can be reused to install and/or config services.
 
 
-| Collection            | Roles                                 | Description                                               |
-| --------------------- | --------------------------------------| ----------------------------------------------------------|
-| instance_common       | init <br> certs                       | VM initialization (common packages, mount volumes, etc)   |
-| docker_base           | containerd <br> docker <br> podman    | Install specific OCI engine                               |
-| logging               | stack <br> beats <br> haproxy       | Elasticsearch, Beats and Kibana roles                    |
-| monitoring            | custom_metrics <br> node_exporter <br> prometheus <br> updatehosts | Install prometheus-based metrics services |
-| minikube              | minikube <br> setup <br> velero        | Install minikube and associated tools                    |
-| gitlab_runner         | runner                                 | Install docker-based Gitlab runner                       |
-| ceph                  | installation                          | Ceph roles                                                |
-| nexus                 | common <br> nexus3-oss <br> haproxy   | Install Nexus Repository                                  |
+| Collection            | Description                                               |
+| --------------------- | ----------------------------------------------------------|
+| [instance_common](./ansible_collections/ska_collections/instance_common/) | VM initialization (common packages, mount volumes, etc) <br> Generate SSL Certificates   |
+| [docker_base](./ansible_collections/ska_collections/docker_base/)     | Install specific OCI engine                               |
+| [logging](./ansible_collections/ska_collections/logging/)      | Elasticsearch, Beats and Kibana roles                    |
+| [monitoring](./ansible_collections/ska_collections/monitoring/)    | Install prometheus-based metrics services |
+| [minikube](./ansible_collections/ska_collections/minikube/)  | Install minikube and associated tools                    |
+| [gitlab_runner](./ansible_collections/ska_collections/gitlab_runner/)   | Install docker-based Gitlab runner                       |
+| [ceph](./ansible_collections/ska_collections/ceph/)  | Ceph roles                                                |
+| [nexus](./ansible_collections/ska_collections/nexus/)  | Install Nexus Repository                                  |
 
 ## Usage
 
 This chapter, will explain how to use the existing collections on your local machine.
 
-### Requirements
+## Ansible
 
-* [**Ansible** v2.12.x](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+Tested with the current Ansible 6.5.x releases.
 
 ### Submodule
 
@@ -80,45 +80,168 @@ The make command must have a specific format to trigger the targets bellow, like
 make <collection> <job> <VARS>
 ```
 
-| Job           | Target          | Description                                    | Dependent Targets                                |
-|---------------|-----------------|------------------------------------------------|--------------------------------------------------|
-| common        | init            | Update APT, install common packages and mounts volumes | |
-| common        | update-hosts    |  Update host entries in a host with all the available information on the inventory | |
-| common        | setup-ca        | Sets up a CA to issue self-signed certificates | |
-| oci           | docker          | Install Docker       | common.init |
-| oci           | podman          | Install Podman       | common.init |
-| oci           | containerd      | Install containerd   | common.init |
-| oci           | install         | Installs the full oci stack | common.init <br> oci.containerd <br> oci.podman <br> oci.docker |
-| logging       | install         | Install elasticsearch cluster via OCI containers | common.init <br> oci.docker |
-| logging       | destroy         | Destroy elasticsearch cluster | |
-| logging       | update-api-keys | Create/remove elasticsearch api-keys | logging.install |
-| logging       | list-api-keys   | List existing elasticsearch api-keys | logging.install |
-| logging       | install-beats   | Deploy filebeat into nodes | common.init <br> oci.podman **or** oci.docker |
-| logging       | destroy-beats   | Remove filebeat from nodes | |
-| logging       | test_e2e        | Run e2e testing playbooks | |
-| monitoring    | prometheus      | Install prometheus | common.init <br> oci.docker |
-| monitoring    | thanos          | Install thanos | common.init <br> oci.docker |
-| monitoring    | node-exporter   | Install node-exporter | common.init <br> oci.docker |
-| monitoring    | update_metadata | Update nodes metadata for scrapers | common.init <br> oci.docker |
-| monitoring    | update_scrapers | Update prometheus scrapers |common.init <br> oci.docker |
-| gitlab-runner | install         | Install and register gitlab runner |  common.init <br> oci.docker  |
-| gitlab-runner | destroy         | Destroy and unregister gitlab runner | |
-| ceph          | install         | Install ceph | ac-install-dependencies (stackhp's cephadm) |
-| ceph          | ~~destroy~~     | Destroy ceph | |
-| nexus         | install         | Install Nexus Repository | common.init <br> oci.docker <br> ac-install-dependencies (ansible-thoteam.nexus3-oss)  |
-| reverseproxy  | install         | Install Nginx reverse proxy and oauth2proxy | common.init <br> oci.docker |
-| reverseproxy  | destroy         | Destroy Nginx reverse proxy and oauth2proxy | |
+<table>
+    <thead>
+        <tr>
+            <th>Job</th>
+            <th>Target</th>
+            <th>Description</th>
+            <th>Dependent Targets</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td rowspan=3>common</td>
+            <td>init</td>
+            <td>Update APT, install common packages and mounts volumes</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>update-hosts</td>
+            <td>Update host entries in a host with all the available information on the inventory</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>setup-ca</td>
+            <td>Sets up a CA to issue self-signed certificates</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td rowspan=4>oci</td>
+            <td>docker</td>
+            <td>Install Docker</td>
+            <td>common.init</td>
+        </tr>
+        <tr>
+            <td>podman</td>
+            <td>Install Podman</td>
+            <td>common.init</td>
+        </tr>
+        <tr>
+            <td>containerd</td>
+            <td>Install containerd</td>
+            <td>common.init</td>
+        </tr>
+        <tr>
+            <td>install</td>
+            <td>Installs the full oci stack</td>
+            <td>common.init</td>
+        </tr>
+        <tr>
+            <td rowspan=7>logging</td>
+            <td>install</td>
+            <td>Install elasticsearch cluster via OCI containers</td>
+            <td>common.init <br> oci.docker</td>
+        </tr>
+        <tr>
+            <td>destroy</td>
+            <td>Destroy elasticsearch cluster</td>
+            <td></td>
+        </tr>     
+        <tr>  
+            <td>update-api-keys</td>
+            <td>Create/remove elasticsearch api-keys</td>
+            <td>logging.install</td>
+        </tr>
+        <tr>
+            <td>list-api-keys</td>
+            <td>List existing elasticsearch api-keys</td>
+            <td>logging.install</td>
+        </tr>
+        <tr>
+            <td>install-beats</td>
+            <td>Deploy filebeat into nodes</td>
+            <td>common.init <br> oci.podman/oci.docker</td>
+        </tr>
+        <tr>
+            <td>destroy-beats</td>
+            <td>Remove filebeat from nodes</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>test_e2e</td>
+            <td>Run e2e testing playbooks</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td rowspan=5>monitoring</td>
+            <td>prometheus</td>
+            <td>Install prometheus</td>
+            <td>common.init <br> oci.docker</td>
+        </tr>
+        <tr>
+            <td>thanos</td>
+            <td>Install thanos</td>
+            <td>common.init <br> oci.docker</td>
+        </tr>
+        <tr>
+            <td>node-exporter</td>
+            <td>Install node-exporter </td>
+            <td>common.init <br> oci.docker</td>
+        </tr>
+        <tr>
+            <td>update_metadata</td>
+            <td>Update nodes metadata for scrapers</td>
+            <td>common.init <br> oci.docker</td>
+        </tr>
+        <tr>
+            <td>update_scrapers</td>
+            <td>Update prometheus scrapers</td>
+            <td>common.init <br> oci.docker</td>
+        </tr>
+        <tr>
+            <td rowspan=2>gitlab-runner</td>
+            <td>install</td>
+            <td>Install and register gitlab runner</td>
+            <td>common.init <br> oci.docker</td>
+        </tr>
+        <tr>
+            <td>destroy</td>
+            <td>Destroy and unregister gitlab runner</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td rowspan=2>ceph</td>
+            <td>install</td>
+            <td>Install ceph</td>
+            <td>ac-install-dependencies (stackhp's cephadm)</td>
+        </tr>
+        <tr>
+            <td>destroy</td>
+            <td>Destroy ceph</td>
+            <td></td>
+        </tr>
+         <tr>
+            <td>nexus</td>
+            <td>install</td>
+            <td>Install Nexus Repository</td>
+            <td>common.init <br> oci.docker <br> ac-install-dependencies (ansible-thoteam.nexus3-oss)</td>
+        </tr>
+        <tr>
+            <td rowspan=2>reverseproxy</td>
+            <td>install</td>
+            <td>Install Nginx reverse proxy and oauth2proxy</td>
+            <td>common.init <br> oci.docker</td>
+        </tr>
+        <tr>
+            <td>destroy</td>
+            <td>Destroy Nginx reverse proxy and oauth2proxy</td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
 
 ### Mandatory Environment Variables
 
-This repo expects these environment variables to run all make targets:
-* PLAYBOOKS_ROOT_DIR - Location where the inventories and ansible variables are
-* PLAYBOOKS_HOSTS - Host or ansible group that the playbook will target
-* INVENTORY - Directory where mulitple inventories will be loaded from
-* ANSIBLE_COLLECTIONS_PATHS - Path to ansible collections
-* ANSIBLE_CONFIG - Path to ansible.cfg
-* ANSIBLE_SSH_ARGS - Arguments passed to ssh calls done by ansible
-* ANSIBLE_EXTRA_VARS - List of "--extra-vars" arguments to enrich a playbook call
+| ENV variable | Description |
+| ----------- | ----- |
+| PLAYBOOKS_ROOT_DIR | Location where the inventories and ansible variables are |
+| PLAYBOOKS_HOSTS | Host or ansible group that the playbook will target |
+| INVENTORY | Directory where mulitple inventories will be loaded from |
+| ANSIBLE_COLLECTIONS_PATHS | Path to ansible collections |
+| ANSIBLE_CONFIG | Path to ansible.cfg |
+| ANSIBLE_SSH_ARGS | Arguments passed to ssh calls done by ansible |
+| ANSIBLE_EXTRA_VARS | List of "--extra-vars" arguments to enrich a playbook call |
 
-These variables must be exported to your terminal shell or passed as
-command line arguments.
+These variables must be exported to your terminal shell, passed as
+command line arguments or add them to your a `PrivateRules.mak` file.
