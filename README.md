@@ -245,3 +245,18 @@ make <collection> <job> <VARS>
 
 These variables must be exported to your terminal shell, passed as
 command line arguments or add them to your a `PrivateRules.mak` file.
+
+## How to Contribute
+
+### Add/Update an Ansible Collection
+A collection can be added/updated to the [ansible_collections/ska_collections](./ansible_collections/ska_collections/) folder.
+
+### External dependencies
+Add any external dependency to a collection in the respective **requirements.yml** and **galaxy.yml** files.
+
+### Add/Update new variables
+Ansible variables that are datacentre specific should be added to the `group_vars` folder of the inventory.
+
+To modify non-secret variable role defaults, go to the defaults folder of the respective role and update them. As an [example](./roles/installation/defaults/main.yml).
+
+Finally, the secret variables are defined in the respective [Makefile](../../../resources/jobs/ceph.mk) and can be modified there. To assign proper values to these variables, please use a `PrivateRules.mak` file.
