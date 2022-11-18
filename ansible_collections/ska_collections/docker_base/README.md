@@ -23,7 +23,7 @@ Before using the collection, you need to install the collection with the `ansibl
 
     ansible-galaxy collection install ska_collections.docker_base
 
-You can also include it in a `requirements.yml` file and install it via ansible-galax collection install -r requirements.yml` using the format:
+You can also include it in a `requirements.yml` file and install it via ansible-galaxy collection install -r requirements.yml` using the format:
 
 ```yaml
 collections:

@@ -1,7 +1,7 @@
 # SKA Ceph Ansible Collection
 
 This collection includes a variety of Ansible roles to help automate the installation and configuration of [Ceph](https://docs.ceph.com/en/quincy/) - open-source software-defined storage platform.
-This collection is currently maintained by [SKAO](https://www.skao.int/) and its a wrapper of [Cephadm Collection](https://github.com/stackhpc/ansible-collection-cephadm) by [StackHPC](https://www.stackhpc.com/).
+This collection is currently maintained by [SKAO](https://www.skao.int/) and it's a wrapper of [Cephadm Collection](https://github.com/stackhpc/ansible-collection-cephadm) by [StackHPC](https://www.stackhpc.com/).
 
 ## Ansible
 
@@ -20,7 +20,7 @@ Before using the collection, you need to install the collection with the `ansibl
 
     ansible-galaxy collection install ska_collections.ceph
 
-You can also include it in a `requirements.yml` file and install it via ansible-galax collection install -r requirements.yml` using the format:
+You can also include it in a `requirements.yml` file and install it via ansible-galaxy collection install -r requirements.yml` using the format:
 
 ```yaml
 collections:
