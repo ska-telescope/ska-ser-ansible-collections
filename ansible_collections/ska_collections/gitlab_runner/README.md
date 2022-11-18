@@ -27,14 +27,6 @@ collections:
 - name: ska_collections.gitlab_runner
 ```
 
-### Git
-
-Pull the latest edge commit of the SKA Ansible Collections from Gitlab:
-
-```
-git clone https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections.git
-```
-
 ## Usage
 
 Installation playbooks for each engine can be found in the [playbooks/](https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections/-/tree/main/ansible_collections/ska_collections/instace_common/playbooks) folder in the following files:

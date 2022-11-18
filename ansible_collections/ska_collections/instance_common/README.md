@@ -27,14 +27,6 @@ collections:
 - name: ska_collections.instance_common
 ```
 
-### Git
-
-Pull the latest edge commit of the SKA Ansible Collections from Gitlab:
-
-```
-git clone https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections.git
-```
-
 ## Usage
 
 Playbooks can be found in the [playbooks/](./playbooks) folder in the following files:
