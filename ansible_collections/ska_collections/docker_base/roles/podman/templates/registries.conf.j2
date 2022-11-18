@@ -5,5 +5,5 @@ location = "docker.io"
 insecure = false
 
 [[registry.mirror]]
-location = "{{ podman_registry_mirror }}"
+location = "{{ nexus }}:{{ nexus_docker_group_port }}"
 insecure = true

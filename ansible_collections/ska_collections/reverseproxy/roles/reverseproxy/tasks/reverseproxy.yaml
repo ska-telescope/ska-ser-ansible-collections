@@ -95,7 +95,7 @@
     network_mode: host
     exposed_ports: "{{ reverseproxy_nginx_exposed_ports }}"
     labels: "{{ reverseproxy_labels }}"
-    log_driver: "{{ reverseproxy_nginx_log_driver }}"
+    log_driver: "json-file"
     log_options: "{{ reverseproxy_nginx_log_options }}"
     volumes:
       - "{{ reverseproxy_nginx_config_dir }}/nginx.conf:/etc/nginx/nginx.conf:ro"

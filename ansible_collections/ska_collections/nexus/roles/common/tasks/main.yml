@@ -35,7 +35,7 @@
     - notest
 
 - name: "Force NTP sync"
-  ansible.builtin.command: "{{ nexus_common_ntp_sync }}"
+  ansible.builtin.command: "/usr/sbin/chronyd -q 'server 1.fedora.pool.ntp.org iburst'"
   changed_when: false
   tags:
     - notest
@@ -75,7 +75,7 @@
     state: present
     line: 'GRUB_CMDLINE_LINUX=$GRUB_CMDLINE_LINUX" transparent_hugepage=never"'
   # when: ansible_distribution_major_version|int > 6
-  notify: run update-grub
+  notify: Run update-grub
   tags:
     - notest
 
