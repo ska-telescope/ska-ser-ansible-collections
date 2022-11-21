@@ -304,6 +304,7 @@
       - "--web.external-url={{ prometheus_url | default('http://' + ansible_default_ipv4.address + ':9090') }}"
       - "--storage.tsdb.max-block-duration=2h"
       - "--storage.tsdb.min-block-duration=2h"
+      - "--storage.tsdb.retention.time={{ prometheus_retention_time }}"
       - "--web.enable-lifecycle"
     user: root
     memory: "{{ prometheus_memory }}"
