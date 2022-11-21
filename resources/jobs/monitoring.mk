@@ -1,6 +1,8 @@
 .DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
+PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/monitoring/playbooks
+TESTS_DIR ?= ./ansible_collections/ska_collections/monitoring/tests
 
 ## EXECUTION VARIABLES
 NODES ?= all
@@ -56,22 +58,22 @@ vars:  ## Variables
 
 lint: ## Lint playbooks
 	@yamllint -d "{extends: relaxed, rules: {line-length: {max: 350}}}" \
-			./ansible_collections/ska_collections/monitoring/playbooks/deploy_docker_exporter.yml  \
-			./ansible_collections/ska_collections/monitoring/playbooks/deploy_node_exporter.yml  \
-			./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
-			./ansible_collections/ska_collections/monitoring/playbooks/export_runners.yml  \
+			$(PLAYBOOKS_DIR)/deploy_docker_exporter.yml  \
+			$(PLAYBOOKS_DIR)/deploy_node_exporter.yml  \
+			$(PLAYBOOKS_DIR)/deploy_monitoring.yml \
+			$(PLAYBOOKS_DIR)/export_runners.yml  \
 			./ansible_collections/ska_collections/monitoring/roles/*
 	@ansible-lint --exclude=./ansible_collections/ska_collections/monitoring/roles/prometheus/files/ \
-	 ./ansible_collections/ska_collections/monitoring/playbooks/deploy_docker_exporter.yml \
-	 ./ansible_collections/ska_collections/monitoring/playbooks/deploy_node_exporter.yml \
-	 ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml  \
-	 ./ansible_collections/ska_collections/monitoring/playbooks/export_runners.yml \
+	 $(PLAYBOOKS_DIR)/deploy_docker_exporter.yml \
+	 $(PLAYBOOKS_DIR)/deploy_node_exporter.yml \
+	 $(PLAYBOOKS_DIR)/deploy_monitoring.yml  \
+	 $(PLAYBOOKS_DIR)/export_runners.yml \
 	  ./ansible_collections/ska_collections/monitoring/roles/*  > ansible-lint-results.txt; \
 	cat ansible-lint-results.txt
 	@flake8 --exclude ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/openstack roles/*
 
 prometheus: check_hosts ## Install Prometheus Server
-	ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/deploy_monitoring.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "mode='server' slack_api_url='$(SLACK_API_URL)' slack_api_url_user='$(SLACK_API_URL_USER)'" \
@@ -88,7 +90,7 @@ prometheus: check_hosts ## Install Prometheus Server
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
 grafana: check_hosts ## Install Grafana Server
-	@ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_monitoring.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "mode='grafana'" \
@@ -101,7 +103,7 @@ grafana: check_hosts ## Install Grafana Server
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
 alertmanager: check_hosts ## Install Prometheus Server
-	@ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_monitoring.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "mode='alert' slack_api_url='$(SLACK_API_URL)' slack_api_url_user='$(SLACK_API_URL_USER)'" \
@@ -113,7 +115,7 @@ alertmanager: check_hosts ## Install Prometheus Server
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
 thanos: check_hosts ## Install Thanos query and query front-end
-	@ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_monitoring.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		--extra-vars "mode='thanos'" \
@@ -127,7 +129,7 @@ thanos: check_hosts ## Install Thanos query and query front-end
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
 node-exporter: check_hosts ## Install Prometheus node exporter - pass INVENTORY and NODES
-	@ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_node_exporter.yml \
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_node_exporter.yml \
 	-i $(INVENTORY) \
 	-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
@@ -146,6 +148,16 @@ update_metadata: check_hosts ## OpenStack metadata for node_exporters - pass INV
 
 update_scrapers: check_hosts ## Force update of scrapers
 	ansible -i $(INVENTORY) $(PROMETHEUS_NODE) $(ANSIBLE_PLAYBOOK_ARGUMENTS) -b -m shell -a 'export project_id=$(PROM_OS_PROJECT_ID) project_name=$(PROM_OS_PROJECT_NAME) auth_url=$(PROM_OS_AUTH_URL) username=$(PROM_OS_USERNAME) password=$(PROM_OS_PASSWORD) $(OPENSTACK_ENV_VARIABLES) && cd /etc/prometheus && python3 /usr/local/bin/prom_helper.py -g'
+
+test-prometheus: check_hosts ## Test elastic cluster
+	ansible-playbook $(TESTS_DIR)/prometheus_test.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+test-thanos: check_hosts ## Test elastic cluster
+	ansible-playbook $(TESTS_DIR)/thanos_test.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 help: ## Show Help
 	@echo "Monitoring targets - make playbooks monitoring <target>:"
