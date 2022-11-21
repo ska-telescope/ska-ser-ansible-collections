@@ -1,0 +1,19 @@
+#!/usr/bin/env ansible-playbook
+- name: Grafana health check
+  block:
+    - name: Inspect Grafana container
+      command: "docker inspect grafana"
+      register: output
+    - name: Check Grafana container running
+      ansible.builtin.assert:
+        that:
+          - (output.stdout | from_json)[0].State.Status == "running"
+          - (output.stdout | from_json)[0].State.Running
+        fail_msg: "Grafana container is not running"
+    - name: Grafana responds with HTTP 200 to health check request
+      ansible.builtin.uri:
+        url: "http://{{ hostvars[inventory_hostname].ip }}:3000/api/health"
+        method: GET
+        force: true
+        return_content: true
+        status_code: [200]
