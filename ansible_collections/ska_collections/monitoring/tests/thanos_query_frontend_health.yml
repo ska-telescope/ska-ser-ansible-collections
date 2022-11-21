@@ -30,14 +30,4 @@
         status_code: [-1]
         client_cert: "/etc/pki/tls/private/thanos_query_frontend.crt"
         client_key: "/etc/pki/tls/private/thanos_query_frontend.key"
-    - name: Thanos Query Frontend does not respond to health check request if no client_cert passed
-      ansible.builtin.uri:
-        url: "https://{{ hostvars[inventory_hostname].ip }}:9095/-/healthy"
-        method: GET
-        force: true
-        return_content: true
-        status_code: [-1]
-        client_key: "/etc/pki/tls/private/thanos_query_frontend.key"
-      environment:
-        SSL_CERT_FILE: "/etc/pki/tls/private/ca-certificate.crt"
         
