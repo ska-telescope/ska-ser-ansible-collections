@@ -30,4 +30,3 @@
         status_code: [-1]
         client_cert: "/etc/pki/tls/private/thanos_query_frontend.crt"
         client_key: "/etc/pki/tls/private/thanos_query_frontend.key"
-        

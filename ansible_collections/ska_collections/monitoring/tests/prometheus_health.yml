@@ -29,5 +29,4 @@
         return_content: true
         status_code: [-1]
         client_cert: "/etc/pki/tls/private/prometheus.crt"
-        client_key: "/etc/pki/tls/private/prometheus.key"
-        
+        client_key: "/etc/pki/tls/private/prometheus.key"        
