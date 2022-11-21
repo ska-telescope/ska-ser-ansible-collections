@@ -18,7 +18,7 @@
     src: "alertmanager.yml.j2"
     dest: "{{ prometheus_alertmanager_config_dir }}/alertmanager.yml"
     force: true
-    owner: "{{ localuser }}"
+    owner: "{{ prometheus_localuser }}"
     group: "{{ localgroup }}"
     mode: 0755
 

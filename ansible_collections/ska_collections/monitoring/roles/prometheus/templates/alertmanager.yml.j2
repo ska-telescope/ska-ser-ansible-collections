@@ -19,9 +19,9 @@ route:
     match_re:
       namespace: integration.*|staging.*|ci.*|dp.*|shared.*|ops.*|sdp-.*
 
-{% if alerts_inhibit_rules != [] %}
+{% if prometheus_alerts_inhibit_rules != [] %}
 inhibit_rules:
-{{ alerts_inhibit_rules | to_nice_yaml(indent=2) | indent(2,False) }}
+{{ prometheus_alerts_inhibit_rules | to_nice_yaml(indent=2) | indent(2,False) }}
 {% endif %}
 
 receivers:

@@ -9,7 +9,7 @@
     src: "gitlab_ci_pipelines_exporter.yml.j2"
     dest: /etc/gitlab_ci_pipelines_exporter.yml
     force: true
-    owner: "{{ localuser }}"
+    owner: "{{ prometheus_localuser }}"
     group: "{{ localgroup }}"
     mode: 0644
 
