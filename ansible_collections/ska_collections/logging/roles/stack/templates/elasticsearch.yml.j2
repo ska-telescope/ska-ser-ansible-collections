@@ -1,6 +1,6 @@
 # Cluster settings
 cluster.name: "{{ elasticsearch_cluster_name }}"
-discovery.type: "{{ elasticsearch_discovery_type }}"
+discovery.type: "{% if (groups[target_hosts] | length) > 1 %}multi-node{% else %}single-node{% endif %}"
 discovery.seed_hosts:
 {% for host in groups[target_hosts ~ '-master'] %}
   - {{ host }}

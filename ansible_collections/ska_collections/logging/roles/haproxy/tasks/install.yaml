@@ -34,7 +34,7 @@
       - "{{ elastic_haproxy_stats_port }}"
       - "{{ elasticsearch_api_port }}"
     labels: "{{ elastic_haproxy_labels }}"
-    log_driver: "{{ elastic_haproxy_log_driver }}"
+    log_driver: "json-file"
     log_options: "{{ elastic_haproxy_log_options }}"
     volumes:
       - /etc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro

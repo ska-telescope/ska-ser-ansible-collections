@@ -1,17 +1,8 @@
 ---
 debug: false
 
-minikube_cpus: 4
-minikube_mem: 8192
-minikube_nodes: 1
-## local registry cache based on NGINX https://hub.docker.com/r/rpardini/docker-registry-proxy
-minikube_cache_version: 0.6.4
 minikube_mount_from: /srv
 minikube_mount_to: /srv
-minikube_runtime: docker
-minikube_driver: docker
 
 minikube_haproxy_name: haproxy
-minikube_haproxy_version: 2.6
-minikube_haproxy_image_name: haproxy
-minikube_haproxy_image: "{{ minikube_haproxy_image_name }}:{{ minikube_haproxy_version }}"
+minikube_haproxy_image: "haproxy:2.6"

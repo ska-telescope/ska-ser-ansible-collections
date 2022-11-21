@@ -1,7 +1,7 @@
 ---
 - name: "Get existing elasticsearch api keys"
   ansible.builtin.uri:
-    url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_list_apikeys_endpoint }}?pretty"
+    url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}/_security/api_key?pretty"
     method: GET
     force: true
     return_content: true
@@ -69,7 +69,7 @@
 
 - name: "Invalidate api keys"
   ansible.builtin.uri:
-    url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_list_apikeys_endpoint }}"
+    url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}/_security/api_key"
     method: DELETE
     force: true
     status_code: [200]
@@ -88,7 +88,7 @@
 
 - name: "Create elasticsearch_api_keys"
   ansible.builtin.uri:
-    url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_list_apikeys_endpoint }}"
+    url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}/_security/api_key"
     method: POST
     force: true
     return_content: true
@@ -117,7 +117,7 @@
 
 - name: "Validate created api keys"
   ansible.builtin.uri:
-    url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_health_endpoint }}"
+    url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}/_cat/health"
     method: GET
     force: true
     status_code: [200]

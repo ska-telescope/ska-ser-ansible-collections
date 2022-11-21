@@ -16,15 +16,11 @@ nexus_haproxy_container_image: haproxy:2.4
 nexus_haproxy_conan_search_container_image: artefact.skao.int/ska-cicd-nexus-conan-search:0.1.3
 # go directly local instead of out through the AWS ELB to https://artefact.skao.int
 nexus_haproxy_conan_search_url: "http://localhost:{{ nexus_haproxy_port }}"
-nexus_haproxy_conan_search_repository: "conan-internal"
 nexus_haproxy_name: haproxy
 nexus_haproxy_conan_search_name: nexus-conan-search
-nexus_haproxy_container_log_max_size: "10m"
-nexus_haproxy_container_log_max_file: "3"
-nexus_haproxy_container_log_driver: json-file
 nexus_haproxy_container_log_options:
-  max-size: "{{ nexus_haproxy_container_log_max_size }}"
-  max-file: "{{ nexus_haproxy_container_log_max_file }}"
+  max-size: "10m"
+  max-file: "3"
   labels: "org.ska.app.group"
 
 # labelling on container runtime
@@ -34,7 +30,7 @@ nexus_haproxy_container_labels:
 nexus_haproxy_conan_search_env_variables: {} # meant to be overrided
 nexus_haproxy_conan_search_defaults:
   NEXUS_URL: "{{ nexus_haproxy_conan_search_url }}"
-  NEXUS_REPOSITORY: "{{ nexus_haproxy_conan_search_repository }}"
+  NEXUS_REPOSITORY: "conan-internal"
   GITLAB_API_REQUESTER: ""
   GITLAB_API_PRIVATE_TOKEN: ""
   SLACK_BOT_TOKEN: ""

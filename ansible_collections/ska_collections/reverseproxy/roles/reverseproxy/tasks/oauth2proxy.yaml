@@ -41,5 +41,5 @@
     exposed_ports:
       - "{{ reverseproxy_oauth2proxy_port }}"
     labels: "{{ reverseproxy_labels }}"
-    log_driver: "{{ reverseproxy_oauth2proxy_log_driver }}"
+    log_driver: "json-file"
     log_options: "{{ reverseproxy_oauth2proxy_log_options }}"
