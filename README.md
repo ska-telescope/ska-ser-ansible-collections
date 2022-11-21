@@ -258,3 +258,7 @@ Add any external dependency to a collection in the respective **requirements.yml
 Ansible variables that are datacentre specific should be added to the `group_vars` folder of the inventory directory (*PLAYBOOKS_ROOT_DIR*).
 
 Finally, the secret variables are defined in the respective [Makefile](./Makefile) and can be modified there. To assign proper values to these variables, please use a `PrivateRules.mak` file.
+
+## License
+
+BSD-3.
