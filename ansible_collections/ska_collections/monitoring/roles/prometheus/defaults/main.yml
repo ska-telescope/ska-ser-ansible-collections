@@ -5,6 +5,7 @@ certificates_dir: /etc/pki/tls/private
 node_exporter_version: 1.3.1-1
 prometheus_gitlab_ci_pipelines_exporter_tags: v0.5.3
 prometheus_gitlab_ci_pipelines_exporter_token: ""
+prometheus_retention_time: "15d"
 
 prometheus_datacentre: engage-ska-monitor
 prometheus_binary_dir: /usr/local/bin
