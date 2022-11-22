@@ -1,4 +1,4 @@
-.PHONY: check_hosts vars install destroy help
+.PHONY: reverse-proxy-check-hosts vars install destroy help
 .DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
@@ -7,26 +7,26 @@ PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/reverseproxy/playbooks
 
 -include $(BASE_PATH)/PrivateRules.mak
 
-check_hosts:
+reverse-proxy-check-hosts:
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 
-vars:
+reverse-proxy-vars:
 	@echo "\033[36mCommon:\033[0m"
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
-install: check_hosts ## Install reverseproxy's nginx and oauth2 containers
+reverse-proxy-install: reverse-proxy-check-hosts ## Install reverseproxy's nginx and oauth2 containers
 	ansible-playbook $(PLAYBOOKS_DIR)/install.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-destroy: check_hosts ## Destroy reverseproxy's nginx and oauth2 containers
+reverse-proxy-destroy: reverse-proxy-check-hosts ## Destroy reverseproxy's nginx and oauth2 containers
 	ansible-playbook $(PLAYBOOKS_DIR)/destroy.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-help: ## Show Help
+reverse-proxy-help: ## Show Help
 	@echo "Reverseproxy targets - make playbooks reverseproxy <target>:"
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

@@ -19,12 +19,12 @@ NEXUS_APT_BIONIC_QUARENTINE_KEY_PASSPHRASE ?= 'whatwhat'
 # define overides for above variables in here
 -include $(BASE_PATH)/PrivateRules.mak
 
-check_hosts:
+nexus-check-hosts:
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 
-vars:  ## List Variables
+nexus-vars:  ## List Variables
 	@echo "Current variable settings:"
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "NEXUS_VAULT_ADMIN_PASSWORD=$(NEXUS_VAULT_ADMIN_PASSWORD)"
@@ -39,7 +39,7 @@ vars:  ## List Variables
 	@echo "NEXUS_APT_BIONIC_QUARENTINE_KEY=$(NEXUS_APT_BIONIC_QUARENTINE_KEY)"
 	@echo "NEXUS_APT_BIONIC_QUARENTINE_KEY_PASSPHRASE=$(NEXUS_APT_BIONIC_QUARENTINE_KEY_PASSPHRASE)"
 
-install: check_hosts apply-patch # apply-patch  ## Deploy Nexus
+nexus-install: nexus-check-hosts nexus-apply-patch # apply-patch  ## Deploy Nexus
 	ANSIBLE_FILTER_PLUGINS=./ansible_collections/ansible-thoteam.nexus3-oss/filter_plugins \
 	ansible-playbook ./ansible_collections/ska_collections/nexus/playbooks/deploy.yml \
 	-i $(INVENTORY) \
@@ -59,7 +59,7 @@ install: check_hosts apply-patch # apply-patch  ## Deploy Nexus
 		target_hosts=$(PLAYBOOKS_HOSTS) \
 	"
 
-apply-patch:  ## apply patch to upstream nexus3-oss
+nexus-apply-patch:  ## apply patch to upstream nexus3-oss
 	# patch the nexus install for the oss edition
 	if [ -f ./ansible_collections/ansible-thoteam.nexus3-oss/.patched ]; then \
 	echo "Already patched !"; \
@@ -69,6 +69,6 @@ apply-patch:  ## apply patch to upstream nexus3-oss
 	touch ./ansible_collections/ansible-thoteam.nexus3-oss/.patched; \
 	fi
 
-help: ## Show Help
+nexus-help: ## Show Help
 	@echo "Nexus targets - make playbooks nexus <target>:"
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

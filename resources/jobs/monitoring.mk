@@ -32,12 +32,12 @@ PROMETHEUS_EXTRAVARS ?=
 
 -include $(BASE_PATH)/PrivateRules.mak
 
-check_hosts:
+monitoring-check-hosts:
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 
-vars:  ## Variables
+monitoring-vars:  ## Variables
 	@echo "\033[36mMonitoring:\033[0m"
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
@@ -56,7 +56,7 @@ vars:  ## Variables
 	@echo "KUBECONFIG=$(KUBECONFIG)"
 	@echo "NODES=$(NODES)"
 
-lint: ## Lint playbooks
+monitoring-lint: ## Lint playbooks
 	@yamllint -d "{extends: relaxed, rules: {line-length: {max: 350}}}" \
 			$(PLAYBOOKS_DIR)/deploy_docker_exporter.yml  \
 			$(PLAYBOOKS_DIR)/deploy_node_exporter.yml  \
@@ -72,7 +72,7 @@ lint: ## Lint playbooks
 	cat ansible-lint-results.txt
 	@flake8 --exclude ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/openstack roles/*
 
-prometheus: check_hosts ## Install Prometheus Server
+monitoring-prometheus: monitoring-check-hosts ## Install Prometheus Server
 	ansible-playbook $(PLAYBOOKS_DIR)/deploy_monitoring.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
@@ -89,7 +89,7 @@ prometheus: check_hosts ## Install Prometheus Server
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
-grafana: check_hosts ## Install Grafana Server
+monitoring-grafana: monitoring-check-hosts ## Install Grafana Server
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_monitoring.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
@@ -102,7 +102,7 @@ grafana: check_hosts ## Install Grafana Server
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
-alertmanager: check_hosts ## Install Prometheus Server
+monitoring-alertmanager: monitoring-check-hosts ## Install Prometheus Server
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_monitoring.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
@@ -114,7 +114,7 @@ alertmanager: check_hosts ## Install Prometheus Server
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
-thanos: check_hosts ## Install Thanos query and query front-end
+monitoring-thanos: monitoring-check-hosts ## Install Thanos query and query front-end
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_monitoring.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
@@ -128,7 +128,7 @@ thanos: check_hosts ## Install Thanos query and query front-end
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
-node-exporter: check_hosts ## Install Prometheus node exporter - pass INVENTORY and NODES
+monitoring-node-exporter: monitoring-check-hosts ## Install Prometheus node exporter - pass INVENTORY and NODES
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_node_exporter.yml \
 	-i $(INVENTORY) \
 	-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
@@ -137,7 +137,7 @@ node-exporter: check_hosts ## Install Prometheus node exporter - pass INVENTORY 
 	--limit $(NODES)
 
 
-update_metadata: check_hosts ## OpenStack metadata for node_exporters - pass INVENTORY all format should be OK
+monitoring-update-metadata: monitoring-check-hosts ## OpenStack metadata for node_exporters - pass INVENTORY all format should be OK
 	@mkdir -p combined_inventory; \
 	rm -f combined_inventory/*; \
 	cp $(INVENTORY)/*inventory* combined_inventory/; \
@@ -146,19 +146,19 @@ update_metadata: check_hosts ## OpenStack metadata for node_exporters - pass INV
 	ansible -i $(INVENTORY) $(PROMETHEUS_NODE) $(ANSIBLE_PLAYBOOK_ARGUMENTS) -b -m shell -a 'export project_name=$(PROM_OS_PROJECT_NAME) project_id=$(PROM_OS_PROJECT_ID) auth_url=$(PROM_OS_AUTH_URL) username=$(PROM_OS_USERNAME) password=$(PROM_OS_PASSWORD)	os_region_name=RegionOne os_interface=public PROM_OS_PROJECT_ID=$(PROM_OS_PROJECT_ID)	os_user_domain_name=default	os_identity_api_version=3 && python3 /usr/local/bin/prom_helper.py -u /tmp/all_inventory'; \
 	rm -rf combined_inventory all_inventory
 
-update_scrapers: check_hosts ## Force update of scrapers
-	ansible -i $(INVENTORY) $(PROMETHEUS_NODE) $(ANSIBLE_PLAYBOOK_ARGUMENTS) -b -m shell -a 'export project_id=$(PROM_OS_PROJECT_ID) project_name=$(PROM_OS_PROJECT_NAME) auth_url=$(PROM_OS_AUTH_URL) username=$(PROM_OS_USERNAME) password=$(PROM_OS_PASSWORD) $(OPENSTACK_ENV_VARIABLES) && cd /etc/prometheus && python3 /usr/local/bin/prom_helper.py -g'
+monitoring-update-scrapers: monitoring-check-hosts ## Force update of scrapers
+	ansible -i $(INVENTORY) $(PROMETHEUS_NODE) $(ANSIBLE_PLAYBOOK_ARGUMENTS) -b -m shell -a 'export prometheus_server_project_id=$(PROM_OS_PROJECT_ID) prometheus_server_project_name=$(PROM_OS_PROJECT_NAME) prometheus_server_auth_url=$(PROM_OS_AUTH_URL) prometheus_server_username=$(PROM_OS_USERNAME) prometheus_server_password=$(PROM_OS_PASSWORD) $(OPENSTACK_ENV_VARIABLES) && cd /etc/prometheus && python3 /usr/local/bin/prom_helper.py -g'
 
-test-prometheus: check_hosts ## Test elastic cluster
+monitoring-test-prometheus: monitoring-check-hosts ## Test elastic cluster
 	ansible-playbook $(TESTS_DIR)/prometheus_test.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-test-thanos: check_hosts ## Test elastic cluster
+monitoring-test-thanos: monitoring-check-hosts ## Test elastic cluster
 	ansible-playbook $(TESTS_DIR)/thanos_test.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-help: ## Show Help
+monitoring-help: ## Show Help
 	@echo "Monitoring targets - make playbooks monitoring <target>:"
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

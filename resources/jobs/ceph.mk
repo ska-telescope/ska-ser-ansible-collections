@@ -5,24 +5,24 @@ ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/ceph/playbooks
 
-check_hosts:
+ceph-check-hosts:
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 
-vars:
+ceph-vars:
 	@echo "\033[36mCeph:\033[0m"
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
-install: check_hosts ## Install ceph cluster
+ceph-install: ceph-check-hosts ## Install ceph cluster
 	ansible-playbook $(PLAYBOOKS_DIR)/install.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-destroy: check_hosts ## Destroy ceph cluster
+ceph-destroy: ceph-check-hosts ## Destroy ceph cluster
 	@echo "ceph: destroy not implemented"
 
-help: ## Show Help
+ceph-help: ## Show Help
 	@echo "Ceph targets - make playbooks ceph <target>:"
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
