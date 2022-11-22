@@ -215,7 +215,7 @@
     group: "{{ localgroup }}"
     mode: 0755
   when:
-    - prometheus_alert_rules != []
+    - prometheus_server_alert_rules != []
 
 - name: Create record rules file
   ansible.builtin.template:
@@ -225,7 +225,7 @@
     group: "{{ localgroup }}"
     mode: 0755
   when:
-    - prometheus_record_rules != []
+    - prometheus_server_record_rules != []
 
 - name: Copy ceph alerting rules
   ansible.builtin.copy:
