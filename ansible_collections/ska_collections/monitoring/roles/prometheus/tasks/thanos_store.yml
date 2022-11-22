@@ -4,7 +4,7 @@
     state: directory
     mode: 0755
     owner: "{{ prometheus_localuser }}"
-    group: "{{ localgroup }}"
+    group: "{{ prometheus_localgroup }}"
   become: true
 
 - name: Pull thanos image {{ prometheus_thanos_docker_tags }}
@@ -35,7 +35,7 @@
     dest: "{{ prometheus_thanos_config_dir }}/swift.yml"
     force: true
     owner: "{{ prometheus_localuser }}"
-    group: "{{ localgroup }}"
+    group: "{{ prometheus_localgroup }}"
     mode: 0644
 
 - name: Start thanos container
