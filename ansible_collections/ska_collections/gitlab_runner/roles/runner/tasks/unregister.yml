@@ -17,7 +17,7 @@
       community.general.docker_container:
         name: "{{ gitlab_runner_name }}-unregister"
         image: "{{ gitlab_runner_image }}"
-        restart_policy: "False"
+        restart_policy: false
         command:
           - unregister
           - --config "/etc/gitlab-runner/config.toml"

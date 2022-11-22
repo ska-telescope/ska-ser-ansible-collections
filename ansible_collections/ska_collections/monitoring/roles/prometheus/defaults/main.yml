@@ -123,7 +123,7 @@ prometheus_grafana_plugins:
   - natel-plotly-panel
   - fifemon-graphql-datasource
 prometheus_grafana_admin_password: admin
-prometheus_grafana_disable_admin_account_creation: "false"
+prometheus_grafana_disable_admin_account_creation: false
 
 # Alert Manager
 # slack_api_url has to be set in the command line
