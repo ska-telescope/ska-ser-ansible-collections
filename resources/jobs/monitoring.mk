@@ -117,8 +117,8 @@ thanos: check_hosts ## Install Thanos query and query front-end
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		--extra-vars "mode='thanos'" \
 		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
-		-e "project_id='$(PROM_OS_PROJECT_ID)' auth_url='$(PROM_OS_AUTH_URL)'" \
-		-e "username='$(PROM_OS_USERNAME)' password='$(PROM_OS_PASSWORD)'" \
+		-e "prometheus_server_project_id='$(PROM_OS_PROJECT_ID)' prometheus_server_auth_url='$(PROM_OS_AUTH_URL)'" \
+		-e "prometheus_server_username='$(PROM_OS_USERNAME)' prometheus_server_password='$(PROM_OS_PASSWORD)'" \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/all.yml \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/prometheus.yml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
@@ -143,7 +143,7 @@ update_metadata: check_hosts ## OpenStack metadata for node_exporters - pass INV
 	rm -rf combined_inventory all_inventory
 
 update_scrapers: check_hosts ## Force update of scrapers
-	ansible -i $(INVENTORY) $(PROMETHEUS_NODE) $(ANSIBLE_PLAYBOOK_ARGUMENTS) -b -m shell -a 'export project_id=$(PROM_OS_PROJECT_ID) project_name=$(PROM_OS_PROJECT_NAME) auth_url=$(PROM_OS_AUTH_URL) username=$(PROM_OS_USERNAME) password=$(PROM_OS_PASSWORD) $(OPENSTACK_ENV_VARIABLES) && cd /etc/prometheus && python3 /usr/local/bin/prom_helper.py -g'
+	ansible -i $(INVENTORY) $(PROMETHEUS_NODE) $(ANSIBLE_PLAYBOOK_ARGUMENTS) -b -m shell -a 'export prometheus_server_project_id=$(PROM_OS_PROJECT_ID) prometheus_server_project_name=$(PROM_OS_PROJECT_NAME) prometheus_server_auth_url=$(PROM_OS_AUTH_URL) prometheus_server_username=$(PROM_OS_USERNAME) prometheus_server_password=$(PROM_OS_PASSWORD) $(OPENSTACK_ENV_VARIABLES) && cd /etc/prometheus && python3 /usr/local/bin/prom_helper.py -g'
 
 test-prometheus: check_hosts ## Test elastic cluster
 	ansible-playbook $(TESTS_DIR)/prometheus_test.yml \
