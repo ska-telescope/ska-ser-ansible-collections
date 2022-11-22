@@ -122,7 +122,6 @@ prometheus_grafana_plugins:
   - speakyourcode-button-panel
   - natel-plotly-panel
   - fifemon-graphql-datasource
-prometheus_grafana_admin_password: admin
 prometheus_grafana_disable_admin_account_creation: false
 
 # Alert Manager
