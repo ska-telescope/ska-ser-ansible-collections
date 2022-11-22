@@ -219,8 +219,10 @@ if (
 ):
     print(
         (
-            "Please provide the following environment variables: prometheus_server_auth_url, "
-            "prometheus_server_username, prometheus_server_password, prometheus_server_project_name(comma separated values)"
+            "Please provide the following environment variables: "
+            "prometheus_server_auth_url, prometheus_server_username, "
+            "prometheus_server_password, prometheus_server_project_name "
+            "(comma separated values)"
         )
     )
     sys.exit(1)

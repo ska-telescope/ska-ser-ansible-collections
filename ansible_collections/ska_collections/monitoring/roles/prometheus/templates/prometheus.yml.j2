@@ -44,7 +44,7 @@ scrape_configs:
       module: [ssh_banner]
     static_configs:
       - targets:
-        {{ blackbox_ssh_targets | to_nice_yaml(indent=8) | indent(8,False) }} # Targets to probe
+        {{ prometheus_blackbox_ssh_targets | to_nice_yaml(indent=8) | indent(8,False) }} # Targets to probe
     relabel_configs:
       # Ensure port is 22, pass as URL parameter
       - source_labels: [__address__]

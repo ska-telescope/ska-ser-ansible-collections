@@ -58,7 +58,7 @@
       GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "{{ prometheus_grafana_disable_admin_account_creation }}"
       GF_SECURITY_ADMIN_PASSWORD: "{{ prometheus_grafana_admin_password }}"
       GF_PANELS_DISABLE_SANITIZE_HTML: "true"
-      GF_SERVER_ROOT_URL: "https://{{ k8s_external_dns_entry }}/grafana"
+      GF_SERVER_ROOT_URL: "https://{{ prometheus_k8s_external_dns_entry }}/grafana"
       GF_SERVER_SERVE_FROM_SUB_PATH: "true"
       # AzureAD Configuration
       GF_AUTH_AZUREAD_NAME: "Azure AD"
