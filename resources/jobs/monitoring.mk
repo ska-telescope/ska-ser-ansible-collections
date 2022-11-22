@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
-
+PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/monitoring/playbooks
 ## EXECUTION VARIABLES
 NODES ?= all
 PROMETHEUS_NODE ?= prometheus
@@ -56,16 +56,16 @@ vars:  ## Variables
 
 lint: ## Lint playbooks
 	@yamllint -d "{extends: relaxed, rules: {line-length: {max: 350}}}" \
-			./ansible_collections/ska_collections/monitoring/playbooks/deploy_docker_exporter.yml  \
-			./ansible_collections/ska_collections/monitoring/playbooks/deploy_node_exporter.yml  \
-			./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
-			./ansible_collections/ska_collections/monitoring/playbooks/export_runners.yml  \
+			$(PLAYBOOKS_DIR)/deploy_docker_exporter.yml  \
+			$(PLAYBOOKS_DIR)/deploy_node_exporter.yml  \
+			$(PLAYBOOKS_DIR)/deploy_monitoring.yml \
+			$(PLAYBOOKS_DIR)/export_runners.yml  \
 			./ansible_collections/ska_collections/monitoring/roles/*
 	@ansible-lint --exclude=./ansible_collections/ska_collections/monitoring/roles/prometheus/files/ \
-	 ./ansible_collections/ska_collections/monitoring/playbooks/deploy_docker_exporter.yml \
-	 ./ansible_collections/ska_collections/monitoring/playbooks/deploy_node_exporter.yml \
-	 ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml  \
-	 ./ansible_collections/ska_collections/monitoring/playbooks/export_runners.yml \
+	 $(PLAYBOOKS_DIR)/deploy_docker_exporter.yml \
+	 $(PLAYBOOKS_DIR)/deploy_node_exporter.yml \
+	 $(PLAYBOOKS_DIR)/deploy_monitoring.yml  \
+	 $(PLAYBOOKS_DIR)/export_runners.yml \
 	  ./ansible_collections/ska_collections/monitoring/roles/*  > ansible-lint-results.txt; \
 	cat ansible-lint-results.txt
 	@flake8 --exclude ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/openstack roles/*
@@ -81,19 +81,17 @@ prometheus: check_hosts ## Install Prometheus Server
 		-e "prometheus_gitlab_ci_pipelines_exporter_token=$(GITLAB_TOKEN)" \
 		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
-		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/all.yml \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/prometheus.yml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
 grafana: check_hosts ## Install Grafana Server
-	@ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_monitoring.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "mode='grafana'" \
 		--extra-vars="azuread_client_id='$(AZUREAD_CLIENT_ID)' azuread_client_secret='$(AZUREAD_CLIENT_SECRET)' azuread_tenant_id='$(AZUREAD_TENANT_ID)'" \
-		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/all.yml \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/prometheus.yml \
@@ -101,11 +99,10 @@ grafana: check_hosts ## Install Grafana Server
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
 alertmanager: check_hosts ## Install Prometheus Server
-	@ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_monitoring.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "mode='alert' slack_api_url='$(SLACK_API_URL)' slack_api_url_user='$(SLACK_API_URL_USER)'" \
-		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/all.yml \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/prometheus.yml \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
@@ -113,21 +110,20 @@ alertmanager: check_hosts ## Install Prometheus Server
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
 thanos: check_hosts ## Install Thanos query and query front-end
-	@ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_monitoring.yml \
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_monitoring.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		--extra-vars "mode='thanos'" \
 		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
 		-e "project_id='$(PROM_OS_PROJECT_ID)' auth_url='$(PROM_OS_AUTH_URL)'" \
 		-e "username='$(PROM_OS_USERNAME)' password='$(PROM_OS_PASSWORD)'" \
-		-e @$(PROM_CONFIGS_PATH)/ansible_collections/ska_collections/monitoring/group_vars/all.yml \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/all.yml \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/prometheus.yml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
 node-exporter: check_hosts ## Install Prometheus node exporter - pass INVENTORY and NODES
-	@ansible-playbook ./ansible_collections/ska_collections/monitoring/playbooks/deploy_node_exporter.yml \
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_node_exporter.yml \
 	-i $(INVENTORY) \
 	-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
