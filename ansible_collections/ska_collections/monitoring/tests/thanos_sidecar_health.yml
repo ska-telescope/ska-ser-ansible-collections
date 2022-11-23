@@ -1,0 +1,11 @@
+- name: Thanos Sidecar health check
+  block:
+    - name: Inspect Thanos Sidecar container
+      command: "docker inspect thanos_sidecar"
+      register: output
+    - name: Check Thanos Sidecar container running
+      ansible.builtin.assert:
+        that:
+          - (output.stdout | from_json)[0].State.Status == "running"
+          - (output.stdout | from_json)[0].State.Running
+        fail_msg: "Thanos Sidecar container is not running"

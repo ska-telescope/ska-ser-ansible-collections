@@ -1,7 +1,7 @@
 ---
 - name: "List elasticsearch api keys"
   ansible.builtin.uri:
-    url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}{{ elasticsearch_list_apikeys_endpoint }}?pretty"
+    url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}/_security/api_key?pretty"
     method: GET
     force: true
     return_content: true

@@ -1,7 +1,7 @@
 ---
 - name: Check if private key exists
   ansible.builtin.stat:
-    path: "{{ certificates_dir }}/{{ certificate_key_name }}.key"
+    path: "{{ certificates_dir }}/{{ certificate_name }}.key"
   register: check_key
 
 - name: Check if certificate exists
@@ -21,15 +21,15 @@
 
     - name: Create private key for new certificate
       community.crypto.openssl_privatekey:
-        path: "{{ certificates_dir }}/{{ certificate_key_name }}.key"
+        path: "{{ certificates_dir }}/{{ certificate_name }}.key"
         mode: 0600
 
     - name: Create certificate signing request (CSR) for new certificate
       community.crypto.openssl_csr_pipe:
-        privatekey_path: "{{ certificates_dir }}/{{ certificate_key_name }}.key"
+        privatekey_path: "{{ certificates_dir }}/{{ certificate_name }}.key"
         common_name: "{{ ansible_hostname }}"
         subject_alt_name: 'DNS:{{ certificate_dns_alt_name }},IP:{{ ansible_default_ipv4.address }}'
-        organization_name: "{{ certificate_organization_name }}"
+        organization_name: "SKAO"
       register: csr
 
     - name: Sign certificate with our CA

@@ -7,18 +7,19 @@
   tasks:
     - name: Set elasticsearch nodes
       ansible.builtin.set_fact:
+        elasticsearch_lb_domain_name: "{{ elasticsearch_dns_name | default(inventory_hostname) }}"
         nodes: "{{ groups[target_hosts + '-master'] + groups[target_hosts + '-data'] }}"
 
     - name: Loadbalancer can reach elasticsearch API port
       ansible.builtin.wait_for:
-        port: "{{ elasticsearch_api_port | int }}"
+        port: 9200
         host: "{{ hostvars[item]['ip'] }}"
         timeout: 60
       loop: "{{ nodes }}"
 
     - name: Loadbalanced access to api works
       ansible.builtin.uri:
-        url: "https://{{ inventory_hostname }}:{{ elasticsearch_api_port }}{{ elasticsearch_health_endpoint }}"
+        url: "https://{{ elasticsearch_lb_domain_name }}:9200/_cat/health"
         method: GET
         force: true
         return_content: true
@@ -32,4 +33,4 @@
       register: health_info
       retries: 3
       timeout: 60
-      until: "'green' in health_info.content or 'yellow' in health_info.content"
+      until: "'green' in health_info.content"

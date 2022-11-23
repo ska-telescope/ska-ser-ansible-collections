@@ -88,7 +88,7 @@
         force: true
         status_code: [200]
         client_cert: "{{ certificates_dir }}/{{ logging_filebeat_certificate_name }}.crt"
-        client_key: "{{ certificates_dir }}/{{ logging_filebeat_certificate_key_name }}.key"
+        client_key: "{{ certificates_dir }}/{{ logging_filebeat_certificate_name }}.key"
         body_format: json
         body: "{{ ska_log_parsing_pipeline_file['content'] | b64decode }}"
         url_username: elastic

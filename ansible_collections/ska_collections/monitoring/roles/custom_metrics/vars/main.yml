@@ -1,4 +1,4 @@
-cron_job_lines:
+custom_metrics_cron_job_lines:
     - name: generate filebeat metrics
       minute: "*"
       hour: "*"
@@ -8,4 +8,4 @@ cron_job_lines:
       job: /usr/local/bin/create_filebeat_metrics.sh
       user: root
 
-cron_file: custom-metrics
+custom_metrics_cron_file: custom-metrics

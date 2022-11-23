@@ -11,26 +11,26 @@
     path: '{{ prometheus_data_dir }}'
     state: directory
     mode: 0766
-    owner: "{{ localuser }}"
-    group: "{{ localgroup }}"
+    owner: "{{ prometheus_localuser }}"
+    group: "{{ prometheus_localgroup }}"
   become: true
 
 - name: Ensure Prometheus configuration directory
   ansible.builtin.file:
-    path: '{{ prometheus_config_dir }}'
+    path: '{{ prometheus_server_config_dir }}'
     state: directory
     mode: 0755
-    owner: "{{ localuser }}"
-    group: "{{ localgroup }}"
+    owner: "{{ prometheus_localuser }}"
+    group: "{{ prometheus_localgroup }}"
   become: true
 
 - name: Ensure Prometheus rules configuration directory
   ansible.builtin.file:
-    path: '{{ prometheus_config_dir }}/rules/'
+    path: '{{ prometheus_server_config_dir }}/rules/'
     state: directory
     mode: 0755
-    owner: "{{ localuser }}"
-    group: "{{ localgroup }}"
+    owner: "{{ prometheus_localuser }}"
+    group: "{{ prometheus_localgroup }}"
   become: true
 
 - name: Copy prom_helper to /usr/local/bin
@@ -49,23 +49,23 @@
 
 - name: Ensure target directory
   ansible.builtin.file:
-    path: '{{ kubectl_install_dir }}'
+    path: '{{ prometheus_server_kubectl_install_dir }}'
     state: directory
     mode: '0755'
 
 - name: Download kubectl
   become: true
   ansible.builtin.get_url:
-    url: '{{ kubectl_url }}'
-    dest: '{{ kubectl_install_dir }}/{{ kubectl_name }}-{{ kubectl_version }}'
+    url: '{{ prometheus_server_kubectl_url }}'
+    dest: '{{ prometheus_server_kubectl_install_dir }}/{{ prometheus_server_kubectl_name }}-{{ prometheus_server_kubectl_version }}'
     mode: 0755
 
 - name: Link installed kubectl # noqa ignore-errors
   become: true
   ignore_errors: true
   ansible.builtin.file:
-    src: '{{ kubectl_install_dir }}/{{ kubectl_name }}-{{ kubectl_version }}'
-    dest: '{{ kubectl_install_dir }}/{{ kubectl_name }}'
+    src: '{{ prometheus_server_kubectl_install_dir }}/{{ prometheus_server_kubectl_name }}-{{ prometheus_server_kubectl_version }}'
+    dest: '{{ prometheus_server_kubectl_install_dir }}/{{ prometheus_server_kubectl_name }}'
     state: link
     mode: 0755
 
@@ -110,29 +110,29 @@
 - name: Save token in destination file # noqa no-changed-when risky-shell-pipe
   ansible.builtin.shell: |
     kubectl --kubeconfig=/etc/kubernetes/admin.conf get secret {{ prom_secret.stdout }} -n kube-system --output='json' \
-    | jq -r '.data.token' | base64 --decode > {{ k8s_bearer_token }}
+    | jq -r '.data.token' | base64 --decode > {{ prometheus_k8s_bearer_token }}
 
 - name: Save kubectl credentials # noqa no-changed-when risky-shell-pipe
   ansible.builtin.shell: |
     kubectl --kubeconfig=/etc/kubernetes/admin.conf config view --raw --minify \
     --flatten --output='jsonpath={.clusters[].cluster.certificate-authority-data}' \
-    | base64 --decode > {{ k8s_client_certificate }}
+    | base64 --decode > {{ prometheus_k8s_client_certificate }}
 
 - name: Set environment variables for prom_helper
   ansible.builtin.blockinfile:
     path: /etc/environment
     block: |
-      auth_url="{{ auth_url }}"
-      username="{{ username }}"
-      password="{{ password }}"
-      project_id="{{ project_id }}"
-      project_name="{{ project_name }}"
-      OS_AUTH_URL="{{ auth_url }}"
+      auth_url="{{ prometheus_server_auth_url }}"
+      username="{{ prometheus_server_username }}"
+      password="{{ prometheus_server_password }}"
+      project_id="{{ prometheus_server_project_id }}"
+      project_name="{{ prometheus_server_project_name }}"
+      OS_AUTH_URL="{{ prometheus_server_auth_url }}"
       OS_USER_DOMAIN_NAME=default
-      OS_PASSWORD="{{ password }}"
-      OS_USERNAME="{{ username }}"
-      OS_PROJECT_ID="{{ project_id }}"
-      OS_PROJECT_NAME="{{ project_name }}"
+      OS_PASSWORD="{{ prometheus_server_password }}"
+      OS_USERNAME="{{ prometheus_server_username }}"
+      OS_PROJECT_ID="{{ prometheus_server_project_id }}"
+      OS_PROJECT_NAME="{{ prometheus_server_project_name }}"
       KUBECONFIG="/etc/kubernetes/admin.conf"
   become: true
 
@@ -144,7 +144,7 @@
     update_cache: true
 
 # the generated prometheus_node_metric_relabel_configs.yaml must
-#  go in the playbook_dir ready to run
+#  go in the prometheus_server_playbook_dir ready to run
 - name: Add cron job
   ansible.builtin.cron:
     name: relabel prometheus configs
@@ -157,7 +157,7 @@
     job: >
       python3 /usr/local/bin/prom_helper.py -g &&
       mv *.json /etc/prometheus/ &&
-      cp prometheus_node_metric_relabel_configs.yaml {{ playbook_dir }}/
+      cp prometheus_node_metric_relabel_configs.yaml {{ prometheus_server_playbook_dir }}/
   become: true
   tags:
     - crontab
@@ -173,13 +173,13 @@
     weekday: "*"
     user: "root"
     job: >
-      cd {{ playbook_dir }} &&
+      cd {{ prometheus_server_playbook_dir }} &&
       touch prometheus_node_metric_relabel_configs.yaml &&
       git pull &&
       ansible-playbook deploy_prometheus.yml -i hosts --tags "cron"
       --extra-vars
       "prometheus_gitlab_ci_pipelines_exporter_token='{{ prometheus_gitlab_ci_pipelines_exporter_token }}'"
-      --extra-vars "password='{{ password }}'"
+      --extra-vars "password='{{ prometheus_server_password }}'"
       --extra-vars "slack_api_url='{{ slack_api_url }}'"
       --extra-vars "slack_api_url_user='{{ slack_api_url_user }}'"
       -e 'ansible_python_interpreter=/usr/bin/python3'
@@ -192,10 +192,10 @@
   become: true
   ansible.builtin.template:
     src: "prometheus.yml.j2"
-    dest: "{{ prometheus_config_dir }}/prometheus.yml"
+    dest: "{{ prometheus_server_config_dir }}/prometheus.yml"
     force: true
-    owner: "{{ localuser }}"
-    group: "{{ localgroup }}"
+    owner: "{{ prometheus_localuser }}"
+    group: "{{ prometheus_localgroup }}"
     mode: 0755
 
 - name: Create certificates for client communication
@@ -204,51 +204,51 @@
   vars:
     certificate_name: "prometheus"
     certificate_key_name: "prometheus"
-    certificate_dns_alt_name: "{{ thanos_alt_name }}"
+    certificate_dns_alt_name: "{{ prometheus_thanos_alt_name }}"
     certificates_recreate: true
 
 - name: Create alerting rules file
   ansible.builtin.template:
     src: "alert.rules.j2"
-    dest: "{{ prometheus_config_dir }}/rules/ansible_managed.rules"
-    owner: "{{ localuser }}"
-    group: "{{ localgroup }}"
+    dest: "{{ prometheus_server_config_dir }}/rules/ansible_managed.rules"
+    owner: "{{ prometheus_localuser }}"
+    group: "{{ prometheus_localgroup }}"
     mode: 0755
   when:
-    - prometheus_alert_rules != []
+    - prometheus_server_alert_rules != []
 
 - name: Create record rules file
   ansible.builtin.template:
     src: "record.rules.j2"
-    dest: "{{ prometheus_config_dir }}/rules/record.rules"
-    owner: "{{ localuser }}"
-    group: "{{ localgroup }}"
+    dest: "{{ prometheus_server_config_dir }}/rules/record.rules"
+    owner: "{{ prometheus_localuser }}"
+    group: "{{ prometheus_localgroup }}"
     mode: 0755
   when:
-    - prometheus_record_rules != []
+    - prometheus_server_record_rules != []
 
 - name: Copy ceph alerting rules
   ansible.builtin.copy:
     src: "rules/ceph/ceph_dashboard.rules"
     dest: "/etc/prometheus/rules/ceph_dashboard.rules"
-    owner: "{{ localuser }}"
-    group: "{{ localgroup }}"
+    owner: "{{ prometheus_localuser }}"
+    group: "{{ prometheus_localgroup }}"
     mode: 0644
 
 - name: Copy elasticstack alerting rules
   ansible.builtin.copy:
     src: "rules/elasticstack/elasticsearch.rules"
     dest: "/etc/prometheus/rules/elasticsearch.rules"
-    owner: "{{ localuser }}"
-    group: "{{ localgroup }}"
+    owner: "{{ prometheus_localuser }}"
+    group: "{{ prometheus_localgroup }}"
     mode: 0644
 
 - name: Copy kubernetes alerting rules
   ansible.builtin.copy:
     src: "rules/kubernetes/{{ item }}"
     dest: "/etc/prometheus/rules/kubernetes_{{ item }}.rules"
-    owner: "{{ localuser }}"
-    group: "{{ localgroup }}"
+    owner: "{{ prometheus_localuser }}"
+    group: "{{ prometheus_localgroup }}"
     mode: 0644
   with_items:
     - prometheus_alerts.yaml
@@ -257,7 +257,7 @@
 - name: Copy up resource files
   ansible.builtin.copy:
     src: "{{ item }}"
-    dest: "{{ prometheus_config_dir }}/{{ item }}"
+    dest: "{{ prometheus_server_config_dir }}/{{ item }}"
     mode: 0644
   with_items:
     - ceph-mgr.json
@@ -267,10 +267,10 @@
     - node_exporter.json
     - kube-proxy.json
 
-- name: Pull prometheus image {{ prometheus_docker_tags }}
+- name: Pull prometheus image {{ prometheus_server_docker_tags }}
   community.docker.docker_image:
     name: prom/prometheus
-    tag: "{{ prometheus_docker_tags }}"
+    tag: "{{ prometheus_server_docker_tags }}"
     source: pull
 
 - name: Stop prometheus container
@@ -283,60 +283,61 @@
   become: true
   ansible.builtin.template:
     src: "prometheus.web.config.yml.j2"
-    dest: "{{ prometheus_config_dir }}/prometheus.web.config.yml"
+    dest: "{{ prometheus_server_config_dir }}/prometheus.web.config.yml"
     force: true
-    owner: "{{ localuser }}"
-    group: "{{ localgroup }}"
+    owner: "{{ prometheus_localuser }}"
+    group: "{{ prometheus_localgroup }}"
     mode: 0644
 
 - name: Start prometheus container
   community.docker.docker_container:
     name: prometheus
-    image: "prom/prometheus:{{ prometheus_docker_tags }}"
+    image: "prom/prometheus:{{ prometheus_server_docker_tags }}"
     state: started
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--web.config.file=/etc/prometheus/prometheus.web.config.yml"
       - "--storage.tsdb.path=/prometheus"
       - "--web.console.libraries=/usr/share/prometheus/console_libraries"
-      - "--web.page-title=\"{{ prometheus_title }}\""
+      - "--web.page-title=\"{{ prometheus_server_title }}\""
       - "--web.console.templates=/usr/share/prometheus/consoles"
       - "--web.external-url={{ prometheus_url | default('http://' + ansible_default_ipv4.address + ':9090') }}"
       - "--storage.tsdb.max-block-duration=2h"
       - "--storage.tsdb.min-block-duration=2h"
+      - "--storage.tsdb.retention.time={{ prometheus_retention_time }}"
       - "--web.enable-lifecycle"
     user: root
-    memory: "{{ prometheus_memory }}"
+    memory: "{{ prometheus_server_memory }}"
     restart: true
     restart_policy: always
     ports:
       - "9090:9090"
     volumes:
-      - "{{ prometheus_config_dir }}:/etc/prometheus:ro"
+      - "{{ prometheus_server_config_dir }}:/etc/prometheus:ro"
       - "{{ certificates_dir }}:{{ certificates_dir }}"
       - "/etc/hosts:/etc/hosts:ro"
       - "{{ prometheus_data_dir }}:/prometheus"
 
 - name: Check for swap file
   ansible.builtin.stat:
-    path: "{{ swapfile_path }}"
+    path: "{{ prometheus_server_swapfile_path }}"
   register: is_swapfile
 
 - name: Create swap file
   ansible.builtin.command: |
-    {% if swapfile_fallocate %}
-    fallocate -l {{ ((swapfile_size) | int * 1024 * 1024) }} {{ swapfile_path }}
+    {% if prometheus_server_swapfile_fallocate %}
+    fallocate -l {{ ((prometheus_server_swapfile_size) | int * 1024 * 1024) }} {{ prometheus_server_swapfile_path }}
     {% else %}
-    dd if=/dev/zero of={{ swapfile_path }} bs=1M count={{ swapfile_size }}
+    dd if=/dev/zero of={{ prometheus_server_swapfile_path }} bs=1M count={{ prometheus_server_swapfile_size }}
     {% endif %}
   args:
-    creates: "{{ swapfile_path }}"
+    creates: "{{ prometheus_server_swapfile_path }}"
   register: swapfile_register_create
   when: not is_swapfile.stat.exists
 
 - name: Set swap file permissions
   ansible.builtin.file:
-    path: "{{ swapfile_path }}"
+    path: "{{ prometheus_server_swapfile_path }}"
     state: "file"
     owner: "root"
     group: "root"
@@ -344,16 +345,16 @@
   when: not is_swapfile.stat.exists
 
 - name: Initialize swap file
-  ansible.builtin.command: mkswap {{ swapfile_path }}
+  ansible.builtin.command: mkswap {{ prometheus_server_swapfile_path }}
   when: not is_swapfile.stat.exists
 
 - name: Enable swap file
-  ansible.builtin.command: swapon {{ swapfile_path }}
+  ansible.builtin.command: swapon {{ prometheus_server_swapfile_path }}
   when: not is_swapfile.stat.exists
 
 - name: Manage swap file in /etc/fstab
   ansible.posix.mount:
-    src: "{{ swapfile_path }}"
+    src: "{{ prometheus_server_swapfile_path }}"
     name: "none"
     fstype: "swap"
     opts: "sw,nofail"
