@@ -81,10 +81,10 @@
       ansible.builtin.set_fact:
         ansible_python_interpreter: "python3"
 
-    - name: Pull cadvisor image {{ cadvisor_docker_tags }}
+    - name: Pull cadvisor image {{ prometheus_docker_exporter_cadvisor_docker_tags }}
       community.docker.docker_image:
         name: gcr.io/google-containers/cadvisor
-        tag: "{{ cadvisor_docker_tags }}"
+        tag: "{{ prometheus_docker_exporter_cadvisor_docker_tags }}"
         source: pull
 
     - name: Stop cadvisor container
@@ -100,7 +100,7 @@
     - name: Start cadvisor container
       community.docker.docker_container:
         name: cadvisor
-        image: "gcr.io/google-containers/cadvisor:{{ cadvisor_docker_tags }}"
+        image: "gcr.io/google-containers/cadvisor:{{ prometheus_docker_exporter_cadvisor_docker_tags }}"
         command:
           - /usr/bin/cadvisor
           - -logtostderr

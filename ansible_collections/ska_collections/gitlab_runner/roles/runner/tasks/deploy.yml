@@ -41,7 +41,7 @@
       community.general.docker_container:
         name: "{{ gitlab_runner_name }}-register"
         image: "{{ gitlab_runner_image }}"
-        restart_policy: "False"
+        restart_policy: false
         command:
           - register
           - --non-interactive
