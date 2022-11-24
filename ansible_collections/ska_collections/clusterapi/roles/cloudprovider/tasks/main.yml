@@ -17,17 +17,17 @@
 - name: Install Cloud Provider Cloud Config Secret
   when: "not cloud_provider_secret_check.resources"
   block:
-  - name: Create Cloud Config Secret
-    kubernetes.core.k8s:
-      state: present
-      definition:
-        apiVersion: v1
-        kind: Secret
-        metadata:
-          name: cloud-config
-          namespace: kube-system
-        data:
-          cloud.conf: "{{ cloud_provider_config_ini.content }}"
+    - name: Create Cloud Config Secret
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: cloud-config
+            namespace: kube-system
+          data:
+            cloud.conf: "{{ cloud_provider_config_ini.content }}"
 
 - name: Download Cloud Provider manifests
   ansible.builtin.get_url:
@@ -78,12 +78,12 @@
 - name: Install Cloud Provider Storage Classes
   when: "not cloud_provider_sc_check.resources"
   block:
-  - name: Apply Cloud Provider storage classes
-    kubernetes.core.k8s:
-      state: present
-      apply: true
-      definition: "{{ item }}"
-    with_items: "{{ cloud_provider_storage_classes }}"
+    - name: Apply Cloud Provider storage classes
+      kubernetes.core.k8s:
+        state: present
+        apply: true
+        definition: "{{ item }}"
+      with_items: "{{ cloud_provider_storage_classes }}"
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers

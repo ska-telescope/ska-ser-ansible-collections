@@ -3,6 +3,15 @@
 
 from __future__ import absolute_import, division, print_function
 
+import shutil
+import subprocess
+import time
+
+from ansible.errors import AnsibleError
+from ansible.module_utils._text import to_bytes
+from ansible.module_utils.basic import AnsibleModule
+from ansible.parsing.yaml.loader import AnsibleLoader
+
 __metaclass__ = type
 
 
@@ -53,7 +62,8 @@ options:
   kubectl_extra_args:
     description:
       - Extra arguments to pass to the kubectl command line.
-      - Please be aware that this passes information directly on the command line and it could expose sensitive data.
+      - Please be aware that this passes information directly on the command
+        line and it could expose sensitive data.
     default: ''
     vars:
       - name: ansible_kubectl_extra_args
@@ -98,7 +108,8 @@ options:
   kubectl_password:
     description:
       - Provide a password for authenticating with the API.
-      - Please be aware that this passes information directly on the command line and it could expose sensitive data.
+      - Please be aware that this passes information directly on the command
+        line and it could expose sensitive data.
         We recommend using the file based authentication options instead.
     default: ''
     vars:
@@ -108,7 +119,8 @@ options:
   kubectl_token:
     description:
       - API authentication bearer token.
-      - Please be aware that this passes information directly on the command line and it could expose sensitive data.
+      - Please be aware that this passes information directly on the command
+        line and it could expose sensitive data.
         We recommend using the file based authentication options instead.
     vars:
       - name: ansible_kubectl_token
@@ -148,7 +160,8 @@ options:
     aliases: [ kubectl_ssl_ca_cert ]
   validate_certs:
     description:
-      - Whether or not to verify the API server's SSL certificate. Defaults to I(true).
+      - Whether or not to verify the API server's SSL certificate.
+        Defaults to I(true).
     default: ''
     vars:
       - name: ansible_kubectl_verify_ssl
@@ -167,20 +180,6 @@ wait_for_daemonset:
   wait: 10
   retries: 30
 """
-
-
-import os
-import os.path
-import shutil
-import subprocess
-import time
-
-import ansible.module_utils.common.yaml
-import yaml
-from ansible.errors import AnsibleError, AnsibleFileNotFound
-from ansible.module_utils._text import to_bytes
-from ansible.module_utils.basic import AnsibleModule
-from ansible.parsing.yaml.loader import AnsibleLoader
 
 CONNECTION_TRANSPORT = "kubectl"
 
@@ -212,6 +211,7 @@ class Kubectl:
     _shell = "/bin/sh"
 
     def __init__(self, params, *args, **kwargs):
+        """Initialise this class"""
 
         # Note: kubectl runs commands as the user that started the container.
         # It is impossible to set the remote user for a kubectl connection.
@@ -222,9 +222,13 @@ class Kubectl:
         cmd_arg = "{0}_command".format(self.transport)
         self.transport_cmd = kwargs.get(cmd_arg, shutil.which(self.transport))
         if not self.transport_cmd:
-            raise AnsibleError("{0} command not found in PATH".format(self.transport))
+            raise AnsibleError(
+                "{0} command not found in PATH".format(self.transport)
+            )
 
     def _vars(self):
+        """the things we want to display stringified"""
+
         return {
             "transport_cmd": self.transport_cmd,
             "censored_local_cmd": self.censored_local_cmd,
@@ -233,19 +237,26 @@ class Kubectl:
         }
 
     def __repr__(self):
+        """stringfy self"""
+
         return repr(self._vars())
 
     def __str__(self):
+        """stringfy self"""
+
         return self.__repr__()
 
     def get_option(self, key):
-        if not key in self.params:
+        """get the option value or the default"""
+
+        if key not in self.params:
             return CONNECTION_OPTIONS[key]["default"]
         else:
             return self.params[key]
 
     def _build_exec_cmd(self, cmd=""):
         """Build the local kubectl exec command to run cmd on remote_host"""
+
         local_cmd = [self.transport_cmd]
         censored_local_cmd = [self.transport_cmd]
 
@@ -257,12 +268,14 @@ class Kubectl:
                 skip_verify_ssl = not self.get_option(key)
                 local_cmd.append(
                     "{0}={1}".format(
-                        self.connection_options[key], str(skip_verify_ssl).lower()
+                        self.connection_options[key],
+                        str(skip_verify_ssl).lower(),
                     )
                 )
                 censored_local_cmd.append(
                     "{0}={1}".format(
-                        self.connection_options[key], str(skip_verify_ssl).lower()
+                        self.connection_options[key],
+                        str(skip_verify_ssl).lower(),
                     )
                 )
             elif key in self.connection_options and self.get_option(key):
@@ -292,7 +305,9 @@ class Kubectl:
 
         local_cmd, censored_local_cmd = self._build_exec_cmd(cmd.split(" "))
 
-        local_cmd = [to_bytes(i, errors="surrogate_or_strict") for i in local_cmd]
+        local_cmd = [
+            to_bytes(i, errors="surrogate_or_strict") for i in local_cmd
+        ]
         p = subprocess.Popen(
             local_cmd,
             shell=False,
@@ -303,21 +318,23 @@ class Kubectl:
 
         stdout, stderr = p.communicate(in_data)
 
-        self._msg += "\n RC: {rc} \n STDOUT: {stdout} \n STDERR: {stderr} \n".format(
-            rc=p.returncode, stdout=stdout, stderr=stderr
-        )
+        self._msg += (
+            "\n RC: {rc} \n " "STDOUT: {stdout} \n " "STDERR: {stderr} \n"
+        ).format(rc=p.returncode, stdout=stdout, stderr=stderr)
 
         return (p.returncode, stdout, stderr)
 
 
 def get_daemonset(connector, name):
-    # find the daemonset state
+    """find the daemonset state"""
+
     rc, stdout, err = connector.exec_command(
         "get daemonset {name} -o yaml".format(name=name)
     )
     if not rc == 0:
         raise AnsibleError(
-            "get daemonset call failed - rc: %d out: %s err: %s" % (rc, stdout, err)
+            "get daemonset call failed - rc: %d out: %s err: %s"
+            % (rc, stdout, err)
         )
     kubectl_yaml = AnsibleLoader(stdout).get_single_data()
     desired = kubectl_yaml.get("status").get("desiredNumberScheduled")
@@ -327,6 +344,7 @@ def get_daemonset(connector, name):
 
 
 def main():
+    """Launch wait_for_daemonset module plugin"""
 
     module_args = dict(
         name=dict(type="str", required=True),
@@ -337,12 +355,13 @@ def main():
     )
     for arg in CONNECTION_OPTIONS.keys():
         module_args[arg] = dict(
-            type="str", required=False, default=CONNECTION_OPTIONS[arg]["default"]
+            type="str",
+            required=False,
+            default=CONNECTION_OPTIONS[arg]["default"],
         )
 
     module = AnsibleModule(argument_spec=module_args, supports_check_mode=True)
 
-    out = ""
     connector = Kubectl(module.params)
 
     result = {
@@ -365,7 +384,7 @@ def main():
             tries += 1
     except Exception as e:
         module.fail_json(
-            msg="Failed to get_daemonset: [%s] - %s" % (connector._msg, repr(e))
+            msg="Failed to get_daemonset: [%s] %s" % (connector._msg, repr(e))
         )
 
     result = {

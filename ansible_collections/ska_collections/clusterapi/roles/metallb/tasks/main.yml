@@ -22,7 +22,7 @@
 - name: Apply patch to metallb controller deployment
   kubernetes.core.k8s_json_patch:
     kind: Deployment
-    namespace:  "{{ metallb_namespace }}"
+    namespace: "{{ metallb_namespace }}"
     name: controller
     patch:
       - op: add
@@ -32,7 +32,7 @@
 - name: Apply patch to metallb speaker daemonset
   kubernetes.core.k8s_json_patch:
     kind: Daemonset
-    namespace:  "{{ metallb_namespace }}"
+    namespace: "{{ metallb_namespace }}"
     name: speaker
     patch:
       - op: add

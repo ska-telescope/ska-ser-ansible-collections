@@ -20,7 +20,7 @@
     patch:
       - op: replace
         patch: /spec/ports
-        value: [{"port": 80, "nodePort": 30080}, {"port": 443, "nodePort": 30443 } ]
+        value: [{"port": 80, "nodePort": 30080}, {"port": 443, "nodePort": 30443}]
 
 - name: Apply patch to ingress controller deployment
   kubernetes.core.k8s_json_patch:

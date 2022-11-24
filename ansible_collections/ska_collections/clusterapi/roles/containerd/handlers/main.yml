@@ -6,7 +6,7 @@
     name: containerd
   become: true
 
-- name: Restart docker
+- name: Restart docker  # noqa ignore-errors
   ansible.builtin.systemd:
     state: restarted
     daemon_reload: true
