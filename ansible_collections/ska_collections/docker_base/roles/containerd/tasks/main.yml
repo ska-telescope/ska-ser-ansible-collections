@@ -258,13 +258,13 @@
   become: true
   notify:
     - restart cron
-    
+
 - name: Add cron job for docker kill containers living longer than a day
   ansible.builtin.lineinfile:
     path: /etc/crontab
     line: >-
       {% raw %}
-      0 */4 * * *   root    docker ps --format='{{.ID}}'   | xargs -n 1 -r docker inspect -f '{{.ID}} {{.State.Running}} {{.State.StartedAt}}' 
+      0 */4 * * *   root    docker ps --format='{{.ID}}'   | xargs -n 1 -r docker inspect -f '{{.ID}} {{.State.Running}} {{.State.StartedAt}}'
       | awk '$2 == "true" && $3 <= "'$(date -d '2 hours ago' -Ins --utc | sed 's/+0000/Z/')'" { print $1 }' | xargs sudo docker kill
       {% endraw %}
   become: true
