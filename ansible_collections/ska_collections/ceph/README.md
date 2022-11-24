@@ -44,7 +44,6 @@ ansible-playbook <playbooks-folder-path>/install.yml \
 	--extra-vars "target_hosts=<target-hosts>"
 ```
 
-> To run the playbooks on every host available on the inventory select **all** as *target_hosts*
 
 ## How to Contribute
 
@@ -62,7 +61,7 @@ Ansible variables that are datacentre specific should be added to the `group_var
 
 To modify non-secret variable role defaults, go to the defaults folder of the respective role and update them. As an [example](./roles/installation/defaults/main.yml).
 
-Finally, the secret variables are defined in the respective [Makefile](../../../resources/jobs/ceph.mk) and can be modified there. To assign proper values to these variables, please use a `PrivateRules.mak` file.
+Finally, the secret variables are defined in the respective [Makefile](../../../resources/jobs/ceph.mk) and can be modified there. To assign proper values to these variables, please use a `PrivateRules.mak` file or define them as environment variables.
 
 ## More information
 

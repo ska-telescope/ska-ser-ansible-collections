@@ -10,9 +10,9 @@ Tested with the current Ansible 6.5.x releases.
 ## Ansible Roles
 | Name | Description | Version | OS Requirements | Dependencies |
 | ---- | ----------- | ------- | --- | ---|
-| [logging.stack](https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections/-/tree/main/ansible_collections/ska_collections/logging/roles/stack) | Install Elasticsearch cluster, Kibana and HA | 8.4.2 | Ubuntu 18+ (LTS) | [common.certs](https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections/-/tree/main/ansible_collections/ska_collections/common/roles/certs) |
-| [logging.haproxy](https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections/-/tree/main/ansible_collections/ska_collections/logging/roles/haproxy) | Install and configure SSL certificates | 2.6 | Ubuntu 18+ (LTS) | |
-| [logging.beats](https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections/-/tree/main/ansible_collections/ska_collections/logging/roles/beats) | Install and configure SSL certificates | 7.17.0 | Ubuntu 18+ (LTS) | |
+| [logging.stack](./logging/roles/stack) | Install Elasticsearch cluster, Kibana and HA | 8.4.2 | Ubuntu 18+ (LTS) | [common.certs](./common/roles/certs) |
+| [logging.haproxy](./logging/roles/haproxy) | Install and configure SSL certificates | 2.6 | Ubuntu 18+ (LTS) | |
+| [logging.beats](./logging/roles/beats) | Install and configure SSL certificates | 7.17.0 | Ubuntu 18+ (LTS) | |
 
 ## Installation
 
@@ -31,16 +31,16 @@ collections:
 
 ## Usage
 
-Playbooks can be found in the [playbooks/](https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections/-/tree/main/ansible_collections/ska_collections/logging/playbooks) folder in the following files:
+Playbooks can be found in the [playbooks/](./playbooks) folder in the following files:
 
 | Name | Description |
 | ---- | ----------- |
-| [install.yml](https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections/-/blob/1441ec87eebf5e0ea3a579a25761449f7f853a94/ansible_collections/ska_collections/logging/playbooks/common.yml) | Install Elasticsearch cluster, Kibana and HA  |
-| [destroy.yml](https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections/-/blob/1441ec87eebf5e0ea3a579a25761449f7f853a94/ansible_collections/ska_collections/logging/playbooks/destroy.yml) | Destroys Elastic Stack |
-| [destroy-logging.yml](https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections/-/blob/1441ec87eebf5e0ea3a579a25761449f7f853a94/ansible_collections/ska_collections/logging/playbooks/destroy-logging.yml) | Destroys Filebeat |
-| [list-api-keys.yml](https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections/-/blob/1441ec87eebf5e0ea3a579a25761449f7f853a94/ansible_collections/ska_collections/logging/playbooks/list-api-keys.yml) | Lists Elasticsearch API keys |
-| [logging.yml](https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections/-/blob/1441ec87eebf5e0ea3a579a25761449f7f853a94/ansible_collections/ska_collections/logging/playbooks/logging.yml) | Installs Filebeat|
-| [update-api-keys.yml](https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections/-/blob/1441ec87eebf5e0ea3a579a25761449f7f853a94/ansible_collections/ska_collections/logging/playbooks/logging.yml) | Updates the API keys |
+| [install.yml](./playbooks/install.yml) | Install Elasticsearch cluster, Kibana and HA  |
+| [destroy.yml](./playbooks/destroy.yml) | Destroys Elastic Stack |
+| [destroy-logging.yml](.playbooks/destroy-logging.yml) | Destroys Filebeat |
+| [list-api-keys.yml](.playbooks/list-api-keys.yml) | Lists Elasticsearch API keys |
+| [logging.yml](.playbooks/logging.yml) | Installs Filebeat|
+| [update-api-keys.yml](.playbooks/logging.yml) | Updates the API keys |
 
 In order to run these playbooks, it's needed to specify the Ansible Inventory location and the respective group/hosts ***target_hosts*** variable.
 
@@ -51,7 +51,6 @@ ansible-playbook <playbooks-folder-path>/install.yml \
 	--extra-vars "target_hosts=<target-hosts>"
 ```
 
-> To run the playbooks on every host available on the inventory select **all** as *target_hosts*
 
 ### Required variables
 

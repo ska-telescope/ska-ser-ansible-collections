@@ -10,7 +10,7 @@ Tested with the current Ansible 6.5.x releases.
 ## Ansible Roles
 | Name | Description | Version | OS Requirements | Dependencies |
 | ---- | ----------- | ------- | --- | ---|
-| [gitlab_runner.runner](https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections/-/tree/main/ansible_collections/ska_collections/gitlab_runner/roles/runner) | Install and configure Runner | latest | Ubuntu 18+ (LTS) | |
+| [gitlab_runner.runner](./roles/runner) | Install and configure Runner | latest | Ubuntu 18+ (LTS) | |
 
 ## Installation
 
@@ -29,11 +29,11 @@ collections:
 
 ## Usage
 
-Installation playbooks for each engine can be found in the [playbooks/](https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections/-/tree/main/ansible_collections/ska_collections/instace_common/playbooks) folder in the following files:
+Installation playbooks for each engine can be found in the [playbooks/](./playbooks) folder in the following files:
 
 | Name | Description |
 | ---- | ----------- |
-| [install.yml](https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections/-/blob/1441ec87eebf5e0ea3a579a25761449f7f853a94/ansible_collections/ska_collections/instace_common/playbooks/install.yml) | Install Gitlab runner |
+| [install.yml](./playbooks/install.yml) | Install Gitlab runner |
 
 In order to run these playbooks, it's needed to specify the Ansible Inventory location and the respective group/hosts ***target_hosts*** variable.
 
@@ -44,7 +44,6 @@ ansible-playbook <playbooks-folder-path>/install.yml \
 	--extra-vars "target_hosts=<target-hosts>"
 ```
 
-> To run the playbooks on every host available on the inventory select **all** as *target_hosts*
 
 ### Required secrets
 

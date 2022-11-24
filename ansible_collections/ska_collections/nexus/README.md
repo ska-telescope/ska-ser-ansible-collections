@@ -53,7 +53,6 @@ ansible-playbook <playbooks-folder-path>/deploy.yml \
 	--extra-vars "target_hosts=<target-hosts>"
 ```
 
-> To run the playbooks on every host available on the inventory select **all** as *target_hosts*
 
 ### Required secrets
 
