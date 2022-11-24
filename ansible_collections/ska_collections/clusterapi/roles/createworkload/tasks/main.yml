@@ -127,7 +127,7 @@
     K8S_VERSION: "{{ capo_k8s_version }}"
     CALICO_VERSION: "{{ capo_calico_version }}"
     NGINX_VERSION: "{{ capo_nginx_version }}"
-    METALLB_TAG: "{{ capo_metallb_tag }}"
+    METALLB_VERSION: "{{ capo_metallb_version }}"
     ROOK_VERSION: "{{ capo_rook_version }}"
     NETWORK_NAME: "{{ capo_os_network_name }}"
     SUBNET_NAME: "{{ capo_os_subnet_name }}"

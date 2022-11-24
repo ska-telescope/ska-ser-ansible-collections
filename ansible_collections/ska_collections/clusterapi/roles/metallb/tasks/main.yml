@@ -1,0 +1,57 @@
+---
+
+- name: Create a metallb namespace
+  kubernetes.core.k8s:
+    name: "{{ metallb_namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Download metallb manifests
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/metallb/metallb/v{{ metallb_version }}/config/manifests/metallb-native.yaml"
+    dest: "/tmp/metallb.yaml"
+    mode: '0664'
+
+- name: Apply metallb manifests
+  kubernetes.core.k8s:
+    state: present
+    apply: true
+    src: "/tmp/metallb.yaml"
+
+- name: Apply patch to metallb controller deployment
+  kubernetes.core.k8s_json_patch:
+    kind: Deployment
+    namespace:  "{{ metallb_namespace }}"
+    name: controller
+    patch:
+      - op: add
+        patch: /spec/template/spec/containers/0/args/-
+        value: "--lb-class=metallb"
+
+- name: Apply patch to metallb speaker daemonset
+  kubernetes.core.k8s_json_patch:
+    kind: Daemonset
+    namespace:  "{{ metallb_namespace }}"
+    name: speaker
+    patch:
+      - op: add
+        patch: /spec/template/spec/containers/0/args/-
+        value: "--lb-class=metallb"
+
+- name: Apply metallb config
+  kubernetes.core.k8s:
+    state: present
+    template: 'metallb-config.yaml.j2'
+
+- name: Check metallb speaker Daemonset is running
+  ska_collections.clusterapi.wait_for_daemonset:
+    name: speaker
+    kubectl_namespace: metallb-system
+    initpause: 10
+    wait: 20
+    retries: 15
+    kubectl_kubeconfig: /etc/kubernetes/admin.conf
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers
