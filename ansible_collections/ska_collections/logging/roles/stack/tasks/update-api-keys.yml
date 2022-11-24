@@ -84,7 +84,7 @@
     SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
   retries: 3
   timeout: 60
-  when: '(api_keys_to_invalidate|length) > 0'
+  when: '(api_keys_to_invalidate | length) > 0'
 
 - name: "Create elasticsearch_api_keys"
   ansible.builtin.uri:
