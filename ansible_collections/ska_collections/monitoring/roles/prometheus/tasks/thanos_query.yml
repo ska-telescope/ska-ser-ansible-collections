@@ -1,7 +1,7 @@
-- name: Pull thanos query image {{ thanos_docker_tags }}
+- name: Pull thanos query image {{ prometheus_thanos_docker_tags }}
   community.docker.docker_image:
     name: thanosio/thanos
-    tag: "{{ thanos_docker_tags }}"
+    tag: "{{ prometheus_thanos_docker_tags }}"
     source: pull
 
 - name: Stop thanos query container
@@ -13,7 +13,7 @@
 - name: Set fact about thanos query endpoints
   ansible.builtin.set_fact:
     endpoints: "{{ endpoints|default([]) + ['--endpoint=' ~ item] }}"
-  loop: "{{ thanos_query_endpoints }}"
+  loop: "{{ prometheus_thanos_query_endpoints }}"
 
 - name: Create certificates for server communication
   ansible.builtin.include_role:
@@ -21,7 +21,7 @@
   vars:
     certificate_name: "thanos_query"
     certificate_key_name: "thanos_query"
-    certificate_dns_alt_name: "{{ thanos_alt_name }}"
+    certificate_dns_alt_name: "{{ prometheus_thanos_alt_name }}"
     certificates_recreate: true
 
 - name: Create certificates for client communication
@@ -30,17 +30,17 @@
   vars:
     certificate_name: "thanos_query_client"
     certificate_key_name: "thanos_query_client"
-    certificate_dns_alt_name: "{{ thanos_alt_name }}"
+    certificate_dns_alt_name: "{{ prometheus_thanos_alt_name }}"
     certificates_recreate: true
 
 - name: Generate thanos tls configuration
   become: true
   ansible.builtin.template:
     src: "thanos_query.yaml.j2"
-    dest: "{{ thanos_config_dir }}/thanos_query.yaml"
+    dest: "{{ prometheus_thanos_config_dir }}/thanos_query.yaml"
     force: true
-    owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    owner: "{{ prometheus_localuser }}"
+    group: "{{ prometheus_localuser }}"
     mode: 0644
 
 - name: Set fact about thanos query command
@@ -64,12 +64,13 @@
     oci_command: "{{ command + endpoints }}"
 
 - name: Print oci_command
-  ansible.builtin.debug: var=oci_command
+  ansible.builtin.debug:
+    var: oci_command
 
 - name: Start thanos query
   community.docker.docker_container:
     name: thanos_query
-    image: "thanosio/thanos:{{ thanos_docker_tags }}"
+    image: "thanosio/thanos:{{ prometheus_thanos_docker_tags }}"
     state: started
     command: "{{ oci_command }}"
     user: root
@@ -80,5 +81,5 @@
       - "10902:10902"
     volumes:
       - "/etc/hosts:/etc/hosts:ro"
-      - "{{ thanos_config_dir }}:{{ thanos_config_dir }}"
+      - "{{ prometheus_thanos_config_dir }}:{{ prometheus_thanos_config_dir }}"
       - "{{ certificates_dir }}:{{ certificates_dir }}"

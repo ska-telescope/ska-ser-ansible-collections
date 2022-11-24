@@ -7,7 +7,8 @@
   become: true
   tasks:
     - name: "Show logging nodes info"
-      ansible.builtin.debug: var=hostvars[inventory_hostname]
+      ansible.builtin.debug:
+        var: hostvars[inventory_hostname]
       when: debug
 
 - name: Install beats for log collection on nodes
@@ -22,7 +23,7 @@
         tasks_from: sign-cert
       vars:
         certificate_name: "{{ logging_filebeat_certificate_name }}"
-        certificate_key_name: "{{ logging_filebeat_certificate_key_name }}"
+        certificate_key_name: "{{ logging_filebeat_certificate_name }}"
         certificate_dns_alt_name: "{{ inventory_hostname }}"
 
     - name: Install filebeat common

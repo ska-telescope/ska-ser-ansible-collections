@@ -1,3 +1,6 @@
 ---
 - name: Restart procps
-  ansible.builtin.service: name=procps enabled=true state=restarted
+  ansible.builtin.service:
+    name: procps
+    enabled: true
+    state: restarted

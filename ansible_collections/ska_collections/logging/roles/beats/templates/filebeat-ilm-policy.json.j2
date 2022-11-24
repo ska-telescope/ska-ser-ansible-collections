@@ -5,8 +5,8 @@
           "min_age": "0ms",
           "actions": {
             "rollover": {
-              "max_size": "{{ logging_filebeat_hot_phase_rollover_size }}",
-              "max_age": "{{ logging_filebeat_hot_phase_rollover_age }}"
+              "max_size": "5gb",
+              "max_age": "3d"
             }
           }
         },
@@ -14,7 +14,7 @@
           "actions": {}
         },
         "cold": {
-          "min_age": "{{ logging_filebeat_cold_phase_age }}",
+          "min_age": "2d",
           "actions": {
             "migrate": {
               "enabled": false
@@ -22,8 +22,10 @@
           }
         },
         "delete": {
-          "min_age": "{{ logging_filebeat_delete_phase_age }}",
-          "actions": {}
+          "min_age": "8d",
+          "actions": {
+            "delete": {}
+          }
         }
       }
     }

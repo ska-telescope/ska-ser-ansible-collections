@@ -1,5 +1,5 @@
 ---
-- name: "Destroy {{ elasticsearch_name }} container"
+- name: "Destroy the container {{ elasticsearch_name }}"
   community.general.docker_container:
     name: "{{ elasticsearch_name }}"
     state: absent
@@ -7,12 +7,12 @@
     timeout: 120
     force_kill: false
 
-- name: Destroy elasticsearch config
+- name: "Destroy elasticsearch config"
   ansible.builtin.file:
     path: /etc/elasticsearch.yml
     state: absent
 
-- name: Destroy elasticsearch data
+- name: "Destroy elasticsearch data"
   ansible.builtin.file:
     path: "{{ elasticsearch_data_dir }}"
     state: absent

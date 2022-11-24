@@ -31,9 +31,9 @@ def check_port(address, port):
 
 def get_novac(project_name):
     conn = openstack.connect(
-        auth_url=os.environ["auth_url"],
-        username=os.environ["username"],
-        password=os.environ["password"],
+        auth_url=os.environ["prometheus_server_auth_url"],
+        username=os.environ["prometheus_server_username"],
+        password=os.environ["prometheus_server_password"],
         project_name=project_name,
         user_domain_name="default",
         project_domain_name="default",
@@ -212,15 +212,17 @@ if os.environ.get("http_proxy") or os.environ.get("https_proxy"):
     LOG.WARN("Proxy env vars set")
 
 if (
-    (os.environ.get("auth_url") is None)
-    or (os.environ.get("username") is None)
-    or (os.environ.get("password") is None)
-    or (os.environ.get("project_name") is None)
+    (os.environ.get("prometheus_server_auth_url") is None)
+    or (os.environ.get("prometheus_server_username") is None)
+    or (os.environ.get("prometheus_server_password") is None)
+    or (os.environ.get("prometheus_server_project_name") is None)
 ):
     print(
         (
-            "Please provide the following environment variables: auth_url, "
-            "username, password, project_name(comma separated values)"
+            "Please provide the following environment variables: "
+            "prometheus_server_auth_url, prometheus_server_username, "
+            "prometheus_server_password, prometheus_server_project_name "
+            "(comma separated values)"
         )
     )
     sys.exit(1)

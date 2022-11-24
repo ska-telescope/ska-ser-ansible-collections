@@ -1,16 +1,22 @@
-- name: start docker
+- name: Start docker
   ansible.builtin.service:
     name: docker
     state: started
 
-- name: run update-grub
-  ansible.builtin.command: "{{ nexus_common_update_grub }}"
+- name: Run update-grub
+  ansible.builtin.command: "/usr/sbin/update-grub"
   when: ansible_distribution_major_version|int > 6
 
-- name: restart rsyslog
-  ansible.builtin.service: name=rsyslog state=restarted enabled=yes
+- name: Restart rsyslog
+  ansible.builtin.service:
+    name: rsyslog
+    state: restarted
+    enabled: true
   become: true
 
-- name: restart journald
-  ansible.builtin.service: name=systemd-journald state=restarted enabled=yes
+- name: Restart journald
+  ansible.builtin.service:
+    name: systemd-journald
+    state: restarted
+    enabled: true
   become: true

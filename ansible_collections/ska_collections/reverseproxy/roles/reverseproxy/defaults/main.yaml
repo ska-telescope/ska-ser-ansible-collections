@@ -22,24 +22,18 @@ reverseproxy_nginx_exposed_ports:
 reverseproxy_nginx_config_dir: /etc/nginx
 reverseproxy_nginx_name: reverseproxy
 reverseproxy_nginx_image: nginx:1.23
-reverseproxy_nginx_log_driver: json-file
-reverseproxy_nginx_log_max_size: "10m"
-reverseproxy_nginx_log_max_file: "3"
 reverseproxy_nginx_log_options:
-  max-size: "{{ reverseproxy_nginx_log_max_size }}"
-  max-file: "{{ reverseproxy_nginx_log_max_file }}"
+  max-size: "10m"
+  max-file: "3"
   labels: "org.ska.app.group"
 
 reverseproxy_oauth2proxy_enabled: true
 reverseproxy_oauth2proxy_name: oauth2proxy
 reverseproxy_oauth2proxy_image: quay.io/oauth2-proxy/oauth2-proxy:v7.2.1
 reverseproxy_oauth2proxy_port: 4180
-reverseproxy_oauth2proxy_log_driver: json-file
-reverseproxy_oauth2proxy_log_max_size: "10m"
-reverseproxy_oauth2proxy_log_max_file: "3"
 reverseproxy_oauth2proxy_log_options:
-  max-size: "{{ reverseproxy_oauth2proxy_log_max_size }}"
-  max-file: "{{ reverseproxy_oauth2proxy_log_max_file }}"
+  max-size: "10m"
+  max-file: "3"
   labels: "org.ska.app.group"
 
 reverseproxy_labels:

@@ -39,7 +39,7 @@
   block:
     - name: Download prometheus-node-exporter tarball
       ansible.builtin.get_url:
-        url: "{{ prometheus_node_exporter_tarball }}"
+        url: "{{ node_exporter_prometheus_tarball }}"
         dest: /tmp/node_exporter.tar.gz
         mode: '0666'
 

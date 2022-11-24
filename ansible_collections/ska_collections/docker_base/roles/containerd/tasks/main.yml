@@ -6,7 +6,8 @@
   ignore_errors: true
 
 - name: Nvidia check
-  ansible.builtin.debug: var=nvidia_driver_check.rc
+  ansible.builtin.debug:
+    var: nvidia_driver_check.rc
   when: debug | bool
 
 - name: Set nvidia driver exists
@@ -39,25 +40,53 @@
     - br_netfilter
 
 - name: Set net.bridge.bridge-nf-call-iptables to 1
-  ansible.posix.sysctl: name=net.bridge.bridge-nf-call-iptables value=1 state=present ignoreerrors=true
+  ansible.posix.sysctl:
+    name: net.bridge.bridge-nf-call-iptables
+    value: 1
+    state: present
+    ignoreerrors: true
 
 - name: Set net.bridge.bridge-nf-call-ip6tables to 1
-  ansible.posix.sysctl: name=net.bridge.bridge-nf-call-ip6tables value=1 state=present ignoreerrors=true
+  ansible.posix.sysctl:
+    name: net.bridge.bridge-nf-call-ip6tables
+    value: 1
+    state: present
+    ignoreerrors: true
 
 - name: Set net.bridge.bridge-nf-call-arptables to 1
-  ansible.posix.sysctl: name=net.bridge.bridge-nf-call-arptables value=1 state=present ignoreerrors=true
+  ansible.posix.sysctl:
+    name: net.bridge.bridge-nf-call-arptables
+    value: 1
+    state: present
+    ignoreerrors: true
 
 - name: Set net.ipv4.ip_forward to 1
-  ansible.posix.sysctl: name=net.ipv4.ip_forward value=1 state=present ignoreerrors=true
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    state: present
+    ignoreerrors: true
 
 - name: Set user.max_inotify_instances to 1048576
-  ansible.posix.sysctl: name=user.max_inotify_instances value=1048576 state=present ignoreerrors=true
+  ansible.posix.sysctl:
+    name: user.max_inotify_instances
+    value: 1048576
+    state: present
+    ignoreerrors: true
 
 - name: Set fs.inotify.max_user_watches to 1048576
-  ansible.posix.sysctl: name=fs.inotify.max_user_watches value=1048576 state=present ignoreerrors=true
+  ansible.posix.sysctl:
+    name: fs.inotify.max_user_watches
+    value: 1048576
+    state: present
+    ignoreerrors: true
 
 - name: Set net.netfilter.nf_conntrack_max to 1000000
-  ansible.posix.sysctl: name=net.netfilter.nf_conntrack_max value=1000000 state=present ignoreerrors=true
+  ansible.posix.sysctl:
+    name: net.netfilter.nf_conntrack_max
+    value: 1000000
+    state: present
+    ignoreerrors: true
 
 - name: Add containerd cri sysctl vars
   ansible.builtin.lineinfile:
@@ -86,13 +115,13 @@
 
     - name: Add dockerproject apt key
       ansible.builtin.apt_key:
-        url: "{{ docker_deb_repo_key_url }}"
-        id: "{{ docker_deb_repo_key_id }}"
+        url: https://download.docker.com/linux/ubuntu/gpg
+        id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
         state: present
 
     - name: Add dockerproject apt source
       ansible.builtin.lineinfile:
-        line: "{{ docker_deb_repo_url }}"
+        line: "deb https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
         dest: /etc/apt/sources.list.d/docker.list
         create: true
         owner: root
@@ -105,7 +134,7 @@
 
     - name: Install containerd.io
       ansible.builtin.apt:
-        name: "containerd.io={{ containerd_version }}"
+        name: "containerd.io=1.6.6-1"
         force: true
         state: present
       notify:
@@ -133,8 +162,8 @@
     - name: Add Docker Yum repository
       become: true
       ansible.builtin.get_url:
-        url: "{{ docker_yum_repo_url }}"
-        dest: "/etc/yum.repos.d/docker.repo"
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker.repo
         mode: 0644
       register: installedcontainerd
 

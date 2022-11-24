@@ -1,0 +1,11 @@
+- name: Thanos Store health check
+  block:
+    - name: Inspect Thanos Store container
+      command: "docker inspect thanos_store"
+      register: output
+    - name: Check Thanos Store container running
+      ansible.builtin.assert:
+        that:
+          - (output.stdout | from_json)[0].State.Status == "running"
+          - (output.stdout | from_json)[0].State.Running
+        fail_msg: "Thanos Store container is not running"

@@ -4,8 +4,6 @@ certificates_dir: /etc/pki/tls/private
 certificate_name: certificate
 certificate_dns_alt_name: skao.stfc
 certificate_recreate: false
-certificate_organization_name: SKAO
-certificate_key_name: "{{ certificate_name }}"
 
 ca_host: ca
 

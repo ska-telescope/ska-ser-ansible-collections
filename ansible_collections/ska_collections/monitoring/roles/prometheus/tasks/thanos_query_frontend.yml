@@ -1,7 +1,7 @@
-- name: Pull thanos query image {{ thanos_docker_tags }}
+- name: Pull thanos query image {{ prometheus_thanos_docker_tags }}
   community.docker.docker_image:
     name: thanosio/thanos
-    tag: "{{ thanos_docker_tags }}"
+    tag: "{{ prometheus_thanos_docker_tags }}"
     source: pull
 
 - name: Stop thanos query container
@@ -16,23 +16,23 @@
   vars:
     certificate_name: "thanos_query_frontend"
     certificate_key_name: "thanos_query_frontend"
-    certificate_dns_alt_name: "{{ thanos_alt_name }}"
+    certificate_dns_alt_name: "{{ prometheus_thanos_alt_name }}"
     certificates_recreate: true
 
 - name: Generate thanos tls configuration
   become: true
   ansible.builtin.template:
     src: "thanos_query_frontend.yaml.j2"
-    dest: "{{ thanos_config_dir }}/thanos_query_frontend.yaml"
+    dest: "{{ prometheus_thanos_config_dir }}/thanos_query_frontend.yaml"
     force: true
-    owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    owner: "{{ prometheus_localuser }}"
+    group: "{{ prometheus_localgroup }}"
     mode: 0644
 
 - name: Start thanos query frontend
   community.docker.docker_container:
     name: thanos_query_frontend
-    image: "thanosio/thanos:{{ thanos_docker_tags }}"
+    image: "thanosio/thanos:{{ prometheus_thanos_docker_tags }}"
     state: started
     command:
       - "query-frontend"
@@ -46,5 +46,5 @@
       - "9095:9095"
     volumes:
       - "/etc/hosts:/etc/hosts:ro"
-      - "{{ thanos_config_dir }}:{{ thanos_config_dir }}"
+      - "{{ prometheus_thanos_config_dir }}:{{ prometheus_thanos_config_dir }}"
       - "{{ certificates_dir }}:{{ certificates_dir }}"

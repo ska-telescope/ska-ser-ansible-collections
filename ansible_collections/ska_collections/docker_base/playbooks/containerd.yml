@@ -7,8 +7,9 @@
   become: true
   tasks:
     - name: "Show stack nodes info"
-      ansible.builtin.debug: var=hostvars[inventory_hostname]
-      when: "debug"
+      ansible.builtin.debug:
+        var: hostvars[inventory_hostname]
+      when: debug
 
 - name: Ensure that the apt repositories are updated
   hosts: "{{ target_hosts }}"
