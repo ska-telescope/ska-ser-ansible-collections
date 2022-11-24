@@ -1,0 +1,9 @@
+---
+
+- name: Apply Standard Storage Provisioner (hostpath)
+  kubernetes.core.k8s:
+    state: present
+    template: 'provisioner.yaml.j2'
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers
