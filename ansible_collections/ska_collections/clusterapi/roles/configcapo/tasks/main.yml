@@ -5,7 +5,7 @@
   tags: [always]
 
 - name: Include the OS Config
-  ansible.builtin.include: os_config.yml
+  ansible.builtin.include_tasks: os_config.yml
 
 - name: Set clusterapi config dir
   ansible.builtin.file:
@@ -35,7 +35,8 @@
     capo_template_version_latest: "{{ capo_template_check.stdout }}"
 
 - name: "Show the latest CAPO template version"
-  ansible.builtin.debug: var=capo_template_version_latest
+  ansible.builtin.debug:
+    var: capo_template_version_latest
 
 - name: Download CAPO template
   ansible.builtin.get_url:

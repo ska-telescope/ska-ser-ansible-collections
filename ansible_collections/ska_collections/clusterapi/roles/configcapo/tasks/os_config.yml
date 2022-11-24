@@ -10,9 +10,6 @@
     capo_selected_cloud: "{{ capo_ostack_cloud_yaml['clouds'][capo_cloud] }}"
     base64_capo_ostack_cloud_yaml: "{{ capo_ostack_cloud_yaml | to_yaml | b64encode }}"
 
-# - name: "Show capo_selected_cloud"
-#   ansible.builtin.debug: var=capo_selected_cloud
-
 - name: Set selected cloud
   ansible.builtin.set_fact:
     capo_auth_url: "{{ capo_selected_cloud.auth.auth_url }}"
@@ -30,4 +27,5 @@
     openstack_cloud_cacert_b64: "{{ capo_selected_cloud.cacert | default('\n') | b64encode }}"
 
 - name: "Show openstack_cloud_cacert_b64"
-  ansible.builtin.debug: var=openstack_cloud_cacert_b64
+  ansible.builtin.debug:
+    var: openstack_cloud_cacert_b64

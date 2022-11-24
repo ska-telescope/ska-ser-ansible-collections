@@ -9,7 +9,7 @@
   tags: [always]
 
 - name: Include the OS Config
-  ansible.builtin.include: "{{ role_path }}/../configcapo/tasks/os_config.yml"
+  ansible.builtin.include_tasks: "{{ role_path }}/../configcapo/tasks/os_config.yml"
   tags: [always]
 
 - name: "Gather information about: {{ ib_os_image_name }}"

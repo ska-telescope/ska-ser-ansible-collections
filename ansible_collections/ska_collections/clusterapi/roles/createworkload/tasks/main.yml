@@ -9,10 +9,10 @@
   tags: [always]
 
 - name: Include the OS Config
-  ansible.builtin.include: "{{ role_path }}/../configcapo/tasks/os_config.yml"
+  ansible.builtin.include_tasks: "{{ role_path }}/../configcapo/tasks/os_config.yml"
 
 - name: Include the Ceph Config
-  ansible.builtin.include: ceph_config.yml
+  ansible.builtin.include_tasks: ceph_config.yml
 
 # https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/openstack-cloud-controller-manager/using-openstack-cloud-controller-manager.md#global
 
@@ -27,7 +27,8 @@
     base64_cloud_config: "{{ slurped_cloud_config.content }}"
 
 - name: "Show base64_cloud_config"
-  ansible.builtin.debug: var=base64_cloud_config
+  ansible.builtin.debug:
+    var: base64_cloud_config
 
 - name: Check if kubectl is installed locally
   block:
@@ -142,7 +143,8 @@
   register: capo_template_result
 
 - name: "Show capo_template_result"
-  ansible.builtin.debug: var=capo_template_result
+  ansible.builtin.debug:
+    var: capo_template_result
 
 - name: Slurp CAPO Cluster instance manifest
   ansible.builtin.slurp:
