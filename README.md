@@ -14,6 +14,21 @@ This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/
 | [ceph](./ansible_collections/ska_collections/ceph/)  | Ceph roles                                                |
 | [nexus](./ansible_collections/ska_collections/nexus/)  | Install Nexus Repository                                  |
 
+## TLDR
+
+The Makefile has a help target to show all available targets:
+
+```
+make ac-help
+```
+
+And all available variables:
+
+```
+make ac-vars
+
+```
+
 ## Usage
 
 This chapter, will explain how to use the existing collections on your local machine.
@@ -62,15 +77,6 @@ little setup.
 
 ### Make Targets
 
-The table bellow, iterates all the targets available on the main Makefile.
-
-| Target                   | Description                                       | Mandatory Variables                                         |
-|--------------------------|---------------------------------------------------|-------------------------------------------------------------|
-| vars                     | Print relevant shell variables                    |                                                             |
-| help                     | Help guide                                        |                                                             |
-| ac-ping                     | ping all hosts on a specific inventory            | INVENTORY <br> PLAYBOOKS_HOSTS |
-| ac-install-dependencies  | pulls collections and roles from requirements.yml | ANSIBLE_COLLECTIONS_PATHS                                   |
-
 All the targets specific to a collection such as **logging** or **oci** engine,
 will be separated on their own **.mk** file on **resources/jobs** folder. Currently, we are in the process of standardizing the usage of **group_vars/host_vars** and secrets passed as **--extra-vars** to avoid having job-specific variables in generic Makefiles.
 
@@ -80,156 +86,8 @@ The make command must have a specific format to trigger the targets bellow, like
 make <collection> <job> <VARS>
 ```
 
-<table>
-    <thead>
-        <tr>
-            <th>Job</th>
-            <th>Target</th>
-            <th>Description</th>
-            <th>Dependent Targets</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td rowspan=3>common</td>
-            <td>init</td>
-            <td>Update APT, install common packages and mounts volumes</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>update-hosts</td>
-            <td>Update host entries in a host with all the available information on the inventory</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>setup-ca</td>
-            <td>Sets up a CA to issue self-signed certificates</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td rowspan=4>oci</td>
-            <td>docker</td>
-            <td>Install Docker</td>
-            <td>common.init</td>
-        </tr>
-        <tr>
-            <td>podman</td>
-            <td>Install Podman</td>
-            <td>common.init</td>
-        </tr>
-        <tr>
-            <td>containerd</td>
-            <td>Install containerd</td>
-            <td>common.init</td>
-        </tr>
-        <tr>
-            <td>install</td>
-            <td>Installs the full oci stack</td>
-            <td>common.init</td>
-        </tr>
-        <tr>
-            <td rowspan=7>logging</td>
-            <td>install</td>
-            <td>Install elasticsearch cluster via OCI containers</td>
-            <td>common.init <br> oci.docker</td>
-        </tr>
-        <tr>
-            <td>destroy</td>
-            <td>Destroy elasticsearch cluster</td>
-            <td></td>
-        </tr>     
-        <tr>  
-            <td>update-api-keys</td>
-            <td>Create/remove elasticsearch api-keys</td>
-            <td>logging.install</td>
-        </tr>
-        <tr>
-            <td>list-api-keys</td>
-            <td>List existing elasticsearch api-keys</td>
-            <td>logging.install</td>
-        </tr>
-        <tr>
-            <td>install-beats</td>
-            <td>Deploy filebeat into nodes</td>
-            <td>common.init <br> oci.podman/oci.docker</td>
-        </tr>
-        <tr>
-            <td>destroy-beats</td>
-            <td>Remove filebeat from nodes</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>test_e2e</td>
-            <td>Run e2e testing playbooks</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td rowspan=5>monitoring</td>
-            <td>prometheus</td>
-            <td>Install prometheus</td>
-            <td>common.init <br> oci.docker</td>
-        </tr>
-        <tr>
-            <td>thanos</td>
-            <td>Install thanos</td>
-            <td>common.init <br> oci.docker</td>
-        </tr>
-        <tr>
-            <td>node-exporter</td>
-            <td>Install node-exporter </td>
-            <td>common.init <br> oci.docker</td>
-        </tr>
-        <tr>
-            <td>update_metadata</td>
-            <td>Update nodes metadata for scrapers</td>
-            <td>common.init <br> oci.docker</td>
-        </tr>
-        <tr>
-            <td>update_scrapers</td>
-            <td>Update prometheus scrapers</td>
-            <td>common.init <br> oci.docker</td>
-        </tr>
-        <tr>
-            <td rowspan=2>gitlab-runner</td>
-            <td>install</td>
-            <td>Install and register gitlab runner</td>
-            <td>common.init <br> oci.docker</td>
-        </tr>
-        <tr>
-            <td>destroy</td>
-            <td>Destroy and unregister gitlab runner</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td rowspan=2>ceph</td>
-            <td>install</td>
-            <td>Install ceph</td>
-            <td>ac-install-dependencies (stackhp's cephadm)</td>
-        </tr>
-        <tr>
-            <td>destroy</td>
-            <td>Destroy ceph</td>
-            <td></td>
-        </tr>
-         <tr>
-            <td>nexus</td>
-            <td>install</td>
-            <td>Install Nexus Repository</td>
-            <td>common.init <br> oci.docker <br> ac-install-dependencies (ansible-thoteam.nexus3-oss)</td>
-        </tr>
-        <tr>
-            <td rowspan=2>reverseproxy</td>
-            <td>install</td>
-            <td>Install Nginx reverse proxy and oauth2proxy</td>
-            <td>common.init <br> oci.docker</td>
-        </tr>
-        <tr>
-            <td>destroy</td>
-            <td>Destroy Nginx reverse proxy and oauth2proxy</td>
-            <td></td>
-        </tr>
-    </tbody>
-</table>
+> make
+
 
 ### Mandatory Environment Variables
 
