@@ -2,16 +2,17 @@
 - name: Reload systemd
   ansible.builtin.systemd:
     daemon_reload: true
-    # when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
 
 - name: Restart docker  # noqa ignore-errors
-  ansible.builtin.service: name=docker enabled=true state=restarted
+  ansible.builtin.service:
+    name: docker
+    enabled: true
+    state: restarted
   ignore_errors: true
 
-- name: Restart kubelet
-  ansible.builtin.service: name=kubelet state=restarted enabled=true
-  become: true
-
 - name: Restart cron
-  ansible.builtin.service: name=cron state=restarted enabled=yes
+  ansible.builtin.service:
+    name: cron
+    state: restarted
+    enabled: true
   become: true

@@ -8,13 +8,7 @@
   retries: 5
   delay: 5
 
-- name: Stop elasticsearch exporter container
-  community.docker.docker_container:
-    name: "{{ elasticsearch_exporter_name }}"
-    stop_timeout: 180
-    state: absent
-
-- name: Run elasticsearch exporter container
+- name: "Run elasticsearch exporter container"
   community.general.docker_container:
     name: "{{ elasticsearch_exporter_name }}"
     network_mode: "{{ elasticsearch_exporter_network_mode }}"  # reverse DNS must work
@@ -22,9 +16,9 @@
     restart_policy: always
     image: "{{ elasticsearch_exporter_image }}"
     user: root
-    state: started
-    labels: "{{ elasticsearch_labels }}"
-    log_driver: "{{ elasticsearch_exporter_log_driver }}"
+    state: "{{ elasticsearch_exporter_enabled | ternary('started', 'absent') }}"
+    labels: "{{ elasticsearch_exporter_labels }}"
+    log_driver: "json-file"
     log_options: "{{ elasticsearch_exporter_log_options }}"
     ports:
       - "{{ elasticsearch_exporter_port }}:{{ elasticsearch_exporter_port }}"

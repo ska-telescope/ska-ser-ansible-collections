@@ -1,8 +1,8 @@
 ---
-- hosts: "{{ target_hosts }}"
+- name: Deploy ceph
+  hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-  gather_facts: true
   become: true
   any_errors_fatal: true
   roles:

@@ -5,12 +5,12 @@
     state: directory
     mode: 0644
 
-- name: Check if gitlab-runner config exists
+- name: Check if gitlab runner config exists
   ansible.builtin.stat:
     path: "{{ gitlab_runner_configuration_dir }}/config.toml"
   register: config
 
-- name: Create gitlab-runner default configuration
+- name: Create gitlab runner default configuration
   ansible.builtin.template:
     src: config.toml.j2
     dest: "{{ gitlab_runner_configuration_dir }}/default-config.toml"
@@ -22,14 +22,15 @@
     default_config_checksum: "{{ default_config.checksum }}"
     current_config_checksum: "{{ (config.stat | default({})).checksum | default('') }}"
 
-- name: Create gitlab-runner template configuration
+- name: Create gitlab runner template configuration
   ansible.builtin.template:
     src: config.template.toml.j2
     dest: "{{ gitlab_runner_configuration_dir }}/config.template.toml"
     mode: 0644
   register: config_template
 
-- name: Register runner
+- name: Register runner # noqa no-handler
+  when: not config.stat.exists or config_template.changed or default_config_checksum == config.stat.checksum or gitlab_runner_reregister
   block:
     - name: Unregister existing runner(s)
       ansible.builtin.import_tasks: unregister.yml
@@ -40,41 +41,39 @@
       community.general.docker_container:
         name: "{{ gitlab_runner_name }}-register"
         image: "{{ gitlab_runner_image }}"
-        restart_policy: "False"
+        restart_policy: false
         command:
           - register
           - --non-interactive
           - --config "/etc/gitlab-runner/default-config.toml"
           - --template-config "/etc/gitlab-runner/config.template.toml"
-          - --url "{{ gitlab_runner_url }}"
+          - --url "https://gitlab.com/"
           - --registration-token "{{ gitlab_runner_registration_token }}"
-          - --tag-list "{{ gitlab_runner_tags }}"
+          - --tag-list "{{ gitlab_runner_name }}"
           - --name "{{ gitlab_runner_name }}"
           - --executor docker
-          - --maintenance-note "{{ gitlab_runner_maintenance_note }}"
+          - --maintenance-note ""
           - --run-untagged="{{ gitlab_runner_run_untagged }}"
           - --locked="{{ gitlab_runner_locked }}"
-          - --access-level="{{ gitlab_runner_access_level }}"
+          - --access-level="not_protected"
         state: started
         ulimits:
           - "memlock:-1:-1"
           - "nofile:65536:65536"
         labels: "{{ gitlab_runner_labels }}"
-        log_driver: "{{ gitlab_runner_log_driver }}"
+        log_driver: json-file
         log_options: "{{ gitlab_runner_log_options }}"
         volumes:
           - "{{ gitlab_runner_configuration_dir }}:/etc/gitlab-runner"
 
-    - name: Create gitlab-runner configuration with registration
+    - name: Create gitlab runner configuration with registration
       ansible.builtin.copy:
         src: "{{ gitlab_runner_configuration_dir }}/default-config.toml"
         dest: "{{ gitlab_runner_configuration_dir }}/config.toml"
         remote_src: true
         mode: 0644
 
-  when: not config.stat.exists or config_template.changed or default_config_checksum == config.stat.checksum or gitlab_runner_reregister
-
-- name: Check generated gitlab-runner configuration
+- name: Check generated gitlab runner configuration
   ansible.builtin.stat:
     path: "{{ gitlab_runner_configuration_dir }}/config.toml"
   register: config
@@ -100,7 +99,7 @@
       - "memlock:-1:-1"
       - "nofile:65536:65536"
     labels: "{{ gitlab_runner_labels }}"
-    log_driver: "{{ gitlab_runner_log_driver }}"
+    log_driver: json-file
     log_options: "{{ gitlab_runner_log_options }}"
     ports:
       - "{{ gitlab_runner_metrics_port }}:{{ gitlab_runner_metrics_port }}"

@@ -1,16 +1,16 @@
 - name: Ensure Thanos configuration directory
   ansible.builtin.file:
-    path: '{{ thanos_config_dir }}'
+    path: '{{ prometheus_thanos_config_dir }}'
     state: directory
     mode: 0755
-    owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    owner: "{{ prometheus_localuser }}"
+    group: "{{ prometheus_localgroup }}"
   become: true
 
-- name: Pull thanos image {{ thanos_docker_tags }}
+- name: Pull thanos image {{ prometheus_thanos_docker_tags }}
   community.docker.docker_image:
     name: thanosio/thanos
-    tag: "{{ thanos_docker_tags }}"
+    tag: "{{ prometheus_thanos_docker_tags }}"
     source: pull
 
 - name: Stop thanos container
@@ -23,25 +23,25 @@
   ansible.builtin.include_role:
     name: ska_collections.instance_common.certs
   vars:
-    private_key_name: "thanos_store"
     certificate_name: "thanos_store"
-    dns_alt_name: "{{ thanos_alt_name }}"
+    certificate_key_name: "thanos_store"
+    certificate_dns_alt_name: "{{ prometheus_thanos_alt_name }}"
     certificates_recreate: true
 
 - name: Generate thanos swift configuration
   become: true
   ansible.builtin.template:
     src: "swift.yml.j2"
-    dest: "{{ thanos_config_dir }}/swift.yml"
+    dest: "{{ prometheus_thanos_config_dir }}/swift.yml"
     force: true
-    owner: "{{ localuser }}"
-    group: "{{ localuser }}"
+    owner: "{{ prometheus_localuser }}"
+    group: "{{ prometheus_localgroup }}"
     mode: 0644
 
 - name: Start thanos container
   community.docker.docker_container:
     name: thanos_store
-    image: "thanosio/thanos:{{ thanos_docker_tags }}"
+    image: "thanosio/thanos:{{ prometheus_thanos_docker_tags }}"
     state: started
     command:
       - "store"
@@ -50,7 +50,7 @@
       - "--grpc-server-tls-cert='{{ certificates_dir }}/thanos_store.crt'"
       - "--grpc-server-tls-key='{{ certificates_dir }}/thanos_store.key'"
       - "--grpc-server-tls-client-ca='{{ certificates_dir }}/ca-certificate.crt'"
-      - "--objstore.config-file='{{ thanos_config_dir }}/swift.yml'"
+      - "--objstore.config-file='{{ prometheus_thanos_config_dir }}/swift.yml'"
     user: root
     restart: true
     restart_policy: always
@@ -58,6 +58,6 @@
       - "19090:19090"
     volumes:
       - "/etc/hosts:/etc/hosts:ro"
-      - "{{ thanos_config_dir }}:/etc/thanos"
+      - "{{ prometheus_thanos_config_dir }}:/etc/thanos"
       - "{{ certificates_dir }}:{{ certificates_dir }}"
-      - "{{ thanos_store_data_dir }}:/local/state/data/dir"
+      - "{{ prometheus_thanos_store_data_dir }}:/local/state/data/dir"

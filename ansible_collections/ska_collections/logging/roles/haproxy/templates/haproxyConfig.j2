@@ -26,7 +26,7 @@ frontend stats
   stats hide-version
   stats realm Haproxy\ Statistics
   stats uri {{ elastic_haproxy_stats_endpoint }}
-  stats auth {{ elastic_haproxy_stats_user }}:{{ elastic_haproxy_stats_passwd }}
+  stats auth {{ elastic_haproxy_stats_user }}:{{ elastic_haproxy_stats_password }}
   stats refresh 10s
   stats admin if LOCALHOST
 
@@ -35,7 +35,7 @@ frontend stats
 #############################
 
 frontend front-elasticsearch-api-proxy
-  bind    *:{{ elastic_haproxy_elasticsearch_port }}
+  bind    *:{{ elasticsearch_api_port }}
   mode    tcp
   timeout client 1800s
   timeout client-fin 50s
@@ -48,7 +48,7 @@ backend back-elasticsearch-api-proxy
   option  log-health-checks
   option ssl-hello-chk
   http-check connect
-  http-check send meth GET uri {{ elasticsearch_health_endpoint }}
+  http-check send meth GET uri /_cat/health
   http-check expect status 200
   default-server inter 10s fall 2
   {%- for item in (groups[target_hosts ~ '-master'] + groups[target_hosts ~ '-data']) %}

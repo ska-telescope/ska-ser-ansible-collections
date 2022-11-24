@@ -1,17 +1,17 @@
 ---
-# Global configurations
-stack_data_dir: /var/lib/stack-data
-certificates_dir: /etc/pki/tls/private
-
 # Elasticsearch configurations
-elasticsearch_dns: logging.stfc.skao.int
+elasticsearch_dns_name: "{{ _ | mandatory('`elasticsearch_dns_name` definition is mandatory') }}"
 elasticsearch_cluster_name: "elasticsearch"
-elasticsearch_data_dir: "{{ stack_data_dir }}/elasticsearch"
+elasticsearch_data_dir: "/var/lib/stack-data/elasticsearch"
 elasticsearch_name: "elasticsearch"
 elasticsearch_image: docker.elastic.co/elasticsearch/elasticsearch:8.4.2
 elasticsearch_network_mode: "bridge"
 elasticsearch_memory: 16G
 elasticsearch_java_mem: 8g
+elasticsearch_log_options:
+  max-size: "10m"
+  max-file: "3"
+  labels: "org.ska.app.group"
 elasticsearch_labels:
   org.ska.app.group: logging
 
@@ -24,26 +24,22 @@ elasticsearch_env_defaults:
 
 elasticsearch_api_port: 9200
 elasticsearch_transport_port: 9300
-elasticsearch_health_endpoint: "/_cat/health"
-elasticsearch_nodes_endpoint: "/_cat/nodes?h=name"
-elasticsearch_doc_endpoint: "/_doc/"
-elasticsearch_doc_count_endpoint: "/_count"
-elasticsearch_doc_delete_endpoint: "/_delete_by_query"
-elasticsearch_kibana_sa_endpoint: "/_security/service/elastic/kibana/credential/token"
 
-elasticsearch_discovery_type: "{% if (groups[target_hosts] | length) > 1 %}multi-node{% else %}single-node{% endif %}"
-
-elasticsearch_log_driver: json-file
-elasticsearch_log_max_size: "10m"
-elasticsearch_log_max_file: "3"
-elasticsearch_log_options:
-  max-size: "{{  elasticsearch_log_max_size }}"
-  max-file: "{{ elasticsearch_log_max_file }}"
-  labels: "org.ska.app.group"
+elasticsearch_api_key_issuer: "system-team-auto-issuer"
+elasticsearch_api_keys: {}
+#
+# Declarative set of keys to issue. To invalidate a key, remove it from the set
+# To create a key, add one to the set, as follows:
+# <key name>:
+#   description: <optional, string description of the key>
+#   # for the fields below, check: https://www.elastic.co/guide/en/elasticsearch/reference/8.5/security-api-create-api-key.html
+#   expiration: <optional, defaults to not to expire>
+#   role_descriptors: <map of role_descriptors to restrict api-key scope, defaults to the issuing user (elastic)>
+#
 
 elasticsearch_reinstall: false
 elasticsearch_clean_data_volume: false
-elasticsearch_first_install: false
+
 elasticsearch_default_node_roles:
   - master
   - remote_cluster_client
@@ -63,21 +59,22 @@ elasticsearch_default_data_roles:
   - transform
 
 # Elasticsearch Exporter configurations
+elasticsearch_exporter_enabled: true
 elasticsearch_exporter_name: elasticsearch-exporter
 elasticsearch_exporter_image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.5.0
 elasticsearch_exporter_network_mode: "bridge"
 elasticsearch_exporter_port: 9114
-elasticsearch_exporter_log_driver: json-file
-elasticsearch_exporter_log_max_size: "10m"
-elasticsearch_exporter_log_max_file: "3"
 elasticsearch_exporter_log_options:
-  max-size: "{{  elasticsearch_exporter_log_max_size }}"
-  max-file: "{{ elasticsearch_exporter_log_max_file }}"
+  max-size: "10m"
+  max-file: "3"
   labels: "org.ska.app.group"
+
+elasticsearch_exporter_labels:
+  org.ska.app.group: logging
 
 elasticsearch_exporter_env_variables: {}
 elasticsearch_exporter_env_defaults:
-  ES_URI: "http://{{ ansible_default_ipv4.address }}:9200"
+  ES_URI: "http://{{ ansible_default_ipv4.address }}:{{ elasticsearch_api_port }}"
 
 elasticsearch_exporter_reinstall: false
 
@@ -86,14 +83,10 @@ kibana_name: kibana
 kibana_image: docker.elastic.co/kibana/kibana:8.4.2
 kibana_network_mode: "bridge"
 kibana_port: 5601
-kibana_log_driver: json-file
-kibana_log_max_size: "10m"
-kibana_log_max_file: "3"
 kibana_log_options:
-  max-size: "{{  kibana_log_max_size }}"
-  max-file: "{{ kibana_log_max_file }}"
+  max-size: "10m"
+  max-file: "3"
   labels: "org.ska.app.group"
-
 kibana_labels:
   org.ska.app.group: logging
 
@@ -130,3 +123,20 @@ kibana_application_privileges:
   - "feature_uptime.read"
   - "feature_observabilityCases.read"
   - "feature_indexPatterns.all"
+kibana_address: "{{ ansible_default_ipv4.address }}:{{ kibana_port }}"
+kibana_default_dataview_name: "Default Data View"
+kibana_dataview_config:
+  "title": "filebeat-*"
+  "name": "{{ kibana_default_dataview_name }}"
+  "timeFieldName": "@timestamp"
+
+# Shared
+
+ca_host: ca
+certificates_dir: /etc/pki/tls/private
+
+# Secrets
+
+ca_cert_password: "{{ _ | mandatory('`ca_cert_password` definition is mandatory') }}"
+elasticsearch_password: "{{ _ | mandatory('`elasticsearch_password` definition is mandatory') }}"
+kibana_viewer_password: "{{ _ | mandatory('`kibana_viewer_password` definition is mandatory') }}"

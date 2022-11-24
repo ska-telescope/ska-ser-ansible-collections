@@ -1,23 +1,23 @@
-- name: Create /etc/ha_config directory
+- name: "Create /etc/ha_config directory"
   ansible.builtin.file:
     path: /etc/hap_config
     state: directory
     mode: 0755
 
-- name: Create haproxy config
+- name: "Create haproxy config"
   ansible.builtin.template:
     src: haproxyConfig.j2
     dest: /etc/hap_config/haproxy.cfg
     mode: "0644"
   register: hapconfig
 
-- name: Create /etc/ncs_config directory
+- name: "Create /etc/ncs_config directory"
   ansible.builtin.file:
     path: /etc/ncs_config
     state: directory
     mode: 0644
 
-- name: Create ncs config
+- name: "Create ncs config"
   ansible.builtin.template:
     src: fastapi-plugins.conf.yaml.j2
     dest: /etc/ncs_config/fastapi-plugins.conf.yaml
@@ -25,29 +25,29 @@
   register: ncsconfig
 
 - name: "Docker pull image for {{ nexus_haproxy_name }}"
-  docker_image:
+  community.docker.docker_image:
     source: pull
     name: "{{ nexus_haproxy_container_image }}"
   register: hapimage
 
 - name: "Docker pull image for {{ nexus_haproxy_conan_search_container_image }}"
-  docker_image:
+  community.docker.docker_image:
     source: pull
     name: "{{ nexus_haproxy_conan_search_container_image }}"
   register: ncsimage
 
-- name: "Get {{ nexus_haproxy_name }} container info"
-  docker_container_info:
+- name: "Get container info of {{ nexus_haproxy_name }}"
+  community.docker.docker_container_info:
     name: "{{ nexus_haproxy_name }}"
   register: hainfo
 
-- name: "Get {{ nexus_haproxy_conan_search_name }} container info"
-  docker_container_info:
+- name: "Get container info of {{ nexus_haproxy_conan_search_name }}"
+  community.docker.docker_container_info:
     name: "{{ nexus_haproxy_conan_search_name }}"
   register: ncsinfo
 
-- name: "Run {{ nexus_haproxy_conan_search_name }} container"  # noqa 503
-  docker_container:
+- name: "Run container {{ nexus_haproxy_conan_search_name }}"  # noqa no-handler
+  community.docker.docker_container:
     name: "{{ nexus_haproxy_conan_search_name }}"
     image: "{{ nexus_haproxy_conan_search_container_image }}"
     # restart: yes
@@ -59,7 +59,7 @@
     exposed_ports:
       - "{{ nexus_haproxy_conan_search_proxy_port }}"
     labels: "{{ nexus_haproxy_container_labels }}"
-    log_driver: "{{ nexus_haproxy_container_log_driver }}"
+    log_driver: "json-file"
     log_options: "{{ nexus_haproxy_container_log_options }}"
     volumes:
       - /etc/ncs_config:/etc/ncs_config
@@ -67,8 +67,8 @@
     env: "{{ nexus_haproxy_conan_search_defaults | combine(nexus_haproxy_conan_search_env_variables) }}"
   when: ncsconfig.changed or ncsimage.changed or not ncsinfo.exists or not ncsinfo.container.State.Running
 
-- name: "Run {{ nexus_haproxy_name }} in a container"  # noqa 503
-  docker_container:
+- name: "Run container with {{ nexus_haproxy_name }}"  # noqa no-handler
+  community.docker.docker_container:
     name: "{{ nexus_haproxy_name }}"
     image: "{{ nexus_haproxy_container_image }}"
     # restart: yes
@@ -80,7 +80,7 @@
     exposed_ports:
       - "{{ nexus_haproxy_port }}"
     labels: "{{ nexus_haproxy_container_labels }}"
-    log_driver: "{{ nexus_haproxy_container_log_driver }}"
+    log_driver: "json-file"
     log_options: "{{ nexus_haproxy_container_log_options }}"
     volumes:
       - /etc/hap_config/:/usr/local/etc/haproxy/

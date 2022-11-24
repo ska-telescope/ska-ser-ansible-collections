@@ -1,0 +1,18 @@
+---
+- name: "Destroy the container {{ kibana_name }}"
+  community.general.docker_container:
+    name: "{{ kibana_name }}"
+    state: absent
+    stop_timeout: 60
+    timeout: 120
+    force_kill: false
+
+- name: "Destroy kibana config"
+  ansible.builtin.file:
+    path: /etc/kibana.yml
+    state: absent
+
+- name: "Destroy kibana secrets"
+  ansible.builtin.file:
+    path: "{{ kibana_secrets_directory }}"
+    state: absent

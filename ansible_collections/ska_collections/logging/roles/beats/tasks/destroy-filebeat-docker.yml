@@ -1,0 +1,8 @@
+---
+- name: "Destroy the container {{ logging_filebeat_name }}"
+  community.general.docker_container:
+    name: "{{ logging_filebeat_name }}"
+    state: absent
+    stop_timeout: 60
+    timeout: 120
+    force_kill: false

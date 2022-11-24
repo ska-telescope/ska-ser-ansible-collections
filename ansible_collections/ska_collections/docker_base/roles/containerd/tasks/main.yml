@@ -6,7 +6,8 @@
   ignore_errors: true
 
 - name: Nvidia check
-  ansible.builtin.debug: var=nvidia_driver_check.rc
+  ansible.builtin.debug:
+    var: nvidia_driver_check.rc
   when: debug | bool
 
 - name: Set nvidia driver exists
@@ -16,10 +17,10 @@
 - name: Check nvidia-driver installed when Nvidia support requested
   ansible.builtin.fail:
     msg: The Nvidia driver has not been found (nvidia-smi --query) - aborting.
-  when: activate_nvidia | bool and not ignore_nvidia_fail | bool and not nvidia_driver_exists | bool
+  when: containerd_activate_nvidia | bool and not containerd_ignore_nvidia_fail | bool and not nvidia_driver_exists | bool
 
 - name: Load containerd kernel drivers
-  ansible.builtin.modprobe:
+  community.general.system.modprobe:
     name: "{{ item }}"
     state: present
   with_items:
@@ -39,25 +40,53 @@
     - br_netfilter
 
 - name: Set net.bridge.bridge-nf-call-iptables to 1
-  ansible.builtin.sysctl: name=net.bridge.bridge-nf-call-iptables value=1 state=present ignoreerrors=true
+  ansible.posix.sysctl:
+    name: net.bridge.bridge-nf-call-iptables
+    value: 1
+    state: present
+    ignoreerrors: true
 
 - name: Set net.bridge.bridge-nf-call-ip6tables to 1
-  ansible.builtin.sysctl: name=net.bridge.bridge-nf-call-ip6tables value=1 state=present ignoreerrors=true
+  ansible.posix.sysctl:
+    name: net.bridge.bridge-nf-call-ip6tables
+    value: 1
+    state: present
+    ignoreerrors: true
 
 - name: Set net.bridge.bridge-nf-call-arptables to 1
-  ansible.builtin.sysctl: name=net.bridge.bridge-nf-call-arptables value=1 state=present ignoreerrors=true
+  ansible.posix.sysctl:
+    name: net.bridge.bridge-nf-call-arptables
+    value: 1
+    state: present
+    ignoreerrors: true
 
 - name: Set net.ipv4.ip_forward to 1
-  ansible.builtin.sysctl: name=net.ipv4.ip_forward value=1 state=present ignoreerrors=true
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    state: present
+    ignoreerrors: true
 
 - name: Set user.max_inotify_instances to 1048576
-  ansible.builtin.sysctl: name=user.max_inotify_instances value=1048576 state=present ignoreerrors=true
+  ansible.posix.sysctl:
+    name: user.max_inotify_instances
+    value: 1048576
+    state: present
+    ignoreerrors: true
 
 - name: Set fs.inotify.max_user_watches to 1048576
-  ansible.builtin.sysctl: name=fs.inotify.max_user_watches value=1048576 state=present ignoreerrors=true
+  ansible.posix.sysctl:
+    name: fs.inotify.max_user_watches
+    value: 1048576
+    state: present
+    ignoreerrors: true
 
 - name: Set net.netfilter.nf_conntrack_max to 1000000
-  ansible.builtin.sysctl: name=net.netfilter.nf_conntrack_max value=1000000 state=present ignoreerrors=true
+  ansible.posix.sysctl:
+    name: net.netfilter.nf_conntrack_max
+    value: 1000000
+    state: present
+    ignoreerrors: true
 
 - name: Add containerd cri sysctl vars
   ansible.builtin.lineinfile:
@@ -81,18 +110,18 @@
   block:
     - name: Install packages required for containerd
       ansible.builtin.apt:
-        name: "{{ debian_containerd_dependencies }}"
+        name: "{{ containerd_deb_dependencies }}"
         state: present
 
     - name: Add dockerproject apt key
       ansible.builtin.apt_key:
-        url: "{{ docker_deb_repo_key_url }}"
-        id: "{{ docker_deb_repo_key_id }}"
+        url: https://download.docker.com/linux/ubuntu/gpg
+        id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
         state: present
 
     - name: Add dockerproject apt source
       ansible.builtin.lineinfile:
-        line: "{{ docker_deb_repo_url }}"
+        line: "deb https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
         dest: /etc/apt/sources.list.d/docker.list
         create: true
         owner: root
@@ -105,7 +134,7 @@
 
     - name: Install containerd.io
       ansible.builtin.apt:
-        name: "containerd.io={{ containerd_version }}"
+        name: "containerd.io=1.6.6-1"
         force: true
         state: present
       notify:
@@ -122,7 +151,7 @@
   block:
     - name: Install packages required for docker
       ansible.builtin.dnf:
-        name: "{{ redhat_containerd_dependencies }}"
+        name: "{{ containerd_redhat_dependencies }}"
         state: present
 
     - name: Add RedHat repository control
@@ -133,8 +162,8 @@
     - name: Add Docker Yum repository
       become: true
       ansible.builtin.get_url:
-        url: "{{ docker_yum_repo_url }}"
-        dest: "/etc/yum.repos.d/docker.repo"
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker.repo
         mode: 0644
       register: installedcontainerd
 
@@ -145,14 +174,14 @@
 
     - name: Install containerd.io (dnf)
       ansible.builtin.dnf:
-        name: "{{ redhat_containerd_dependency }}"
+        name: "{{ containerd_redhat_package }}"
         state: present
         allow_downgrade: true
       notify:
         - Restart containerd
 
 - name: Proxy environment
-  when: proxy_env is defined
+  when: containerd_proxy_env is defined
   block:
     - name: Create containerd unit file drop-in folder
       ansible.builtin.file:
@@ -189,15 +218,15 @@
 
 - name: Crictl install
   when: "not stat_crictl.stat.exists or
-    crictl_version_check.stdout.find(crictl_version) == -1"
+    crictl_version_check.stdout.find(containerd_crictl_version) == -1"
   block:
     - name: Set crictl_archive fact
       ansible.builtin.set_fact:
-        crictl_archive: "crictl-{{ crictl_version }}-linux-{{ debian_arch }}.tar.gz"
+        crictl_archive: "crictl-{{ containerd_crictl_version }}-linux-{{ debian_arch }}.tar.gz"
 
     - name: Download crictl
       ansible.builtin.get_url:
-        url: "https://github.com/kubernetes-sigs/cri-tools/releases/download/{{ crictl_version }}/{{ crictl_archive }}"
+        url: "https://github.com/kubernetes-sigs/cri-tools/releases/download/{{ containerd_crictl_version }}/{{ crictl_archive }}"
         dest: "/tmp/{{ crictl_archive }}"
         mode: "0755"
         tmp_dest: "/tmp/"

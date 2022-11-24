@@ -2,13 +2,11 @@
 certificates_dir: /etc/pki/tls/private
 
 # vars file for prometheus
-node_exporter_version: 1.3.1-1
 prometheus_gitlab_ci_pipelines_exporter_tags: v0.5.3
 prometheus_gitlab_ci_pipelines_exporter_token: ""
+prometheus_retention_time: "15d"
 
-prometheus_datacentre: engage-ska-monitor
-prometheus_binary_dir: /usr/local/bin
-prometheus_config_dir: /etc/prometheus
+prometheus_server_config_dir: /etc/prometheus
 prometheus_data_dir: /var/lib/prometheus
 prometheus_node_metric_relabel_configs: []
 prometheus_static_node_metric_relabel_configs:
@@ -92,7 +90,7 @@ prometheus_static_node_metric_relabel_configs:
     target_label: instance
 
 
-elasticsearch_instance_add_cluster_label:
+prometheus_elasticsearch_instance_add_cluster_label:
   - regex: '^192\.168\.93\.(94|96|112):(\d+)'
     replacement: ska-systems1
     source_labels: [instance]
@@ -101,35 +99,20 @@ elasticsearch_instance_add_cluster_label:
 prometheus_alertmanager_config_dir: /etc/alertmanager
 prometheus_alertmanager_data_dir: /alertmanager
 
-thanos_alt_name: "monitoring.skao.stfc"
-thanos_query_frontend: thanos
-thanos_config_dir: /etc/thanos
-thanos_store_data_dir: /etc/thanos/data/dir
-thanos_compactor_data_dir: /etc/thanos/thanos-compact
-thanos_query_endpoints:
+prometheus_thanos_alt_name: "monitoring.skao.stfc"
+prometheus_thanos_query_frontend: thanos
+prometheus_thanos_config_dir: /etc/thanos
+prometheus_thanos_store_data_dir: /etc/thanos/data/dir
+prometheus_thanos_compactor_data_dir: /etc/thanos/thanos-compact
+prometheus_thanos_query_endpoints:
   - 192.168.99.153:10901
   - 192.168.99.31:19090
 
-grafana_provisioning_config_dir: /etc/grafana/provisioning
-grafana_data: /var/lib/grafana
-grafana_ceph_dashboard_version: v17.2.5
-grafana_datasource: Prometheus
-grafana_dashboards_path: "{{ grafana_provisioning_config_dir }}/dashboards"
-grafana_ceph_dashboard_files:
-  - ceph-cluster.json
-  - cephfs-overview.json
-  - host-details.json
-  - hosts-overview.json
-  - osd-device-details.json
-  - osds-overview.json
-  - pool-detail.json
-  - pool-overview.json
-  - radosgw-detail.json
-  - radosgw-overview.json
-  - radosgw-sync-overview.json
-  - rbd-details.json
-  - rbd-overview.json
-grafana_plugins:
+prometheus_grafana_provisioning_config_dir: /etc/grafana/provisioning
+prometheus_grafana_data: /var/lib/grafana
+prometheus_grafana_datasource: Prometheus
+prometheus_grafana_dashboards_path: "{{ prometheus_grafana_provisioning_config_dir }}/dashboards"
+prometheus_grafana_plugins:
   - vonage-status-panel
   - grafana-piechart-panel
   - grafana-polystat-panel
@@ -139,18 +122,15 @@ grafana_plugins:
   - speakyourcode-button-panel
   - natel-plotly-panel
   - fifemon-graphql-datasource
-grafana_admin_password: admin
-grafana_disable_admin_account_creation: "false"
+prometheus_grafana_disable_admin_account_creation: false
 
 # Alert Manager
 # slack_api_url has to be set in the command line
 slack_api_url: "*********************"
 slack_api_url_user: "*********************"
-slack_channel: techops-alerts
-slack_channel_user: techops-user-alerts
 
 
-alerts_inhibit_rules: []
+prometheus_alerts_inhibit_rules: []
 # - target_match:
 #     severity: 'warning'
 #   target_match:
@@ -167,32 +147,19 @@ alerts_inhibit_rules: []
 #   target_match:
 #     severity: 'warning'
 
-# can only do one cluster - v1
-k8s_api_server_addr: "192.168.93.102"
-k8s_api_server_port: "6443"
-k8s_api_server: "https://{{ k8s_api_server_addr }}:{{ k8s_api_server_port }}"
-k8s_certificate_authority: ""
-k8s_client_certificate: "/dev/null"
-k8s_client_key: ""
-k8s_bearer_token: "/etc/prometheus/bearer.token"
-k8s_username: ""
+prometheus_k8s_client_certificate: "/dev/null"
+prometheus_k8s_bearer_token: "/etc/prometheus/bearer.token"
+prometheus_k8s_username: ""
 
-# k8s_api_server: ""
-# k8s_certificate_authority: "/home/ubuntu/.minikube/ca.crt"
-# k8s_client_certificate: "/home/ubuntu/.minikube/client.crt"
-# k8s_client_key: "/home/ubuntu/.minikube/client.key"
-# k8s_bearer_token: ""
-# k8s_username: minikube
+prometheus_server_playbook_dir: /usr/src/deploy-prometheus/
+prometheus_gitlab_url: git@gitlab.com
+prometheus_repo_base: "{{ prometheus_gitlab_url }}:ska-telescope"
 
-playbook_dir: /usr/src/deploy-prometheus/
-gitlab_url: git@gitlab.com
-repo_base: "{{ gitlab_url }}:ska-telescope"
-
-auth_url: "http://192.168.93.215:5000/v3/"
-username: "matteodicarlo"
-password: "*************"
-project_id: "988f3e60e7834335b3187512411d9072"
-project_name: "system-team"  # system-team
+prometheus_server_auth_url: "http://192.168.93.215:5000/v3/"
+prometheus_server_username: "matteodicarlo"
+prometheus_server_password: "*************"
+prometheus_server_project_id: "988f3e60e7834335b3187512411d9072"
+prometheus_server_project_name: "system-team"  # system-team
 
 prometheus_global:
   scrape_interval: 15s
@@ -235,14 +202,14 @@ prometheus_scrape_configs:
       - files:
           - 'node_exporter.json'
     metric_relabel_configs: "{{ prometheus_static_node_metric_relabel_configs +
-       elasticsearch_instance_add_cluster_label + prometheus_node_metric_relabel_configs }}"
+       prometheus_elasticsearch_instance_add_cluster_label + prometheus_node_metric_relabel_configs }}"
 
   - job_name: "gitlab-runner"
     file_sd_configs:
       - files:
           - 'gitlab_exporter.json'
     metric_relabel_configs: "{{ prometheus_static_node_metric_relabel_configs +
-       elasticsearch_instance_add_cluster_label + prometheus_node_metric_relabel_configs }}"
+       prometheus_elasticsearch_instance_add_cluster_label + prometheus_node_metric_relabel_configs }}"
 
   - job_name: "elasticsearch"
     file_sd_configs:
@@ -259,14 +226,14 @@ prometheus_scrape_configs:
       - files:
           - 'docker_cadvisor.json'
     metric_relabel_configs: "{{ prometheus_static_node_metric_relabel_configs +
-       elasticsearch_instance_add_cluster_label + prometheus_node_metric_relabel_configs }}"
+       prometheus_elasticsearch_instance_add_cluster_label + prometheus_node_metric_relabel_configs }}"
 
   - job_name: "kube-proxy"
     file_sd_configs:
       - files:
           - 'kube-proxy.json'
     metric_relabel_configs: "{{ prometheus_static_node_metric_relabel_configs +
-       elasticsearch_instance_add_cluster_label + prometheus_node_metric_relabel_configs }}"
+       prometheus_elasticsearch_instance_add_cluster_label + prometheus_node_metric_relabel_configs }}"
 
   - job_name: "kube-state-metrics"
     static_configs:
@@ -297,10 +264,10 @@ prometheus_scrape_configs:
       - files:
           - 'ceph-mgr.json'
 
-blackbox_ssh_targets:
+prometheus_blackbox_ssh_targets:
   - "{{ ansible_fqdn | default(ansible_host) | default('localhost') }}:22"  # matteo devenv
 
-prometheus_record_rules:
+prometheus_server_record_rules:
   - record: instance:node_cpu:load
     expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
 
@@ -310,7 +277,7 @@ prometheus_record_rules:
   - record: instance:node_fs:disk_space
     expr: node_filesystem_avail_bytes{mountpoint="/",job="node"} / node_filesystem_size_bytes{mountpoint="/",job="node"} * 100
 
-prometheus_alert_rules:
+prometheus_server_alert_rules:
   - alert: Watchdog
     expr: vector(1)
     for: 10m
@@ -430,4 +397,4 @@ prometheus_alert_rules:
     annotations:
       message: "{% raw %}Filebeat service metrics on node {{ $labels.instance }} have not been updated in the last 2 minutes.{% endraw %}"
       summary: "{% raw %}Node {{ $labels.instance }} - Filebeat metrics not updated.{% endraw %}"
-k8s_external_dns_entry: k8s.stfc.skao.int
+prometheus_k8s_external_dns_entry: k8s.stfc.skao.int

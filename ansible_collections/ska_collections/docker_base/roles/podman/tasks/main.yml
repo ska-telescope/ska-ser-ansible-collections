@@ -1,17 +1,18 @@
 ---
 - name: OS Family
-  ansible.builtin.debug: var=ansible_os_family
+  ansible.builtin.debug:
+    var: ansible_os_family
 
 - name: Debian Podman install
   when: ansible_os_family == "Debian"
   block:
     - name: Add podman project apt key
       ansible.builtin.apt_key:
-        url: "{{ podman_deb_repo_key_url }}"
+        url: "http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_{{ ansible_distribution_version }}/Release.key"
 
     - name: Add podman project apt source
       ansible.builtin.lineinfile:
-        line: "{{ podman_deb_repo_url }}"
+        line: "deb http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_{{ ansible_distribution_version }}/ /"
         dest: /etc/apt/sources.list.d/podman.list
         create: true
         owner: root
@@ -29,15 +30,27 @@
         autoremove: true
 
     - name: Set kernel.unprivileged_userns_clone=1
-      ansible.builtin.sysctl: name=kernel.unprivileged_userns_clone value=1 state=present ignoreerrors=true
+      ansible.posix.sysctl:
+        name: kernel.unprivileged_userns_clone
+        value: 1
+        state: present
+        ignoreerrors: true
       notify:
         - Restart procps
 
     - name: Set user.max_inotify_instances to 1048576
-      sysctl: name=user.max_inotify_instances value=1048576 state=present ignoreerrors=true
+      ansible.posix.sysctl:
+        name: user.max_inotify_instances
+        value: 1048576
+        state: present
+        ignoreerrors: true
 
     - name: Set fs.inotify.max_user_watches to 1048576
-      ansible.builtin.sysctl: name=fs.inotify.max_user_watches value=1048576 state=present ignoreerrors=true
+      ansible.posix.sysctl:
+        name: fs.inotify.max_user_watches
+        value: 1048576
+        state: present
+        ignoreerrors: true
 
     - name: Install podman CE (apt)
       ansible.builtin.apt:

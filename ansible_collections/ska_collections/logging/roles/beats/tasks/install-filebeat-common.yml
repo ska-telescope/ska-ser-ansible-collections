@@ -1,0 +1,106 @@
+---
+- name: Collect facts about system services
+  ansible.builtin.service_facts:
+  register: services
+
+- name: Look for Docker sock
+  ansible.builtin.stat:
+    path: /var/run/docker.sock
+  register: docker_sock
+
+- name: Look for Podman sock
+  ansible.builtin.stat:
+    path: /var/run/podman/podman.sock
+  register: podman_sock
+
+- name: Set detected log sources
+  ansible.builtin.set_fact:
+    kubelet_detected: "{{ ('kubelet' in services.ansible_facts.services and 'running' == services.ansible_facts.services['kubelet'].state) | bool }}"
+    docker_detected: "{{ (docker_sock.stat.exists and docker_sock.stat.issock and docker_sock.stat.writeable) | bool }}"
+    podman_detected: "{{ (podman_sock.stat.exists and podman_sock.stat.issock and podman_sock.stat.writeable) | bool }}"
+
+- name: Enable different log sources
+  ansible.builtin.set_fact:
+    logging_filebeat_kubernetes_enabled: "{{ ((logging_filebeat_kubernetes_enabled is defined and logging_filebeat_kubernetes_enabled != 'auto') |
+    ternary(logging_filebeat_kubernetes_enabled, kubelet_detected)) | bool }}"
+    logging_filebeat_docker_enabled: "{{ ((logging_filebeat_docker_enabled is defined and logging_filebeat_docker_enabled != 'auto') |
+    ternary(logging_filebeat_docker_enabled, docker_detected)) | bool }}"
+    logging_filebeat_podman_enabled: "{{ ((logging_filebeat_podman_enabled is defined and logging_filebeat_podman_enabled != 'auto') |
+    ternary(logging_filebeat_podman_enabled, podman_detected)) | bool }}"
+
+- name: Display filebeat runtime information
+  ansible.builtin.debug:
+    msg: "OCI: {{ logging_filebeat_oci_engine }} | \
+    Kubernetes logs enabled: {{ logging_filebeat_kubernetes_enabled }} | \
+    Docker logs enabled: {{ logging_filebeat_docker_enabled }} | \
+    Podman logs enabled: {{ logging_filebeat_podman_enabled }}"
+
+- name: Write filebeat config
+  ansible.builtin.template:
+    src: filebeat.yml.j2
+    dest: /etc/filebeat.yml
+    mode: 0644
+
+- name: Write filebeat ilm policy
+  ansible.builtin.template:
+    src: filebeat-ilm-policy.json.j2
+    dest: /etc/filebeat-ilm-policy.json
+    mode: 0644
+
+- name: Create filebeat data directory
+  ansible.builtin.file:
+    path: "{{ logging_filebeat_data_dir }}"
+    state: directory
+    mode: 0755
+
+- name: Check if meta.json file exists
+  ansible.builtin.stat:
+    path: "{{ logging_filebeat_data_dir }}/meta.json"
+  register: meta_json
+
+- name: Set version file for filebeat
+  ansible.builtin.lineinfile:
+    line: '{"version": "1"}'
+    dest: "{{ logging_filebeat_data_dir }}/meta.json"
+    create: true
+    mode: 0644
+  when: not meta_json.stat.exists
+
+- name: Create ska_log_parsing_pipeline ingest pipeline
+  when: logging_filebeat_pipeline_enabled
+  block:
+    - name: "Create ska_log_parsing_pipeline config"
+      ansible.builtin.template:
+        src: ska_log_parsing_pipeline.json.j2
+        dest: /etc/ska_log_parsing_pipeline.json
+        mode: 0644
+      register: ska_log_parsing_pipeline_config
+
+    - name: "Slurp /etc/ska_log_parsing_pipeline.json file"
+      ansible.builtin.slurp:
+        src: /etc/ska_log_parsing_pipeline.json
+      register: ska_log_parsing_pipeline_file
+
+    - name: "Create filebeat ingest pipeline"
+      ansible.builtin.uri:
+        url: "{{ logging_filebeat_elasticsearch_url }}/_ingest/pipeline/{{ logging_filebeat_pipeline_name }}"
+        method: PUT
+        force: true
+        status_code: [200]
+        client_cert: "{{ certificates_dir }}/{{ logging_filebeat_certificate_name }}.crt"
+        client_key: "{{ certificates_dir }}/{{ logging_filebeat_certificate_name }}.key"
+        body_format: json
+        body: "{{ ska_log_parsing_pipeline_file['content'] | b64decode }}"
+        url_username: elastic
+        url_password: "{{ elasticsearch_password }}"
+      environment:
+        SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+      when: ska_log_parsing_pipeline_config.changed
+  rescue:
+    - name: "Delete config file due to failure"
+      ansible.builtin.file:
+        path: /etc/ska_log_parsing_pipeline.json
+        state: absent
+    - name: "Throw error"
+      ansible.builtin.fail:
+        msg: "Tasks {{ ansible_failed_task.name }} failed: {{ ansible_failed_result }}"

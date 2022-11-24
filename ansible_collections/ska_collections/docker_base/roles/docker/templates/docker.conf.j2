@@ -4,8 +4,8 @@ ExecStart=
 # -H tcp://0.0.0.0:2375
 
 [Service]
-{% if proxy_env is defined %}
-{% for var, val in proxy_env.items() %}
+{% if docker_proxy_env is defined %}
+{% for var, val in docker_proxy_env.items() %}
 Environment="{{ var|upper }}={{ val }}"
 {% endfor %}
 {% endif %}
@@ -15,10 +15,10 @@ Type=notify
 # for containers run by docker
 ExecStart=
 ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock \
-           --storage-driver={{ docker_driver }} \
+           --storage-driver=overlay2 \
            --label nodetype={{ host_grouping }} \
            --insecure-registry={{ docker_repo }} \
-           --insecure-registry={{ nexus_hosted_cache }}          
+           --insecure-registry={{ nexus }}:{{ nexus_docker_hosted_port }}
 ExecReload=/bin/kill -s HUP $MAINPID
 TimeoutSec=0
 RestartSec=2

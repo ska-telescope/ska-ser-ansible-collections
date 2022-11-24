@@ -11,9 +11,10 @@
   changed_when: "is_mounted.rc != 0"
 
 - name: Format and mount volume
+  when: is_mounted.rc != 0
   block:
     - name: Format volume
-      filesystem:
+      community.general.system.filesystem:
         fstype: "{{ volume.file_system }}"
         dev: "{{ volume.device }}"
     - name: Get volume UUID
@@ -26,7 +27,7 @@
         state: directory
         mode: 0755
     - name: Mount volume
-      mount:
+      ansible.posix.mount:
         name: "{{ volume.mount_point }}"
         src: "UUID={{ uuid.stdout }}"
         opts: defaults,noatime
@@ -34,4 +35,3 @@
         passno: "0"
         fstype: "{{ volume.file_system }}"
         state: mounted
-  when: is_mounted.rc != 0

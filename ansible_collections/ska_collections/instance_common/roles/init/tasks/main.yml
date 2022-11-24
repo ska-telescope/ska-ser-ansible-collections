@@ -14,18 +14,10 @@
   become: true
 
 - name: Update /etc/hosts
-  ansible.builtin.lineinfile:
-    dest: /etc/hosts
-    regexp: '.*{{ hostvars[item].inventory_hostname }}.*'
-    line: "{{ hostvars[item].ip }} {{ hostvars[item].inventory_hostname }}"
-    state: present
-  with_items: '{{ groups["all"] }}'
-  when: not item == "localhost"
-  register: updatehosts
-  become: true
+  ansible.builtin.include_tasks: "update-hosts.yml"
 
 - name: Mount all volumes
-  include_tasks: "./mount_volume.yml"
+  ansible.builtin.include_tasks: "./mount_volume.yml"
   loop: "{{ hostvars[inventory_hostname]['volumes'] }}"
   loop_control:
     loop_var: volume
@@ -33,7 +25,7 @@
 
 - name: Ensure required packages are installed (apt)
   ansible.builtin.apt:
-    name: "{{ common_packages|default([]) }}"
+    name: "{{ common_packages | default([]) }}"
     update_cache: true
     state: present
   register: apt_res

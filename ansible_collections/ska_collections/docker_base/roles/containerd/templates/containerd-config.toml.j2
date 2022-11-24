@@ -46,7 +46,7 @@ version = 2
         runtime_type = ""
         runtime_engine = ""
         runtime_root = ""
-{% if activate_nvidia|bool and nvidia_driver_exists|bool %}
+{% if containerd_activate_nvidia|bool and nvidia_driver_exists|bool %}
       [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia]
         runtime_type = "io.containerd.runtime.v1.linux"
         runtime_engine = "/usr/bin/nvidia-container-runtime"
@@ -58,27 +58,27 @@ version = 2
       conf_template = ""
     [plugins."io.containerd.grpc.v1.cri".registry]
       [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-{% if docker_hub_mirror %}
+{% if nexus and nexus_docker_group_port %}
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-          endpoint = ["{{ docker_hub_mirror }}"]
+          endpoint = ["http://{{ nexus }}:{{ nexus_docker_group_port }}"]
         [plugins."io.containerd.grpc.v1.cri".registry.configs."docker.io".tls]
           insecure_skip_verify = true
 {% endif %}
-{% if central_nexus_mirror %}
+{% if nexus and nexus_docker_group_port %}
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."artefact.skao.int"]
-          endpoint = ["{{ central_nexus_mirror }}"]
+          endpoint = ["http://{{ nexus }}:{{ nexus_docker_group_port }}"]
         [plugins."io.containerd.grpc.v1.cri".registry.configs."artefact.skao.int".tls]
           insecure_skip_verify = true
 {% endif %}
-{% if gitlab_nexus_mirror %}
+{% if nexus and nexus_docker_group_port %}
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.gitlab.com"]
-          endpoint = ["{{ gitlab_nexus_mirror }}"]
+          endpoint = ["http://{{ nexus }}:{{ nexus_docker_group_port }}"]
         [plugins."io.containerd.grpc.v1.cri".registry.configs."registry.gitlab.com".tls]
           insecure_skip_verify = true
 {% endif %}
-{% if nexus_hosted_cache and nexus_hosted_cache_url %}
-        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ nexus_hosted_cache }}"]
-          endpoint = ["{{ nexus_hosted_cache_url }}"]
+{% if nexus and nexus_docker_hosted_port %}
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ nexus }}:{{ nexus_docker_hosted_port }}"]
+          endpoint = ["http://{{ nexus }}:{{ nexus_docker_hosted_port }}"]
 {% endif %}
     [plugins."io.containerd.grpc.v1.cri".x509_key_pair_streaming]
       tls_cert_file = ""

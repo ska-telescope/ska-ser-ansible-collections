@@ -1,0 +1,36 @@
+---
+- name: "Ensure logrotate is installed (apt)"
+  ansible.builtin.apt:
+    name: logrotate
+    update_cache: true
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: "Ensure dnf installed"
+  ansible.builtin.yum:
+    name: "dnf"
+    state: present
+  when: ansible_distribution == "CentOS"
+
+- name: "Ensure logrotate is installed (dnf)"
+  ansible.builtin.dnf:
+    name: logrotate
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: "Write kubernetes pod logrotate config"
+  ansible.builtin.template:
+    src: logrotate-allpodlogs.j2
+    dest: /etc/logrotate.d/allpodlogs
+    mode: 0644
+
+- name: "Write pod logrotate cron.hourly"
+  ansible.builtin.template:
+    src: logrotate-cron.j2
+    dest: /etc/cron.hourly/logrotate
+    owner: root
+    group: root
+    mode: 0755
+
+- name: "Do the meta"
+  ansible.builtin.meta: flush_handlers

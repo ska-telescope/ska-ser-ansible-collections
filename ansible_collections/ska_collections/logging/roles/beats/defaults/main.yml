@@ -1,67 +1,69 @@
 ---
-# container logging options
-log_kubernetes: false
-log_docker: false
-kubeconf_file: /etc/kubernetes/admin.conf
+logging_service_default: logging
+logging_kubeconfig_path: /etc/kubernetes/admin.conf
 
-# use Nexus as a repository mirror
-registry_mirror: "http://192.168.93.12:8181"
-engage_registry_mirror: "http://192.168.99.204:9082"
+logging_filebeat_oci_engine: docker
+logging_filebeat_data_dir: /var/lib/filebeat
+logging_filebeat_certificate_name: "{{ inventory_hostname }}-filebeat"
 
-log_max_size: "10m"
-log_max_file: "3"
-log_driver: k8s-file
-log_options:
-  max_size: "{{  log_max_size }}"
-  # tag: "org.ska.app.group"
+logging_filebeat_name: filebeat
+logging_filebeat_image: docker.elastic.co/beats/filebeat:7.17.0
+logging_filebeat_user: root
+logging_filebeat_log_options:
+  max-size: "10m"
+  max-file: "3"
+  labels: "org.ska.app.group"
+logging_filebeat_labels:
+  org.ska.app.group: logging
 
-# labelling on container runtime
-container_labels:
-  org.ska.app.group: monitoring
+logging_filebeat_env_variables: {}
+logging_filebeat_env_defaults: {}
 
-filebeat_name: filebeat
+logging_filebeat_elasticsearch_address: "{{ _ | mandatory('`logging_filebeat_elasticsearch_address` definition is mandatory') }}"
+logging_filebeat_elasticsearch_url: "https://{{ logging_filebeat_elasticsearch_address }}:{{ elasticsearch_api_port }}"
+logging_filebeat_elasticsearch_auth_method: 'basic'
+logging_filebeat_elasticsearch_user: 'elastic'
+# Can be an elasticsearch api-key when logging_filebeat_elasticsearch_auth_method: 'api-key'
+logging_filebeat_elasticsearch_password: "{{ _ | mandatory('`logging_filebeat_elasticsearch_password` definition is mandatory') }}"
 
-# certificate options
-certificates_dir: "/etc/pki/tls/private"
-filebeat_certificate_name: "{{ inventory_hostname }}-filebeat"
-filebeat_private_key_name: "{{ filebeat_certificate_name }}"
-filebeat_dns_alt_name: null
+logging_filebeat_pipeline_name: "ska_log_parsing_pipeline"
+logging_filebeat_pipeline_enabled: true
 
-# pipeline run in filebeat - default none
-filebeat_template_overwrite: false
-ska_environment: testing
-ska_service: elasticstack
-ska_deployment: core
+logging_filebeat_volumes:
+  # configurations
+  - "/etc/filebeat.yml:/etc/filebeat.yml:ro"
+  - "/etc/filebeat-ilm-policy.json:/etc/filebeat-ilm-policy.json:ro"
+  - "/var/lib/filebeat:/usr/share/filebeat/data/registry/filebeat:rw"
+  # pki
+  - "{{ certificates_dir }}/ca-certificate.crt:/etc/ca-certificate.crt:ro"
+  - "{{ certificates_dir }}/{{ logging_filebeat_certificate_name }}.crt:/etc/{{ logging_filebeat_certificate_name }}.crt:ro"
+  - "{{ certificates_dir }}/{{ logging_filebeat_certificate_name }}.key:/etc/{{ logging_filebeat_certificate_name }}.key:ro"
+  # machine info
+  - "/etc/hostname:/etc/hostname:ro"
+  - "/etc/machine-id:/etc/machine-id:ro"
+  # generic logs
+  - "/var/log:/var/log:ro"
+  # journal
+  - "/var/log/journal:/var/log/journal:ro"
 
-# elasticsearch_image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
-# kibana_image: docker.elastic.co/kibana/kibana:7.17.0
-# elasticsearch_exporter_image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.5.0
-filebeat_image: docker.elastic.co/beats/filebeat:7.17.0
+logging_filebeat_kubernetes_enabled: auto
+logging_filebeat_kubernetes_volumes:
+  - "{{ logging_kubeconfig_path }}:/kube_config:ro"
+  - "/var/lib/kubelet/pods:/var/lib/kubelet/pods:ro"
 
-# insecure registry - stfc nexus
-docker_repo: 192.168.99.204:9082
+logging_filebeat_docker_enabled: auto
+logging_filebeat_docker_volumes:
+  - "/var/run/docker.sock:/var/run/docker.sock:Z"
+  - "/var/lib/docker/containers:/var/lib/docker/containers:ro"
 
-# elasticsearch_cluster_name: ska-stfc1
-elasticsearch_address: "{{ ansible_default_ipv4.address }}"
+logging_filebeat_podman_enabled: auto
+logging_filebeat_podman_volumes:
+  - "/var/run/podman/podman.sock:/var/run/podman/podman.sock:Z"
+  - "/var/lib/containers:/var/lib/containers:ro"
 
-# all loggers point here
-logging_elasticsearch_addresses:
-  - http://192.168.99.131:9200
-  - http://192.168.99.22:9200
-  - http://192.168.99.183:9200
+# Shared
 
-logging_loadbalancer_username: "elastic"
-logging_loadbalancer_password: "{{ elasticsearch_password }}"
-logging_loadbalancer_address: "https://{{ logging_loadbalancer_username }}:{{ logging_loadbalancer_password }}@logging.stfc.skao.int:9200"
-
-java_mem: 8g
-
-stack_data_dir: /var/lib/stack-data
-
-# determine whether this is single_node or not
-discovery_type: "{% if groups[target_hosts] > 1 %}{% else %}single-node{% endif %}"
-
-# pipeline run in filebeat
-filebeat_pipeline: ska_log_parsing_pipeline
-
-podman_registry_mirror: dockerhub.stfc.ac.uk
+ca_host: ca
+certificates_dir: /etc/pki/tls/private
+elasticsearch_api_port: 9200
+elasticsearch_password: "{{ _ | mandatory('`elasticsearch_password` definition is mandatory') }}"
