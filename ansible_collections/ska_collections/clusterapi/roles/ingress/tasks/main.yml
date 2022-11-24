@@ -1,0 +1,55 @@
+---
+
+- name: Download Ingress Controller manifests
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v{{ ingress_nginx_version }}/deploy/static/provider/baremetal/deploy.yaml"
+    dest: "/tmp/ingress.yaml"
+    mode: '0664'
+
+- name: Apply Ingress Controller manifests
+  kubernetes.core.k8s:
+    state: present
+    apply: true
+    src: "/tmp/ingress.yaml"
+
+- name: Apply patch to ingress controller service
+  kubernetes.core.k8s_json_patch:
+    kind: Service
+    namespace: ingress-nginx
+    name: ingress-nginx-controller
+    patch:
+      - op: replace
+        patch: /spec/ports
+        value: [{"port": 80, "nodePort": 30080}, {"port": 443, "nodePort": 30443 } ]
+
+- name: Apply patch to ingress controller deployment
+  kubernetes.core.k8s_json_patch:
+    kind: Deployment
+    namespace: ingress-nginx
+    name: ingress-nginx-controller
+    patch:
+      - op: add
+        patch: /spec/template/spec/containers/0/args/-
+        value: "--ingress-class=nginx"
+
+- name: Apply patch to ingress class
+  kubernetes.core.k8s_json_patch:
+    kind: IngressClass
+    name: nginx
+    patch:
+      - op: add
+        patch: /metadata/annotations/ingressclass.kubernetes.io/is-default-class
+        value: "true"
+
+- name: Apply Ingress ACLs
+  kubernetes.core.k8s:
+    state: present
+    template: 'acls.yaml.j2'
+
+- name: Apply LoadBalancer Service
+  kubernetes.core.k8s:
+    state: present
+    template: 'service.yaml.j2'
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers
