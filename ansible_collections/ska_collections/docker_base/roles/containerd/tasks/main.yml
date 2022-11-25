@@ -104,6 +104,7 @@
     - "user.max_inotify_instances          = 1048576"
     - "fs.inotify.max_user_watches         = 1048576"
     - "net.netfilter.nf_conntrack_max      = 1000000"
+    - "net.ipv4.ip_local_port_range        = 40000 65535"
 
 - name: Debian containerd install
   when: ansible_os_family == "Debian"
