@@ -1,28 +1,100 @@
-# Ansible Collection - ska.logging
+# SKA Logging Collection
 
-## Required variables
+This collection includes a variety of Ansible roles to help automate the installation and configuration of [Elasticsearch Stack](https://www.elastic.co/elastic-stack/).
+This collection is currently maintained by [SKAO](https://www.skao.int/).
 
-* **elasticsearch_dns_name**
-  * Should be set to the dns name of the certificate used for the elasticsearch cluster nodes
-* **logging_filebeat_elasticsearch_address**
-  * Should be set to the domain or ip of the target elasticsearch cluster (preferably, the loadbalancer)
+## Ansible
 
-## Required secrets
+Tested with the current Ansible 6.5.x releases.
 
-* **ca_cert_password**
-  * Should be set to the password used to secure the CA private key file
-  * Define as: `ca_cert_password: "{{ lookup('ansible.builtin.env', 'CA_CERT_PASSWORD', default=secrets['ca_cert_password']) | mandatory }}"`
-* **elasticsearch_password**
-  * Should be set to the password used for the elastic user
-  * Define as: `elasticsearch_password: "{{ lookup('ansible.builtin.env', 'ELASTICSEARCH_PASSWORD', default=secrets['elasticsearch_password']) | mandatory }}"`
-* **kibana_viewer_password**
-  * Should be set to the password used for the kibana viewer user
-  * Define as: `kibana_viewer_password: "{{ lookup('ansible.builtin.env', 'KIBANA_VIEWER_PASSWORD', default=secrets['kibana_viewer_password']) | mandatory }}"`
-* **elastic_haproxy_stats_password**
-  * Should be set to the password to use for authentication to the HAProxy stats page
-  * Define as: `elastic_haproxy_stats_password: "{{ lookup('ansible.builtin.env', 'ELASTIC_HAPROXY_STATS_PASSWORD', default=secrets['elastic_haproxy_stats_password']) | mandatory }}"`
-* **logging_filebeat_elasticsearch_password**
-  * Should be set to the password of the **elastic** user if `logging_filebeat_elasticsearch_auth_method: 'basic'`
-    * Define as: `logging_filebeat_elasticsearch_password: "{{ elasticsearch_password }}"`
-  * Should be set to the base64-decoded api-key issued by adding an entry to `elasticsearch_api_keys` and using the `update-api-keys` target of the **logging** job. We should also set `logging_filebeat_elasticsearch_auth_method: 'api-key'`
-    * Define as: `logging_filebeat_elasticsearch_password: "{{ lookup('ansible.builtin.env', 'LOGGING_FILEBEAT_API_KEY', default=secrets['logging_filebeat_api_key']) | mandatory }}""`
+## Ansible Roles
+| Name | Description | Version | OS Requirements | Dependencies |
+| ---- | ----------- | ------- | --- | ---|
+| [logging.stack](./logging/roles/stack) | Install Elasticsearch cluster, Kibana and HA | 8.4.2 | Ubuntu 18+ (LTS) | [common.certs](./common/roles/certs) |
+| [logging.haproxy](./logging/roles/haproxy) | Install and configure SSL certificates | 2.6 | Ubuntu 18+ (LTS) | |
+| [logging.beats](./logging/roles/beats) | Install and configure SSL certificates | 7.17.0 | Ubuntu 18+ (LTS) | |
+
+## Installation
+
+
+
+Before using the collection, you need to install the collection with the `ansible-galaxy` CLI:
+
+    ansible-galaxy collection install ska_collections.logging
+
+You can also include it in a `requirements.yml` file and install it via ansible-galaxy collection install -r requirements.yml` using the format:
+
+```yaml
+collections:
+- name: ska_collections.logging
+```
+
+## Usage
+
+Playbooks can be found in the [playbooks/](./playbooks) folder in the following files:
+
+| Name | Description |
+| ---- | ----------- |
+| [install.yml](./playbooks/install.yml) | Install Elasticsearch cluster, Kibana and HA  |
+| [destroy.yml](./playbooks/destroy.yml) | Destroys Elastic Stack |
+| [destroy-logging.yml](.playbooks/destroy-logging.yml) | Destroys Filebeat |
+| [list-api-keys.yml](.playbooks/list-api-keys.yml) | Lists Elasticsearch API keys |
+| [logging.yml](.playbooks/logging.yml) | Installs Filebeat|
+| [update-api-keys.yml](.playbooks/logging.yml) | Updates the API keys |
+
+In order to run these playbooks, it's needed to specify the Ansible Inventory location and the respective group/hosts ***target_hosts*** variable.
+
+Run **install** playbook as an example:
+```
+ansible-playbook <playbooks-folder-path>/install.yml \
+	-i $(INVENTORY) \
+	--extra-vars "target_hosts=<target-hosts>"
+```
+
+
+### Required variables
+
+| Name | Ansible variable | Obs |
+| ---- | ----------- | ----- |
+| Elasticsearch cluster DNS Name | elasticsearch_dns_name | Same dns name used on the certificates |
+| Target Elasticsearch Cluster address | logging_filebeat_elasticsearch_address | Domain or ip of the target elasticsearch cluster (preferably, the loadbalancer) |
+
+### Required secrets
+
+| Name | Ansible variable | ENV variable | Obs |
+| ---- | ----------- | ------------ | ----- |
+| Certificate Authority Password | ca_cert_password | CA_CERT_PASSWORD | |
+| Elasticsearch Admin Password | elasticsearch_password | ELASTICSEARCH_PASSWORD | |
+| Kibana User Password | kibana_viewer_password | KIBANA_VIEWER_PASSWORD | |
+| Elasticsearch HA Stats password | elastic_haproxy_stats_password | ELASTIC_HAPROXY_STATS_PASSWORD | |
+| Filebeat authentication password | logging_filebeat_elasticsearch_password | LOGGING_FILEBEAT_API_KEY | logging_filebeat_elasticsearch_auth_method: 'basic' -> Plain password <br><br> logging_filebeat_elasticsearch_auth_method: 'api-key' -> base64-decoded issued by `elasticsearch_api_keys`|
+
+## How to Contribute
+
+### Adding a new role
+A new role can be added to the [roles](./roles/) folder and then included into a new and/or existing playbook.
+
+### Updating an existing role
+The existing roles can be found in the [roles](./roles/) folder. To update a role, the role's tasks can be simply modified.
+
+### External dependencies
+Go to [requirements.yml](../../../requirements.yml) and [galaxy.yml](./galaxy.yml) files to add or update any external dependency.
+
+### Add/Update new variables
+Ansible variables that are datacentre specific should be added to the `group_vars` folder of the inventory.
+
+To modify non-secret variable role defaults, go to the defaults folder of the respective role and update them. As an [example](./roles/stack/defaults/main.yml).
+
+Finally, the secret variables are defined in the respective [Makefile](../../../resources/jobs/logging.mk) and can be modified there. To assign proper values to these variables, please use a `PrivateRules.mak` file.
+
+## More information
+
+- [Ansible Using collections](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html)
+- [Ansible Collection overview](https://github.com/ansible-collections/overview)
+- [Ansible User guide](https://docs.ansible.com/ansible/latest/user_guide/index.html)
+- [Ansible Developer guide](https://docs.ansible.com/ansible/latest/dev_guide/index.html)
+- [Ansible Community code of conduct](https://docs.ansible.com/ansible/latest/community/code_of_conduct.html)
+
+## License
+
+BSD-3.
