@@ -53,7 +53,7 @@
   become: true
 
 - name: Install image-builder deps-qemu
-  community.general.system.make:
+  community.general.make:
     chdir: "{{ ib_repo_dest }}/images/capi"
     target: deps-qemu
     params:
@@ -80,7 +80,7 @@
   become: true
 
 - name: Build capo image
-  community.general.system.make:
+  community.general.make:
     chdir: "{{ ib_repo_dest }}/images/capi"
     target: build-qemu-ubuntu-2004
     params:

@@ -20,24 +20,18 @@
     src: "/tmp/metallb.yaml"
 
 - name: Apply patch to metallb controller deployment
-  kubernetes.core.k8s_json_patch:
-    kind: Deployment
-    namespace: "{{ metallb_namespace }}"
-    name: controller
-    patch:
-      - op: add
-        patch: /spec/template/spec/containers/0/args/-
-        value: "--lb-class=metallb"
+  ansible.builtin.command: |
+    kubectl -n {{ metallb_namespace }} patch deployment/controller \
+    --type json  \
+    -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--lb-class=metallb"}]'
+  changed_when: false
 
 - name: Apply patch to metallb speaker daemonset
-  kubernetes.core.k8s_json_patch:
-    kind: Daemonset
-    namespace: "{{ metallb_namespace }}"
-    name: speaker
-    patch:
-      - op: add
-        patch: /spec/template/spec/containers/0/args/-
-        value: "--lb-class=metallb"
+  ansible.builtin.command: |
+    kubectl -n {{ metallb_namespace }} patch daemonset/speaker \
+    --type json  \
+    -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--lb-class=metallb"}]'
+  changed_when: false
 
 - name: Apply metallb config
   kubernetes.core.k8s:

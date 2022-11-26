@@ -2,7 +2,7 @@
 
 - name: Download Calico manifests
   ansible.builtin.get_url:
-    url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ capo_calico_version }}/manifests/calico.yaml"
+    url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ calico_version }}/manifests/calico.yaml"
     dest: "/tmp/calico.yaml"
     mode: '0664'
 
