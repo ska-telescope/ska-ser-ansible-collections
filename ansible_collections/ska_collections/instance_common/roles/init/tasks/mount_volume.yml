@@ -14,7 +14,7 @@
   when: is_mounted.rc != 0
   block:
     - name: Format volume
-      community.general.system.filesystem:
+      community.general.filesystem:
         fstype: "{{ volume.file_system }}"
         dev: "{{ volume.device }}"
     - name: Get volume UUID
