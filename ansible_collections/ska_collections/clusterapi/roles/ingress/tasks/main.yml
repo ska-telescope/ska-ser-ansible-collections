@@ -6,11 +6,23 @@
     dest: "/tmp/ingress.yaml"
     mode: '0664'
 
-- name: Apply Ingress Controller manifests
-  kubernetes.core.k8s:
-    state: present
-    apply: true
-    src: "/tmp/ingress.yaml"
+- name: Check Ingress Controller is running
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: ingress-nginx-controller
+    namespace: ingress-nginx
+  register: ingress_check
+
+- name: Start Ingress Controller
+  # Calico is not started
+  when: "not ingress_check.resources"
+  block:
+    - name: Apply Ingress Controller manifests
+      kubernetes.core.k8s:
+        state: present
+        apply: true
+        src: "/tmp/ingress.yaml"
 
 - name: Apply patch to ingress controller service
   ska_collections.clusterapi.kubectl_patch:
@@ -25,7 +37,6 @@
         }
       }
     kubectl_kubeconfig: /etc/kubernetes/admin.conf
-
 
 # - name: Apply patch to ingress controller service
 #   ansible.builtin.command: |

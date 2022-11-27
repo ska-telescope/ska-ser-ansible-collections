@@ -64,7 +64,7 @@
 
 - name: Check CAPO is running
   kubernetes.core.k8s_info:
-    api_version: v1
+    api_version: apps/v1
     kind: Deployment
     name: capi-controller-manager
     namespace: capi-system
@@ -94,7 +94,7 @@
     - name: Wait for deploy/capi-kubeadm-bootstrap-controller-manager
       kubernetes.core.k8s_info:
         kind: Deployment
-        api_version: v1
+        api_version: apps/v1
         name: capi-kubeadm-bootstrap-controller-manager
         namespace: capi-kubeadm-bootstrap-system
         wait: true
@@ -108,7 +108,7 @@
     - name: Wait for deploy/capi-controller-manager
       kubernetes.core.k8s_info:
         kind: Deployment
-        api_version: v1
+        api_version: apps/v1
         name: capi-controller-manager
         namespace: capi-system
         wait: true
@@ -120,7 +120,7 @@
     - name: Wait for cert-manager
       kubernetes.core.k8s_info:
         kind: Deployment
-        api_version: v1
+        api_version: apps/v1
         name: "{{ item }}"
         namespace: cert-manager
         wait: true
@@ -136,7 +136,7 @@
     - name: Wait for deploy/capo-controller-manager
       kubernetes.core.k8s_info:
         kind: Deployment
-        api_version: v1
+        api_version: apps/v1
         name: capo-controller-manager
         namespace: capo-system
         wait: true

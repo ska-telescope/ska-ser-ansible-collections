@@ -13,24 +13,36 @@
     dest: "/tmp/metallb.yaml"
     mode: '0664'
 
-- name: Apply metallb manifests
-  kubernetes.core.k8s:
-    state: present
-    apply: true
-    src: "/tmp/metallb.yaml"
+- name: Check metallb is running
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: controller
+    namespace: "{{ metallb_namespace }}"
+  register: metallb_check
 
-- name: Apply patch to metallb controller deployment
-  ska_collections.clusterapi.kubectl_patch:
-    name: deployment/controller
-    kubectl_namespace: "{{ metallb_namespace }}"
-    type: json
-    patch: >-
-      [
-        {"op": "add",
-         "path": "/spec/template/spec/containers/0/args/-",
-         "value": "--lb-class=metallb"}
-      ]
-    kubectl_kubeconfig: /etc/kubernetes/admin.conf
+- name: Start metallb
+  # Calico is not started
+  when: "not metallb_check.resources"
+  block:
+    - name: Apply metallb manifests
+      kubernetes.core.k8s:
+        state: present
+        apply: true
+        src: "/tmp/metallb.yaml"
+
+    - name: Apply patch to metallb controller deployment
+      ska_collections.clusterapi.kubectl_patch:
+        name: deployment/controller
+        kubectl_namespace: "{{ metallb_namespace }}"
+        type: json
+        patch: >-
+          [
+            {"op": "add",
+            "path": "/spec/template/spec/containers/0/args/-",
+            "value": "--lb-class=metallb"}
+          ]
+        kubectl_kubeconfig: /etc/kubernetes/admin.conf
 
 # - name: Apply patch to metallb controller deployment
 #   ansible.builtin.command: |
@@ -39,18 +51,18 @@
 #     -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--lb-class=metallb"}]'
 #   changed_when: false
 
-- name: Apply patch to metallb speaker daemonset
-  ska_collections.clusterapi.kubectl_patch:
-    name: daemonset/speaker
-    kubectl_namespace: "{{ metallb_namespace }}"
-    type: json
-    patch: >-
-      [
-        {"op": "add",
-         "path": "/spec/template/spec/containers/0/args/-",
-         "value": "--lb-class=metallb"}
-      ]
-    kubectl_kubeconfig: /etc/kubernetes/admin.conf
+    - name: Apply patch to metallb speaker daemonset
+      ska_collections.clusterapi.kubectl_patch:
+        name: daemonset/speaker
+        kubectl_namespace: "{{ metallb_namespace }}"
+        type: json
+        patch: >-
+          [
+            {"op": "add",
+            "path": "/spec/template/spec/containers/0/args/-",
+            "value": "--lb-class=metallb"}
+          ]
+        kubectl_kubeconfig: /etc/kubernetes/admin.conf
 
 # - name: Apply patch to metallb speaker daemonset
 #   ansible.builtin.command: |
