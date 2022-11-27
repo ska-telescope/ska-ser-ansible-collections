@@ -26,7 +26,7 @@ ifndef ENVIRONMENT
 	$(error ENVIRONMENT is undefined)
 endif
 
-vars:  ## Variables
+ac-vars:  ## Variables
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "ANSIBLE_CONFIG=$(ANSIBLE_CONFIG)"
 	@echo "ANSIBLE_SSH_ARGS=$(ANSIBLE_SSH_ARGS)"
@@ -49,11 +49,11 @@ vars:  ## Variables
 		-a msg="_s_{{ ($(SECRETS_ROOT_VAR)['$(DATACENTRE)']['$(ENVIRONMENT)'] | to_nice_yaml) | default("") }}_e_" \
 		$(ANSIBLE_EXTRA_VARS) localhost 2>/dev/null | grep -v "FAILED" | \
 		sed 's#.*_s_\(.*\)_e_.*#\1#');
-
-ac-vars-recursive:
-	@make vars;
 	@echo ""
 	@echo -e "\033[33m------------- Job Vars ---------------\033[0m"
+	@make ac-vars-recursive;
+
+ac-vars-recursive:
 	@JOBS_LIST="$$(find $(JOBS_DIR) -name '*.mk')"; for JOB in $$JOBS_LIST; do \
 		make vars -f $$JOB; \
 		JOB_NAME=$$(basename $$JOB | sed 's#.mk##'); echo ""; \
@@ -135,8 +135,5 @@ ac-print-targets: ## Show Help
 	@echo ""
 	@$(foreach file, $(wildcard $(JOBS_DIR)/*), make help -f $(file); echo "";)
 
-help: ## Show Help
-	@echo ""
-	@echo "Vars:"
-	@make vars;
+ac-help: ## Show Help
 	@make ac-print-targets
