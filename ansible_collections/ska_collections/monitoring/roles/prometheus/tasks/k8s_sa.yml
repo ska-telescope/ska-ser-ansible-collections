@@ -1,0 +1,70 @@
+- name: Ensure target directory
+  ansible.builtin.file:
+    path: '{{ prometheus_server_kubectl_install_dir }}'
+    state: directory
+    mode: '0755'
+
+- name: Download kubectl
+  become: true
+  ansible.builtin.get_url:
+    url: '{{ prometheus_server_kubectl_url }}'
+    dest: '{{ prometheus_server_kubectl_install_dir }}/{{ prometheus_server_kubectl_name }}-{{ prometheus_server_kubectl_version }}'
+    mode: 0755
+
+- name: Link installed kubectl # noqa ignore-errors
+  become: true
+  ignore_errors: true
+  ansible.builtin.file:
+    src: '{{ prometheus_server_kubectl_install_dir }}/{{ prometheus_server_kubectl_name }}-{{ prometheus_server_kubectl_version }}'
+    dest: '{{ prometheus_server_kubectl_install_dir }}/{{ prometheus_server_kubectl_name }}'
+    state: link
+    mode: 0755
+
+- name: Create directory
+  ansible.builtin.file:
+    path: /etc/kubernetes/
+    state: directory
+    mode: 0755
+
+- name: Copy KUBECONFIG file
+  ansible.builtin.copy:
+    src: "{{ kubeconfig }}"
+    dest: "/etc/kubernetes/admin.conf"
+    mode: 0755
+  become: true
+
+# Create prometheus sa to get bearer.token
+- name: Create prometheus sa account
+  ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf create sa prometheus -n kube-system
+  register: response
+  failed_when: "'already exists' not in response.stderr and 'created' not in response.stdout"
+  changed_when: "'created' in response.stdout"
+
+- name: Copy up configuration file
+  ansible.builtin.copy:
+    src: "prometheus_rlb.yml"
+    dest: "/tmp/prometheus_rlb.yml"
+    mode: 0644
+
+- name: Create prometheus rolebinding account
+  ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f /tmp/prometheus_rlb.yml
+  register: response
+  failed_when: "'unchanged' not in response.stdout and 'created' not in response.stdout"
+  changed_when: "'created' in response.stdout"
+
+- name: Get prom_secret # noqa risky-shell-pipe no-changed-when
+  ansible.builtin.shell: |
+    kubectl --kubeconfig=/etc/kubernetes/admin.conf get secrets -n kube-system --output=json \
+    | jq -r '.items[].metadata | select(.name|startswith("prometheus-token-")).name'
+  register: prom_secret
+
+- name: Save token in destination file # noqa no-changed-when risky-shell-pipe
+  ansible.builtin.shell: |
+    kubectl --kubeconfig=/etc/kubernetes/admin.conf get secret {{ prom_secret.stdout }} -n kube-system --output='json' \
+    | jq -r '.data.token' | base64 --decode > {{ prometheus_k8s_bearer_token }}
+
+- name: Save kubectl credentials # noqa no-changed-when risky-shell-pipe
+  ansible.builtin.shell: |
+    kubectl --kubeconfig=/etc/kubernetes/admin.conf config view --raw --minify \
+    --flatten --output='jsonpath={.clusters[].cluster.certificate-authority-data}' \
+    | base64 --decode > {{ prometheus_k8s_client_certificate }}
