@@ -378,7 +378,7 @@ def main():
         rc, stdout, err = set_env(
             connector,
             module.params["name"],
-            ["{k}='{v}'".format(k=k, v=v)
+            ["{k}={v}".format(k=k, v=v)
              for k, v in module.params["envvars"].items()],
         )
         changed = True
