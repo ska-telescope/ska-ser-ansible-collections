@@ -404,7 +404,8 @@ def main():
         module.exit_json(changed=changed, result=result)
     else:
         module.fail_json(
-            msg="Failed to wait for DaemonSet: [%s/%s] desired [%d] != ready [%d] for tries [%d] - %s"
+            msg=("Failed to wait for DaemonSet: [%s/%s] "
+                 "desired [%d] != ready [%d] for tries [%d] - %s")
             % (module.params["kubectl_namespace"],
                module.params["name"],
                desired,
