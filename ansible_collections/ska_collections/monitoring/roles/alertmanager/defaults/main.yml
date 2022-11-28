@@ -6,5 +6,5 @@
 slack_api_url: "*********************"
 slack_api_url_user: "*********************"
 
-prometheus_alertmanager_config_dir: /etc/alertmanager
-prometheus_alertmanager_data_dir: /alertmanager
+alertmanager_config_dir: /etc/alertmanager
+alertmanager_data_dir: /alertmanager

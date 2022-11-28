@@ -1,13 +1,13 @@
 - name: Ensure Prometheus alertmanager data directory
   ansible.builtin.file:
-    path: '{{ prometheus_alertmanager_config_dir }}'
+    path: '{{ alertmanager_config_dir }}'
     state: directory
     mode: 0755
   become: true
 
 - name: Ensure Prometheus alertmanager configuration directory
   ansible.builtin.file:
-    path: '{{ prometheus_alertmanager_data_dir }}'
+    path: '{{ alertmanager_data_dir }}'
     state: directory
     mode: 0766
   become: true
@@ -16,7 +16,7 @@
   become: true
   ansible.builtin.template:
     src: "alertmanager.yml.j2"
-    dest: "{{ prometheus_alertmanager_config_dir }}/alertmanager.yml"
+    dest: "{{ alertmanager_config_dir }}/alertmanager.yml"
     force: true
     owner: "{{ prometheus_localuser }}"
     group: "{{ prometheus_localgroup }}"
@@ -47,6 +47,6 @@
     ports:
       - "9093:9093"
     volumes:
-      - "{{ prometheus_alertmanager_config_dir }}:/etc/alertmanager:ro"
+      - "{{ alertmanager_config_dir }}:/etc/alertmanager:ro"
       - "/etc/hosts:/etc/hosts:ro"
-      - "{{ prometheus_alertmanager_data_dir }}:/alertmanager"
+      - "{{ alertmanager_data_dir }}:/alertmanager"
