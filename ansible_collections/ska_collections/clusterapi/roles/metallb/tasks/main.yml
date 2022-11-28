@@ -71,11 +71,6 @@
 #     -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--lb-class=metallb"}]'
 #   changed_when: false
 
-- name: Apply metallb config
-  kubernetes.core.k8s:
-    state: present
-    template: 'metallb-config.yaml.j2'
-
 - name: Check metallb speaker Daemonset is running
   ska_collections.clusterapi.wait_for_daemonset:
     name: speaker
@@ -84,6 +79,11 @@
     wait: 20
     retries: 15
     kubectl_kubeconfig: /etc/kubernetes/admin.conf
+
+- name: Apply metallb config
+  kubernetes.core.k8s:
+    state: present
+    template: 'metallb-config.yaml.j2'
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers
