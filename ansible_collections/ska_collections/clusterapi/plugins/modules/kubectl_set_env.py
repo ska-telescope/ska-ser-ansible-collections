@@ -177,7 +177,7 @@ EXAMPLES = """
 - name: Set Calico config
   ska_collections.clusterapi.kubectl_set_env:
     name: "daemonset/calico-node"
-    namespace: "kube-system"
+    kubectl_namespace: "kube-system"
     envvars:
       CALICO_IPV4POOL_CIDR: "{{ calico_ipv4pool_cidr }}"
       CALICO_IPV4POOL_IPIP: "{{ calico_ipv4pool_ipip }}"

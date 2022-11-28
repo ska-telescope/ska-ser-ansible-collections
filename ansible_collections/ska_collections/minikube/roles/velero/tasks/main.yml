@@ -112,7 +112,7 @@
 - name: Set Velero backup config
   ska_collections.clusterapi.kubectl_set_env:
     name: "deployment/velero"
-    namespace: "velero"
+    kubectl_namespace: "velero"
     envvars:
       OS_REGION_NAME: "{{ velero_selected_cloud.region_name }}"
       OS_INTERFACE: "{{ velero_selected_cloud.interface }}"
