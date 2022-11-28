@@ -1,11 +1,11 @@
 ---
 # defaults file for grafana
 
-grafana_provisioning_config_dir: /etc/grafana/provisioning
-grafana_data: /var/lib/grafana
-grafana_datasource: Prometheus
-grafana_dashboards_path: "{{ grafana_provisioning_config_dir }}/dashboards"
-grafana_plugins:
+prometheus_grafana_provisioning_config_dir: /etc/grafana/provisioning
+prometheus_grafana_data: /var/lib/grafana
+prometheus_grafana_datasource: Prometheus
+prometheus_grafana_dashboards_path: "{{ prometheus_grafana_provisioning_config_dir }}/dashboards"
+prometheus_grafana_plugins:
   - vonage-status-panel
   - grafana-piechart-panel
   - grafana-polystat-panel
@@ -15,4 +15,4 @@ grafana_plugins:
   - speakyourcode-button-panel
   - natel-plotly-panel
   - fifemon-graphql-datasource
-grafana_disable_admin_account_creation: false
+prometheus_grafana_disable_admin_account_creation: false

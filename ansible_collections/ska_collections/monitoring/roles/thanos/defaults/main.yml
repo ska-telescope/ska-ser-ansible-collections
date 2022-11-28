@@ -1,11 +1,11 @@
 ---
 # defaults file for thanos
 
-thanos_alt_name: "monitoring.skao.stfc"
-thanos_query_frontend: thanos
-thanos_config_dir: /etc/thanos
-thanos_store_data_dir: /etc/thanos/data/dir
-thanos_compactor_data_dir: /etc/thanos/thanos-compact
-thanos_query_endpoints:
+prometheus_thanos_alt_name: "monitoring.skao.stfc"
+prometheus_thanos_query_frontend: thanos
+prometheus_thanos_config_dir: /etc/thanos
+prometheus_thanos_store_data_dir: /etc/thanos/data/dir
+prometheus_thanos_compactor_data_dir: /etc/thanos/thanos-compact
+prometheus_thanos_query_endpoints:
   - 192.168.99.153:10901
   - 192.168.99.31:19090
