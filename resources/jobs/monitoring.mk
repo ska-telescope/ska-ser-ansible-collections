@@ -73,12 +73,12 @@ lint: ## Lint playbooks
 	@flake8 --exclude ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/openstack roles/*
 
 prometheus: check_hosts ## Install Prometheus Server
-	ansible-playbook $(PLAYBOOKS_DIR)/deploy_monitoring.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/deploy_prometheus.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
-		-e "mode='server' slack_api_url='$(SLACK_API_URL)' slack_api_url_user='$(SLACK_API_URL_USER)'" \
+		-e "slack_api_url='$(SLACK_API_URL)' slack_api_url_user='$(SLACK_API_URL_USER)'" \
 		--extra-vars="azuread_client_id='$(AZUREAD_CLIENT_ID)' azuread_client_secret='$(AZUREAD_CLIENT_SECRET)' azuread_tenant_id='$(AZUREAD_TENANT_ID)'" \
-		-e "prometheus_server_project_id='$(PROM_OS_PROJECT_ID)' prometheus_server_auth_url='$(PROM_OS_AUTH_URL)' kubeconfig='$(KUBECONFIG)'" \
+		-e "prometheus_server_auth_url='$(PROM_OS_AUTH_URL)' kubeconfig='$(KUBECONFIG)'" \
 		-e "prometheus_server_username='$(PROM_OS_USERNAME)' prometheus_server_password='$(PROM_OS_PASSWORD)'" $(PROMETHEUS_EXTRAVARS) \
 		-e "prometheus_gitlab_ci_pipelines_exporter_token=$(GITLAB_TOKEN)" \
 		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
@@ -89,10 +89,9 @@ prometheus: check_hosts ## Install Prometheus Server
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
 grafana: check_hosts ## Install Grafana Server
-	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_monitoring.yml \
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_grafana.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
-		-e "mode='grafana'" \
 		--extra-vars="azuread_client_id='$(AZUREAD_CLIENT_ID)' azuread_client_secret='$(AZUREAD_CLIENT_SECRET)' azuread_tenant_id='$(AZUREAD_TENANT_ID)'" \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/all.yml \
@@ -101,10 +100,10 @@ grafana: check_hosts ## Install Grafana Server
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
 alertmanager: check_hosts ## Install Prometheus Server
-	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_monitoring.yml \
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_alertmanager.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
-		-e "mode='alert' slack_api_url='$(SLACK_API_URL)' slack_api_url_user='$(SLACK_API_URL_USER)'" \
+		-e "slack_api_url='$(SLACK_API_URL)' slack_api_url_user='$(SLACK_API_URL_USER)'" \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/all.yml \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/prometheus.yml \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
@@ -112,12 +111,11 @@ alertmanager: check_hosts ## Install Prometheus Server
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
 thanos: check_hosts ## Install Thanos query and query front-end
-	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_monitoring.yml \
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_thanos.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
-		--extra-vars "mode='thanos'" \
 		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
-		-e "prometheus_server_project_id='$(PROM_OS_PROJECT_ID)' prometheus_server_auth_url='$(PROM_OS_AUTH_URL)'" \
+		-e "prometheus_server_auth_url='$(PROM_OS_AUTH_URL)'" \
 		-e "prometheus_server_username='$(PROM_OS_USERNAME)' prometheus_server_password='$(PROM_OS_PASSWORD)'" \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/all.yml \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/prometheus.yml \
@@ -132,18 +130,8 @@ node-exporter: check_hosts ## Install Prometheus node exporter - pass INVENTORY 
 	-e 'ansible_python_interpreter=/usr/bin/python3' \
 	--limit $(NODES)
 
-
-update_metadata: check_hosts ## OpenStack metadata for node_exporters - pass INVENTORY all format should be OK
-	@mkdir -p combined_inventory; \
-	rm -f combined_inventory/*; \
-	cp $(INVENTORY)/*inventory* combined_inventory/; \
-	cat combined_inventory/*inventory* > all_inventory; \
-	ansible -i $(INVENTORY) $(PROMETHEUS_NODE) $(ANSIBLE_PLAYBOOK_ARGUMENTS) -b -m copy -a 'src=all_inventory dest=/tmp/all_inventory'; \
-	ansible -i $(INVENTORY) $(PROMETHEUS_NODE) $(ANSIBLE_PLAYBOOK_ARGUMENTS) -b -m shell -a 'export project_name=$(PROM_OS_PROJECT_NAME) project_id=$(PROM_OS_PROJECT_ID) auth_url=$(PROM_OS_AUTH_URL) username=$(PROM_OS_USERNAME) password=$(PROM_OS_PASSWORD)	os_region_name=RegionOne os_interface=public PROM_OS_PROJECT_ID=$(PROM_OS_PROJECT_ID)	os_user_domain_name=default	os_identity_api_version=3 && python3 /usr/local/bin/prom_helper.py -u /tmp/all_inventory'; \
-	rm -rf combined_inventory all_inventory
-
 update_scrapers: check_hosts ## Force update of scrapers
-	ansible -i $(INVENTORY) $(PROMETHEUS_NODE) $(ANSIBLE_PLAYBOOK_ARGUMENTS) -b -m shell -a 'export prometheus_server_project_id=$(PROM_OS_PROJECT_ID) prometheus_server_project_name=$(PROM_OS_PROJECT_NAME) prometheus_server_auth_url=$(PROM_OS_AUTH_URL) prometheus_server_username=$(PROM_OS_USERNAME) prometheus_server_password=$(PROM_OS_PASSWORD) $(OPENSTACK_ENV_VARIABLES) && cd /etc/prometheus && python3 /usr/local/bin/prom_helper.py -g'
+	python3 ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/openstack/prom_helper.py -i $(INVENTORY)
 
 test-prometheus: check_hosts ## Test elastic cluster
 	ansible-playbook $(TESTS_DIR)/prometheus_test.yml \

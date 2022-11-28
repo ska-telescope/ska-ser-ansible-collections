@@ -1,2 +1,18 @@
 ---
 # defaults file for grafana
+
+grafana_provisioning_config_dir: /etc/grafana/provisioning
+grafana_data: /var/lib/grafana
+grafana_datasource: Prometheus
+grafana_dashboards_path: "{{ grafana_provisioning_config_dir }}/dashboards"
+grafana_plugins:
+  - vonage-status-panel
+  - grafana-piechart-panel
+  - grafana-polystat-panel
+  - ryantxu-ajax-panel
+  - ae3e-plotly-panel
+  - https://artefact.skao.int/repository/raw-all/repository/raw/grafana-plugins/ska-tango-attribute-1.0.0.zip;ska-tango-attribute
+  - speakyourcode-button-panel
+  - natel-plotly-panel
+  - fifemon-graphql-datasource
+grafana_disable_admin_account_creation: false

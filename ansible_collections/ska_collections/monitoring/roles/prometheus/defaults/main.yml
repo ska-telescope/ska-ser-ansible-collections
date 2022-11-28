@@ -96,40 +96,6 @@ prometheus_elasticsearch_instance_add_cluster_label:
     source_labels: [instance]
     target_label: cluster
 
-prometheus_alertmanager_config_dir: /etc/alertmanager
-prometheus_alertmanager_data_dir: /alertmanager
-
-prometheus_thanos_alt_name: "monitoring.skao.stfc"
-prometheus_thanos_query_frontend: thanos
-prometheus_thanos_config_dir: /etc/thanos
-prometheus_thanos_store_data_dir: /etc/thanos/data/dir
-prometheus_thanos_compactor_data_dir: /etc/thanos/thanos-compact
-prometheus_thanos_query_endpoints:
-  - 192.168.99.153:10901
-  - 192.168.99.31:19090
-
-prometheus_grafana_provisioning_config_dir: /etc/grafana/provisioning
-prometheus_grafana_data: /var/lib/grafana
-prometheus_grafana_datasource: Prometheus
-prometheus_grafana_dashboards_path: "{{ prometheus_grafana_provisioning_config_dir }}/dashboards"
-prometheus_grafana_plugins:
-  - vonage-status-panel
-  - grafana-piechart-panel
-  - grafana-polystat-panel
-  - ryantxu-ajax-panel
-  - ae3e-plotly-panel
-  - https://artefact.skao.int/repository/raw-all/repository/raw/grafana-plugins/ska-tango-attribute-1.0.0.zip;ska-tango-attribute
-  - speakyourcode-button-panel
-  - natel-plotly-panel
-  - fifemon-graphql-datasource
-prometheus_grafana_disable_admin_account_creation: false
-
-# Alert Manager
-# slack_api_url has to be set in the command line
-slack_api_url: "*********************"
-slack_api_url_user: "*********************"
-
-
 prometheus_alerts_inhibit_rules: []
 # - target_match:
 #     severity: 'warning'
