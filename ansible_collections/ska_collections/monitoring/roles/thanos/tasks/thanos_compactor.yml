@@ -16,14 +16,14 @@
   vars:
     certificate_name: "thanos_compactor"
     certificate_key_name: "thanos_compactor"
-    certificate_dns_alt_name: "{{ prometheus_thanos_alt_name }}"
+    certificate_dns_alt_name: "{{ thanos_alt_name }}"
     certificates_recreate: true
 
 - name: Generate thanos tls configuration
   become: true
   ansible.builtin.template:
     src: "thanos_compactor.yaml.j2"
-    dest: "{{ prometheus_thanos_config_dir }}/thanos_compactor.yaml"
+    dest: "{{ thanos_config_dir }}/thanos_compactor.yaml"
     force: true
     owner: "{{ prometheus_localuser }}"
     group: "{{ prometheus_localgroup }}"
@@ -33,7 +33,7 @@
   become: true
   ansible.builtin.template:
     src: "swift.yml.j2"
-    dest: "{{ prometheus_thanos_config_dir }}/swift.yml"
+    dest: "{{ thanos_config_dir }}/swift.yml"
     force: true
     owner: "{{ prometheus_localuser }}"
     group: "{{ prometheus_localgroup }}"
@@ -47,9 +47,9 @@
     command:
       - "compact"
       - "--data-dir='/data'"
-      - "--objstore.config-file='{{ prometheus_thanos_config_dir }}/swift.yml'"
+      - "--objstore.config-file='{{ thanos_config_dir }}/swift.yml'"
       - "--http-address='0.0.0.0:19091'"
-      - "--http.config='{{ prometheus_thanos_config_dir }}/thanos_compactor.yaml'"
+      - "--http.config='{{ thanos_config_dir }}/thanos_compactor.yaml'"
       - "--wait"
       - "--wait-interval=60m"
     user: root
@@ -59,6 +59,6 @@
       - "19091:19091"
     volumes:
       - "/etc/hosts:/etc/hosts:ro"
-      - "{{ prometheus_thanos_config_dir }}:{{ prometheus_thanos_config_dir }}"
+      - "{{ thanos_config_dir }}:{{ thanos_config_dir }}"
       - "{{ certificates_dir }}:{{ certificates_dir }}"
-      - "{{ prometheus_thanos_compactor_data_dir }}:/data"
+      - "{{ thanos_compactor_data_dir }}:/data"

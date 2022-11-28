@@ -9,7 +9,7 @@
   ansible.builtin.include_tasks: thanos_query.yml
   when: mode == "server"
 
-- name: Task prometheus_thanos_query_frontend
+- name: Task thanos_query_frontend
   ansible.builtin.include_tasks: thanos_query_frontend.yml
   when: mode == "server"
 

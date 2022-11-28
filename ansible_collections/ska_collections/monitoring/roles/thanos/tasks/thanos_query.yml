@@ -13,7 +13,7 @@
 - name: Set fact about thanos query endpoints
   ansible.builtin.set_fact:
     endpoints: "{{ endpoints|default([]) + ['--endpoint=' ~ item] }}"
-  loop: "{{ prometheus_thanos_query_endpoints }}"
+  loop: "{{ thanos_query_endpoints }}"
 
 - name: Create certificates for server communication
   ansible.builtin.include_role:
@@ -21,7 +21,7 @@
   vars:
     certificate_name: "thanos_query"
     certificate_key_name: "thanos_query"
-    certificate_dns_alt_name: "{{ prometheus_thanos_alt_name }}"
+    certificate_dns_alt_name: "{{ thanos_alt_name }}"
     certificates_recreate: true
 
 - name: Create certificates for client communication
@@ -30,14 +30,14 @@
   vars:
     certificate_name: "thanos_query_client"
     certificate_key_name: "thanos_query_client"
-    certificate_dns_alt_name: "{{ prometheus_thanos_alt_name }}"
+    certificate_dns_alt_name: "{{ thanos_alt_name }}"
     certificates_recreate: true
 
 - name: Generate thanos tls configuration
   become: true
   ansible.builtin.template:
     src: "thanos_query.yaml.j2"
-    dest: "{{ prometheus_thanos_config_dir }}/thanos_query.yaml"
+    dest: "{{ thanos_config_dir }}/thanos_query.yaml"
     force: true
     owner: "{{ prometheus_localuser }}"
     group: "{{ prometheus_localuser }}"
@@ -81,5 +81,5 @@
       - "10902:10902"
     volumes:
       - "/etc/hosts:/etc/hosts:ro"
-      - "{{ prometheus_thanos_config_dir }}:{{ prometheus_thanos_config_dir }}"
+      - "{{ thanos_config_dir }}:{{ thanos_config_dir }}"
       - "{{ certificates_dir }}:{{ certificates_dir }}"

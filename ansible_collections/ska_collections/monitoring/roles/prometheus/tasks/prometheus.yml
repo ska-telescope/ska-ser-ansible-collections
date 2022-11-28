@@ -204,7 +204,7 @@
   vars:
     certificate_name: "prometheus"
     certificate_key_name: "prometheus"
-    certificate_dns_alt_name: "{{ prometheus_thanos_alt_name }}"
+    certificate_dns_alt_name: "{{ thanos_alt_name }}"
     certificates_recreate: true
 
 - name: Create alerting rules file

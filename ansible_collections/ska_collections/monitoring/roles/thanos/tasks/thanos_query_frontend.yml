@@ -16,14 +16,14 @@
   vars:
     certificate_name: "thanos_query_frontend"
     certificate_key_name: "thanos_query_frontend"
-    certificate_dns_alt_name: "{{ prometheus_thanos_alt_name }}"
+    certificate_dns_alt_name: "{{ thanos_alt_name }}"
     certificates_recreate: true
 
 - name: Generate thanos tls configuration
   become: true
   ansible.builtin.template:
     src: "thanos_query_frontend.yaml.j2"
-    dest: "{{ prometheus_thanos_config_dir }}/thanos_query_frontend.yaml"
+    dest: "{{ thanos_config_dir }}/thanos_query_frontend.yaml"
     force: true
     owner: "{{ prometheus_localuser }}"
     group: "{{ prometheus_localgroup }}"
@@ -46,5 +46,5 @@
       - "9095:9095"
     volumes:
       - "/etc/hosts:/etc/hosts:ro"
-      - "{{ prometheus_thanos_config_dir }}:{{ prometheus_thanos_config_dir }}"
+      - "{{ thanos_config_dir }}:{{ thanos_config_dir }}"
       - "{{ certificates_dir }}:{{ certificates_dir }}"
