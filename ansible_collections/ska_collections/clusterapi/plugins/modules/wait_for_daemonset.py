@@ -381,13 +381,15 @@ def main():
     changed = False
     desired = 0
     ready = 0
+    tries = 0
     try:
-        while tries <= module.params["retries"]:
+        while tries <= int(module.params["retries"]):
             desired, ready = get_daemonset(connector, module.params["name"])
             if desired == ready:
                 changed = True
                 break
             tries += 1
+            time.sleep(module.params["wait"])
     except Exception as e:
         module.fail_json(
             msg="Failed to get_daemonset: [%s] %s" % (connector._msg, repr(e))
@@ -402,11 +404,12 @@ def main():
         module.exit_json(changed=changed, result=result)
     else:
         module.fail_json(
-            msg="Failed to wait for DaemonSet: [%s/%s] desired [%d] != ready [%d] - %s"
+            msg="Failed to wait for DaemonSet: [%s/%s] desired [%d] != ready [%d] for tries [%d] - %s"
             % (module.params["kubectl_namespace"],
                module.params["name"],
                desired,
                ready,
+               tries,
                repr(result))
         )
 
