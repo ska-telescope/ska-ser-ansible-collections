@@ -35,8 +35,8 @@
 
 - name: Check calico-node Daemonset is running
   ska_collections.clusterapi.wait_for_daemonset:
-    name: speaker
-    kubectl_namespace: metallb-system
+    name: calico-node
+    kubectl_namespace: kube-system
     initpause: 10
     wait: 20
     retries: 15
