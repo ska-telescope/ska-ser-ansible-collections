@@ -28,12 +28,13 @@ def check_port(address, port):
     sock.settimeout(0.3)
     return sock.connect_ex(location)
 
+
 def generate_targets_from_inventory(inventory):
     """
-    This method parses the provided inventory file and generate targets 
-    for prometheus by iterating over the EXPORTERS list and finding 
-    the matching ports in the machines. 
-    If the port is open, the target is generated. 
+    This method parses the provided inventory file and generate targets
+    for prometheus by iterating over the EXPORTERS list and finding
+    the matching ports in the machines.
+    If the port is open, the target is generated.
     """
     targets = {}
     hostrelabelling = {RELABEL_KEY: []}
@@ -42,7 +43,11 @@ def generate_targets_from_inventory(inventory):
     if os.path.isdir(inventory):
         for filename in os.listdir(inventory):
             file_complete_path = os.path.join(inventory, filename)
-            if os.path.isfile(file_complete_path) and filename.endswith("yml") and not os.path.islink(file_complete_path):
+            if (
+                os.path.isfile(file_complete_path) and
+                filename.endswith("yml") and
+                not os.path.islink(file_complete_path)
+            ):
                 sources.append(file_complete_path)
     else:
         sources.append(inventory)
@@ -64,7 +69,7 @@ def generate_targets_from_inventory(inventory):
                     result_of_check = check_port(IP, details["port"])
                     if result_of_check == 0:
                         print(
-                            f"{exporter_name} {IP}:{details['port']} - available ({hostname})"
+                            f"{exporter_name} {hostname}:{details['port']}"
                         )
                         if exporter_name not in targets:
                             targets[exporter_name] = []
@@ -105,6 +110,7 @@ def generate_targets_from_inventory(inventory):
     with open(yaml_file, "w") as outfile:
         yaml.dump(hostrelabelling, outfile, indent=2)
 
+
 start_time = datetime.datetime.now()
 
 logging.basicConfig(level=logging.INFO)
@@ -130,7 +136,8 @@ if len(sys.argv) == 1:
 if not args.inventory:
     print(
         (
-            "Please provide an inventory file or folder with the --inventory option"
+            "Please provide an inventory file",
+            "or folder with the --inventory option"
         )
     )
     sys.exit(1)
