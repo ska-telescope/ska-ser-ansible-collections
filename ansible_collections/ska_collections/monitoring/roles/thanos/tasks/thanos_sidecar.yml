@@ -1,12 +1,3 @@
-- name: Ensure Thanos configuration directory
-  ansible.builtin.file:
-    path: '{{ thanos_config_dir }}'
-    state: directory
-    mode: 0755
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
-  become: true
-
 - name: Generate thanos tls configuration
   become: true
   ansible.builtin.template:
@@ -32,6 +23,7 @@
 - name: Create certificates for server communication
   ansible.builtin.include_role:
     name: ska_collections.instance_common.certs
+    tasks_from: sign-cert
   vars:
     certificate_name: "thanos_sidecar"
     certificate_key_name: "thanos_sidecar"

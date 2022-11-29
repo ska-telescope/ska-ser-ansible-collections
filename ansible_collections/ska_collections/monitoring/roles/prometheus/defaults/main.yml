@@ -4,6 +4,8 @@ prometheus_localgroup: ubuntu
 
 certificates_dir: /etc/pki/tls/private
 
+prometheus_alt_name: "monitoring.skao.stfc"
+
 # vars file for prometheus
 prometheus_gitlab_ci_pipelines_exporter_tags: v0.5.3
 prometheus_gitlab_ci_pipelines_exporter_token: ""
@@ -12,8 +14,7 @@ prometheus_retention_time: "15d"
 prometheus_server_kubectl_version: 'v1.22.5'
 prometheus_server_kubectl_name: kubectl
 prometheus_server_kubectl_install_dir: /usr/local/bin
-prometheus_server_kubectl_url: 'https://storage.googleapis.com/kubernetes-release/release/{{ prometheus_server_kubectl_version }}/bin/linux/amd64/{{ prometheus_server_kubectl_name }}'
-prometheus_server_kubectl_install_dir: /usr/local/bin
+prometheus_server_kubectl_url: 'https://storage.googleapis.com/kubernetes-release/release/{{ prometheus_server_kubectl_version }}/bin/linux/amd64/{{ prometheus_server_kubectl_name }}' # noqa yaml[line-length]
 
 prometheus_server_config_dir: /etc/prometheus
 prometheus_data_dir: /var/lib/prometheus
@@ -104,23 +105,6 @@ prometheus_elasticsearch_instance_add_cluster_label:
     replacement: ska-systems1
     source_labels: [instance]
     target_label: cluster
-
-prometheus_alerts_inhibit_rules: []
-# - target_match:
-#     severity: 'warning'
-#   target_match:
-#     severity: 'warning'
-#   equal: ['Watchdog']
-# - source_match:
-#     severity: 'critical'
-#     instance: '192.168.93.205:9100'
-#   target_match:
-#     severity: 'warning'
-# - source_match:
-#     severity: 'critical'
-#     instance: '192.168.93.206:9100'
-#   target_match:
-#     severity: 'warning'
 
 prometheus_k8s_client_certificate: "/dev/null"
 prometheus_k8s_bearer_token: "/etc/prometheus/bearer.token"

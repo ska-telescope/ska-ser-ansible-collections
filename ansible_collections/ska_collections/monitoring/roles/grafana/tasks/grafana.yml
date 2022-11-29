@@ -8,7 +8,6 @@
     group: "{{ prometheus_localgroup }}"
   become: true
 
-
 - name: Ensure grafana data directory
   ansible.builtin.file:
     path: '{{ grafana_data }}'
@@ -55,14 +54,14 @@
       - "/etc/hosts:/etc/hosts:ro"
     env:
       GF_INSTALL_PLUGINS: "{{ grafana_plugins | join(',') }}"
-      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "{{ prometheus_grafana_disable_admin_account_creation }}"
-      GF_PANELS_DISABLE_SANITIZE_HTML: true
+      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "'{{ grafana_disable_admin_account_creation }}'"
+      GF_PANELS_DISABLE_SANITIZE_HTML: 'true'
       GF_SERVER_ROOT_URL: "https://{{ prometheus_k8s_external_dns_entry }}/grafana"
-      GF_SERVER_SERVE_FROM_SUB_PATH: true
+      GF_SERVER_SERVE_FROM_SUB_PATH: 'true'
       # AzureAD Configuration
       GF_AUTH_AZUREAD_NAME: "Azure AD"
-      GF_AUTH_AZUREAD_ENABLED: true
-      GF_AUTH_AZUREAD_ALLOW_SIGN_UP: true
+      GF_AUTH_AZUREAD_ENABLED: 'true'
+      GF_AUTH_AZUREAD_ALLOW_SIGN_UP: 'true'
       GF_AUTH_AZUREAD_CLIENT_ID: "{{ azuread_client_id }}"
       GF_AUTH_AZUREAD_CLIENT_SECRET: "{{ azuread_client_secret }}"
       GF_AUTH_AZUREAD_SCOPES: "openid email profile"
@@ -70,4 +69,4 @@
       GF_AUTH_AZUREAD_TOKEN_URL: "https://login.microsoftonline.com/{{ azuread_tenant_id }}/oauth2/v2.0/token"
       GF_AUTH_AZUREAD_ALLOWED_DOMAINS: ""
       GF_AUTH_AZUREAD_ALLOWED_GROUPS: ""
-      GF_AUTH_AZUREAD_ROLE_ATTRIBUTE_STRICT: false
+      GF_AUTH_AZUREAD_ROLE_ATTRIBUTE_STRICT: 'false'

@@ -22,6 +22,7 @@
 - name: Create certificates for client communication
   ansible.builtin.include_role:
     name: ska_collections.instance_common.certs
+    tasks_from: sign-cert
   vars:
     certificate_name: "thanos_store"
     certificate_key_name: "thanos_store"

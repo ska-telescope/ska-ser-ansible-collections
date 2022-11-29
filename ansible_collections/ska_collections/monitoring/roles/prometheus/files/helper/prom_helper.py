@@ -25,6 +25,7 @@ RELABEL_KEY = "prometheus_node_metric_relabel_configs"
 def check_port(address, port):
     location = (address, port)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(0.3)
     return sock.connect_ex(location)
 
 def generate_targets_from_inventory(inventory):
@@ -53,10 +54,11 @@ def generate_targets_from_inventory(inventory):
 
         for host in im.get_hosts():
             try:
+                print(host)
                 host_vars = variable_manager.get_vars(host=host)
 
                 hostname = host_vars['inventory_hostname']
-                IP = host_vars['ansible_host']
+                IP = host_vars['ip']
 
                 for exporter_name, details in EXPORTERS.items():
                     result_of_check = check_port(IP, details["port"])
@@ -82,8 +84,8 @@ def generate_targets_from_inventory(inventory):
                                 + str(details["port"]),
                             }
                         )
-            except:
-                pass
+            except Exception as ex:
+                print(ex)
 
     for exporter_name, export_targets in targets.items():
         json_job = [

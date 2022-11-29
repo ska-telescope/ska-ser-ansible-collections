@@ -13,11 +13,21 @@
 - name: Create certificates for client communication
   ansible.builtin.include_role:
     name: ska_collections.instance_common.certs
+    tasks_from: sign-cert
   vars:
     certificate_name: "thanos_compactor"
     certificate_key_name: "thanos_compactor"
     certificate_dns_alt_name: "{{ thanos_alt_name }}"
     certificates_recreate: true
+
+- name: Ensure thanos configuration directory
+  ansible.builtin.file:
+    path: '{{ thanos_config_dir }}'
+    state: directory
+    mode: 0766
+    owner: "{{ prometheus_localuser }}"
+    group: "{{ prometheus_localgroup }}"
+  become: true
 
 - name: Generate thanos tls configuration
   become: true

@@ -10,23 +10,21 @@ PROMETHEUS_NODE ?= prometheus
 COLLECTIONS_PATHS ?= ./collections
 
 ## OPENSTACK VARIABLES
-PROM_OS_PROJECT_ID ?=geral;system-team;admin
-PROM_OS_AUTH_URL ?= http://192.168.93.215:5000/v3/
-PROM_OS_USERNAME ?= "mandatory"
-PROM_OS_PASSWORD ?= "mandatory"
+PROM_OS_USERNAME ?= "" ## Openstak username, mandatory for swift configuration
+PROM_OS_PASSWORD ?= "" ## Openstak password, mandatory for swift configuration
 
-SLACK_API_URL ?= "mandatory"
-SLACK_API_URL_USER ?= "mandatory"
+SLACK_API_URL ?= "" ## Webhook URL for infrastructural alerts
+SLACK_API_URL_USER ?= "" ## Webhook URL for user/developer alerts
 PROM_CONFIGS_PATH ?= .
 
-KUBECONFIG ?= "mandatory"
-GITLAB_TOKEN ?= "mandatory"
-CA_CERT_PASSWORD ?= "mandatory"
+KUBECONFIG ?= "" ## mandatory field for configuring the monitoring of k8s
+GITLAB_TOKEN ?= "" ## mandatory field for configuring gitlab runner exporter
+CA_CERT_PASSWORD ?= "" ## mandatory field for https configuration with the CA server
 
 # AzureAD vars
-AZUREAD_CLIENT_ID ?= "mandatory"
-AZUREAD_CLIENT_SECRET ?= "mandatory"
-AZUREAD_TENANT_ID ?= "mandatory"
+AZUREAD_CLIENT_ID ?= "" ## mandatory field for configuring the authentication of grafana
+AZUREAD_CLIENT_SECRET ?= "" ## mandatory field for configuring the authentication of grafana
+AZUREAD_TENANT_ID ?= "" ## mandatory field for configuring the authentication of grafana
 
 PROMETHEUS_EXTRAVARS ?=
 
@@ -47,8 +45,6 @@ vars:  ## Variables
 	@echo "AZUREAD_CLIENT_SECRET=$(AZUREAD_CLIENT_SECRET)"
 	@echo "AZUREAD_TENANT_ID=$(AZUREAD_TENANT_ID)"
 	@echo "CA_CERT_PASSWORD=$(CA_CERT_PASSWORD)"
-	@echo "PROM_OS_PROJECT_ID=$(PROM_OS_PROJECT_ID)"
-	@echo "PROM_OS_AUTH_URL=$(PROM_OS_AUTH_URL)"
 	@echo "PROM_OS_USERNAME=$(PROM_OS_USERNAME)"
 	@echo "PROM_OS_PASSWORD=$(PROM_OS_PASSWORD)"
 	@echo "PROMETHEUS_NODE=$(PROMETHEUS_NODE)"
@@ -72,8 +68,8 @@ lint: ## Lint playbooks
 	cat ansible-lint-results.txt
 	@flake8 --exclude ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/openstack roles/*
 
-prometheus: check_hosts ## Install Prometheus Server
-	ansible-playbook $(PLAYBOOKS_DIR)/deploy_prometheus.yml \
+prometheus: update_targets ## Install Prometheus Server
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_prometheus.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "slack_api_url='$(SLACK_API_URL)' slack_api_url_user='$(SLACK_API_URL_USER)'" \
@@ -130,8 +126,10 @@ node-exporter: check_hosts ## Install Prometheus node exporter - pass INVENTORY 
 	-e 'ansible_python_interpreter=/usr/bin/python3' \
 	--limit $(NODES)
 
-update_scrapers: check_hosts ## Force update of scrapers
-	python3 ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/openstack/prom_helper.py -i $(INVENTORY)
+update_targets: check_hosts ## Update json file for prometheus targets definition
+	python3 ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/helper/prom_helper.py -i $(INVENTORY) && \
+	mv *.json ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/
+
 
 test-prometheus: check_hosts ## Test elastic cluster
 	ansible-playbook $(TESTS_DIR)/prometheus_test.yml \

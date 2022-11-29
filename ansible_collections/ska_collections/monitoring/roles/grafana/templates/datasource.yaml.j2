@@ -2,22 +2,18 @@ apiVersion: 1
 
 # list of datasources that should be deleted from the database
 deleteDatasources:
-  - name: '{{ grafana_datasource }}'
+  - name: '{{ grafana_datasource_name }}'
     orgId: 1
 
 # list of datasources to insert/update depending
 # what's available in the database
 datasources:
   # <string, required> name of the datasource. Required
-- name: '{{ grafana_datasource }}'
+- name: '{{ grafana_datasource_name }}'
   type: 'prometheus'
   access: 'proxy'
   orgId: 1
-{% if hostvars[thanos_query_frontend] is defined %}
-  url: https://{{ hostvars[thanos_query_frontend].ip }}:9095
-{% else %}
-  url: https://{{ ansible_fqdn | default(ansible_host) | default('localhost') }}:9095
-{% endif %}
+  url: {{ grafana_datasource_url }}
   basicAuth: false
   isDefault: true
   editable: false
@@ -29,8 +25,8 @@ datasources:
 - name: 'InfluxDBInfluxQL'
   type: 'influxdb'
   access: 'proxy'
-  url: http://{{ prometheus_grafana_influxdb | default(ansible_host) | default('localhost') }}:8086
-  database: {{ prometheus_grafana_influxdb_db }}
+  url: http://{{ grafana_influxdb | default(ansible_host) | default('localhost') }}:8086
+  database: {{ grafana_influxdb_db }}
   basicAuth: false
   isDefault: false
   editable: false
@@ -40,7 +36,7 @@ datasources:
 - name: 'InfluxDBFlux'
   type: 'influxdb'
   access: 'proxy'
-  url: http://{{ prometheus_grafana_influxdb | default(ansible_host) | default('localhost') }}:8086
+  url: http://{{ grafana_influxdb | default(ansible_host) | default('localhost') }}:8086
   basicAuth: false
   isDefault: false
   secureJsonData:
@@ -50,6 +46,6 @@ datasources:
     httpMode: POST
     version: Flux
     organization: "non-empty"
-    defaultBucket: {{ prometheus_grafana_influxdb_db }}/autogen
+    defaultBucket: {{ grafana_influxdb_db }}/autogen
     tlsSkipVerify: true
     timeInterval: "1m"

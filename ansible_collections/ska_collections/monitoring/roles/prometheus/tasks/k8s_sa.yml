@@ -1,8 +1,16 @@
+- name: Check is kubectl is installed
+  ansible.builtin.command: kubectl version
+  register: kubectl_version
+  check_mode: true
+  changed_when: kubectl_version.rc != 0
+  ignore_errors: true
+
 - name: Ensure target directory
   ansible.builtin.file:
     path: '{{ prometheus_server_kubectl_install_dir }}'
     state: directory
     mode: '0755'
+  when: kubectl_version.rc != 0
 
 - name: Download kubectl
   become: true
@@ -10,6 +18,7 @@
     url: '{{ prometheus_server_kubectl_url }}'
     dest: '{{ prometheus_server_kubectl_install_dir }}/{{ prometheus_server_kubectl_name }}-{{ prometheus_server_kubectl_version }}'
     mode: 0755
+  when: kubectl_version.rc != 0
 
 - name: Link installed kubectl # noqa ignore-errors
   become: true
@@ -19,12 +28,14 @@
     dest: '{{ prometheus_server_kubectl_install_dir }}/{{ prometheus_server_kubectl_name }}'
     state: link
     mode: 0755
+  when: kubectl_version.rc != 0
 
 - name: Create directory
   ansible.builtin.file:
     path: /etc/kubernetes/
     state: directory
     mode: 0755
+  when: kubectl_version.rc != 0
 
 - name: Copy KUBECONFIG file
   ansible.builtin.copy:
@@ -51,6 +62,20 @@
   register: response
   failed_when: "'unchanged' not in response.stdout and 'created' not in response.stdout"
   changed_when: "'created' in response.stdout"
+
+- name: Check is jq is installed
+  ansible.builtin.command: jq --version
+  register: jq_version
+  changed_when: jq_version.rc != 0
+  ignore_errors: true
+
+- name: Install jq tool
+  ansible.builtin.apt:
+    pkg:
+      - jq
+    state: present
+    update_cache: true
+  when: jq_version.rc != 0
 
 - name: Get prom_secret # noqa risky-shell-pipe no-changed-when
   ansible.builtin.shell: |

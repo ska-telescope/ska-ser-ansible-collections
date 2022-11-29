@@ -18,6 +18,7 @@
 - name: Create certificates for server communication
   ansible.builtin.include_role:
     name: ska_collections.instance_common.certs
+    tasks_from: sign-cert
   vars:
     certificate_name: "thanos_query"
     certificate_key_name: "thanos_query"
@@ -27,6 +28,7 @@
 - name: Create certificates for client communication
   ansible.builtin.include_role:
     name: ska_collections.instance_common.certs
+    tasks_from: sign-cert
   vars:
     certificate_name: "thanos_query_client"
     certificate_key_name: "thanos_query_client"

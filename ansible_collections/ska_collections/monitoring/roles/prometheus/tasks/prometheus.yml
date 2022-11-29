@@ -35,7 +35,7 @@
 
 - name: Task create sa for prometheus
   ansible.builtin.include_tasks: k8s_sa.yml
-  when: kubeconfig != null
+  when: kubeconfig is not none
 
 - name: Generate Prometheus configuration
   become: true
@@ -48,12 +48,13 @@
     mode: 0755
 
 - name: Create certificates for client communication
-  ansible.builtin.include_role:
+  ansible.builtin.import_role:
     name: ska_collections.instance_common.certs
+    tasks_from: sign-cert
   vars:
     certificate_name: "prometheus"
     certificate_key_name: "prometheus"
-    certificate_dns_alt_name: "{{ thanos_alt_name }}"
+    certificate_dns_alt_name: "{{ prometheus_alt_name }}"
     certificates_recreate: true
 
 - name: Create alerting rules file

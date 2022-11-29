@@ -3,7 +3,8 @@
 
 grafana_provisioning_config_dir: /etc/grafana/provisioning
 grafana_data: /var/lib/grafana
-grafana_datasource: Prometheus
+grafana_datasource_name: Thanos
+grafana_datasource_url: https://{{ ansible_fqdn | default(ansible_host) | default('localhost') }}:9095
 grafana_dashboards_path: "{{ grafana_provisioning_config_dir }}/dashboards"
 grafana_plugins:
   - vonage-status-panel
@@ -15,4 +16,4 @@ grafana_plugins:
   - speakyourcode-button-panel
   - natel-plotly-panel
   - fifemon-graphql-datasource
-prometheus_grafana_disable_admin_account_creation: false
+grafana_disable_admin_account_creation: true

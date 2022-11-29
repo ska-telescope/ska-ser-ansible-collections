@@ -8,3 +8,5 @@ slack_api_url_user: "*********************"
 
 alertmanager_config_dir: /etc/alertmanager
 alertmanager_data_dir: /alertmanager
+
+alerts_inhibit_rules: []
