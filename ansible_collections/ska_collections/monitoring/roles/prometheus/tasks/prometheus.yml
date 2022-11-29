@@ -11,8 +11,8 @@
     path: '{{ prometheus_data_dir }}'
     state: directory
     mode: 0766
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
   become: true
 
 - name: Ensure Prometheus configuration directory
@@ -20,8 +20,8 @@
     path: '{{ prometheus_server_config_dir }}'
     state: directory
     mode: 0755
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
   become: true
 
 - name: Ensure Prometheus rules configuration directory
@@ -29,8 +29,8 @@
     path: '{{ prometheus_server_config_dir }}/rules/'
     state: directory
     mode: 0755
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
   become: true
 
 - name: Task create sa for prometheus
@@ -43,8 +43,8 @@
     src: "prometheus.yml.j2"
     dest: "{{ prometheus_server_config_dir }}/prometheus.yml"
     force: true
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
     mode: 0755
 
 - name: Create certificates for client communication
@@ -61,8 +61,8 @@
   ansible.builtin.template:
     src: "alert.rules.j2"
     dest: "{{ prometheus_server_config_dir }}/rules/ansible_managed.rules"
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
     mode: 0755
   when:
     - prometheus_server_alert_rules != []
@@ -71,8 +71,8 @@
   ansible.builtin.template:
     src: "record.rules.j2"
     dest: "{{ prometheus_server_config_dir }}/rules/record.rules"
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
     mode: 0755
   when:
     - prometheus_server_record_rules != []
@@ -81,24 +81,24 @@
   ansible.builtin.copy:
     src: "rules/ceph/ceph_dashboard.rules"
     dest: "/etc/prometheus/rules/ceph_dashboard.rules"
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
     mode: 0644
 
 - name: Copy elasticstack alerting rules
   ansible.builtin.copy:
     src: "rules/elasticstack/elasticsearch.rules"
     dest: "/etc/prometheus/rules/elasticsearch.rules"
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
     mode: 0644
 
 - name: Copy kubernetes alerting rules
   ansible.builtin.copy:
     src: "rules/kubernetes/{{ item }}"
     dest: "/etc/prometheus/rules/kubernetes_{{ item }}.rules"
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
     mode: 0644
   with_items:
     - prometheus_alerts.yaml
@@ -135,8 +135,8 @@
     src: "prometheus.web.config.yml.j2"
     dest: "{{ prometheus_server_config_dir }}/prometheus.web.config.yml"
     force: true
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
     mode: 0644
 
 - name: Start prometheus container

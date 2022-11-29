@@ -1,5 +1,7 @@
 ---
 # defaults file for thanos
+monitoring_localuser: ubuntu
+monitoring_localgroup: ubuntu
 
 thanos_alt_name: "monitoring.skao.stfc"
 thanos_query_frontend: thanos
@@ -9,3 +11,5 @@ thanos_compactor_data_dir: /etc/thanos/thanos-compact
 thanos_query_endpoints:
   - 192.168.99.153:10901
   - 192.168.99.31:19090
+
+thanos_docker_tags: 'v0.28.0'

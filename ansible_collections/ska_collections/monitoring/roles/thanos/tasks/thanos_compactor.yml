@@ -1,7 +1,7 @@
-- name: Pull thanos image {{ prometheus_thanos_docker_tags }}
+- name: Pull thanos image {{ thanos_docker_tags }}
   community.docker.docker_image:
     name: thanosio/thanos
-    tag: "{{ prometheus_thanos_docker_tags }}"
+    tag: "{{ thanos_docker_tags }}"
     source: pull
 
 - name: Stop thanos container
@@ -25,8 +25,8 @@
     path: '{{ thanos_config_dir }}'
     state: directory
     mode: 0766
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
   become: true
 
 - name: Generate thanos tls configuration
@@ -35,8 +35,8 @@
     src: "thanos_compactor.yaml.j2"
     dest: "{{ thanos_config_dir }}/thanos_compactor.yaml"
     force: true
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
     mode: 0644
 
 - name: Generate thanos swift configuration
@@ -45,14 +45,14 @@
     src: "swift.yml.j2"
     dest: "{{ thanos_config_dir }}/swift.yml"
     force: true
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
     mode: 0644
 
 - name: Start thanos compactor
   community.docker.docker_container:
     name: thanos_compactor
-    image: "thanosio/thanos:{{ prometheus_thanos_docker_tags }}"
+    image: "thanosio/thanos:{{ thanos_docker_tags }}"
     state: started
     command:
       - "compact"

@@ -6,8 +6,8 @@
     path: '{{ thanos_config_dir }}'
     state: directory
     mode: 0755
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
   become: true
 
 - name: Task thanos_sidecar

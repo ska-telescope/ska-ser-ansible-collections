@@ -18,8 +18,8 @@
     src: "alertmanager.yml.j2"
     dest: "{{ alertmanager_config_dir }}/alertmanager.yml"
     force: true
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
     mode: 0755
 
 - name: Pull Prometheus alertmanager image {{ prometheus_alertmanager_docker_tags }}

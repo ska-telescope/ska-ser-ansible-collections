@@ -4,8 +4,8 @@
     path: '{{ grafana_provisioning_config_dir }}/datasources'
     state: directory
     mode: 0755
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
   become: true
 
 - name: Ensure grafana data directory
@@ -13,8 +13,8 @@
     path: '{{ grafana_data }}'
     state: directory
     mode: 0755
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
   become: true
 
 - name: Generate Prometheus datasource on grafana
@@ -23,8 +23,8 @@
     src: "datasource.yaml.j2"
     dest: "{{ grafana_provisioning_config_dir }}/datasources/datasource.yaml"
     force: true
-    owner: "{{ prometheus_localuser }}"
-    group: "{{ prometheus_localgroup }}"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
     mode: 0755
 
 - name: Pull grafana image {{ prometheus_grafana_docker_tags }}
