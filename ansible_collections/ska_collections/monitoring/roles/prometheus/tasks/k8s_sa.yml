@@ -2,7 +2,7 @@
   ansible.builtin.command: kubectl version
   register: kubectl_version
   check_mode: true
-  changed_when: kubectl_version.rc != 0
+  changed_when: false
   ignore_errors: true
 
 - name: Ensure target directory
