@@ -1,8 +1,7 @@
-- name: Check is kubectl is installed
-  ansible.builtin.command: kubectl version
-  register: kubectl_version
-  check_mode: true
+- name: Check if the kubectl version is installed
+  ansible.builtin.command: "kubectl version --client --short 2>&1"
   changed_when: false
+  register: kubectl_version
   ignore_errors: true
 
 - name: Ensure target directory
