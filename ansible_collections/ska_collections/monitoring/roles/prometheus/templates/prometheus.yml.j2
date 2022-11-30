@@ -24,13 +24,17 @@ rule_files:
 alerting:
   alertmanagers:
   {{ prometheus_alertmanager_config | to_nice_yaml(indent=2) | indent(2,False) }}
+{% if prometheus_static_node_metric_relabel_configs | length > 0 %}
   alert_relabel_configs:
   # prometheus_static_node_metric_relabel_configs
   {{ prometheus_static_node_metric_relabel_configs | to_nice_yaml(indent=2) | indent(2,False) }}
+{% endif %}
+{% if prometheus_elasticsearch_instance_add_cluster_label | length > 0 %}
   # prometheus_elasticsearch_instance_add_cluster_label
   {{ prometheus_elasticsearch_instance_add_cluster_label | to_nice_yaml(indent=2) | indent(2,False) }}
-  # prometheus_node_metric_relabel_configs
+{% endif %}
 {% if prometheus_node_metric_relabel_configs | length > 0 %}
+  # prometheus_node_metric_relabel_configs
   {{ prometheus_node_metric_relabel_configs | to_nice_yaml(indent=2) | indent(2,False) }}
 {% endif %}
 {% endif %}
