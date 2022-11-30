@@ -22,10 +22,10 @@
     group: "{{ monitoring_localgroup }}"
     mode: 0755
 
-- name: Pull Prometheus alertmanager image {{ prometheus_alertmanager_docker_tags }}
+- name: Pull Prometheus alertmanager image {{ alertmanager_docker_tags }}
   community.docker.docker_image:
     name: quay.io/prometheus/alertmanager
-    tag: "{{ prometheus_alertmanager_docker_tags }}"
+    tag: "{{ alertmanager_docker_tags }}"
     source: pull
 
 - name: Stop alertmanager container
@@ -36,7 +36,7 @@
 - name: Start Prometheus alertmanager container
   community.docker.docker_container:
     name: alertmanager
-    image: "quay.io/prometheus/alertmanager:{{ prometheus_alertmanager_docker_tags }}"
+    image: "quay.io/prometheus/alertmanager:{{ alertmanager_docker_tags }}"
     command:
       - "--config.file=/etc/alertmanager/alertmanager.yml"
       - "--web.external-url={{ prometheus_alertmanager_url | default('http://' + ansible_default_ipv4.address + ':9093') }}"

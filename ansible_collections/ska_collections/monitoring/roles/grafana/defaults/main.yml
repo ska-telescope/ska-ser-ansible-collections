@@ -1,6 +1,9 @@
 ---
 # defaults file for grafana
 
+monitoring_localuser: ubuntu
+monitoring_localgroup: ubuntu
+
 grafana_provisioning_config_dir: /etc/grafana/provisioning
 grafana_data: /var/lib/grafana
 grafana_datasource_name: Thanos
@@ -17,3 +20,5 @@ grafana_plugins:
   - natel-plotly-panel
   - fifemon-graphql-datasource
 grafana_disable_admin_account_creation: true
+
+grafana_docker_tags: '9.0.0'

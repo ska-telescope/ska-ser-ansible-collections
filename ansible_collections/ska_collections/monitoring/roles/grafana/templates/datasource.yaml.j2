@@ -22,30 +22,3 @@ datasources:
     httpMode: POST
     tlsSkipVerify: true
     timeInterval: "1m"
-- name: 'InfluxDBInfluxQL'
-  type: 'influxdb'
-  access: 'proxy'
-  url: http://{{ grafana_influxdb | default(ansible_host) | default('localhost') }}:8086
-  database: {{ grafana_influxdb_db }}
-  basicAuth: false
-  isDefault: false
-  editable: false
-  jsonData:
-    httpMode: POST
-    version: InfluxQL
-- name: 'InfluxDBFlux'
-  type: 'influxdb'
-  access: 'proxy'
-  url: http://{{ grafana_influxdb | default(ansible_host) | default('localhost') }}:8086
-  basicAuth: false
-  isDefault: false
-  secureJsonData:
-    token: "test:test"
-  jsonData:
-    editable: false
-    httpMode: POST
-    version: Flux
-    organization: "non-empty"
-    defaultBucket: {{ grafana_influxdb_db }}/autogen
-    tlsSkipVerify: true
-    timeInterval: "1m"

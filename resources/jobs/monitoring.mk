@@ -130,7 +130,6 @@ update_targets: check_hosts ## Update json file for prometheus targets definitio
 	python3 ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/helper/prom_helper.py -i $(INVENTORY) && \
 	mv *.json ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/
 
-
 test-prometheus: check_hosts ## Test elastic cluster
 	ansible-playbook $(TESTS_DIR)/prometheus_test.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \

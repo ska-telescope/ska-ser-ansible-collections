@@ -27,10 +27,10 @@
     group: "{{ monitoring_localgroup }}"
     mode: 0755
 
-- name: Pull grafana image {{ prometheus_grafana_docker_tags }}
+- name: Pull grafana image {{ grafana_docker_tags }}
   community.docker.docker_image:
     name: grafana/grafana
-    tag: "{{ prometheus_grafana_docker_tags }}"
+    tag: "{{ grafana_docker_tags }}"
     source: pull
 
 - name: Stop grafana container
@@ -41,7 +41,7 @@
 - name: Start grafana container
   community.docker.docker_container:
     name: grafana
-    image: "grafana/grafana:{{ prometheus_grafana_docker_tags }}"
+    image: "grafana/grafana:{{ grafana_docker_tags }}"
     state: started
     user: root
     restart: true
