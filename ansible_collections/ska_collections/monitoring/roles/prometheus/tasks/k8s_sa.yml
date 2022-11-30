@@ -42,12 +42,15 @@
     mode: 0755
   become: true
 
-# Create prometheus sa to get bearer.token
+- name: Check if prometheus sa account is created
+  ansible.builtin.command: "kubectl --kubeconfig=/etc/kubernetes/admin.conf describe sa prometheus -n kube-system"
+  changed_when: false
+  register: sa_account
+  ignore_errors: true
+
 - name: Create prometheus sa account
-  ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf create sa prometheus -n kube-system
-  register: response
-  failed_when: "'already exists' not in response.stderr and 'created' not in response.stdout"
-  changed_when: "'created' in response.stdout"
+  ansible.builtin.command: "kubectl --kubeconfig=/etc/kubernetes/admin.conf create sa prometheus -n kube-system"
+  when: sa_account.rc != 0
 
 - name: Copy up configuration file
   ansible.builtin.copy:
@@ -56,15 +59,13 @@
     mode: 0644
 
 - name: Create prometheus rolebinding account
-  ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f /tmp/prometheus_rlb.yml
-  register: response
-  failed_when: "'unchanged' not in response.stdout and 'created' not in response.stdout"
-  changed_when: "'created' in response.stdout"
+  ansible.builtin.command: "kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f /tmp/prometheus_rlb.yml"
+  changed_when: false
 
 - name: Check is jq is installed
-  ansible.builtin.command: jq --version
+  ansible.builtin.command: "jq --version"
   register: jq_version
-  changed_when: jq_version.rc != 0
+  changed_when: false
   ignore_errors: true
 
 - name: Install jq tool
