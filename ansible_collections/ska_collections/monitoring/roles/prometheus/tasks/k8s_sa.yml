@@ -35,7 +35,6 @@
     path: /etc/kubernetes/
     state: directory
     mode: 0755
-  when: kubectl_version.rc != 0
 
 - name: Copy KUBECONFIG file
   ansible.builtin.copy:
