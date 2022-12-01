@@ -5,4 +5,6 @@
     - include: prometheus_health.yml
     - include: grafana_health.yml
     - include: alertmanager_health.yml
-    - include: thanos_sidecar_health.yml
+    # skip the thanos sidecar for now
+    # untill we have an S3 storage
+    # - include: thanos_sidecar_health.yml
