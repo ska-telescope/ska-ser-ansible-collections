@@ -69,7 +69,7 @@ lint: ## Lint playbooks
 	@flake8 --exclude ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/openstack roles/*
 
 prometheus: update_targets ## Install Prometheus Server
-	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_prometheus.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/deploy_prometheus.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "slack_api_url='$(SLACK_API_URL)' slack_api_url_user='$(SLACK_API_URL_USER)'" \
@@ -127,16 +127,16 @@ node-exporter: check_hosts ## Install Prometheus node exporter - pass INVENTORY 
 	--limit $(NODES)
 
 update_targets: check_hosts ## Update json file for prometheus targets definition
-	python3 ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/helper/prom_helper.py -i $(INVENTORY); \
+	@python3 ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/helper/prom_helper.py -i $(INVENTORY); \
 	mv *.json ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/ 2>/dev/null || true
 
 test-prometheus: check_hosts ## Test elastic cluster
-	ansible-playbook $(TESTS_DIR)/prometheus_test.yml \
+	@ansible-playbook $(TESTS_DIR)/prometheus_test.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 test-thanos: check_hosts ## Test elastic cluster
-	ansible-playbook $(TESTS_DIR)/thanos_test.yml \
+	@ansible-playbook $(TESTS_DIR)/thanos_test.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
