@@ -68,7 +68,7 @@ lint: ## Lint playbooks
 	cat ansible-lint-results.txt
 	@flake8 --exclude ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/openstack roles/*
 
-prometheus: update_targets ## Install Prometheus Server
+prometheus: check_hosts ## Install Prometheus Server
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_prometheus.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
