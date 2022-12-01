@@ -69,7 +69,7 @@ lint: ## Lint playbooks
 	@flake8 --exclude ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/openstack roles/*
 
 prometheus: update_targets ## Install Prometheus Server
-	ansible-playbook $(PLAYBOOKS_DIR)/deploy_prometheus.yml \
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_prometheus.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "slack_api_url='$(SLACK_API_URL)' slack_api_url_user='$(SLACK_API_URL_USER)'" \
