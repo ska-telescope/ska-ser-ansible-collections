@@ -70,6 +70,7 @@ prometheus: check_hosts ## Install Prometheus Server
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "kubeconfig='$(KUBECONFIG)'" \
+		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
 		-e "thanos_swift_server_password='$(PROM_OS_PASSWORD)'" $(PROMETHEUS_EXTRAVARS) \
 		-e "prometheus_gitlab_ci_pipelines_exporter_token=$(GITLAB_TOKEN)" \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
