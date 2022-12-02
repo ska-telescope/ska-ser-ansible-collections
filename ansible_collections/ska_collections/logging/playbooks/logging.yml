@@ -42,3 +42,7 @@
         name: ska_collections.logging.beats
         tasks_from: install-filebeat-podman
       when: 'logging_filebeat_oci_engine == "podman"'
+
+    - name: Install custom metrics for filebeat
+      ansible.builtin.import_role:
+        name: ska_collections.logging.custom_metrics

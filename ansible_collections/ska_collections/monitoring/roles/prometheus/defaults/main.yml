@@ -40,10 +40,6 @@ prometheus_server_playbook_dir: /usr/src/deploy-prometheus/
 prometheus_gitlab_url: git@gitlab.com
 prometheus_repo_base: "{{ prometheus_gitlab_url }}:ska-telescope"
 
-prometheus_server_auth_url: ""
-prometheus_server_username: ""
-prometheus_server_password: ""
-
 prometheus_global:
   scrape_interval: 15s
   scrape_timeout: 10s

@@ -13,6 +13,7 @@ Tested with the current Ansible 6.5.x releases.
 | [logging.stack](./logging/roles/stack) | Install Elasticsearch cluster, Kibana and HA | 8.4.2 | Ubuntu 18+ (LTS) | [common.certs](./common/roles/certs) |
 | [logging.haproxy](./logging/roles/haproxy) | Install and configure SSL certificates | 2.6 | Ubuntu 18+ (LTS) | |
 | [logging.beats](./logging/roles/beats) | Install and configure SSL certificates | 7.17.0 | Ubuntu 18+ (LTS) | |
+| [logging.custom_metrics](./logging/roles/custom_metrics) | Install and configure some custom metrics for prometheus monitoring of filebeat | 0.1.0 | Ubuntu 18+ (LTS) | |
 
 ## Installation
 

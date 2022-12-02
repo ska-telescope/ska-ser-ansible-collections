@@ -74,8 +74,8 @@ prometheus: check_hosts ## Install Prometheus Server
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "slack_api_url='$(SLACK_API_URL)' slack_api_url_user='$(SLACK_API_URL_USER)'" \
 		--extra-vars="azuread_client_id='$(AZUREAD_CLIENT_ID)' azuread_client_secret='$(AZUREAD_CLIENT_SECRET)' azuread_tenant_id='$(AZUREAD_TENANT_ID)'" \
-		-e "prometheus_server_auth_url='$(PROM_OS_AUTH_URL)' kubeconfig='$(KUBECONFIG)'" \
-		-e "prometheus_server_username='$(PROM_OS_USERNAME)' prometheus_server_password='$(PROM_OS_PASSWORD)'" $(PROMETHEUS_EXTRAVARS) \
+		-e "thanos_swift_server_auth_url='$(PROM_OS_AUTH_URL)' kubeconfig='$(KUBECONFIG)'" \
+		-e "thanos_swift_server_username='$(PROM_OS_USERNAME)' thanos_swift_server_password='$(PROM_OS_PASSWORD)'" $(PROMETHEUS_EXTRAVARS) \
 		-e "prometheus_gitlab_ci_pipelines_exporter_token=$(GITLAB_TOKEN)" \
 		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
@@ -111,8 +111,8 @@ thanos: check_hosts ## Install Thanos query and query front-end
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
-		-e "prometheus_server_auth_url='$(PROM_OS_AUTH_URL)'" \
-		-e "prometheus_server_username='$(PROM_OS_USERNAME)' prometheus_server_password='$(PROM_OS_PASSWORD)'" \
+		-e "thanos_swift_server_auth_url='$(PROM_OS_AUTH_URL)'" \
+		-e "thanos_swift_server_username='$(PROM_OS_USERNAME)' thanos_swift_server_password='$(PROM_OS_PASSWORD)'" \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/all.yml \
 		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/prometheus.yml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \

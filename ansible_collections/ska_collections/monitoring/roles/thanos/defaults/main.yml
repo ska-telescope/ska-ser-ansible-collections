@@ -13,3 +13,7 @@ thanos_query_endpoints:
   - 192.168.99.31:19090
 
 thanos_docker_tags: 'v0.28.0'
+
+thanos_swift_server_auth_url: ""
+thanos_swift_server_username: ""
+thanos_swift_server_password: ""
