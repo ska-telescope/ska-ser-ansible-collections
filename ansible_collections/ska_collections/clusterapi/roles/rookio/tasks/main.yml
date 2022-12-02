@@ -8,9 +8,17 @@
     namespace: "{{ rook_namespace }}"
   register: rook_operator_check
 
+- name: Check Rook Config Secret exists
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: rook-ceph-mon
+    namespace: "{{ rook_namespace }}"
+  register: rook_secret_check
+
 - name: Start Rook
   # CAPO is not started
-  when: "not rook_operator_check.resources"
+  when: "not rook_operator_check.resources and not rook_secret_check.resources"
   block:
 
     - name: Download Rook IO manifests
