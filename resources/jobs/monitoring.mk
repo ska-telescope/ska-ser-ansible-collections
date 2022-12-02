@@ -44,9 +44,6 @@ vars:  ## Variables
 	@echo "AZUREAD_CLIENT_ID=$(AZUREAD_CLIENT_ID)"
 	@echo "AZUREAD_CLIENT_SECRET=$(AZUREAD_CLIENT_SECRET)"
 	@echo "AZUREAD_TENANT_ID=$(AZUREAD_TENANT_ID)"
-	@echo "CA_CERT_PASSWORD=$(CA_CERT_PASSWORD)"
-	@echo "PROM_OS_USERNAME=$(PROM_OS_USERNAME)"
-	@echo "PROM_OS_PASSWORD=$(PROM_OS_PASSWORD)"
 	@echo "PROMETHEUS_NODE=$(PROMETHEUS_NODE)"
 	@echo "GITLAB_TOKEN=$(GITLAB_TOKEN)"
 	@echo "KUBECONFIG=$(KUBECONFIG)"
@@ -72,15 +69,10 @@ prometheus: check_hosts ## Install Prometheus Server
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_prometheus.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
-		-e "slack_api_url='$(SLACK_API_URL)' slack_api_url_user='$(SLACK_API_URL_USER)'" \
-		--extra-vars="azuread_client_id='$(AZUREAD_CLIENT_ID)' azuread_client_secret='$(AZUREAD_CLIENT_SECRET)' azuread_tenant_id='$(AZUREAD_TENANT_ID)'" \
-		-e "thanos_swift_server_auth_url='$(PROM_OS_AUTH_URL)' kubeconfig='$(KUBECONFIG)'" \
-		-e "thanos_swift_server_username='$(PROM_OS_USERNAME)' thanos_swift_server_password='$(PROM_OS_PASSWORD)'" $(PROMETHEUS_EXTRAVARS) \
+		-e "kubeconfig='$(KUBECONFIG)'" \
+		-e "thanos_swift_server_password='$(PROM_OS_PASSWORD)'" $(PROMETHEUS_EXTRAVARS) \
 		-e "prometheus_gitlab_ci_pipelines_exporter_token=$(GITLAB_TOKEN)" \
-		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
-		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/all.yml \
-		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/prometheus.yml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
@@ -90,8 +82,6 @@ grafana: check_hosts ## Install Grafana Server
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		--extra-vars="azuread_client_id='$(AZUREAD_CLIENT_ID)' azuread_client_secret='$(AZUREAD_CLIENT_SECRET)' azuread_tenant_id='$(AZUREAD_TENANT_ID)'" \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
-		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/all.yml \
-		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/prometheus.yml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
@@ -100,9 +90,6 @@ alertmanager: check_hosts ## Install Prometheus Server
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "slack_api_url='$(SLACK_API_URL)' slack_api_url_user='$(SLACK_API_URL_USER)'" \
-		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/all.yml \
-		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/prometheus.yml \
-		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
@@ -111,10 +98,7 @@ thanos: check_hosts ## Install Thanos query and query front-end
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
-		-e "thanos_swift_server_auth_url='$(PROM_OS_AUTH_URL)'" \
-		-e "thanos_swift_server_username='$(PROM_OS_USERNAME)' thanos_swift_server_password='$(PROM_OS_PASSWORD)'" \
-		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/all.yml \
-		-e @$(PLAYBOOKS_ROOT_DIR)/group_vars/prometheus.yml \
+		-e "thanos_swift_server_password='$(PROM_OS_PASSWORD)'" \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 

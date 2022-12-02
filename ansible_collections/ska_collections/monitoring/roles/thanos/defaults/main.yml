@@ -14,6 +14,6 @@ thanos_query_endpoints:
 
 thanos_docker_tags: 'v0.28.0'
 
-thanos_swift_server_auth_url: ""
-thanos_swift_server_username: ""
+thanos_swift_server_auth_url: "https://openstack.stfc.ac.uk:5000/v3"
+thanos_swift_server_username: "pharding"
 thanos_swift_server_password: ""
