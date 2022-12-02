@@ -112,7 +112,7 @@ node-exporter: check_hosts ## Install Prometheus node exporter - pass INVENTORY 
 	--limit $(NODES)
 
 update_targets: check_hosts ## Update json file for prometheus targets definition
-	@python3 ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/helper/prom_helper.py -i $(INVENTORY); \
+	@python3 ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/helper/prom_helper.py -g "$(BASE_PATH)/datacentres/$(DATACENTRE)/*/installation"; \
 	mv *.json ./ansible_collections/ska_collections/monitoring/roles/prometheus/files/ 2>/dev/null || true
 
 test-prometheus: check_hosts ## Test elastic cluster

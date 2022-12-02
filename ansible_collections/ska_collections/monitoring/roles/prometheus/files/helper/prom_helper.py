@@ -7,6 +7,7 @@ import socket
 import yaml
 import os
 import logging
+import glob
 from ansible.inventory.manager import InventoryManager
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars.manager import VariableManager
@@ -20,6 +21,9 @@ EXPORTERS = {
     "kube-proxy": {"name": "kube-proxy", "port": 10249},
 }
 RELABEL_KEY = "prometheus_node_metric_relabel_configs"
+
+targets = {}
+hostrelabelling = {RELABEL_KEY: []}
 
 
 def check_port(address, port):
@@ -36,9 +40,6 @@ def generate_targets_from_inventory(inventory):
     the matching ports in the machines.
     If the port is open, the target is generated.
     """
-    targets = {}
-    hostrelabelling = {RELABEL_KEY: []}
-
     sources = []
     if os.path.isdir(inventory):
         for filename in os.listdir(inventory):
@@ -92,6 +93,11 @@ def generate_targets_from_inventory(inventory):
             except Exception as ex:
                 print(ex)
 
+
+def write_json_files():
+    """
+    This method writes the json files.
+    """
     for exporter_name, export_targets in targets.items():
         json_job = [
             {
@@ -126,6 +132,12 @@ parser.add_argument(
     "--inventory",
     help="Inventory file or folder",
 )
+parser.add_argument(
+    "-g",
+    "--glob",
+    help="Inventory file or folder with glob helper for multiple directories",
+)
+
 
 args = parser.parse_args()
 
@@ -133,7 +145,7 @@ if len(sys.argv) == 1:
     parser.print_help(sys.stderr)
     sys.exit(1)
 
-if not args.inventory:
+if not args.inventory and not args.glob:
     print(
         (
             "Please provide an inventory file",
@@ -142,4 +154,12 @@ if not args.inventory:
     )
     sys.exit(1)
 
-generate_targets_from_inventory(args.inventory)
+if args.inventory:
+    generate_targets_from_inventory(args.inventory)
+
+if args.glob:
+    inventories = glob.glob(args.glob)
+    for inventory in inventories:
+        generate_targets_from_inventory(inventory)
+
+write_json_files()
