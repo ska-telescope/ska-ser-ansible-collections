@@ -106,10 +106,10 @@
         mode: "0744"
       become: true
 
-    - name: Fix Rook secrets
-      ansible.builtin.command: /usr/bin/bash /tmp/rookio-fix-secrets.sh
-      environment: "{{ rook_ceph_env }}"
-      changed_when: true # TODO make this accurate
+    # - name: Fix Rook secrets
+    #   ansible.builtin.command: /usr/bin/bash /tmp/rookio-fix-secrets.sh
+    #   environment: "{{ rook_ceph_env }}"
+    #   changed_when: true # TODO make this accurate
 
 - name: Check CephCluster exist
   kubernetes.core.k8s_info:
