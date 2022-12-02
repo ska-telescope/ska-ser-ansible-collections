@@ -24,8 +24,8 @@ rule_files:
 alerting:
   alertmanagers:
   {{ prometheus_alertmanager_config | to_nice_yaml(indent=2) | indent(2,False) }}
-{% if prometheus_static_node_metric_relabel_configs | length > 0 %}
   alert_relabel_configs:
+{% if prometheus_static_node_metric_relabel_configs | length > 0 %}
   # prometheus_static_node_metric_relabel_configs
   {{ prometheus_static_node_metric_relabel_configs | to_nice_yaml(indent=2) | indent(2,False) }}
 {% endif %}
