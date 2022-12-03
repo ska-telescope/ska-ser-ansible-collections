@@ -107,7 +107,7 @@
   ansible.builtin.command: /usr/bin/bash /tmp/rookio-fix-secrets.sh
   environment:
     KUBECONFIG: "{{ kube_config }}"
-    ROOK_EXTERNAL_ADMIN_KEY: "{{ rook_external_admin_key }}"
+    ROOK_EXTERNAL_ADMIN_USER_NAME: "{{ rook_external_admin_user_name }}"
     ROOK_EXTERNAL_ADMIN_SECRET: "{{ rook_external_admin_secret }}"
     ROOK_EXTERNAL_CEPH_MONITORS: "{{ rook_external_ceph_monitors }}"
   changed_when: true # TODO make this accurate
