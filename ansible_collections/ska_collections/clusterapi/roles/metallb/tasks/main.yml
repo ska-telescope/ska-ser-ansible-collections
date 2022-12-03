@@ -61,7 +61,7 @@
   ska_collections.clusterapi.wait_for_daemonset:
     name: speaker
     kubectl_namespace: metallb-system
-    initpause: 10
+    initpause: 30
     wait: 15
     retries: 25
     kubectl_kubeconfig: /etc/kubernetes/admin.conf
