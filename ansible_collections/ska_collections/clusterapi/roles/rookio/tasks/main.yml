@@ -33,26 +33,23 @@
         - "common.yaml"
         - "operator.yaml"
 
-          # echo "Waiting for the operator"
-          # kubectl -n rook-ceph wait --for=condition=available deployment.v1.apps/rook-ceph-operator --timeout=300s || true
+- name: Wait for deploy/rook-ceph-operator
+  kubernetes.core.k8s_info:
+    kind: Deployment
+    api_version: apps/v1
+    name: rook-ceph-operator
+    namespace: "{{ rook_namespace }}"
+    wait: true
+    wait_sleep: 10
+    wait_timeout: 300
+    wait_condition:
+      type: Available
 
-    - name: Wait for deploy/rook-ceph-operator
-      kubernetes.core.k8s_info:
-        kind: Deployment
-        api_version: apps/v1
-        name: rook-ceph-operator
-        namespace: "{{ rook_namespace }}"
-        wait: true
-        wait_sleep: 10
-        wait_timeout: 300
-        wait_condition:
-          type: Available
-
-    - name: Download Rook import external cluster script
-      ansible.builtin.get_url:
-        url: "https://raw.githubusercontent.com/rook/rook/{{ rook_version }}/deploy/examples/import-external-cluster.sh"
-        dest: "/tmp/import-external-cluster.sh"
-        mode: '0664'
+- name: Download Rook import external cluster script
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/rook/rook/{{ rook_version }}/deploy/examples/import-external-cluster.sh"
+    dest: "/tmp/import-external-cluster.sh"
+    mode: '0664'
 
 - name: Check Rook Config Secret exists
   kubernetes.core.k8s_info:
