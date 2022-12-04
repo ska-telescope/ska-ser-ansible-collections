@@ -7,4 +7,4 @@ kubernetes_version: v1.25.4
 helm_version: v3.10.2
 k9s_version: v0.26.7
 ## yq tool version to install https://github.com/mikefarah/yq/releases
-yq_version: 4.30.4
+yq_version: 4.30.5

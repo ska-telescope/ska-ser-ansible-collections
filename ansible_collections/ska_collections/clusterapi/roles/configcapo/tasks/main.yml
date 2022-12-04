@@ -38,6 +38,12 @@
   ansible.builtin.debug:
     var: capo_template_version_latest
 
+- name: Tidy up CAPO template
+  ansible.builtin.file:
+    path: "{{ clusterapi_config_dir }}/cluster-template.orig.yaml"
+    state: absent
+  become: true
+
 - name: Download CAPO template
   ansible.builtin.get_url:
     url: "https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/download/{{ capo_template_version }}/cluster-template.yaml"

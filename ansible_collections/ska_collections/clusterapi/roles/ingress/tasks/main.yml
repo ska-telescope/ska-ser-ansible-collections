@@ -1,5 +1,10 @@
 ---
 
+- name: Tidy up Ingress Controller manifests
+  ansible.builtin.file:
+    path: "/tmp/ingress.yaml"
+    state: absent
+
 - name: Download Ingress Controller manifests
   ansible.builtin.get_url:
     url: "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v{{ ingress_nginx_version }}/deploy/static/provider/baremetal/deploy.yaml"

@@ -1,5 +1,10 @@
 ---
 
+- name: Tidy up Calico manifests
+  ansible.builtin.file:
+    path: "/tmp/calico.yaml"
+    state: absent
+
 - name: Download Calico manifests
   ansible.builtin.get_url:
     url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ calico_version }}/manifests/calico.yaml"

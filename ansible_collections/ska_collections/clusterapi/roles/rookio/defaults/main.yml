@@ -1,7 +1,7 @@
 ---
 debug: false
 
-rook_version: release-1.9
+rook_version: release-1.10
 rook_namespace: rook-ceph
 kube_config: /etc/kubernetes/admin.conf
 # rook_version: v1.10.2

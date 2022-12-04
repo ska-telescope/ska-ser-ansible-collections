@@ -1,4 +1,4 @@
 ---
 debug: false
 
-ingress_nginx_version: 1.3.0
+ingress_nginx_version: 1.3.1

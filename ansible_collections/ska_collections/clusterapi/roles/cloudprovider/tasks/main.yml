@@ -29,6 +29,15 @@
           data:
             cloud.conf: "{{ cloud_provider_config_ini.content }}"
 
+- name: Tidy up Cloud Provider manifests
+  ansible.builtin.file:
+    path: "/tmp/{{ item }}"
+    state: absent
+  with_items:
+    - "cloud-controller-manager-roles.yaml"
+    - "cloud-controller-manager-role-bindings.yaml"
+    - "openstack-cloud-controller-manager-ds.yaml"
+
 - name: Download Cloud Provider manifests
   ansible.builtin.get_url:
     url: "https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/master/manifests/controller-manager/{{ item }}"

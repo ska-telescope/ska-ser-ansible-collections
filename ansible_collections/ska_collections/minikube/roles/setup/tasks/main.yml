@@ -21,6 +21,15 @@
   ignore_errors: true
   tags: [minikube]
 
+- name: Tidy up Minikube
+  ansible.builtin.file:
+    path: "{{ minikube_exe_dir }}/minikube"
+    state: absent
+  when: "not stat_minikube.stat.exists or
+    minikube_version_check.stdout.find(minikube_version) == -1"
+  tags: [minikube]
+  become: true
+
 - name: Minikube install
   ansible.builtin.get_url:
     url: "https://github.com/kubernetes/minikube/releases/download/{{ minikube_version }}/minikube-{{ os_name }}-{{ os_binary }}"
@@ -43,6 +52,15 @@
   register: kubectl_version_check
   ignore_errors: true
   tags: [kubectl]
+
+- name: Tidy up Kubectl
+  ansible.builtin.file:
+    path: "{{ minikube_exe_dir }}/kubectl"
+    state: absent
+  when: "not stat_kubectl.stat.exists or
+    kubectl_version_check.stdout.find(kubernetes_version) == -1"
+  tags: [kubectl]
+  become: true
 
 - name: Kubectl install
   ansible.builtin.get_url:
@@ -153,6 +171,16 @@
   changed_when: false
   register: yq_version_check
   ignore_errors: true
+  tags: [yq]
+
+
+- name: Tidy up Yq
+  ansible.builtin.file:
+    path: "{{ minikube_exe_dir }}/yq"
+    state: absent
+  when: "not stat_yq.stat.exists or
+    yq_version_check.stdout.find(yq_version) == -1"
+  become: true
   tags: [yq]
 
 - name: Yq install
