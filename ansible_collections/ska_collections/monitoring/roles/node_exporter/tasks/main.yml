@@ -35,7 +35,7 @@
 - name: Install node_exporter for Debian
   when:
     - ansible_distribution == 'Ubuntu'
-    - metrics.status != 200 or update
+    - metrics.status != 200 or node_exporter_update
   block:
     - name: Download prometheus-node-exporter tarball
       ansible.builtin.get_url:
