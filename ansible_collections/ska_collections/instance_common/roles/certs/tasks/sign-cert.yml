@@ -44,7 +44,7 @@
       delegate_to: "{{ ca_host }}"
       register: certificate
 
-    - name: Write certificate file on client host
+    - name: Write certificate file on client host  # noqa template-instead-of-copy
       ansible.builtin.copy:
         dest: "{{ certificates_dir }}/{{ certificate_name }}.crt"
         content: "{{ certificate.certificate }}"
@@ -56,7 +56,7 @@
   delegate_to: "{{ ca_host }}"
   register: capemfile
 
-- name: Write CA certificate file on client host
+- name: Write CA certificate file on client host  # noqa template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ capemfile['content'] | b64decode }}"
     dest: "{{ certificates_dir }}/ca-certificate.crt"

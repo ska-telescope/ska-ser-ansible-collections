@@ -1,0 +1,165 @@
+---
+
+- name: Check Rook is running
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: rook-ceph-operator
+    namespace: "{{ rook_namespace }}"
+  register: rook_operator_check
+
+- name: Start Rook
+  # CAPO is not started
+  when: "not rook_operator_check.resources"
+  block:
+
+    - name: Download Rook IO manifests
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/rook/rook/{{ rook_version }}/deploy/examples/{{ item }}"
+        dest: "/tmp/{{ item }}"
+        mode: '0664'
+      with_items:
+        - "crds.yaml"
+        - "common.yaml"
+        - "operator.yaml"
+
+    - name: Apply Rook IO manifests
+      kubernetes.core.k8s:
+        state: present
+        apply: true
+        src: "/tmp/{{ item }}"
+      with_items:
+        - "crds.yaml"
+        - "common.yaml"
+        - "operator.yaml"
+
+- name: Wait for deploy/rook-ceph-operator
+  kubernetes.core.k8s_info:
+    kind: Deployment
+    api_version: apps/v1
+    name: rook-ceph-operator
+    namespace: "{{ rook_namespace }}"
+    wait: true
+    wait_sleep: 10
+    wait_timeout: 300
+    wait_condition:
+      type: Available
+
+- name: Download Rook import external cluster script
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/rook/rook/{{ rook_version }}/deploy/examples/import-external-cluster.sh"
+    dest: "/tmp/import-external-cluster.sh"
+    mode: '0664'
+
+- name: Check Rook Config Secret exists
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: rook-ceph-mon
+    namespace: "{{ rook_namespace }}"
+  register: rook_secret_check
+
+# - name: Create secrets, configmaps
+#   when: "not rook_secret_check.resources"
+#   block:
+
+- name: Setup rook env vars
+  ansible.builtin.set_fact:
+    rook_ceph_env:
+      ROOK_VERSION: "{{ rook_version }}"
+      KUBECONFIG: "{{ kube_config }}"
+      NAMESPACE: "{{ rook_namespace }}"
+      KUBE_NAMESPACE: "{{ kube_namespace }}"
+      ROOK_NAMESPACE: "{{ rook_namespace }}"
+      ROOK_EXTERNAL_FSID: "{{ rook_external_fsid }}"
+      ROOK_EXTERNAL_ADMIN_SECRET: "{{ rook_external_admin_secret }}"
+      ROOK_EXTERNAL_ADMIN_KEY: "{{ rook_external_admin_key }}"
+      ROOK_EXTERNAL_CEPH_MON_DATA: "{{ rook_external_ceph_mon_data }}"
+      ROOK_EXTERNAL_CEPH_MONITORS: "{{ rook_external_ceph_monitors }}"
+      RBD_POOL_NAME: "{{ rook_rbd_pool_name }}"
+      RGW_POOL_PREFIX: "{{ rook_rgw_pool_prefix }}"
+      CSI_RBD_NODE_SECRET_NAME: "{{ rook_csi_rbd_node_secret_name }}"
+      CSI_RBD_PROVISIONER_SECRET_NAME: "{{ rook_csi_rbd_provisioner_secret_name }}"
+      CSI_CEPHFS_NODE_SECRET_NAME: "{{ rook_csi_cephfs_node_secret_name }}"
+      CSI_CEPHFS_PROVISIONER_SECRET_NAME: "{{ rook_csi_cephfs_provisioner_secret_name }}"
+      CSI_RBD_NODE_SECRET: "{{ rook_csi_rbd_node_secret }}"
+      CSI_RBD_PROVISIONER_SECRET: "{{ rook_csi_rbd_provisioner_secret }}"
+      CSI_CEPHFS_NODE_SECRET: "{{ rook_csi_cephfs_node_secret }}"
+      CSI_CEPHFS_PROVISIONER_SECRET: "{{ rook_csi_cephfs_provisioner_secret }}"
+
+- name: Print environment to pass to import-external-cluster.sh
+  ansible.builtin.debug:
+    var: rook_ceph_env
+
+- name: Run import-external-cluster.sh to create Secrets, ConfigMaps and StorageClasses
+  ansible.builtin.command: /usr/bin/bash /tmp/import-external-cluster.sh
+  environment: "{{ rook_ceph_env }}"
+  changed_when: true # TODO make this accurate
+  ignore_errors: true
+
+- name: Fix Rook secrets script
+  ansible.builtin.template:
+    src: rookio-fix-secrets.sh.j2
+    dest: "/tmp/rookio-fix-secrets.sh"
+    mode: "0744"
+
+- name: Fix Rook secrets
+  ansible.builtin.command: /usr/bin/bash /tmp/rookio-fix-secrets.sh
+  environment:
+    KUBECONFIG: "{{ kube_config }}"
+    ROOK_EXTERNAL_ADMIN_USER_NAME: "{{ rook_external_admin_user_name }}"
+    ROOK_EXTERNAL_ADMIN_SECRET: "{{ rook_external_admin_secret }}"
+    ROOK_EXTERNAL_CEPH_MONITORS: "{{ rook_external_ceph_monitors }}"
+  changed_when: true # TODO make this accurate
+  ignore_errors: true
+
+- name: Check CephCluster exist
+  kubernetes.core.k8s_info:
+    api_version: ceph.rook.io/v1
+    kind: CephCluster
+    name: "{{ rook_namespace }}"
+    namespace: "{{ rook_namespace }}"
+  register: cephcluster_check
+
+- name: Install CephCluster
+  when: "not cephcluster_check.resources"
+  block:
+    - name: Deploy CephCluster
+      kubernetes.core.k8s:
+        state: present
+        template: 'cephcluster.yaml.j2'
+
+- name: Check Storage Classes exist
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: StorageClass
+    name: nfss1
+  register: nfss1_sc_check
+
+- name: Install Ceph Storage Classes
+  when: "not nfss1_sc_check.resources"
+  block:
+    - name: Deploy Ceph StorageClasses
+      kubernetes.core.k8s:
+        state: present
+        template: 'ceph-storageclasses.yaml.j2'
+
+- name: Check Storage Classes exist
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: StorageClass
+    name: cinder-block
+  register: cloud_provider_sc_check
+
+- name: Install Cloud Provider Storage Classes
+  when: "not cloud_provider_sc_check.resources"
+  block:
+    - name: Apply Cloud Provider storage classes
+      kubernetes.core.k8s:
+        state: present
+        apply: true
+        definition: "{{ item }}"
+      with_items: "{{ cloud_provider_storage_classes }}"
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers

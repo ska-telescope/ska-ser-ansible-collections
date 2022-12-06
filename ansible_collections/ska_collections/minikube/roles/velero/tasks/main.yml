@@ -66,7 +66,7 @@
 
 - name: Check Velero is running
   kubernetes.core.k8s_info:
-    api_version: v1
+    api_version: apps/v1
     kind: Deployment
     name: velero
     namespace: velero
@@ -91,7 +91,7 @@
     - name: Wait for deploy/velero
       kubernetes.core.k8s_info:
         kind: Deployment
-        api_version: v1
+        api_version: apps/v1
         name: velero
         namespace: velero
         wait: true
@@ -108,23 +108,42 @@
     namespace: velero
   register: velero_backuplocation_check
 
+
 - name: Set Velero backup config
-  ansible.builtin.command: |
-    kubectl -n velero set env deployment/velero \
-    OS_REGION_NAME="{{ velero_selected_cloud.region_name }}" \
-    OS_INTERFACE="{{ velero_selected_cloud.interface }}" \
-    OS_AUTH_URL="{{ velero_selected_cloud.auth.auth_url }}" \
-    OS_USERNAME="{{ velero_selected_cloud.auth.username }}" \
-    OS_PROJECT_ID="{{ velero_selected_cloud.auth.project_id }}" \
-    OS_USER_DOMAIN_NAME="{{ velero_selected_cloud.auth.user_domain_name }}" \
-    OS_PROJECT_NAME="{{ velero_selected_cloud.auth.project_name }}" \
-    OS_PASSWORD="{{ velero_selected_cloud.auth.password }}" \
-    OS_IDENTITY_API_VERSION="{{ velero_selected_cloud.identity_api_version }}"
-  changed_when: false
-  register: velero_check
+  ska_collections.clusterapi.kubectl_set_env:
+    name: "deployment/velero"
+    kubectl_namespace: "velero"
+    envvars:
+      OS_REGION_NAME: "{{ velero_selected_cloud.region_name }}"
+      OS_INTERFACE: "{{ velero_selected_cloud.interface }}"
+      OS_AUTH_URL: "{{ velero_selected_cloud.auth.auth_url }}"
+      OS_USERNAME: "{{ velero_selected_cloud.auth.username }}"
+      OS_PROJECT_ID: "{{ velero_selected_cloud.auth.project_id }}"
+      OS_USER_DOMAIN_NAME: "{{ velero_selected_cloud.auth.user_domain_name }}"
+      OS_PROJECT_NAME: "{{ velero_selected_cloud.auth.project_name }}"
+      OS_PASSWORD: "{{ velero_selected_cloud.auth.password }}"
+      OS_IDENTITY_API_VERSION: "{{ velero_selected_cloud.identity_api_version }}"
   # Velero backup is not configured correctly
   when: "not velero_backuplocation_check.resources or
          velero_backuplocation_check.resources[0].status.phase != 'Available'"
+
+# - name: Set Velero backup config
+#   ansible.builtin.command: |
+#     kubectl -n velero set env deployment/velero \
+#     OS_REGION_NAME="{{ velero_selected_cloud.region_name }}" \
+#     OS_INTERFACE="{{ velero_selected_cloud.interface }}" \
+#     OS_AUTH_URL="{{ velero_selected_cloud.auth.auth_url }}" \
+#     OS_USERNAME="{{ velero_selected_cloud.auth.username }}" \
+#     OS_PROJECT_ID="{{ velero_selected_cloud.auth.project_id }}" \
+#     OS_USER_DOMAIN_NAME="{{ velero_selected_cloud.auth.user_domain_name }}" \
+#     OS_PROJECT_NAME="{{ velero_selected_cloud.auth.project_name }}" \
+#     OS_PASSWORD="{{ velero_selected_cloud.auth.password }}" \
+#     OS_IDENTITY_API_VERSION="{{ velero_selected_cloud.identity_api_version }}"
+#   changed_when: false
+#   register: velero_check
+#   # Velero backup is not configured correctly
+#   when: "not velero_backuplocation_check.resources or
+#          velero_backuplocation_check.resources[0].status.phase != 'Available'"
 
 - name: Check backup schedule
   ansible.builtin.command: |

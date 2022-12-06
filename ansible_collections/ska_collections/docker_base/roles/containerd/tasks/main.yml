@@ -20,7 +20,7 @@
   when: containerd_activate_nvidia | bool and not containerd_ignore_nvidia_fail | bool and not nvidia_driver_exists | bool
 
 - name: Load containerd kernel drivers
-  community.general.system.modprobe:
+  community.general.modprobe:
     name: "{{ item }}"
     state: present
   with_items:

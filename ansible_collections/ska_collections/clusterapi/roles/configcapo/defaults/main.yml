@@ -1,0 +1,8 @@
+---
+debug: false
+
+capo_cloud: skatechops
+capo_cloud_config: ~/.config/openstack/clouds.yaml
+
+clusterapi_config_dir: /etc/clusterapi
+capo_template_version: v0.6.4

@@ -1,0 +1,10 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: "Apply the clusterapi management cluster role to nodes"
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  roles:
+    - clusterapi
+    - configcapo

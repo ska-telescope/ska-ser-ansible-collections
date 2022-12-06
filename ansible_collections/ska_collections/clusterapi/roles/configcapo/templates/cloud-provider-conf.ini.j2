@@ -1,0 +1,24 @@
+[Global]
+# https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/openstack-cloud-controller-manager/using-openstack-cloud-controller-manager.md#global
+auth-url={{ capo_auth_url }}
+username="{{ capo_auth_username }}"
+password="{{ capo_auth_password }}"
+tenant-id="{{ capo_auth_project_id }}"
+tenant-name="{{ capo_auth_project_name }}"
+domain-name="{{ capo_auth_user_domain_name }}"
+region="{{ capo_region_name }}"
+{% if capo_auth_domain_id |bool %}
+domain-id="{{ capo_auth_domain_id }}"
+{% endif %}
+{% if capo_auth_application_credential_name |bool %}
+application-credential-name="{{ capo_auth_application_credential_name }}"
+{% endif %}
+{% if capo_auth_application_credential_id |bool %}
+application-credential-id="{{ capo_auth_application_credential_id }}"
+{% endif %}
+{% if capo_auth_application_credential_secret |bool %}
+application-credential-secret="{{ capo_auth_application_credential_secret }}"
+{% endif %}
+{% if capo_cacert |bool %}
+ca-file="/etc/certs/cacert"
+{% endif %}

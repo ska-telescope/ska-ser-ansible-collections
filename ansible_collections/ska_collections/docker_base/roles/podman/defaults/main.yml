@@ -1,6 +1,14 @@
 ---
 debug: false
 
+podman_registry_mirror: "192.168.99.204:9082"  # default to STFC Nexus Cache
+
+podman_deb_repo_url: "deb http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_{{ ansible_distribution_version }}/ /"
+podman_deb_repo_key_url: "http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_{{ ansible_distribution_version }}/Release.key"
+
+podman_deb_podman_version: "100:4.2.1-1"
+podman_deb_buildah_version: "100:1.28.0-1"
+podman_deb_skopeo_version: "100:1.10.0-1"
 nexus: "{{ _ | mandatory('`nexus` definition is mandatory') }}"
 nexus_docker_group_port: 9082
 

@@ -37,7 +37,7 @@
       encryptedSavedObjects: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters') }}"
   when: not kibana_secrets_file.stat.exists
 
-- name: "Store kibana encryption keys"
+- name: "Store kibana encryption keys"  # noqa template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ kibana_encryption_keys | to_json }}"
     dest: "{{ kibana_secrets_file_path }}"

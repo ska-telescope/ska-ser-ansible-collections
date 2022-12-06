@@ -1,0 +1,9 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: "Apply the clusterapi calico role to nodes"
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  roles:
+    - ska_collections.clusterapi.calico

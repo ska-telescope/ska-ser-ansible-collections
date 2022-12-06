@@ -101,6 +101,9 @@ ifneq ($(filter $(JOBLIST),$(firstword $(MAKECMDGOALS))),)
   $(eval $(TARGET_ARGS):;@:)
 endif
 
+clusterapi: ac-check-env ## clusterapi targets
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/clusterapi.mk
+
 common: ac-check-env ## common targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/common.mk
 

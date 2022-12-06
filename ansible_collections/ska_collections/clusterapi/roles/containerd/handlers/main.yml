@@ -1,0 +1,23 @@
+---
+- name: Restart containerd
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: true
+    name: containerd
+  become: true
+
+- name: Restart docker  # noqa ignore-errors
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: true
+    name: docker
+  ignore_errors: true
+  become: true
+
+- name: Restart cron
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: true
+    name: cron
+    enabled: true
+  become: true

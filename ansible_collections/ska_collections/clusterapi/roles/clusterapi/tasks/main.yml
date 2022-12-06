@@ -1,0 +1,54 @@
+---
+
+- name: Calculate version vars
+  ansible.builtin.set_fact:
+    os_name: "{{ ansible_system | lower }}"
+    os_binary: "{% if ansible_facts.architecture == 'x86_64' %}amd64{% else %}unknown{% endif %}"
+    os_arch: "{{ ansible_facts.architecture | lower }}"
+    k9s_arch: "{{ ansible_facts.architecture | lower }}"
+
+- name: Install kubernetes dependency on pip3
+  ansible.builtin.pip:
+    executable: pip3
+    name: kubernetes
+  become: true
+
+- name: Check if clusterctl exists
+  ansible.builtin.stat:
+    path: "{{ clusterctl_exe_dir }}/clusterctl"
+  register: stat_clusterctl
+
+- name: Check if the clusterctl version is installed
+  ansible.builtin.command: "{{ clusterctl_exe_dir }}/clusterctl version -o short"
+  changed_when: false
+  register: clusterctl_version_check
+  ignore_errors: true
+
+- name: "Expected clusterctl version"
+  ansible.builtin.debug:
+    var: clusterctl_version
+
+- name: "Check clusterctl version"
+  ansible.builtin.debug:
+    var: clusterctl_version_check.stdout
+
+- name: Start Calico
+  when: "not stat_clusterctl.stat.exists or
+    clusterctl_version_check.stdout.find(clusterctl_version) == -1"
+  block:
+
+    - name: Tidy up Clusterctl if already exists
+      ansible.builtin.file:
+        path: "{{ clusterctl_exe_dir }}/clusterctl"
+        state: absent
+      become: true
+
+    - name: Clusterctl install
+      ansible.builtin.get_url:
+        url: "https://github.com/kubernetes-sigs/cluster-api/releases/download/{{ clusterctl_version }}/clusterctl-{{ os_name }}-{{ os_binary }}"
+        dest: "{{ clusterctl_exe_dir }}/clusterctl"
+        mode: "0755"
+      become: true
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers
