@@ -1,0 +1,32 @@
+---
+- name: "Dynamic iDRAC Playbook"
+  hosts: "{{ target_hosts | default('localhost') }}"
+  connection: local
+  tasks:
+    - name: "Manage iDRAC session and run {{ idrac_role }}"
+      block:
+        - name: Create session
+          community.general.redfish_command:
+            category: Sessions
+            command: CreateSession
+            baseuri: "{{ ansible_host }}"
+            username: "{{ idrac_username }}"
+            password: "{{ idrac_password }}"
+            timeout: 60
+          register: result
+
+        - name: "Running role {{ idrac_role }}"
+          vars:
+            idrac_baseuri: "{{ ansible_host }}"
+            idrac_auth_token: "{{ result.session.token }}"
+          ansible.builtin.include_role:
+            name: "{{ idrac_role }}"
+
+      always:
+        - name: Delete session
+          community.general.redfish_command:
+            category: Sessions
+            command: DeleteSession
+            baseuri: "{{ ansible_host }}"
+            auth_token: "{{ result.session.token }}"
+            session_uri: "{{ result.session.uri }}"

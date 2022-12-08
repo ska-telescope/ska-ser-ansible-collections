@@ -1,0 +1,16 @@
+# Inventory group to run the playbook against
+target_hosts: "test_lab_rack1"
+
+# Global playbook variables
+idrac_systems_resource_id: System.Embedded.1
+idrac_manager_resource_id: iDRAC.Embedded.1
+idrac_username: "root"
+idrac_password: "[REDACTED]"
+idrac_role: "reboot"
+
+# Reboot role variables
+idrac_reboot_bootdevice: "Pxe"  # Values: ("None", "Pxe", "Cd", "Floppy", "Hdd", "BiosSetup", "Utilities", "UefiTarget", "SDCard", "UefiHttp")
+
+# Virtual media role variables
+idrac_virtual_media_url: "https://releases.ubuntu.com/22.04.1/ubuntu-22.04.1-live-server-amd64.iso"
+idrac_virtual_media_action: "insert"  # Values: ("insert", "eject")

@@ -1,0 +1,16 @@
+- name: "Set one-time boot device to {{ idrac_boot_device }}"
+  community.general.redfish_command:
+    category: Systems
+    command: SetOneTimeBoot
+    bootdevice: "{{ idrac_reboot_bootdevice }}"
+    resource_id: "{{ idrac_systems_resource_id }}"
+    baseuri: "{{ idrac_baseuri }}"
+    auth_token: "{{ idrac_auth_token }}"
+
+- name: Reboot system power
+  community.general.redfish_command:
+    category: Systems
+    command: PowerReboot
+    resource_id: "{{ idrac_systems_resource_id }}"
+    baseuri: "{{ idrac_baseuri }}"
+    auth_token: "{{ idrac_auth_token }}"

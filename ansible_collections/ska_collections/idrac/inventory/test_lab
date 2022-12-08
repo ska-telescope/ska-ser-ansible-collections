@@ -1,0 +1,2 @@
+[test_lab_rack1]
+node1 ansible_host=172.24.15.10

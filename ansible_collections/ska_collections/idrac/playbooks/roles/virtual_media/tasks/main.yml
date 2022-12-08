@@ -1,0 +1,47 @@
+- name: Insert Virtual Media
+  community.general.redfish_command:
+    category: Manager
+    command: VirtualMediaInsert
+    resource_id: "{{ idrac_manager_resource_id }}"
+    baseuri: "{{ idrac_baseuri }}"
+    auth_token: "{{ idrac_auth_token }}"
+    virtual_media:
+      image_url: "{{ idrac_virtual_media_url }}"
+      media_types:
+        - CD
+        - DVD
+  when: idrac_virtual_media_action == "insert"
+
+- name: Set one-time boot device to Cd
+  community.general.redfish_command:
+    category: Systems
+    command: SetOneTimeBoot
+    bootdevice: "Cd"
+    resource_id: "{{ idrac_systems_resource_id }}"
+    baseuri: "{{ idrac_baseuri }}"
+    auth_token: "{{ idrac_auth_token }}"
+  when: idrac_virtual_media_action == "insert"
+
+- name: Eject Virtual Media
+  community.general.redfish_command:
+    category: Manager
+    command: VirtualMediaEject
+    resource_id: "{{ idrac_manager_resource_id }}"
+    baseuri: "{{ idrac_baseuri }}"
+    auth_token: "{{ idrac_auth_token }}"
+    virtual_media:
+      image_url: "{{ idrac_virtual_media_url }}"
+      media_types:
+        - CD
+        - DVD
+  when: idrac_virtual_media_action == "eject"
+
+- name: Set one-time boot device to Hdd
+  community.general.redfish_command:
+    category: Systems
+    command: SetOneTimeBoot
+    bootdevice: "Hdd"
+    resource_id: "{{ idrac_systems_resource_id }}"
+    baseuri: "{{ idrac_baseuri }}"
+    auth_token: "{{ idrac_auth_token }}"
+  when: idrac_virtual_media_action == "eject"
