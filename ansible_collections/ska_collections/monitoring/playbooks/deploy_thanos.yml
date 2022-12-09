@@ -1,0 +1,9 @@
+---
+- name: Deploy prometheus
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+    mode: "server"
+  become: true
+  roles:
+    - thanos

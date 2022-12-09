@@ -1,0 +1,31 @@
+---
+# tasks file for thanos
+
+- name: Ensure Thanos configuration directory
+  ansible.builtin.file:
+    path: '{{ thanos_config_dir }}'
+    state: directory
+    mode: 0755
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+  become: true
+
+- name: Task thanos_sidecar
+  ansible.builtin.include_tasks: thanos_sidecar.yml
+  when: mode == "sidecar"
+
+- name: Task thanos_query
+  ansible.builtin.include_tasks: thanos_query.yml
+  when: mode == "server"
+
+- name: Task thanos_query_frontend
+  ansible.builtin.include_tasks: thanos_query_frontend.yml
+  when: mode == "server"
+
+- name: Task thanos_store
+  ansible.builtin.include_tasks: thanos_store.yml
+  when: mode == "server"
+
+- name: Thanos_compactor task
+  ansible.builtin.include_tasks: thanos_compactor.yml
+  when: mode == "server"

@@ -6,3 +6,4 @@ stackhpc/
 ansible-thoteam.nexus3-oss/
 **/tests/e2e/ssh.config
 **/tests/e2e/inventory.yml
+ansible_collections/ska_collections/monitoring/roles/prometheus/files/*.json

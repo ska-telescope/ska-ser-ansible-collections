@@ -1,0 +1,74 @@
+- name: Pull thanos image {{ thanos_docker_tags }}
+  community.docker.docker_image:
+    name: thanosio/thanos
+    tag: "{{ thanos_docker_tags }}"
+    source: pull
+
+- name: Stop thanos container
+  community.docker.docker_container:
+    name: thanos_compactor
+    stop_timeout: 180
+    state: absent
+
+- name: Create certificates for client communication
+  ansible.builtin.include_role:
+    name: ska_collections.instance_common.certs
+    tasks_from: sign-cert
+  vars:
+    certificate_name: "thanos_compactor"
+    certificate_key_name: "thanos_compactor"
+    certificate_dns_alt_name: "{{ thanos_alt_name }}"
+    certificates_recreate: true
+
+- name: Ensure thanos configuration directory
+  ansible.builtin.file:
+    path: '{{ thanos_config_dir }}'
+    state: directory
+    mode: 0766
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+  become: true
+
+- name: Generate thanos tls configuration
+  become: true
+  ansible.builtin.template:
+    src: "thanos_compactor.yaml.j2"
+    dest: "{{ thanos_config_dir }}/thanos_compactor.yaml"
+    force: true
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+    mode: 0644
+
+- name: Generate thanos swift configuration
+  become: true
+  ansible.builtin.template:
+    src: "swift.yml.j2"
+    dest: "{{ thanos_config_dir }}/swift.yml"
+    force: true
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+    mode: 0644
+
+- name: Start thanos compactor
+  community.docker.docker_container:
+    name: thanos_compactor
+    image: "thanosio/thanos:{{ thanos_docker_tags }}"
+    state: started
+    command:
+      - "compact"
+      - "--data-dir='/data'"
+      - "--objstore.config-file='{{ thanos_config_dir }}/swift.yml'"
+      - "--http-address='0.0.0.0:19091'"
+      - "--http.config='{{ thanos_config_dir }}/thanos_compactor.yaml'"
+      - "--wait"
+      - "--wait-interval=60m"
+    user: root
+    restart: true
+    restart_policy: always
+    ports:
+      - "19091:19091"
+    volumes:
+      - "/etc/hosts:/etc/hosts:ro"
+      - "{{ thanos_config_dir }}:{{ thanos_config_dir }}"
+      - "{{ certificates_dir }}:{{ certificates_dir }}"
+      - "{{ thanos_compactor_data_dir }}:/data"

@@ -1,0 +1,26 @@
+---
+# tasks file for grafana
+
+- name: Task grafana_ceph
+  ansible.builtin.include_tasks: grafana_ceph.yml
+
+- name: Task grafana_elasticstack
+  ansible.builtin.include_tasks: grafana_elasticstack.yml
+
+- name: Task grafana_kubernetes
+  ansible.builtin.include_tasks: grafana_kubernetes.yml
+
+- name: Task grafana_gitlab_runners
+  ansible.builtin.include_tasks: grafana_gitlab_runners.yml
+
+- name: Task grafana_cadvisor
+  ansible.builtin.include_tasks: grafana_cadvisor.yml
+
+- name: Task grafana_nodexporter
+  ansible.builtin.include_tasks: grafana_nodexporter.yml
+
+- name: Task grafana_alerts
+  ansible.builtin.include_tasks: grafana_alerts.yml
+
+- name: Grafana task
+  ansible.builtin.include_tasks: grafana.yml

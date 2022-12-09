@@ -1,0 +1,8 @@
+---
+- name: Deploy alertmanager
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  roles:
+    - alertmanager

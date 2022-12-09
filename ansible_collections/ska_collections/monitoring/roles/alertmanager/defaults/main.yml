@@ -1,0 +1,14 @@
+---
+
+monitoring_localuser: ubuntu
+monitoring_localgroup: ubuntu
+
+slack_api_url: "{{ _ | mandatory('`slack_api_url` definition is mandatory') }}"
+slack_api_url_user: "{{ _ | mandatory('`slack_api_url_user` definition is mandatory') }}"
+
+alertmanager_config_dir: /etc/alertmanager
+alertmanager_data_dir: /alertmanager
+
+alerts_inhibit_rules: []
+
+alertmanager_docker_tags: 'v0.24.0'

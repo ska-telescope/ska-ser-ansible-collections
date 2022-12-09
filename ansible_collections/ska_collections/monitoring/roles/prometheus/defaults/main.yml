@@ -1,165 +1,44 @@
 ---
+monitoring_localuser: ubuntu
+monitoring_localgroup: ubuntu
+
+prometheus_server_docker_tags: 'v2.37.1'
+prometheus_server_title: SKA DevOps Prometheus Server
+prometheus_server_memory: 16384M
+prometheus_server_swapfile_path: /swapfile
+prometheus_server_swapfile_size: 1000
+prometheus_server_swapfile_fallocate: true
+
 certificates_dir: /etc/pki/tls/private
+
+prometheus_alt_name: "monitoring.skao.stfc"
 
 # vars file for prometheus
 prometheus_gitlab_ci_pipelines_exporter_tags: v0.5.3
-prometheus_gitlab_ci_pipelines_exporter_token: ""
+prometheus_gitlab_ci_pipelines_exporter_token: "{{ _ | mandatory('`prometheus_gitlab_ci_pipelines_exporter_token` definition is mandatory') }}"
 prometheus_retention_time: "15d"
+
+prometheus_server_kubectl_version: 'v1.22.5'
+prometheus_server_kubectl_name: kubectl
+prometheus_server_kubectl_install_dir: /usr/local/bin
+prometheus_server_kubectl_url: 'https://storage.googleapis.com/kubernetes-release/release/{{ prometheus_server_kubectl_version }}/bin/linux/amd64/{{ prometheus_server_kubectl_name }}' # noqa yaml[line-length]
+
+prometheus_k8s_api_server_port: "6443"
+prometheus_k8s_api_server: "https://{{ prometheus_k8s_api_server_addr }}:{{ prometheus_k8s_api_server_port }}"
+prometheus_k8s_client_certificate: "/etc/prometheus/ca.crt"
+prometheus_k8s_bearer_token: "/etc/prometheus/bearer.token"
 
 prometheus_server_config_dir: /etc/prometheus
 prometheus_data_dir: /var/lib/prometheus
+
 prometheus_node_metric_relabel_configs: []
-prometheus_static_node_metric_relabel_configs:
-  - action: replace
-    regex: 192\.168\.93\.201 :9100
-    replacement: server3-2:9100
-    source_labels:
-      - instance
-    target_label: instance
-  - action: replace
-    regex: 192\.168\.93\.203 :9100
-    replacement: server2-1:9100
-    source_labels:
-      - instance
-    target_label: instance
-  - action: replace
-    regex: 192\.168\.93\.211 :9100
-    replacement: storage1-1:9100
-    source_labels:
-      - instance
-    target_label: instance
-  - action: replace
-    regex: 192\.168\.93\.206 :9100
-    replacement: server2-4:9100
-    source_labels:
-      - instance
-    target_label: instance
-  - action: replace
-    regex: 192\.168\.93\.212 :9100
-    replacement: storage1-2:9100
-    source_labels:
-      - instance
-    target_label: instance
-  - action: replace
-    regex: 192\.168\.93\.204 :9100
-    replacement: server2-2:9100
-    source_labels:
-      - instance
-    target_label: instance
-  - action: replace
-    regex: 192\.168\.93\.202 :9100
-    replacement: server3-3:9100
-    source_labels:
-      - instance
-    target_label: instance
-  - action: replace
-    regex: 192\.168\.93\.208 :9100
-    replacement: controller:9100
-    source_labels:
-      - instance
-    target_label: instance
-  - action: replace
-    regex: 192\.168\.93\.209 :9100
-    replacement: controller1-2:9100
-    source_labels:
-      - instance
-    target_label: instance
-  - action: replace
-    regex: 192\.168\.93\.207 :9100
-    replacement: server2-5:9100
-    source_labels:
-      - instance
-    target_label: instance
-  - action: replace
-    regex: 192\.168\.93\.210 :9100
-    replacement: storage2-1:9100
-    source_labels:
-      - instance
-    target_label: instance
-  - action: replace
-    regex: 192\.168\.93\.200 :9100
-    replacement: server3-1:9100
-    source_labels:
-      - instance
-    target_label: instance
-  - action: replace
-    regex: 192\.168\.93\.205 :9100
-    replacement: server2-3:9100
-    source_labels:
-      - instance
-    target_label: instance
+prometheus_static_node_metric_relabel_configs: []
 
-
-prometheus_elasticsearch_instance_add_cluster_label:
-  - regex: '^192\.168\.93\.(94|96|112):(\d+)'
-    replacement: ska-systems1
-    source_labels: [instance]
-    target_label: cluster
-
-prometheus_alertmanager_config_dir: /etc/alertmanager
-prometheus_alertmanager_data_dir: /alertmanager
-
-prometheus_thanos_alt_name: "monitoring.skao.stfc"
-prometheus_thanos_query_frontend: thanos
-prometheus_thanos_config_dir: /etc/thanos
-prometheus_thanos_store_data_dir: /etc/thanos/data/dir
-prometheus_thanos_compactor_data_dir: /etc/thanos/thanos-compact
-prometheus_thanos_query_endpoints:
-  - 192.168.99.153:10901
-  - 192.168.99.31:19090
-
-prometheus_grafana_provisioning_config_dir: /etc/grafana/provisioning
-prometheus_grafana_data: /var/lib/grafana
-prometheus_grafana_datasource: Prometheus
-prometheus_grafana_dashboards_path: "{{ prometheus_grafana_provisioning_config_dir }}/dashboards"
-prometheus_grafana_plugins:
-  - vonage-status-panel
-  - grafana-piechart-panel
-  - grafana-polystat-panel
-  - ryantxu-ajax-panel
-  - ae3e-plotly-panel
-  - https://artefact.skao.int/repository/raw-all/repository/raw/grafana-plugins/ska-tango-attribute-1.0.0.zip;ska-tango-attribute
-  - speakyourcode-button-panel
-  - natel-plotly-panel
-  - fifemon-graphql-datasource
-prometheus_grafana_disable_admin_account_creation: false
-
-# Alert Manager
-# slack_api_url has to be set in the command line
-slack_api_url: "*********************"
-slack_api_url_user: "*********************"
-
-
-prometheus_alerts_inhibit_rules: []
-# - target_match:
-#     severity: 'warning'
-#   target_match:
-#     severity: 'warning'
-#   equal: ['Watchdog']
-# - source_match:
-#     severity: 'critical'
-#     instance: '192.168.93.205:9100'
-#   target_match:
-#     severity: 'warning'
-# - source_match:
-#     severity: 'critical'
-#     instance: '192.168.93.206:9100'
-#   target_match:
-#     severity: 'warning'
-
-prometheus_k8s_client_certificate: "/dev/null"
-prometheus_k8s_bearer_token: "/etc/prometheus/bearer.token"
-prometheus_k8s_username: ""
+prometheus_elasticsearch_instance_add_cluster_label: []
 
 prometheus_server_playbook_dir: /usr/src/deploy-prometheus/
 prometheus_gitlab_url: git@gitlab.com
 prometheus_repo_base: "{{ prometheus_gitlab_url }}:ska-telescope"
-
-prometheus_server_auth_url: "http://192.168.93.215:5000/v3/"
-prometheus_server_username: "matteodicarlo"
-prometheus_server_password: "*************"
-prometheus_server_project_id: "988f3e60e7834335b3187512411d9072"
-prometheus_server_project_name: "system-team"  # system-team
 
 prometheus_global:
   scrape_interval: 15s
@@ -176,28 +55,20 @@ prometheus_alertmanager_config:
       - targets: ["{{ ansible_fqdn | default(ansible_host) | default('localhost') }}:9093"]
 
 prometheus_scrape_configs:
+  - job_name: "prometheus"
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+    static_configs:
+      - targets:
+          - "{{ ansible_fqdn | default(ansible_host) | default('localhost') }}:9090"
+
   - job_name: "gitlab_ci_pipelines_exporter"
     static_configs:
       - targets:
           - "{{ ansible_fqdn | default(ansible_host) | default('localhost') }}:8080"
 
   - job_name: "node"
-    static_configs:
-      - targets:
-          - "192.168.93.12:9100"  # nexus
-          - "192.168.93.200:9100"  # server3-1
-          - "192.168.93.201:9100"  # server3-2
-          - "192.168.93.202:9100"  # server3-3
-          - "192.168.93.203:9100"  # server2-1
-          - "192.168.93.204:9100"  # server2-2
-          - "192.168.93.205:9100"  # server2-3
-          - "192.168.93.206:9100"  # server2-4
-          - "192.168.93.207:9100"  # server2-5
-          - "192.168.93.208:9100"  # controller1-1
-          - "192.168.93.209:9100"  # controller1-2
-          - "192.168.93.210:9100"  # storage2-1
-          - "192.168.93.211:9100"  # storage1-1
-          - "192.168.93.212:9100"  # storage1-2
     file_sd_configs:
       - files:
           - 'node_exporter.json'

@@ -1,0 +1,94 @@
+- name: Check if the kubectl version is installed
+  ansible.builtin.command: "kubectl version --client --short 2>&1"
+  changed_when: false
+  register: kubectl_version
+  ignore_errors: true
+
+- name: Ensure target directory
+  ansible.builtin.file:
+    path: '{{ prometheus_server_kubectl_install_dir }}'
+    state: directory
+    mode: '0755'
+  when: kubectl_version.rc != 0
+
+- name: Download kubectl
+  become: true
+  ansible.builtin.get_url:
+    url: '{{ prometheus_server_kubectl_url }}'
+    dest: '{{ prometheus_server_kubectl_install_dir }}/{{ prometheus_server_kubectl_name }}-{{ prometheus_server_kubectl_version }}'
+    mode: 0755
+  when: kubectl_version.rc != 0
+
+- name: Link installed kubectl # noqa ignore-errors
+  become: true
+  ignore_errors: true
+  ansible.builtin.file:
+    src: '{{ prometheus_server_kubectl_install_dir }}/{{ prometheus_server_kubectl_name }}-{{ prometheus_server_kubectl_version }}'
+    dest: '{{ prometheus_server_kubectl_install_dir }}/{{ prometheus_server_kubectl_name }}'
+    state: link
+    mode: 0755
+  when: kubectl_version.rc != 0
+
+- name: Create directory
+  ansible.builtin.file:
+    path: /etc/kubernetes/
+    state: directory
+    mode: 0755
+
+- name: Copy KUBECONFIG file
+  ansible.builtin.copy:
+    src: "{{ kubeconfig }}"
+    dest: "/etc/kubernetes/admin.conf"
+    mode: 0755
+  become: true
+
+- name: Check if prometheus sa account is created
+  ansible.builtin.command: "kubectl --kubeconfig=/etc/kubernetes/admin.conf describe sa prometheus -n kube-system"
+  changed_when: false
+  register: sa_account
+  ignore_errors: true
+
+- name: Create prometheus sa account
+  ansible.builtin.command: "kubectl --kubeconfig=/etc/kubernetes/admin.conf create sa prometheus -n kube-system"
+  when: sa_account.rc != 0
+
+- name: Copy up configuration file
+  ansible.builtin.copy:
+    src: "prometheus_rlb.yml"
+    dest: "/tmp/prometheus_rlb.yml"
+    mode: 0644
+
+- name: Create prometheus rolebinding account
+  ansible.builtin.command: "kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f /tmp/prometheus_rlb.yml"
+  changed_when: false
+
+- name: Check is jq is installed
+  ansible.builtin.command: "jq --version"
+  register: jq_version
+  changed_when: false
+  ignore_errors: true
+
+- name: Install jq tool
+  ansible.builtin.apt:
+    pkg:
+      - jq
+    state: present
+    update_cache: true
+  when: jq_version.rc != 0
+
+- name: Get prom_secret # noqa risky-shell-pipe no-changed-when
+  ansible.builtin.shell: |
+    kubectl --kubeconfig=/etc/kubernetes/admin.conf get secrets -n kube-system --output=json \
+    | jq -r '.items[].metadata | select(.name|startswith("prometheus-token-")).name'
+  register: prom_secret
+
+- name: Save token in destination file # noqa no-changed-when risky-shell-pipe
+  ansible.builtin.shell: |
+    kubectl --kubeconfig=/etc/kubernetes/admin.conf get secret {{ prom_secret.stdout }} -n kube-system --output='json' \
+    | jq -r '.data.token' | base64 --decode > {{ prometheus_k8s_bearer_token }}
+
+- name: Save kubectl credentials # noqa no-changed-when risky-shell-pipe
+  ansible.builtin.shell: |
+    kubectl --kubeconfig=/etc/kubernetes/admin.conf config view --raw --minify \
+    --flatten --output='jsonpath={.clusters[].cluster.certificate-authority-data}' \
+    | base64 --decode > {{ prometheus_k8s_client_certificate }}

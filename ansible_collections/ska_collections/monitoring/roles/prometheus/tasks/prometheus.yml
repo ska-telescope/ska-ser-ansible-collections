@@ -1,0 +1,213 @@
+---
+# tasks file for prometheus
+- name: Enable SSH forwarding for sudo
+  ansible.builtin.lineinfile:
+    dest: /etc/sudoers
+    insertafter: '^#?\s*Defaults\s+env_keep\b'
+    line: 'Defaults    env_keep += "SSH_AUTH_SOCK"'
+
+- name: Ensure Prometheus data directory
+  ansible.builtin.file:
+    path: '{{ prometheus_data_dir }}'
+    state: directory
+    mode: 0766
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+  become: true
+
+- name: Ensure Prometheus configuration directory
+  ansible.builtin.file:
+    path: '{{ prometheus_server_config_dir }}'
+    state: directory
+    mode: 0755
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+  become: true
+
+- name: Ensure Prometheus rules configuration directory
+  ansible.builtin.file:
+    path: '{{ prometheus_server_config_dir }}/rules/'
+    state: directory
+    mode: 0755
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+  become: true
+
+- name: Task create sa for prometheus
+  ansible.builtin.include_tasks: k8s_sa.yml
+  when: kubeconfig is not none
+
+- name: Generate Prometheus configuration
+  become: true
+  ansible.builtin.template:
+    src: "prometheus.yml.j2"
+    dest: "{{ prometheus_server_config_dir }}/prometheus.yml"
+    force: true
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+    mode: 0755
+
+- name: Create certificates for client communication
+  ansible.builtin.import_role:
+    name: ska_collections.instance_common.certs
+    tasks_from: sign-cert
+  vars:
+    certificate_name: "prometheus"
+    certificate_key_name: "prometheus"
+    certificate_dns_alt_name: "{{ prometheus_alt_name }}"
+    certificates_recreate: true
+
+- name: Create alerting rules file
+  ansible.builtin.template:
+    src: "alert.rules.j2"
+    dest: "{{ prometheus_server_config_dir }}/rules/ansible_managed.rules"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+    mode: 0755
+  when:
+    - prometheus_server_alert_rules != []
+
+- name: Create record rules file
+  ansible.builtin.template:
+    src: "record.rules.j2"
+    dest: "{{ prometheus_server_config_dir }}/rules/record.rules"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+    mode: 0755
+  when:
+    - prometheus_server_record_rules != []
+
+- name: Copy ceph alerting rules
+  ansible.builtin.copy:
+    src: "rules/ceph/ceph_dashboard.rules"
+    dest: "/etc/prometheus/rules/ceph_dashboard.rules"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+    mode: 0644
+
+- name: Copy elasticstack alerting rules
+  ansible.builtin.copy:
+    src: "rules/elasticstack/elasticsearch.rules"
+    dest: "/etc/prometheus/rules/elasticsearch.rules"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+    mode: 0644
+
+- name: Copy kubernetes alerting rules
+  ansible.builtin.copy:
+    src: "rules/kubernetes/{{ item }}"
+    dest: "/etc/prometheus/rules/kubernetes_{{ item }}.rules"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+    mode: 0644
+  with_items:
+    - prometheus_alerts.yaml
+    - prometheus_rules.yaml
+
+- name: Copy up resource files
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ prometheus_server_config_dir }}/{{ item }}"
+    mode: 0644
+  with_items:
+    - ceph-mgr.json
+    - docker_exporter.json
+    - elasticsearch_exporter.json
+    - gitlab_exporter.json
+    - node_exporter.json
+    - kube-proxy.json
+
+- name: Pull prometheus image {{ prometheus_server_docker_tags }}
+  community.docker.docker_image:
+    name: prom/prometheus
+    tag: "{{ prometheus_server_docker_tags }}"
+    source: pull
+
+- name: Stop prometheus container
+  community.docker.docker_container:
+    name: prometheus
+    stop_timeout: 180
+    state: absent
+
+- name: Generate prometheus tls configuration
+  become: true
+  ansible.builtin.template:
+    src: "prometheus.web.config.yml.j2"
+    dest: "{{ prometheus_server_config_dir }}/prometheus.web.config.yml"
+    force: true
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+    mode: 0644
+
+- name: Start prometheus container
+  community.docker.docker_container:
+    name: prometheus
+    image: "prom/prometheus:{{ prometheus_server_docker_tags }}"
+    state: started
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.config.file=/etc/prometheus/prometheus.web.config.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.page-title=\"{{ prometheus_server_title }}\""
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - "--web.external-url={{ prometheus_url | default('http://' + ansible_default_ipv4.address + ':9090') }}"
+      - "--storage.tsdb.max-block-duration=2h"
+      - "--storage.tsdb.min-block-duration=2h"
+      - "--storage.tsdb.retention.time={{ prometheus_retention_time }}"
+      - "--web.enable-lifecycle"
+    user: root
+    memory: "{{ prometheus_server_memory }}"
+    restart: true
+    restart_policy: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - "{{ prometheus_server_config_dir }}:/etc/prometheus:ro"
+      - "{{ certificates_dir }}:{{ certificates_dir }}"
+      - "/etc/hosts:/etc/hosts:ro"
+      - "{{ prometheus_data_dir }}:/prometheus"
+
+- name: Check for swap file
+  ansible.builtin.stat:
+    path: "{{ prometheus_server_swapfile_path }}"
+  register: is_swapfile
+
+- name: Create swap file
+  ansible.builtin.command: |
+    {% if prometheus_server_swapfile_fallocate %}
+    fallocate -l {{ ((prometheus_server_swapfile_size) | int * 1024 * 1024) }} {{ prometheus_server_swapfile_path }}
+    {% else %}
+    dd if=/dev/zero of={{ prometheus_server_swapfile_path }} bs=1M count={{ prometheus_server_swapfile_size }}
+    {% endif %}
+  args:
+    creates: "{{ prometheus_server_swapfile_path }}"
+  register: swapfile_register_create
+  when: not is_swapfile.stat.exists
+
+- name: Set swap file permissions
+  ansible.builtin.file:
+    path: "{{ prometheus_server_swapfile_path }}"
+    state: "file"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+  when: not is_swapfile.stat.exists
+
+- name: Initialize swap file
+  ansible.builtin.command: mkswap {{ prometheus_server_swapfile_path }}
+  when: not is_swapfile.stat.exists
+
+- name: Enable swap file
+  ansible.builtin.command: swapon {{ prometheus_server_swapfile_path }}
+  when: not is_swapfile.stat.exists
+
+- name: Manage swap file in /etc/fstab
+  ansible.posix.mount:
+    src: "{{ prometheus_server_swapfile_path }}"
+    name: "none"
+    fstype: "swap"
+    opts: "sw,nofail"
+    dump: "0"
+    passno: "0"
+    state: present

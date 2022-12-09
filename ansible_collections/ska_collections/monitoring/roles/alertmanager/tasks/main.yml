@@ -1,0 +1,5 @@
+---
+# tasks file for alertmanager
+
+- name: Alert_manager task
+  ansible.builtin.include_tasks: alert_manager.yml
