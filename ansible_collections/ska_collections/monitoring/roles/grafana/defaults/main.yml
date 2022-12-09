@@ -23,6 +23,6 @@ grafana_disable_admin_account_creation: true
 
 grafana_docker_tags: '9.0.0'
 
-grafana_azuread_tenant_id: "{{ _ | mandatory('`azuread_tenant_id` definition is mandatory') }}"
-grafana_azuread_client_secret: "{{ _ | mandatory('`azuread_client_secret` definition is mandatory') }}"
-grafana_azuread_client_id: "{{ _ | mandatory('`azuread_client_id` definition is mandatory') }}"
+grafana_azuread_tenant_id: "{{ _ | mandatory('`grafana_azuread_tenant_id` definition is mandatory') }}"
+grafana_azuread_client_secret: "{{ _ | mandatory('`grafana_azuread_client_secret` definition is mandatory') }}"
+grafana_azuread_client_id: "{{ _ | mandatory('`grafana_azuread_client_id` definition is mandatory') }}"
