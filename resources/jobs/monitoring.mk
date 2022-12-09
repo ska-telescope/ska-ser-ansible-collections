@@ -71,7 +71,7 @@ prometheus: check_hosts ## Install Prometheus Server
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "kubeconfig='$(KUBECONFIG)'" \
 		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
-		-e "thanos_swift_server_password='$(PROM_OS_PASSWORD)'" $(PROMETHEUS_EXTRAVARS) \
+		-e "thanos_swift_server_password='$(THANOS_OS_PASSWORD)'" $(PROMETHEUS_EXTRAVARS) \
 		-e "prometheus_gitlab_ci_pipelines_exporter_token=$(GITLAB_TOKEN)" \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
@@ -81,7 +81,7 @@ grafana: check_hosts ## Install Grafana Server
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_grafana.yml \
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
-		--extra-vars="azuread_client_id='$(AZUREAD_CLIENT_ID)' azuread_client_secret='$(AZUREAD_CLIENT_SECRET)' azuread_tenant_id='$(AZUREAD_TENANT_ID)'" \
+		--extra-vars="grafana_azuread_client_id='$(AZUREAD_CLIENT_ID)' grafana_azuread_client_secret='$(AZUREAD_CLIENT_SECRET)' grafana_azuread_tenant_id='$(AZUREAD_TENANT_ID)'" \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'

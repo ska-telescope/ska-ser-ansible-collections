@@ -53,26 +53,29 @@ ansible-playbook <playbooks-folder-path>/deploy_prometheus.yml \
 	--extra-vars "target_hosts=<target-hosts>"
 ```
 
-### Required variables
+### Variables and secrets
 
-| Name | Ansible variable | ENV variable | Description |
-| ---- | ----------- | ----- | ----- |
-| Deploy monitoring mode | mode | | *server* <br> *runner* <br> *grafana* <br> *alert* <br> *thanos* |
-| Slack API User | slack_api_url_user | SLACK_API_URL_USER | |
-| Azure AD Client ID | azuread_client_id | AZUREAD_CLIENT_ID | |
-| Azure AD Tenant ID | azuread_tenant_id | AZUREAD_TENANT_ID | |
-| Prometheus Project ID | project_id | PROM_OS_PROJECT_ID | |
-| Prometheus Authentication Url | auth_url | PROM_OS_AUTH_URL | |
-| Kubernetes Configuration File | kubeconfig | KUBECONFIG | |
-| Prometheus username | username | PROM_OS_USERNAME | |
+This collection requires some variables to be set to properly work. Almost all of them can be set in a yaml file and passed to the playbook but some of them contains secrets that must be passed in a different way. In specific the mandatory variables are: 
+- *slack_api_url*: for infrastructure alert message sent with slack;
+- *slack_api_url_user*: for user alert message sent with slack;
+- *ca_cert_password*: for CA certificate signing;
+- *thanos_swift_server_auth_url*: for swift storage;
+- *thanos_swift_server_username*: for swift storage;
+- *thanos_swift_server_password*: for swift storage (base 64 encoded);
+- *prometheus_gitlab_ci_pipelines_exporter_token*: for gitlab related metrics;
+- *grafana_azuread_tenant_id*: for grafana authentication with Azure;
+- *grafana_azuread_client_secret*: for grafana authentication with Azure;
+- *grafana_azuread_client_id*: for grafana authentication with Azure;
 
+Using the makefile provided with the current repository, the secrets variables correspond to the following environment variables: 
 
-### Required secrets
-
-| Name | Ansible variable | ENV variable | Obs |
-| ---- | ----------- | ------------ | ----- |
-| Slack API Webhook Url | slack_api_url | SLACK_API_URL | |
-| Azure AD Client Token | azuread_client_secret | AZUREAD_CLIENT_SECRET | |
-| Gitlab Pipeline Exporter Token | prometheus_gitlab_ci_pipelines_exporter_token | GITLAB_TOKEN | |
-| Prometheus password | password | PROM_OS_PASSWORD | |
-| Certificate Authority Password | ca_cert_password | CA_CERT_PASSWORD | |
+| Ansible variable | ENV variable |
+| ---- | ----------- | ----- | 
+| slack_api_url | SLACK_API_URL |
+| slack_api_url_user | SLACK_API_URL_USER |
+| ca_cert_password | CA_CERT_PASSWORD |
+| thanos_swift_server_password | THANOS_OS_PASSWORD |
+| prometheus_gitlab_ci_pipelines_exporter_token | GITLAB_TOKEN |
+| grafana_azuread_client_secret | AZUREAD_CLIENT_SECRET |
+| grafana_azuread_client_id | AZUREAD_CLIENT_ID | |
+| grafana_azuread_tenant_id | AZUREAD_TENANT_ID | |

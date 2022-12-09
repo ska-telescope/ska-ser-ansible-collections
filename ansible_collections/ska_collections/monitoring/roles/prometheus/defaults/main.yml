@@ -15,7 +15,7 @@ prometheus_alt_name: "monitoring.skao.stfc"
 
 # vars file for prometheus
 prometheus_gitlab_ci_pipelines_exporter_tags: v0.5.3
-prometheus_gitlab_ci_pipelines_exporter_token: ""
+prometheus_gitlab_ci_pipelines_exporter_token: "{{ _ | mandatory('`prometheus_gitlab_ci_pipelines_exporter_token` definition is mandatory') }}"
 prometheus_retention_time: "15d"
 
 prometheus_server_kubectl_version: 'v1.22.5'
