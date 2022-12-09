@@ -9,9 +9,7 @@ NODES ?= all
 PROMETHEUS_NODE ?= prometheus
 COLLECTIONS_PATHS ?= ./collections
 
-## OPENSTACK VARIABLES
-PROM_OS_USERNAME ?= "" ## Openstak username, mandatory for swift configuration
-PROM_OS_PASSWORD ?= "" ## Openstak password, mandatory for swift configuration
+THANOS_OS_PASSWORD ?= "" ## Openstak password, mandatory for swift configuration
 
 SLACK_API_URL ?= "" ## Webhook URL for infrastructural alerts
 SLACK_API_URL_USER ?= "" ## Webhook URL for user/developer alerts
