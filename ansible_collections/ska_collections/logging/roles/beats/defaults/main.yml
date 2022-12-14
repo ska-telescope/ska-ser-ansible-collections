@@ -7,7 +7,7 @@ logging_filebeat_data_dir: /var/lib/filebeat
 logging_filebeat_certificate_name: "{{ inventory_hostname }}-filebeat"
 
 logging_filebeat_name: filebeat
-logging_filebeat_image: docker.elastic.co/beats/filebeat:7.17.0
+logging_filebeat_image: docker.elastic.co/beats/filebeat:8.4.3
 logging_filebeat_user: root
 logging_filebeat_log_options:
   max-size: "10m"
