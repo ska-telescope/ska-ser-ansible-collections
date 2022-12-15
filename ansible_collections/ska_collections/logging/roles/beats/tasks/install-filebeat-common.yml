@@ -15,7 +15,8 @@
 
 - name: Set detected log sources
   ansible.builtin.set_fact:
-    kubelet_detected: "{{ ('kubelet' in services.ansible_facts.services and 'running' == services.ansible_facts.services['kubelet'].state) | bool }}"
+    kubelet_detected: "{{ ('kubelet.service' in services.ansible_facts.services and 'running' == services.ansible_facts.services['kubelet.service'].state) |
+    bool }}"
     docker_detected: "{{ (docker_sock.stat.exists and docker_sock.stat.issock and docker_sock.stat.writeable) | bool }}"
     podman_detected: "{{ (podman_sock.stat.exists and podman_sock.stat.issock and podman_sock.stat.writeable) | bool }}"
 
