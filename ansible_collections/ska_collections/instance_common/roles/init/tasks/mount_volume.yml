@@ -4,6 +4,15 @@
     msg: "{{ volume }}"
   when: debug
 
+- name: Check if device-by-id exists
+  ansible.builtin.stat:
+    path: "/dev/disk/by-id/virtio-{{ volume.id[:20] }}"
+  register: device_by_id
+
+- name: Set volume block device
+  ansible.builtin.set_fact:
+    device: "{{ device_by_id.stat.exists | ternary(device_by_id.stat.lnk_source, volume.device) }}"
+
 - name: Check if volume is already mounted
   ansible.builtin.command: /bin/mountpoint -q {{ volume.mount_point }}
   ignore_errors: true
@@ -16,9 +25,9 @@
     - name: Format volume
       community.general.filesystem:
         fstype: "{{ volume.file_system }}"
-        dev: "{{ volume.device }}"
+        dev: "{{ device }}"
     - name: Get volume UUID
-      ansible.builtin.command: lsblk {{ volume.device }} -no UUID
+      ansible.builtin.command: lsblk {{ device }} -no UUID
       register: uuid
       changed_when: false
     - name: Create mounting directory
