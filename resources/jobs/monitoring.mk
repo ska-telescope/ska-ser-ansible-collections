@@ -97,7 +97,7 @@ thanos: check_hosts ## Install Thanos query and query front-end
 		-i $(INVENTORY) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
-		-e "thanos_swift_server_password='$(PROM_OS_PASSWORD)'" \
+		-e "thanos_swift_server_password='$(THANOS_OS_PASSWORD)'" \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
