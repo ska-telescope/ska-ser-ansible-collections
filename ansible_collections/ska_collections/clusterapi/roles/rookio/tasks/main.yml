@@ -95,7 +95,8 @@
   ansible.builtin.command: /usr/bin/bash /tmp/import-external-cluster.sh
   environment: "{{ rook_ceph_env }}"
   changed_when: true # TODO make this accurate
-  ignore_errors: true
+  failed_when: false
+  # ignore_errors: true
 
 - name: Fix Rook secrets script
   ansible.builtin.template:
@@ -111,7 +112,8 @@
     ROOK_EXTERNAL_ADMIN_SECRET: "{{ rook_external_admin_secret }}"
     ROOK_EXTERNAL_CEPH_MONITORS: "{{ rook_external_ceph_monitors }}"
   changed_when: true # TODO make this accurate
-  ignore_errors: true
+  failed_when: false
+  # ignore_errors: true
 
 - name: Check CephCluster exist
   kubernetes.core.k8s_info:

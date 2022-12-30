@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+bases:
+- ../core
+patches:
+  - patch:
+    path: control-plane-files-snippet-rookio.yaml
+    target:
+      group: controlplane.cluster.x-k8s.io
+      version: v1beta1
+      kind: KubeadmControlPlane
+  - patch:
+    path: control-plane-files-snippet-last.yaml
+    target:
+      group: controlplane.cluster.x-k8s.io
+      version: v1beta1
+      kind: KubeadmControlPlane

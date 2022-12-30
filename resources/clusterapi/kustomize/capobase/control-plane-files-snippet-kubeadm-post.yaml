@@ -1,0 +1,128 @@
+- op: add
+  path: /spec/kubeadmConfigSpec/postKubeadmCommands/-
+  target:
+    kind: KubeadmControlPlane
+    name: ${CLUSTER_NAME}-control-plane
+  value:
+    '/usr/bin/bash /etc/kubernetes/kubeadm-post.sh >>/tmp/capo-config.log 2>&1'
+
+- op: add
+  path: /spec/kubeadmConfigSpec/files/-
+  target:
+    kind: KubeadmControlPlane
+    name: ${CLUSTER_NAME}-control-plane
+  value:
+    owner: root:root
+    path: /etc/kubernetes/kubeadm-post.sh
+    content: |
+      #!/usr/bin/bash
+
+      echo ""
+      echo "==================================================================="
+      echo "postKubeadmCommands [happens on controlplane] : start $(date)"
+
+      export KUBECONFIG=/etc/kubernetes/admin.conf
+
+      export CALICO_VERSION=${CALICO_VERSION}
+      export CALICO_IPV4POOL_CIDR=${CIDR_BLOCK}
+      export IP_AUTODETECTION_METHOD=${IP_AUTODETECTION_METHOD}
+      export CALICO_IPV4POOL_IPIP=${CALICO_IPV4POOL_IPIP}
+
+      export OPENSTACK_CLOUD_PROVIDER_CONF_B64="${OPENSTACK_CLOUD_PROVIDER_CONF_B64}"
+
+      export METALLB_NAMESPACE=metallb-system
+      export METALLB_VERSION=${METALLB_VERSION}
+
+      export NGINX_VERSION=${NGINX_VERSION}
+
+      # All Rook Ceph variables
+      export ROOK_VERSION=${ROOK_VERSION}
+      export KUBE_NAMESPACE="${KUBE_NAMESPACE}"
+      export ROOK_NAMESPACE="${ROOK_NAMESPACE}"
+      export NAMESPACE="${ROOK_NAMESPACE}"
+      export ROOK_EXTERNAL_FSID="${ROOK_EXTERNAL_FSID}"
+      export ROOK_EXTERNAL_ADMIN_SECRET="${ROOK_EXTERNAL_ADMIN_SECRET}"
+      export ROOK_EXTERNAL_ADMIN_KEY="${ROOK_EXTERNAL_ADMIN_KEY}"
+      export ROOK_EXTERNAL_CEPH_MON_DATA="${ROOK_EXTERNAL_CEPH_MON_DATA}"
+      # make squashes the "s so we have to do a replace with QTE
+      export ROOK_EXTERNAL_CEPH_MONITORS="$(echo "${ROOK_EXTERNAL_CEPH_MONITORS}" | sed 's/QTE/"/g')"
+      export RBD_POOL_NAME="${RBD_POOL_NAME}"
+      export RGW_POOL_PREFIX="${RGW_POOL_PREFIX}"
+      export CSI_RBD_NODE_SECRET_NAME="${CSI_RBD_NODE_SECRET_NAME}"
+      export CSI_RBD_PROVISIONER_SECRET_NAME="${CSI_RBD_PROVISIONER_SECRET_NAME}"
+      export CSI_CEPHFS_NODE_SECRET_NAME="${CSI_CEPHFS_NODE_SECRET_NAME}"
+      export CSI_CEPHFS_PROVISIONER_SECRET_NAME="${CSI_CEPHFS_PROVISIONER_SECRET_NAME}"
+      export CSI_RBD_NODE_SECRET="${CSI_RBD_NODE_SECRET}"
+      export CSI_RBD_PROVISIONER_SECRET="${CSI_RBD_PROVISIONER_SECRET}"
+      export CSI_CEPHFS_NODE_SECRET="${CSI_CEPHFS_NODE_SECRET}"
+      export CSI_CEPHFS_PROVISIONER_SECRET="${CSI_CEPHFS_PROVISIONER_SECRET}"
+
+      set -x
+
+      # check if we are running on one of the other nodes
+      MAP=`kubectl -n kube-system get configmap culsterapi-post-run -o yaml`
+      rc=$?
+      if [[ $rc -eq 0 ]]; then
+        echo "clusterapi post kubedm job allready running:"
+        echo $MAP
+        exit
+      fi
+      iface=`route | grep '^default'  | grep -o '[^ ]*$'`
+      ip=`ip a show $iface | grep ' inet ' | awk '{print $2}'`
+      kubectl -n kube-system create configmap culsterapi-post-run \
+       --from-literal=on-host=$(hostname) \
+       --from-literal=ip=$ip
+
+      echo "Running the cluster initialisation: deploy calico"
+      /usr/src/ska-ser-ansible-collections/run-play.sh calico.yml \
+        -e "calico_version=${CALICO_VERSION}" \
+        -e "calico_ipv4pool_cidr=${CALICO_IPV4POOL_CIDR}" \
+        -e "calico_ipv4pool_ipip=${CALICO_IPV4POOL_IPIP}" \
+        -e "calico_ip_autodetection_method=${IP_AUTODETECTION_METHOD}" \
+        -vv
+
+      echo "Running the cluster initialisation: deploy standard StorageClasses"
+      /usr/src/ska-ser-ansible-collections/run-play.sh standardprovisioner.yml \
+        -e "ingress_nginx_version=${NGINX_VERSION}" \
+        -vv
+
+      echo "Controlplane initialise: cloud provider config"
+      echo "$OPENSTACK_CLOUD_PROVIDER_CONF_B64" | base64 -d > /etc/kubernetes/cloud.conf
+      /usr/src/ska-ser-ansible-collections/run-play.sh cloud-provider.yml -vv
+
+      echo "Running the cluster initialisation: deploy metallb"
+      /usr/src/ska-ser-ansible-collections/run-play.sh metallb.yml \
+        -e "metallb_version=${METALLB_VERSION}" \
+        -e "metallb_namespace=${METALLB_NAMESPACE}" \
+        -vv
+
+      echo "Running the cluster initialisation: Ingress"
+      /usr/src/ska-ser-ansible-collections/run-play.sh ingress.yml \
+        -e "ingress_nginx_version=${NGINX_VERSION}" \
+        -vv
+
+      echo "Running the cluster initialisation: RookIO"
+      /usr/src/ska-ser-ansible-collections/run-play.sh rookio.yml \
+        -e "rook_version=${ROOK_VERSION}" \
+        -e "rook_namespace="${ROOK_NAMESPACE}" \
+        -e "kube_namespace="${KUBE_NAMESPACE}" \
+        -e "namespace="${ROOK_NAMESPACE}" \
+        -e "rook_external_fsid="${ROOK_EXTERNAL_FSID}" \
+        -e "rook_external_admin_secret="${ROOK_EXTERNAL_ADMIN_SECRET}" \
+        -e "rook_external_admin_key="${ROOK_EXTERNAL_ADMIN_KEY}" \
+        -e "rook_external_ceph_mon_data="${ROOK_EXTERNAL_CEPH_MON_DATA}" \
+        -e "rook_external_ceph_monitors="${ROOK_EXTERNAL_CEPH_MONITORS}" \
+        -e "rook_rbd_pool_name="${RBD_POOL_NAME}" \
+        -e "rook_rgw_pool_prefix="${RGW_POOL_PREFIX}" \
+        -e "rook_csi_rbd_node_secret_name="${CSI_RBD_NODE_SECRET_NAME}" \
+        -e "rook_csi_rbd_provisioner_secret_name="${CSI_RBD_PROVISIONER_SECRET_NAME}" \
+        -e "rook_csi_cephfs_node_secret_name="${CSI_CEPHFS_NODE_SECRET_NAME}" \
+        -e "rook_csi_cephfs_provisioner_secret_name="${CSI_CEPHFS_PROVISIONER_SECRET_NAME}" \
+        -e "rook_csi_rbd_node_secret="${CSI_RBD_NODE_SECRET}" \
+        -e "rook_csi_rbd_provisioner_secret="${CSI_RBD_PROVISIONER_SECRET}" \
+        -e "rook_csi_cephfs_node_secret="${CSI_CEPHFS_NODE_SECRET}" \
+        -e "rook_csi_cephfs_provisioner_secret="${CSI_CEPHFS_PROVISIONER_SECRET}" \
+        -vv
+
+      echo "postKubeadmCommands: end $(date)"
+      exit 0

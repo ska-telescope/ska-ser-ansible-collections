@@ -1,6 +1,6 @@
 ---
 debug: false
 
-metallb_version: 0.13.4
+metallb_version: 0.13.7
 
 metallb_namespace: metallb-system

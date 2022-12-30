@@ -1,0 +1,12 @@
+---
+debug: false
+
+byoh_current_dir: .
+byoh_project_dir: ~/git/public/cluster-api-provider-bringyourownhost
+byoh_local_agent_file: "{{ byoh_project_dir }}/bin/byoh-hostagent-linux-arm64"
+byoh_remote_agent_file: /usr/local/bin/byoh-hostagent-linux-arm64
+byoh_local_kubeconfig_file: "{{ byoh_current_dir }}/bootstrap-kubeconfig.conf"
+byoh_remote_kubeconfig_file: /etc/k8s-bootstrap-kubeconfig.conf
+byoh_kube_namespace: default
+byoh_agent_version: v0.3.1
+byoh_agent_url: https://github.com/vmware-tanzu/cluster-api-provider-bringyourownhost/releases/download

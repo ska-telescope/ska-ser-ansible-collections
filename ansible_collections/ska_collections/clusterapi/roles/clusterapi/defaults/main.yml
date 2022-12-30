@@ -2,4 +2,4 @@
 debug: false
 
 clusterctl_exe_dir: /usr/local/bin
-clusterctl_version: v1.2.7
+clusterctl_version: v1.3.1

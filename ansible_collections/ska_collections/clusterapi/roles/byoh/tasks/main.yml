@@ -1,0 +1,192 @@
+---
+
+- name: Setup BYOH
+  when: ansible_hostname in groups['workload-cluster']
+  become: true
+  block:
+
+    - name: Install BYOH dependent packages
+      ansible.builtin.apt:
+        name: ['conntrack', 'socat', 'ebtables', 'ethtool']
+        force: true
+        state: present
+
+    - name: Install BYOH CEPH dependent packages
+      ansible.builtin.apt:
+        name: ['linux-image-extra-virtual', 'ceph-common']
+        force: true
+        state: present
+
+    - name: "Remove KUBECONFIG {{ byoh_local_kubeconfig_file }}"
+      ansible.builtin.file:
+        path: "{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
+        state: absent
+      delegate_to: "localhost"
+
+    - name: "Remove bootstrapkubeconfig-{{ inventory_hostname }}"
+      kubernetes.core.k8s:
+        state: absent
+        api_version: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: BootstrapKubeconfig
+        namespace: "{{ byoh_kube_namespace }}"
+        name: "bootstrapkubeconfig-{{ inventory_hostname }}"
+      delegate_to: "localhost"
+      become: false
+
+    - name: "Get current API Server"
+      ansible.builtin.shell: "kubectl config view -ojsonpath='{.clusters[0].cluster.server}'"
+      register: apiserver_var
+      changed_when: false
+      delegate_to: "localhost"
+      become: false
+
+    - name: Apiserver_var
+      ansible.builtin.debug:
+        var: apiserver_var
+
+    - name: "Get current CA Cert"
+      ansible.builtin.shell: "kubectl config view --flatten -ojsonpath='{.clusters[0].cluster.certificate-authority-data}'"
+      register: cacert_var
+      changed_when: false
+      delegate_to: "localhost"
+      become: false
+
+    - name: Cacert_var
+      ansible.builtin.debug:
+        var: cacert_var
+
+    - name: "Create bootstrapkubeconfig-{{ inventory_hostname }}"
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+          kind: BootstrapKubeconfig
+          metadata:
+            namespace: "{{ byoh_kube_namespace }}"
+            name: "bootstrapkubeconfig-{{ inventory_hostname }}"
+          spec:
+            apiserver: "{{ apiserver_var.stdout }}"
+            certificate-authority-data: "{{ cacert_var.stdout }}"
+      delegate_to: "localhost"
+      become: false
+
+    - name: Pause for 3 seconds for BootstrapKubeconfig cert to be created
+      ansible.builtin.wait_for:
+        timeout: 3
+
+    - name: "Read bootstrapkubeconfig-{{ inventory_hostname }}"
+      kubernetes.core.k8s_info:
+        kind: BootstrapKubeconfig
+        api_version: "infrastructure.cluster.x-k8s.io/v1beta1"
+        namespace: "{{ byoh_kube_namespace }}"
+        name: "bootstrapkubeconfig-{{ inventory_hostname }}"
+      register: kubeconfig_var
+      delegate_to: "localhost"
+      become: false
+
+    - name: Kubeconfig_var
+      ansible.builtin.debug:
+        var: kubeconfig_var.resources[0].status.bootstrapKubeconfigData
+
+    - name: "Write bootstrapkubeconfig {{ byoh_local_kubeconfig_file + '-' + inventory_hostname }}"
+      ansible.builtin.copy:
+        content: "{{ kubeconfig_var.resources[0].status.bootstrapKubeconfigData }}"
+        dest: "{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
+        mode: 0644
+      delegate_to: "localhost"
+      become: false
+
+    - name: Set server correctly to default IP for locahost aka minikube
+      ansible.builtin.lineinfile:
+        path: "{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
+        regexp: '^    server: '
+        line: "    server: https://{{ hostvars[groups['management-cluster'][0]].ansible_default_ipv4.address }}:6443"
+      delegate_to: "localhost"
+      become: false
+
+    - name: When arm64 use locally built agent
+      when: ansible_architecture == 'aarch64'
+      block:
+        - name: Distribute byoh agent
+          ansible.builtin.copy:
+            src: "{{ byoh_local_agent_file }}"
+            dest: "{{ byoh_remote_agent_file }}"
+            owner: ubuntu
+            group: ubuntu
+            mode: '0755'
+          notify:
+            - Reload systemctl
+            - Restart byohagent
+
+    - name: When x86_64 use locally built agent
+      when: ansible_architecture == 'x86_64'
+      block:
+
+        - name: Check if byoh agent exists
+          ansible.builtin.stat:
+            path: "{{ byoh_remote_agent_file }}"
+          register: stat_byohagent
+
+        - name: Check if the kubectl version is installed
+          ansible.builtin.command: "{{ byoh_remote_agent_file }} --version 2>&1"
+          changed_when: false
+          register: byohagent_version_check
+          ignore_errors: true
+
+        - name: Tidy up byohagent
+          ansible.builtin.file:
+            path: "{{ byoh_remote_agent_file }}"
+            state: absent
+          when: "not stat_byohagent.stat.exists or
+            byohagent_version_check.stdout.find(byoh_agent_version) == -1"
+          become: true
+
+        - name: Calculate version vars
+          ansible.builtin.set_fact:
+            os_binary: "{% if ansible_facts.architecture == 'x86_64' %}amd64{% else %}unknown{% endif %}"
+
+        - name: Byohagent install
+          ansible.builtin.get_url:
+            url: "{{ byoh_agent_url }}/{{ byoh_agent_version }}/byoh-hostagent-linux-{{ os_binary }}"
+            dest: "{{ byoh_remote_agent_file }}"
+            mode: "0755"
+          when: "not stat_byohagent.stat.exists or
+            byohagent_version_check.stdout.find(byoh_agent_version) == -1"
+          become: true
+
+    - name: Distribute clusterapi bootstrap kubeconfig
+      ansible.builtin.copy:
+        src: "{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
+        dest: "{{ byoh_remote_kubeconfig_file }}"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+      notify:
+        - Reload systemctl
+        - Restart byohagent
+
+    - name: Set the host grouping
+      ansible.builtin.set_fact:
+        host_grouping: "{% if inventory_hostname in groups['controlplane'] %}master{% else %}worker{% endif %}"
+
+# https://stackoverflow.com/questions/35984151/how-to-create-new-system-service-by-ansible-playbook
+    - name: Byohagent | Create environment file
+      ansible.builtin.template:
+        src: byohagent.env.j2
+        dest: /etc/default/byohagent
+        mode: "0644"
+      notify:
+        - Reload systemctl
+        - Restart byohagent
+
+    - name: Byohagent | Create Unit file
+      ansible.builtin.template:
+        src: byohagent.service.j2
+        dest: /lib/systemd/system/byohagent.service
+        mode: 0644
+      notify:
+        - Reload systemctl
+        - Restart byohagent
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers

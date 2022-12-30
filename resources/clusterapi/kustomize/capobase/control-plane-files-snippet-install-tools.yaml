@@ -1,0 +1,28 @@
+- op: add
+  path: /spec/kubeadmConfigSpec/preKubeadmCommands/-
+  target:
+    kind: KubeadmControlPlane
+    name: ${CLUSTER_NAME}-control-plane
+  value:
+    '/usr/bin/bash /etc/kubernetes/initialise-tools.sh >>/tmp/capo-config.log 2>&1'
+
+- op: add
+  path: /spec/kubeadmConfigSpec/files/-
+  target:
+    kind: KubeadmControlPlane
+    name: ${CLUSTER_NAME}-control-plane
+  value:
+    owner: root:root
+    path: /etc/kubernetes/initialise-tools.sh
+    content: |
+      #!/usr/bin/bash
+
+      echo "Running the cluster initialisation: install tools [happens on controlplane]"
+      set -x
+
+      /usr/src/ska-ser-ansible-collections/run-play.sh install-tools.yml --tags helm
+
+      helm version
+
+      echo "Finished."
+      exit 0

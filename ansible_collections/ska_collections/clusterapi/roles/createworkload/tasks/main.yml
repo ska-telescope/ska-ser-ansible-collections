@@ -51,21 +51,21 @@
 
 - name: Generate kustomized template
   ansible.builtin.shell: |
-    cd {{ playbook_dir }}/../../../../../;
-    kubectl kustomize ./kustomize/overlay/{{ capo_kustomize_overlay }}/ > /tmp/{{ capo_cluster }}-template.yaml
+    cd {{ playbook_dir }}/../../../../resources/clusterapi/;
+    kubectl kustomize ./kustomize/overlay/{{ capi_kustomize_overlay }}/ > /tmp/{{ capi_cluster }}-template.yaml
   changed_when: false
   delegate_to: localhost
 
 - name: Load CAPO Cluster Template
   ansible.builtin.slurp:
-    src: "/tmp/{{ capo_cluster }}-template.yaml"
+    src: "/tmp/{{ capi_cluster }}-template.yaml"
   register: slurped_cluster_template
   delegate_to: localhost
 
 - name: Output cluster template file to server  # noqa: template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ slurped_cluster_template.content | b64decode }}"
-    dest: "{{ clusterapi_config_dir }}/{{ capo_cluster }}-cluster-template.yaml"
+    dest: "{{ clusterapi_config_dir }}/{{ capi_cluster }}-cluster-template.yaml"
     mode: 0644
   become: true
 
@@ -83,64 +83,67 @@
 # 	@# wget https://github.com/vmware-tanzu/cluster-api-provider-bringyourownhost/releases/download/v0.2.0/cluster-template.yaml
 # 	@# --infrastructure byoh
 
+- name: Setup environment
+  ansible.builtin.set_fact:
+    capi_cluster_environment:
+      COLLECTIONS_BRANCH: "{{ capi_collections_branch }}"
+      KUBE_NAMESPACE: "{{ capi_kube_namespace }}"
+      ROOK_NAMESPACE: "{{ capi_ceph_namespace }}"
+      OPENSTACK_FAILURE_DOMAIN: "{{ capo_openstack_failure_domain }}"
+      OPENSTACK_IMAGE_NAME: "{{ capo_openstack_image_name }}"
+      OPENSTACK_CLOUD: "{{ capo_openstack_cloud }}"
+      OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR: "{{ capo_controlplane_machine_flavour }}"
+      OPENSTACK_DNS_NAMESERVERS: "{{ capo_openstack_dns_servers }}"
+      OPENSTACK_NODE_MACHINE_FLAVOR: "{{ capo_node_machine_flavour }}"
+      OPENSTACK_SSH_KEY_NAME: "{{ capo_openstack_ssh_key_name }}"
+      CAPO_CLOUD: "{{ capo_openstack_cloud }}"
+      OPENSTACK_EXTERNAL_NETWORK_ID: "{{ capo_openstack_external_network_id }}"
+      OPENSTACK_CLOUD_YAML_B64: "{{ base64_capo_ostack_cloud_yaml }}"
+      OPENSTACK_CLOUD_CACERT_B64: "{{ openstack_cloud_cacert_b64 }}"
+      OPENSTACK_CLOUD_PROVIDER_CONF_B64: "{{ base64_cloud_config }}"
+      CLUSTER_API_OPENSTACK_INSTANCE_CREATE_TIMEOUT: "{{ capo_openstack_instance_create_timeout }}"
+      NAMESPACE: "{{ capi_ceph_namespace }}"
+      ROOK_EXTERNAL_FSID: "{{ capo_ceph_conf_global_fsid }}"
+      ROOK_EXTERNAL_ADMIN_SECRET: "{{ capo_ceph_key }}"
+      ROOK_EXTERNAL_ADMIN_KEY: "{{ capo_ceph_key }}"
+      ROOK_EXTERNAL_CEPH_MON_DATA: "{{ capo_ceph_conf_global_mons_data }}"
+      ROOK_EXTERNAL_CEPH_MONITORS: "{{ capo_ceph_conf_global_monitors }}"
+      RBD_POOL_NAME: "{{ capi_ceph_rbd_pool_name }}"
+      RGW_POOL_PREFIX: "{{ capi_ceph_rgw_pool_prefix }}"
+      CSI_RBD_NODE_SECRET_NAME: "{{ capi_ceph_csi_rbd_node_secret_name }}"
+      CSI_RBD_PROVISIONER_SECRET_NAME: "{{ capi_ceph_csi_rbd_provisioner_secret_name }}"
+      CSI_CEPHFS_NODE_SECRET_NAME: "{{ capi_ceph_csi_cephfs_node_secret_name }}"
+      CSI_CEPHFS_PROVISIONER_SECRET_NAME: "{{ capi_ceph_csi_cephfs_provisioner_secret_name }}"
+      CSI_RBD_NODE_SECRET: "{{ capo_ceph_key }}"
+      CSI_RBD_PROVISIONER_SECRET: "{{ capo_ceph_key }}"
+      CSI_CEPHFS_NODE_SECRET: "{{ capo_ceph_key }}"
+      CSI_CEPHFS_PROVISIONER_SECRET: "{{ capo_ceph_key }}"
+      BUNDLE_LOOKUP_TAG: "{{ capi_k8s_version }}"
+      K8S_VERSION: "{{ capi_k8s_version }}"
+      CALICO_VERSION: "{{ capi_calico_version }}"
+      NGINX_VERSION: "{{ capi_nginx_version }}"
+      METALLB_VERSION: "{{ capi_metallb_version }}"
+      METALLB_NAMESPACE: "{{ capi_metallb_namespace }}"
+      ROOK_VERSION: "{{ capi_rook_version }}"
+      NETWORK_NAME: "{{ capo_os_network_name }}"
+      SUBNET_NAME: "{{ capo_os_subnet_name }}"
+      CIDR_BLOCK: "{{ capi_cidr_block }}"
+      CALICO_IPV4POOL_CIDR: "{{ capi_cidr_block }}"
+      IP_AUTODETECTION_METHOD: "{{ capi_calico_ip_autodetection_method }}"
+      CALICO_IPV4POOL_IPIP: "{{ capi_calico_ipv4pool_ipip }}"
+      HELM_VERSION: "{{ capi_helm_version }}"
+      CONTROL_PLANE_COUNT: "{{ capi_controlplane_count }}"
+      WORKER_COUNT: "{{ capi_worker_count }}"
 
 - name: Generate Cluster Instance
   ansible.builtin.shell: |
-    clusterctl generate cluster {{ capo_cluster }} \
-      --target-namespace {{ capo_kube_namespace }} \
-      --kubernetes-version {{ capo_k8s_version }} \
-      --control-plane-machine-count {{ capo_controlplane_count }} \
-      --worker-machine-count {{ capo_worker_count }} \
-      --from {{ clusterapi_config_dir }}/{{ capo_cluster }}-cluster-template.yaml > {{ capo_template_dir.path }}/{{ capo_cluster }}.yaml;
-  environment:
-    KUBE_NAMESPACE: "{{ capo_kube_namespace }}"
-    ROOK_NAMESPACE: "{{ capo_ceph_namespace }}"
-    OPENSTACK_FAILURE_DOMAIN: "{{ capo_openstack_failure_domain }}"
-    OPENSTACK_IMAGE_NAME: "{{ capo_openstack_image_name }}"
-    OPENSTACK_CLOUD: "{{ capo_openstack_cloud }}"
-    OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR: "{{ capo_controlplane_machine_flavour }}"
-    OPENSTACK_DNS_NAMESERVERS: "{{ capo_openstack_dns_servers }}"
-    OPENSTACK_NODE_MACHINE_FLAVOR: "{{ capo_node_machine_flavour }}"
-    OPENSTACK_SSH_KEY_NAME: "{{ capo_openstack_ssh_key_name }}"
-    CAPO_CLOUD: "{{ capo_openstack_cloud }}"
-    OPENSTACK_EXTERNAL_NETWORK_ID: "{{ capo_openstack_external_network_id }}"
-    OPENSTACK_CLOUD_YAML_B64: "{{ base64_capo_ostack_cloud_yaml }}"
-    OPENSTACK_CLOUD_CACERT_B64: "{{ openstack_cloud_cacert_b64 }}"
-    OPENSTACK_CLOUD_PROVIDER_CONF_B64: "{{ base64_cloud_config }}"
-    CLUSTER_API_OPENSTACK_INSTANCE_CREATE_TIMEOUT: "{{ capo_openstack_instance_create_timeout }}"
-    NAMESPACE: "{{ capo_ceph_namespace }}"
-    ROOK_EXTERNAL_FSID: "{{ capo_ceph_conf_global_fsid }}"
-    ROOK_EXTERNAL_ADMIN_SECRET: "{{ capo_ceph_key }}"
-    ROOK_EXTERNAL_ADMIN_KEY: "{{ capo_ceph_key }}"
-    ROOK_EXTERNAL_CEPH_MON_DATA: "{{ capo_ceph_conf_global_mons_data }}"
-    ROOK_EXTERNAL_CEPH_MONITORS: "{{ capo_ceph_conf_global_monitors }}"
-    RBD_POOL_NAME: "{{ capo_ceph_rbd_pool_name }}"
-    RGW_POOL_PREFIX: "{{ capo_ceph_rgw_pool_prefix }}"
-    CSI_RBD_NODE_SECRET_NAME: "{{ capo_ceph_csi_rbd_node_secret_name }}"
-    CSI_RBD_PROVISIONER_SECRET_NAME: "{{ capo_ceph_csi_rbd_provisioner_secret_name }}"
-    CSI_CEPHFS_NODE_SECRET_NAME: "{{ capo_ceph_csi_cephfs_node_secret_name }}"
-    CSI_CEPHFS_PROVISIONER_SECRET_NAME: "{{ capo_ceph_csi_cephfs_provisioner_secret_name }}"
-    CSI_RBD_NODE_SECRET: "{{ capo_ceph_key }}"
-    CSI_RBD_PROVISIONER_SECRET: "{{ capo_ceph_key }}"
-    CSI_CEPHFS_NODE_SECRET: "{{ capo_ceph_key }}"
-    CSI_CEPHFS_PROVISIONER_SECRET: "{{ capo_ceph_key }}"
-    BUNDLE_LOOKUP_TAG: "{{ capo_k8s_version }}"
-    K8S_VERSION: "{{ capo_k8s_version }}"
-    CALICO_VERSION: "{{ capo_calico_version }}"
-    NGINX_VERSION: "{{ capo_nginx_version }}"
-    METALLB_VERSION: "{{ capo_metallb_version }}"
-    METALLB_NAMESPACE: "{{ capo_metallb_namespace }}"
-    ROOK_VERSION: "{{ capo_rook_version }}"
-    NETWORK_NAME: "{{ capo_os_network_name }}"
-    SUBNET_NAME: "{{ capo_os_subnet_name }}"
-    CIDR_BLOCK: "{{ capo_cidr_block }}"
-    CALICO_IPV4POOL_CIDR: "{{ capo_cidr_block }}"
-    IP_AUTODETECTION_METHOD: "{{ capo_calico_ip_autodetection_method }}"
-    CALICO_IPV4POOL_IPIP: "{{ capo_calico_ipv4pool_ipip }}"
-    HELM_VERSION: "{{ capo_helm_version }}"
-    CONTROL_PLANE_COUNT: "{{ capo_controlplane_count }}"
-    WORKER_COUNT: "{{ capo_worker_count }}"
-
+    clusterctl generate cluster {{ capi_cluster }} \
+      --target-namespace {{ capi_kube_namespace }} \
+      --kubernetes-version {{ capi_k8s_version }} \
+      --control-plane-machine-count {{ capi_controlplane_count }} \
+      --worker-machine-count {{ capi_worker_count }} \
+      --from {{ clusterapi_config_dir }}/{{ capi_cluster }}-cluster-template.yaml > {{ capo_template_dir.path }}/{{ capi_cluster }}.yaml;
+  environment: "{{ capi_cluster_environment | combine(capi_cluster_extra_vars) }}"
   changed_when: false
   register: capo_template_result
 
@@ -150,25 +153,28 @@
 
 - name: Slurp CAPO Cluster instance manifest
   ansible.builtin.slurp:
-    src: "{{ capo_template_dir.path }}/{{ capo_cluster }}.yaml"
+    src: "{{ capo_template_dir.path }}/{{ capi_cluster }}.yaml"
   register: slurped_cluster_instance_manifest
 
 - name: Unpack CAPO Cluster manifest
   ansible.builtin.set_fact:
-    capo_cluster_manifest: "{{ slurped_cluster_instance_manifest.content | b64decode }}"
+    capi_cluster_manifest: "{{ slurped_cluster_instance_manifest.content | b64decode }}"
 
 - name: Output cluster instance manifest file  # noqa: template-instead-of-copy
   ansible.builtin.copy:
-    content: "{{ capo_cluster_manifest }}"
-    dest: "/tmp/{{ capo_cluster }}-cluster-manifest.yaml"
+    content: "{{ capi_cluster_manifest }}"
+    dest: "/tmp/{{ capi_cluster }}-cluster-manifest.yaml"
     mode: 0644
   delegate_to: localhost
 
-- name: Apply CAPO Cluster manifest
-  kubernetes.core.k8s:
-    state: present
-    apply: true
-    src: "{{ capo_template_dir.path }}/{{ capo_cluster }}.yaml"
+- name: Apply Cluster Template
+  when: cluster_apply
+  block:
+    - name: Apply CAPO Cluster manifest
+      kubernetes.core.k8s:
+        state: present
+        apply: true
+        src: "{{ capo_template_dir.path }}/{{ capi_cluster }}.yaml"
 
 - name: Remove the temp template directory
   ansible.builtin.file:

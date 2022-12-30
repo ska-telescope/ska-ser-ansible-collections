@@ -4,9 +4,6 @@
     file: ../clusterapi/defaults/main.yml
   tags: [always]
 
-- name: Include the OS Config
-  ansible.builtin.include_tasks: os_config.yml
-
 - name: Set clusterapi config dir
   ansible.builtin.file:
     path: "{{ clusterapi_config_dir }}"
@@ -14,40 +11,33 @@
     mode: "0755"
   become: true
 
-- name: Clusterapi OS cloud config
-  ansible.builtin.template:
-    src: cloud-provider-conf.ini.j2
-    dest: "{{ clusterapi_config_dir }}/cloud-provider.ini"
-    mode: "0600"
-  become: true
-
-- name: Get current CAPO template verion  # noqa: command-instead-of-module
+- name: Get current BYOH template verion  # noqa: command-instead-of-module
   ansible.builtin.shell: |
     set -o pipefail && \
-    curl -s -H "Accept: application/json" -L `clusterctl config repositories | grep openstack | awk '{print $3}'` | jq -r .tag_name
+    curl -s -H "Accept: application/json" -L `clusterctl config repositories | grep bringyourownhost | awk '{print $3}'` | jq -r .tag_name
   args:
     executable: /usr/bin/bash
   changed_when: false
-  register: capo_template_check
+  register: byoh_template_check
 
-- name: Current CAPO template verion
+- name: Current BYOH template verion
   ansible.builtin.set_fact:
-    capo_template_version_latest: "{{ capo_template_check.stdout }}"
+    byoh_template_version_latest: "{{ byoh_template_check.stdout }}"
 
-- name: "Show the latest CAPO template version"
+- name: "Show the latest BYOH template version"
   ansible.builtin.debug:
-    var: capo_template_version_latest
+    var: byoh_template_version_latest
 
-- name: Tidy up CAPO template
+- name: Tidy up BYOH template
   ansible.builtin.file:
-    path: "{{ clusterapi_config_dir }}/{{ capo_template_name }}"
+    path: "{{ clusterapi_config_dir }}/{{ byoh_template_name }}"
     state: absent
   become: true
 
-- name: Download CAPO template
+- name: Download BYOH template
   ansible.builtin.get_url:
-    url: "https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/download/{{ capo_template_version }}/cluster-template.yaml"
-    dest: "{{ clusterapi_config_dir }}/{{ capo_template_name }}"
+    url: "https://github.com/vmware-tanzu/cluster-api-provider-bringyourownhost/releases/download/{{ byoh_template_version }}/cluster-template.yaml"
+    dest: "{{ clusterapi_config_dir }}/{{ byoh_template_name }}"
     mode: '0644'
   become: true
 
@@ -55,36 +45,36 @@
   ansible.builtin.set_fact:
     whoami: "{{ lookup('env', 'USER') }}"
 
-- name: Copy clusterapi CAPO template back
+- name: Copy clusterapi BYOH template back
   ansible.builtin.slurp:
-    src: "{{ clusterapi_config_dir }}/{{ capo_template_name }}"
+    src: "{{ clusterapi_config_dir }}/{{ byoh_template_name }}"
   register: slurped_cluster_template
   become: true
 
 - name: Output cluster template file  # noqa: template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ slurped_cluster_template.content | b64decode }}"
-    dest: "{{ playbook_dir }}/../../../../resources/clusterapi/kustomize/capobase/{{ capo_template_name }}"
+    dest: "{{ playbook_dir }}/../../../../resources/clusterapi/kustomize/byohbase/{{ byoh_template_name }}"
     mode: 0644
   delegate_to: localhost
 
-- name: Check CAPO is running
+- name: Check BYOH is running
   kubernetes.core.k8s_info:
     api_version: apps/v1
     kind: Deployment
-    name: capi-controller-manager
-    namespace: capi-system
-  register: capi_controller_check
+    name: byoh-controller-manager
+    namespace: byoh-system
+  register: byoh_controller_check
 
-- name: Start CAPO
-  # CAPO is not started
-  when: "not capi_controller_check.resources"
+- name: Start BYOH
+  # BYOH is not started
+  when: "not byoh_controller_check.resources"
   block:
 
-    - name: Start up CAPO
-      ansible.builtin.command: "{{ clusterctl_exe_dir }}/clusterctl init --infrastructure openstack"
+    - name: Start up BYOH
+      ansible.builtin.command: "{{ clusterctl_exe_dir }}/clusterctl init --infrastructure byoh"
       changed_when: false
-      register: clusterctl_capo_check
+      register: clusterctl_byoh_check
 
     - name: Wait clusterapi CRD
       kubernetes.core.k8s_info:
@@ -139,12 +129,12 @@
         - "cert-manager-cainjector"
         - "cert-manager-webhook"
 
-    - name: Wait for deploy/capo-controller-manager
+    - name: Wait for deploy/byoh-controller-manager
       kubernetes.core.k8s_info:
         kind: Deployment
         api_version: apps/v1
-        name: capo-controller-manager
-        namespace: capo-system
+        name: byoh-controller-manager
+        namespace: byoh-system
         wait: true
         wait_sleep: 10
         wait_timeout: 300

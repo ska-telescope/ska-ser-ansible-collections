@@ -1,0 +1,147 @@
+# - op: add
+#   path: /spec/kubeadmConfigSpec/postKubeadmCommands/-
+#   target:
+#     kind: KubeadmControlPlane
+#     name: ${CLUSTER_NAME}-control-plane
+#   value:
+#     '/usr/bin/bash /etc/kubernetes/initialise-rookio.sh 2>&1 >>/tmp/capo-config.log'
+
+- op: add
+  path: /spec/kubeadmConfigSpec/files/-
+  target:
+    kind: KubeadmControlPlane
+    name: ${CLUSTER_NAME}-control-plane
+  value:
+    owner: root:root
+    path: /etc/kubernetes/initialise-rookio.sh
+    content: |
+      #!/usr/bin/bash
+
+      echo "Running the cluster initialisation"
+      export ROOK_VERSION=${ROOK_VERSION}
+      export KUBECONFIG=/etc/kubernetes/admin.conf
+
+      # All Rook Ceph variables
+      export KUBE_NAMESPACE="${KUBE_NAMESPACE}"
+      export ROOK_NAMESPACE="${ROOK_NAMESPACE}"
+      export ROOK_EXTERNAL_FSID="${ROOK_EXTERNAL_FSID}"
+      export ROOK_EXTERNAL_ADMIN_SECRET="${ROOK_EXTERNAL_ADMIN_SECRET}"
+      export ROOK_EXTERNAL_ADMIN_KEY="${ROOK_EXTERNAL_ADMIN_KEY}"
+      export ROOK_EXTERNAL_CEPH_MON_DATA="${ROOK_EXTERNAL_CEPH_MON_DATA}"
+      # make squashes the "s so we have to do a replace with QTE
+      export ROOK_EXTERNAL_CEPH_MONITORS="$(echo "${ROOK_EXTERNAL_CEPH_MONITORS}" | sed 's/QTE/"/g')"
+      export RBD_POOL_NAME="${RBD_POOL_NAME}"
+      export RGW_POOL_PREFIX="${RGW_POOL_PREFIX}"
+      export CSI_RBD_NODE_SECRET_NAME="${CSI_RBD_NODE_SECRET_NAME}"
+      export CSI_RBD_PROVISIONER_SECRET_NAME="${CSI_RBD_PROVISIONER_SECRET_NAME}"
+      export CSI_CEPHFS_NODE_SECRET_NAME="${CSI_CEPHFS_NODE_SECRET_NAME}"
+      export CSI_CEPHFS_PROVISIONER_SECRET_NAME="${CSI_CEPHFS_PROVISIONER_SECRET_NAME}"
+      export CSI_RBD_NODE_SECRET="${CSI_RBD_NODE_SECRET}"
+      export CSI_RBD_PROVISIONER_SECRET="${CSI_RBD_PROVISIONER_SECRET}"
+      export CSI_CEPHFS_NODE_SECRET="${CSI_CEPHFS_NODE_SECRET}"
+      export CSI_CEPHFS_PROVISIONER_SECRET="${CSI_CEPHFS_PROVISIONER_SECRET}"
+
+      set -x
+
+      echo "Deploy Rook.io"
+      kubectl apply -f https://raw.githubusercontent.com/rook/rook/$ROOK_VERSION/deploy/examples/crds.yaml
+      kubectl apply -f https://raw.githubusercontent.com/rook/rook/$ROOK_VERSION/deploy/examples/common.yaml
+      kubectl apply -f https://raw.githubusercontent.com/rook/rook/$ROOK_VERSION/deploy/examples/operator.yaml
+      sleep 30
+      echo "Waiting for the operator"
+      kubectl -n rook-ceph wait --for=condition=available deployment.v1.apps/rook-ceph-operator --timeout=300s || true
+
+      # setup vars
+      echo "Set the vars script"
+      # required for the downloaded script
+      export NAMESPACE="${ROOK_NAMESPACE}"
+      curl -s https://raw.githubusercontent.com/rook/rook/$ROOK_VERSION/deploy/examples/import-external-cluster.sh | \
+      tee /tmp/import-external-cluster.sh | /bin/bash
+
+      # fix rook secrets
+      set -e
+
+      ##############
+      # VARIABLES #
+      #############
+      MON_SECRET_NAME=rook-ceph-mon
+      MON_SECRET_CLUSTER_NAME_KEYNAME=cluster-name
+      MON_SECRET_FSID_KEYNAME=fsid
+      MON_SECRET_ADMIN_KEYRING_KEYNAME=admin-secret
+      MON_SECRET_MON_KEYRING_KEYNAME=mon-secret
+      MON_ENDPOINT_CONFIGMAP_NAME=rook-ceph-mon-endpoints
+      ROOK_EXTERNAL_CLUSTER_NAME=$ROOK_NAMESPACE
+      ROOK_EXTERNAL_MAX_MON_ID=2
+      ROOK_EXTERNAL_MAPPING={}
+      ROOK_EXTERNAL_MONITOR_SECRET=mon-secret
+      CEPH_ADMIN=admin
+
+      #############
+      # FUNCTIONS #
+      #############
+
+      function checkEnvVars() {
+          if [ -z "$ROOK_NAMESPACE" ]; then
+              echo "Please populate the environment variable NAMESPACE"
+              exit 1
+          fi
+          if [ -z "$ROOK_EXTERNAL_FSID" ]; then
+              echo "Please populate the environment variable ROOK_EXTERNAL_FSID"
+              exit 1
+          fi
+          if [ -z "$ROOK_EXTERNAL_ADMIN_SECRET" ]; then
+              echo "Please populate the environment variable ROOK_EXTERNAL_ADMIN_SECRET"
+              exit 1
+          fi
+          if [ -z "$ROOK_EXTERNAL_CEPH_MON_DATA" ]; then
+              echo "Please populate the environment variable ROOK_EXTERNAL_CEPH_MON_DATA"
+              exit 1
+          fi
+      }
+
+      ########
+      # MAIN #
+      ########
+      checkEnvVars
+
+      # monitors are misconfigured for external Ceph - NOTE clusterID and Namespace !!!!!!
+      echo ""
+      echo "fixing rook-ceph-csi-config"
+      kubectl -n ${ROOK_NAMESPACE} get configmap rook-ceph-csi-config -o yaml || true
+      kubectl -n ${ROOK_NAMESPACE} apply -f - <<EOF
+      apiVersion: v1
+      data:
+        csi-cluster-config-json: '[{"clusterID":"${ROOK_NAMESPACE}","monitors":[$ROOK_EXTERNAL_CEPH_MONITORS]}]'
+      kind: ConfigMap
+      metadata:
+        name: rook-ceph-csi-config
+        namespace: ${ROOK_NAMESPACE}
+      EOF
+
+      # patch the secret
+      echo "Patch the secrets"
+      export ADMIN_USER_NAME=$(echo -n "client.admin" | base64)
+      export ADMIN_SECRET_BASE64=$(echo -n "${ROOK_EXTERNAL_ADMIN_SECRET}" | base64 -w 0)
+
+      # patch secret if it exists
+      # https://github.com/rook/rook/issues/6089
+      kubectl patch secret/rook-ceph-mon \
+              -n ${ROOK_NAMESPACE} \
+              --type merge \
+              -p "{\"data\":{\"ceph-username\":\"$ADMIN_USER_NAME\",\"ceph-secret\":\"$ADMIN_SECRET_BASE64\"} }" || true
+
+      # create the external cluster definition
+      echo "Deploy the external ceph cluster"
+      kubectl -n ${ROOK_NAMESPACE} \
+              apply -f \
+              https://gitlab.com/piersharding/capo-clusterapi/-/raw/master/cluster/resources/ceph-cluster-external.17.2.0.yaml
+
+      sleep 10
+
+      echo "Create the standard Rook StorageClasses"
+      curl -s https://gitlab.com/piersharding/capo-clusterapi/-/raw/master/cluster/resources/storage-classes.yaml | \
+      envsubst  | kubectl -n ${ROOK_NAMESPACE} apply -f -
+
+      echo "Finished."
+      exit 0
+

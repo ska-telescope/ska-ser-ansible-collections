@@ -116,7 +116,9 @@
         name: "{{ minikube_haproxy_name }}"
         image: "{{ minikube_haproxy_image }}"
         command:
-          - " -f /usr/local/etc/haproxy/haproxy.cfg"
+          - "haproxy"
+          - "-f"
+          - "/usr/local/etc/haproxy/haproxy.cfg"
         state: started
         network_mode: host
         user: root

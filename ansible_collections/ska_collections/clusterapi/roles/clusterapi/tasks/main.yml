@@ -32,7 +32,7 @@
   ansible.builtin.debug:
     var: clusterctl_version_check.stdout
 
-- name: Start Calico
+- name: Install clusterctl
   when: "not stat_clusterctl.stat.exists or
     clusterctl_version_check.stdout.find(clusterctl_version) == -1"
   block:
