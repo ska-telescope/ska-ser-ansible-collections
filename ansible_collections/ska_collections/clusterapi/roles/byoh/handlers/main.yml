@@ -11,3 +11,10 @@
     state: restarted
     enabled: true
   become: true
+
+- name: Restart kubelet
+  become: true
+  service:
+    name: kubelet
+    state: restarted
+    enabled: true

@@ -10,6 +10,7 @@ ifndef CLUSTERAPI_CLUSTER_TYPE
 endif
 
 CLUSTERAPI_APPLY ?= false ## Apply workload cluster: true or false - default: false
+CLUSTERAPI_AC_BRANCH ?= bang-105-add-byoh
 
 
 .DEFAULT_GOAL := clusterapi
@@ -46,9 +47,13 @@ clusterapi-createworkload: clusterapi-check-cluster-type  ## Template workload m
 	--extra-vars "capi_kustomize_overlay=$(CLUSTERAPI_CLUSTER_TYPE)" \
 	--extra-vars '{"cluster_apply": $(CLUSTERAPI_APPLY)}' \
 	--extra-vars '{"capi_cluster_extra_vars": {$(CLUSTERAPI_CLUSTER_EXTRA_VARS)} }' \
+	--extra-vars 'capi_collections_branch=$(CLUSTERAPI_AC_BRANCH)' \
 	--limit "management-cluster"
 
-clusterapi-byoh:  ## Template workload manifest and deploy
+clusterapi-byoh:  ## Deploy byoh agent and tokens to workload hosts
+	ansible-playbook ./ansible_collections/ska_collections/docker_base/playbooks/containerd.yml \
+	-i $(INVENTORY) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v
 	ansible-playbook ./ansible_collections/ska_collections/clusterapi/playbooks/byoh.yml \
 	-i $(INVENTORY) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v

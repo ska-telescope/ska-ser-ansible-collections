@@ -7,13 +7,21 @@
 
     - name: Install BYOH dependent packages
       ansible.builtin.apt:
-        name: ['conntrack', 'socat', 'ebtables', 'ethtool']
+        name: ['conntrack', 'socat', 'ebtables', 'ethtool', 'cgroupfs-mount', 'cgroup-tools']
         force: true
         state: present
 
+# Only attempt this for x86, as it can break some rpi4
     - name: Install BYOH CEPH dependent packages
       ansible.builtin.apt:
-        name: ['linux-image-extra-virtual', 'ceph-common']
+        name: 'linux-image-extra-virtual'
+        force: true
+        state: present
+      when: ansible_architecture == 'x86_64'
+
+    - name: Install BYOH CEPH dependent packages
+      ansible.builtin.apt:
+        name: 'ceph-common'
         force: true
         state: present
 
@@ -167,7 +175,7 @@
 
     - name: Set the host grouping
       ansible.builtin.set_fact:
-        host_grouping: "{% if inventory_hostname in groups['controlplane'] %}master{% else %}worker{% endif %}"
+        host_grouping: "{% if inventory_hostname in groups['controlplane'] %}controlplane{% else %}worker{% endif %}"
 
 # https://stackoverflow.com/questions/35984151/how-to-create-new-system-service-by-ansible-playbook
     - name: Byohagent | Create environment file
@@ -187,6 +195,104 @@
       notify:
         - Reload systemctl
         - Restart byohagent
+
+    - name: Check if firewalld service exists
+      stat: path=/usr/lib/systemd/system/firewalld.service
+      register: service_status
+
+    - name: Stopping and Disabling the firewalld
+      service:
+        name: firewalld
+        state: stopped
+        enabled: false
+      when: service_status.stat.exists
+
+    - name: "Check if {{ byoh_k8s_key_file_gpg }} exists"
+      stat:
+        path: "{{ byoh_k8s_key_file_gpg }}"
+      register: k8s_key_result
+
+    - name: Add k8s project apt key
+      ansible.builtin.get_url:
+        url: "{{ byoh_k8s_deb_repo_key_url }}"
+        dest: "{{ byoh_k8s_key_file }}"
+        mode: '0644'
+        force: true
+      when: not k8s_key_result.stat.exists
+
+    - name: "Armour the key {{ byoh_k8s_key_file }}"
+      command: "gpg --dearmour -o {{ byoh_k8s_key_file_gpg }} {{ byoh_k8s_key_file }}"
+      args:
+        creates: "{{ byoh_k8s_key_file_gpg }}"
+      changed_when: false
+      when: not k8s_key_result.stat.exists
+
+    - name: "remove {{ byoh_k8s_key_file }}"
+      ansible.builtin.file:
+        path: "{{ byoh_k8s_key_file }}"
+        state: absent
+
+    - name: Add k8s apt source
+      lineinfile:
+        line: "{{ byoh_k8s_deb_repo_url }}"
+        regexp: 'deb '
+        path: /etc/apt/sources.list.d/kubernetes.list
+        create: true
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Update apt cache - again
+      apt:
+        update_cache: true
+
+    - name: Install k8s dependent packages
+      apt:
+        name: ['conntrack', 'ipvsadm']
+        force: true
+        state: present
+
+    - name: Install kubeadm and friends
+      apt:
+        name: ["kubectl={{ byoh_kube_version }}", "kubeadm={{ byoh_kube_version }}", "kubelet={{ byoh_kube_version }}"]
+        force: true
+        state: present
+      notify:
+        - Restart kubelet
+
+    - name: pin kube* versions
+      dpkg_selections:
+        name: "{{ item }}"
+        selection: hold
+      with_items:
+        - "kubectl"
+        - "kubeadm"
+        - "kubelet"
+
+    # https://stackoverflow.com/questions/36517472/is-it-possible-to-add-swap-space-on-kubernetes-nodes
+    - name: Enable swap - disable error
+      lineinfile:
+        line: 'KUBELET_EXTRA_ARGS="--fail-swap-on=false"'
+        path: /etc/default/kubelet
+        create: true
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Ensure /etc/NetworkManager/conf.d exists
+      file:
+        path: /etc/NetworkManager/conf.d
+        state: directory
+        mode: 0755
+
+    - name: Calico config for NetworkManager
+      blockinfile:
+        path: /etc/NetworkManager/conf.d/calico.conf
+        mode: 644
+        create: true
+        block: |
+          [keyfile]
+          unmanaged-devices=interface-name:cali*;interface-name:tunl*;interface-name:vxlan.calico
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers

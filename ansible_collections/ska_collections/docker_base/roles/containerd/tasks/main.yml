@@ -197,7 +197,17 @@
       notify:
         - Restart containerd
 
-- name: Configure containerd server
+- name: Configure containerd server - arm64
+  ansible.builtin.template:
+    src: containerd-config.toml-arm64.j2
+    dest: "/etc/containerd/config.toml"
+    mode: "0644"
+  notify:
+    - Restart containerd
+    - Restart docker
+  when: ansible_architecture == 'aarch64'
+
+- name: Configure containerd server - amd64
   ansible.builtin.template:
     src: containerd-config.toml.j2
     dest: "/etc/containerd/config.toml"
@@ -205,6 +215,7 @@
   notify:
     - Restart containerd
     - Restart docker
+  when: ansible_architecture == 'x86_64'
 
 - name: Check if crictl exists
   ansible.builtin.stat:
