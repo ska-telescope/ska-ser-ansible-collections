@@ -41,6 +41,10 @@
       delegate_to: "localhost"
       become: false
 
+    - name: Pause for 3 seconds for BootstrapKubeconfig cert to be deleted
+      ansible.builtin.wait_for:
+        timeout: 3
+
     - name: "Get current API Server"
       ansible.builtin.shell: "kubectl config view -ojsonpath='{.clusters[0].cluster.server}'"
       register: apiserver_var
