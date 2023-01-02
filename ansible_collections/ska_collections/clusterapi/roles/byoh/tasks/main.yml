@@ -197,18 +197,19 @@
         - Restart byohagent
 
     - name: Check if firewalld service exists
-      stat: path=/usr/lib/systemd/system/firewalld.service
+      ansible.builtin.stat:
+        path: /usr/lib/systemd/system/firewalld.service
       register: service_status
 
     - name: Stopping and Disabling the firewalld
-      service:
+      ansible.builtin.service:
         name: firewalld
         state: stopped
         enabled: false
       when: service_status.stat.exists
 
-    - name: "Check if {{ byoh_k8s_key_file_gpg }} exists"
-      stat:
+    - name: "Check if exists: {{ byoh_k8s_key_file_gpg }}"
+      ansible.builtin.stat:
         path: "{{ byoh_k8s_key_file_gpg }}"
       register: k8s_key_result
 
@@ -221,19 +222,19 @@
       when: not k8s_key_result.stat.exists
 
     - name: "Armour the key {{ byoh_k8s_key_file }}"
-      command: "gpg --dearmour -o {{ byoh_k8s_key_file_gpg }} {{ byoh_k8s_key_file }}"
+      ansible.builtin.command: "gpg --dearmour -o {{ byoh_k8s_key_file_gpg }} {{ byoh_k8s_key_file }}"
       args:
         creates: "{{ byoh_k8s_key_file_gpg }}"
       changed_when: false
       when: not k8s_key_result.stat.exists
 
-    - name: "remove {{ byoh_k8s_key_file }}"
+    - name: "Remove {{ byoh_k8s_key_file }}"
       ansible.builtin.file:
         path: "{{ byoh_k8s_key_file }}"
         state: absent
 
     - name: Add k8s apt source
-      lineinfile:
+      ansible.builtin.lineinfile:
         line: "{{ byoh_k8s_deb_repo_url }}"
         regexp: 'deb '
         path: /etc/apt/sources.list.d/kubernetes.list
@@ -243,25 +244,25 @@
         mode: 0644
 
     - name: Update apt cache - again
-      apt:
+      ansible.builtin.apt:
         update_cache: true
 
     - name: Install k8s dependent packages
-      apt:
+      ansible.builtin.apt:
         name: ['conntrack', 'ipvsadm']
         force: true
         state: present
 
     - name: Install kubeadm and friends
-      apt:
+      ansible.builtin.apt:
         name: ["kubectl={{ byoh_kube_version }}", "kubeadm={{ byoh_kube_version }}", "kubelet={{ byoh_kube_version }}"]
         force: true
         state: present
       notify:
         - Restart kubelet
 
-    - name: pin kube* versions
-      dpkg_selections:
+    - name: Pin kube* versions
+      ansible.builtin.dpkg_selections:
         name: "{{ item }}"
         selection: hold
       with_items:
@@ -271,7 +272,7 @@
 
     # https://stackoverflow.com/questions/36517472/is-it-possible-to-add-swap-space-on-kubernetes-nodes
     - name: Enable swap - disable error
-      lineinfile:
+      ansible.builtin.lineinfile:
         line: 'KUBELET_EXTRA_ARGS="--fail-swap-on=false"'
         path: /etc/default/kubelet
         create: true
@@ -280,13 +281,13 @@
         mode: 0644
 
     - name: Ensure /etc/NetworkManager/conf.d exists
-      file:
+      ansible.builtin.file:
         path: /etc/NetworkManager/conf.d
         state: directory
         mode: 0755
 
     - name: Calico config for NetworkManager
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: /etc/NetworkManager/conf.d/calico.conf
         mode: 644
         create: true

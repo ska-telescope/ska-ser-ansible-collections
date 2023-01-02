@@ -33,8 +33,8 @@ clusterapi-management: clusterapi-install-base  ## Install Minikube management c
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--limit "management-cluster" --tags "build"
 
-clusterapi:
-# clusterapi: clusterapi-check-hosts clusterapi-management clusterapi-velero-backups  ## Install clusterapi component
+# clusterapi:
+clusterapi: clusterapi-check-hosts clusterapi-management clusterapi-velero-backups  ## Install clusterapi component
 	ansible-playbook ./ansible_collections/ska_collections/clusterapi/playbooks/clusterapi.yml \
 	-i $(INVENTORY) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
@@ -51,9 +51,6 @@ clusterapi-createworkload: clusterapi-check-cluster-type  ## Template workload m
 	--limit "management-cluster"
 
 clusterapi-byoh:  ## Deploy byoh agent and tokens to workload hosts
-	ansible-playbook ./ansible_collections/ska_collections/docker_base/playbooks/containerd.yml \
-	-i $(INVENTORY) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v
 	ansible-playbook ./ansible_collections/ska_collections/clusterapi/playbooks/byoh.yml \
 	-i $(INVENTORY) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v

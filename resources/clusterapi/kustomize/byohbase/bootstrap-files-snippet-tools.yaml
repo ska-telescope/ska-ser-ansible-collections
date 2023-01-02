@@ -24,6 +24,7 @@
       apt update
       apt install -y --allow-change-held-packages gettext-base git ca-certificates net-tools
       pip3 install ansible kubernetes
+      rm -rf /usr/src/ska-ser-ansible-collections
       cd /usr/src && \
       git clone --depth 1 https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections.git \
         --recurse-submodules \

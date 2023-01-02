@@ -18,4 +18,4 @@ byoh_kube_version: "{{ byoh_kubernetes_version }}-00"
 byoh_k8s_deb_repo_key_url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
 byoh_k8s_key_file: /usr/share/keyrings/k8s.key
 byoh_k8s_key_file_gpg: "{{ byoh_k8s_key_file }}.gpg"
-byoh_k8s_deb_repo_url: "deb [signed-by={{byoh_k8s_key_file_gpg }}] http://apt.kubernetes.io/ kubernetes-{{ byoh_kubernetes_ubuntu_version }} main"
+byoh_k8s_deb_repo_url: "deb [signed-by={{ byoh_k8s_key_file_gpg }}] http://apt.kubernetes.io/ kubernetes-{{ byoh_kubernetes_ubuntu_version }} main"
