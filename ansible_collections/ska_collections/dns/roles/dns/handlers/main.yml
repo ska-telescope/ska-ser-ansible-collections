@@ -1,2 +1,5 @@
-- name: restart dnsmasq
-  service: name=dnsmasq enabled=yes state=restarted
+- name: Restart dnsmasq
+  ansible.builtin.service:
+    name: dnsmasq
+    enabled: true
+    state: restarted

@@ -2,19 +2,19 @@
 # https://linuxconfig.org/how-to-setup-a-openvpn-server-on-ubuntu-20-04
 # https://www.digitalocean.com/community/tutorials/how-to-set-up-and-configure-an-openvpn-server-on-ubuntu-20-04
 
-- name: ensure /etc/openvpn/easy-rsa exists
+- name: Ensure /etc/openvpn/easy-rsa exists
   ansible.builtin.file:
     path: /etc/openvpn/easy-rsa
     state: directory
     mode: "0755"
 
-- name: ensure /etc/openvpn/easy-rsa/client-configs exists
+- name: Ensure /etc/openvpn/easy-rsa/client-configs exists
   ansible.builtin.file:
     path: /etc/openvpn/easy-rsa/client-configs
     state: directory
     mode: "0700"
 
-- name: mkclient.sh
+- name: Place mkclient.sh
   ansible.builtin.copy:
     dest: /etc/openvpn/easy-rsa/mkclient.sh
     content: |
@@ -48,7 +48,7 @@
       /usr/share/easy-rsa/easyrsa --batch sign-req client $1
     mode: "0755"
 
-- name: revoke.sh
+- name: Place revoke.sh
   ansible.builtin.copy:
     dest: /etc/openvpn/easy-rsa/revoke.sh
     content: |
@@ -61,7 +61,7 @@
 
     mode: "0755"
 
-- name: mkconfig.sh
+- name: Place mkconfig.sh
   ansible.builtin.copy:
     dest: /etc/openvpn/easy-rsa/mkconfig.sh
     content: |
@@ -86,7 +86,7 @@
           > ${OUTPUT_DIR}/${1}.ovpn
     mode: "0755"
 
-- name: place base.conf
+- name: Place base.conf
   ansible.builtin.template:
     src: client.conf.j2
     dest: "/etc/openvpn/easy-rsa/base.conf"
@@ -94,13 +94,13 @@
     group: "{{ openvpn_group }}"
     mode: "0640"
 
-- name: easyrsa init-pki
+- name: Run easyrsa init-pki
   ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa init-pki"
   args:
     chdir: /etc/openvpn/easy-rsa
     creates: /etc/openvpn/easy-rsa/pki
 
-- name: easyrsa build-ca
+- name: Run easyrsa build-ca
   ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa build-ca nopass"
   args:
     chdir: /etc/openvpn/easy-rsa
@@ -117,36 +117,36 @@
     EASYRSA_REQ_EMAIL: "P.Harding@skatelescope.org"
     EASYRSA_REQ_OU: "Systems Team"
 
-- name: easyrsa gen-dh
+- name: Run easyrsa gen-dh
   ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa gen-dh"
   args:
     chdir: /etc/openvpn/easy-rsa
     creates: /etc/openvpn/easy-rsa/pki/dh.pem
 
-- name: easyrsa build-server-full server nopass
+- name: Run easyrsa build-server-full server nopass
   ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa build-server-full server nopass"
   args:
     chdir: /etc/openvpn/easy-rsa
     creates: /etc/openvpn/easy-rsa/pki/issued/server.crt
 
-- name: easyrsa build-client-full client nopass
+- name: Run easyrsa build-client-full client nopass
   ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa build-client-full client nopass"
   args:
     chdir: /etc/openvpn/easy-rsa
     creates: /etc/openvpn/easy-rsa/pki/issued/client.crt
 
-- name: easyrsa gen-crl
+- name: Run easyrsa gen-crl
   ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa gen-crl"
   args:
     chdir: /etc/openvpn/easy-rsa
     creates: /etc/openvpn/easy-rsa/pki/crl.pem
 
-- name: openvpn --genkey --secret /etc/openvpn/easy-rsa/pki/ta.key
+- name: Run openvpn --genkey --secret /etc/openvpn/easy-rsa/pki/ta.key
   ansible.builtin.command: openvpn --genkey --secret /etc/openvpn/easy-rsa/pki/ta.key
   args:
     creates: /etc/openvpn/easy-rsa/pki/ta.key
 
-- name: copy files to /etc/openvpn/server
+- name: Copy files to /etc/openvpn/server
   ansible.builtin.copy:
     src: /etc/openvpn/easy-rsa/pki/{{ item }}
     dest: /etc/openvpn/server/{{ item | basename }}
@@ -162,7 +162,7 @@
     - private/client.key
     - private/server.key
 
-- name: rc.local
+- name: Place rc.local
   ansible.builtin.template:
     src: rc.local.j2
     dest: "/etc/rc.local"
@@ -174,7 +174,7 @@
   ansible.builtin.command: /etc/rc.local
   changed_when: false
 
-- name: place server.conf - for UDP
+- name: Place server.conf - for UDP
   ansible.builtin.template:
     src: server.conf.j2
     dest: "{{ openvpn_configuration_directory }}/server.conf"
@@ -184,7 +184,7 @@
   notify:
     - restart openvpn
 
-- name: place server2.conf - for TCP
+- name: Place server2.conf - for TCP
   ansible.builtin.template:
     src: server2.conf.j2
     dest: "{{ openvpn_configuration_directory }}/server2.conf"

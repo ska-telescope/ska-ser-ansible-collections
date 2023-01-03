@@ -2,7 +2,7 @@
 # handlers file for openvpn
 
 # for UDP service
-- name: restart openvpn
+- name: Restart openvpn
   ansible.builtin.service:
     name: "{{ openvpn_service }}"
     state: restarted
@@ -10,7 +10,7 @@
     - not ansible_check_mode | bool
 
 # for TCP service
-- name: restart openvpn2
+- name: Restart openvpn2
   ansible.builtin.service:
     name: "openvpn@server2"
     state: restarted

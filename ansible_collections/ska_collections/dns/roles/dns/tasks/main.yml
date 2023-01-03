@@ -4,14 +4,14 @@
   ansible.builtin.apt:
     update_cache: true
 
-- name: dnsmasq
+- name: Install dnsmasq
   ansible.builtin.apt:
     pkg:
       - dnsmasq
   notify:
     - restart dnsmasq
 
-- name: update /etc/hosts for all
+- name: Update /etc/hosts for all
   ansible.builtin.lineinfile:
     dest: /etc/hosts
     regexp: ".*{{ hostvars[item].inventory_hostname }}.*"
@@ -21,7 +21,7 @@
   when: not item == "localhost"
   register: updatehosts
 
-- name: set dnsmasq conf
+- name: Set dnsmasq conf
   ansible.builtin.template:
     src: 01skaoint.conf.j2
     dest: "/etc/dnsmasq.d/01skaoint.conf"

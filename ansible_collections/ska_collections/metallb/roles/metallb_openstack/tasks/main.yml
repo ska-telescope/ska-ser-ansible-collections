@@ -5,7 +5,7 @@
   register: os_var
 
 - name: Fail if the Openstack env variable are not defined
-  fail:
+  ansible.builtin.fail:
     msg: Source the OpenStack RC File. Download it on the OpenStack Dashboard.
   when: os_var.msg == ""
   any_errors_fatal: true

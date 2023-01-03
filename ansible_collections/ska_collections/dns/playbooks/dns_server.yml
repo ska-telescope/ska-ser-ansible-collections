@@ -1,10 +1,13 @@
+#!/usr/bin/env ansible-playbook
 ---
-- name: dns Server
+- name: DNS server
   hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
   become: true
   gather_facts: true
 
   tasks:
-    - name: create dns server
-      include_role:
+    - name: Create DNS server
+      ansible.builtin.include_role:
         name: dns

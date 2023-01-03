@@ -7,7 +7,7 @@
 - name: Deploy metallb chart with values
   block:
     - name: Template metallb values yaml
-      template:
+      ansible.builtin.template:
         src: "values.metallb.yaml.j2"
         dest: "/tmp/metallb.values.yaml"
         mode: "0644"
