@@ -29,7 +29,7 @@
       ansible.builtin.file:
         path: "{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
         state: absent
-      delegate_to: "localhost"
+      delegate_to: "clusterapi"
 
     - name: "Remove bootstrapkubeconfig-{{ inventory_hostname }}"
       kubernetes.core.k8s:
@@ -38,7 +38,7 @@
         kind: BootstrapKubeconfig
         namespace: "{{ byoh_kube_namespace }}"
         name: "bootstrapkubeconfig-{{ inventory_hostname }}"
-      delegate_to: "localhost"
+      delegate_to: "clusterapi"
       become: false
 
     - name: Pause for 3 seconds for BootstrapKubeconfig cert to be deleted
@@ -49,7 +49,7 @@
       ansible.builtin.shell: "kubectl config view -ojsonpath='{.clusters[0].cluster.server}'"
       register: apiserver_var
       changed_when: false
-      delegate_to: "localhost"
+      delegate_to: "clusterapi"
       become: false
 
     - name: Apiserver_var
@@ -60,7 +60,7 @@
       ansible.builtin.shell: "kubectl config view --flatten -ojsonpath='{.clusters[0].cluster.certificate-authority-data}'"
       register: cacert_var
       changed_when: false
-      delegate_to: "localhost"
+      delegate_to: "clusterapi"
       become: false
 
     - name: Cacert_var
@@ -79,7 +79,7 @@
           spec:
             apiserver: "{{ apiserver_var.stdout }}"
             certificate-authority-data: "{{ cacert_var.stdout }}"
-      delegate_to: "localhost"
+      delegate_to: "clusterapi"
       become: false
 
     - name: Pause for 3 seconds for BootstrapKubeconfig cert to be created
@@ -93,7 +93,7 @@
         namespace: "{{ byoh_kube_namespace }}"
         name: "bootstrapkubeconfig-{{ inventory_hostname }}"
       register: kubeconfig_var
-      delegate_to: "localhost"
+      delegate_to: "clusterapi"
       become: false
 
     - name: Kubeconfig_var
@@ -103,17 +103,17 @@
     - name: "Write bootstrapkubeconfig {{ byoh_local_kubeconfig_file + '-' + inventory_hostname }}"
       ansible.builtin.copy:
         content: "{{ kubeconfig_var.resources[0].status.bootstrapKubeconfigData }}"
-        dest: "{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
+        dest: "/tmp/{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
         mode: 0644
-      delegate_to: "localhost"
+      delegate_to: "clusterapi"
       become: false
 
-    - name: Set server correctly to default IP for locahost aka minikube
+    - name: Set server correctly to default IP for locahost aka management-cluster
       ansible.builtin.lineinfile:
-        path: "{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
+        path: "/tmp/{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
         regexp: '^    server: '
         line: "    server: https://{{ hostvars[groups['management-cluster'][0]].ansible_default_ipv4.address }}:6443"
-      delegate_to: "localhost"
+      delegate_to: "clusterapi"
       become: false
 
     - name: When arm64 use locally built agent
@@ -166,9 +166,16 @@
             byohagent_version_check.stdout.find(byoh_agent_version) == -1"
           become: true
 
+    - name: Fetch the  clusterapi bootstrap kubeconfig
+      ansible.builtin.fetch:
+        src: "/tmp/{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
+        dest: "/tmp/{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
+        flat: true
+      delegate_to: "clusterapi"
+
     - name: Distribute clusterapi bootstrap kubeconfig
       ansible.builtin.copy:
-        src: "{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
+        src: "/tmp/{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
         dest: "{{ byoh_remote_kubeconfig_file }}"
         owner: ubuntu
         group: ubuntu

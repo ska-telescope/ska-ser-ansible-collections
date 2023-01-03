@@ -51,6 +51,14 @@ clusterapi-createworkload: clusterapi-check-cluster-type  ## Template workload m
 	--limit "management-cluster"
 
 clusterapi-byoh:  ## Deploy byoh agent and tokens to workload hosts
+	# ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
+	# ANSIBLE_SSH_ARGS="-o ControlPersist=30m -o StrictHostKeyChecking=no -F $(PLAYBOOKS_ROOT_DIR)/ssh.config" \
+	# ansible-playbook ./ansible_collections/ska_collections/docker_base/playbooks/containerd.yml \
+	# -i $(INVENTORY) \
+	# --extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v
+
+	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
+	ANSIBLE_SSH_ARGS="-o ControlPersist=30m -o StrictHostKeyChecking=no -F $(PLAYBOOKS_ROOT_DIR)/ssh.config" \
 	ansible-playbook ./ansible_collections/ska_collections/clusterapi/playbooks/byoh.yml \
 	-i $(INVENTORY) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v
