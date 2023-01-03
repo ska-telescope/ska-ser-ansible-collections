@@ -1,0 +1,12 @@
+---
+- name: OpenVPN Server
+  hosts: "{{ target_hosts }}"
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: create openvpn server
+      include_role:
+        name: openvpn
+      vars:
+        openvpn_role: "server"

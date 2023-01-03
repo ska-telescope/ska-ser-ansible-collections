@@ -1,0 +1,11 @@
+---
+- name: Destroy openvpn Server
+  hosts: "{{ target_hosts }}"
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Destroy openvpn server
+      ansible.builtin.import_role:
+        name: openvpn
+        tasks_from: destroy_server

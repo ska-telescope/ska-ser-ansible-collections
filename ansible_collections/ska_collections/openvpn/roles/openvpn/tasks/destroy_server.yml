@@ -1,0 +1,12 @@
+---
+
+- name: Stop and disable dnsmasq
+  ansible.builtin.service:
+    name: "openvpn"
+    state: "stopped"
+    enabled: false
+
+- name: Remove openvpn packages
+  ansible.builtin.package:
+    name: "{{ openvpn_packages }}"
+    state: absent
