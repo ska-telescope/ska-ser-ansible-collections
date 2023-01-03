@@ -1,0 +1,11 @@
+---
+- name: Destroy dns Server
+  hosts: "{{ target_hosts }}"
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Destroy dns server
+      ansible.builtin.import_role:
+        name: dns
+        tasks_from: destroy

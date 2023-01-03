@@ -13,6 +13,9 @@ This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/
 | [gitlab_runner](./ansible_collections/ska_collections/gitlab_runner/)   | Install docker-based Gitlab runner                       |
 | [ceph](./ansible_collections/ska_collections/ceph/)  | Ceph roles                                                |
 | [nexus](./ansible_collections/ska_collections/nexus/)  | Install Nexus Repository                                  |
+| [dns](./ansible_collections/ska_collections/dns/)  | Install DNS                                  |
+| [openvpn](./ansible_collections/ska_collections/openvpn/)  | Install openvpn                                  |
+| [metallb](./ansible_collections/ska_collections/metallb/)  | Install metallb                                   |
 
 ## TLDR
 

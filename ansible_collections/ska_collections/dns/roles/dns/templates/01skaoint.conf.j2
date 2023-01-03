@@ -1,0 +1,28 @@
+domain-needed
+bogus-priv
+expand-hosts
+
+# The address {{ ansible_default_ipv4.address }} is the static IP of this server
+# You can find this ip by running ifconfig and look for the
+# IP of the interface which is connected to the router.
+listen-address=127.0.0.1
+listen-address={{ ansible_default_ipv4.address }}
+bind-interfaces
+
+# Use open source DNS servers
+server=1.1.1.1
+server=1.0.0.1
+server=/svc.cluster.local/10.200.10.1
+#server=1.2.3.4
+
+# Create custom 'domains'.
+# Custom 'domains' can also be added in /etc/hosts
+#address=/a.server.net/192.168.0.176
+{% for server in dns_server_addresses %}
+address=/{{ server.name }}/{{ server.address }}
+{% endfor %}
+{% for server in groups["all"] %}
+{% if not server == "localhost" %}
+address=/{{ hostvars[server].inventory_hostname }}.{{ dns_addvertise_domain }}/{{ hostvars[server].ip }}
+{% endif %}
+{% endfor %}

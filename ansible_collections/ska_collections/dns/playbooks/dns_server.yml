@@ -1,0 +1,10 @@
+---
+- name: dns Server
+  hosts: "{{ target_hosts }}"
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: create dns server
+      include_role:
+        name: dns
