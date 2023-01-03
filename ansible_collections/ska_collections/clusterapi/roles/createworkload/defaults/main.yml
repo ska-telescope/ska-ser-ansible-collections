@@ -11,7 +11,7 @@ capi_collections_branch: main
 capi_kustomize_overlay: capo
 capi_cluster: capi-cluster
 capi_kube_namespace: default
-capi_k8s_version: v1.25.4
+capi_k8s_version: v1.24.2
 capi_controlplane_count: 1
 capi_worker_count: 1
 capi_ceph_namespace: rook-ceph

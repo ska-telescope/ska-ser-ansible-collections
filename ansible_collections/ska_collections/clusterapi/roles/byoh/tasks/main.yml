@@ -10,6 +10,9 @@
         name: ['conntrack', 'socat', 'ebtables', 'ethtool', 'cgroupfs-mount', 'cgroup-tools']
         force: true
         state: present
+      register: apt_res
+      retries: 15
+      until: apt_res is success
 
 # Only attempt this for x86, as it can break some rpi4
     - name: Install BYOH CEPH dependent packages
@@ -27,7 +30,7 @@
 
     - name: "Remove KUBECONFIG {{ byoh_local_kubeconfig_file }}"
       ansible.builtin.file:
-        path: "{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
+        path: "/tmp/{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
         state: absent
       delegate_to: "clusterapi"
 
@@ -43,7 +46,7 @@
 
     - name: Pause for 3 seconds for BootstrapKubeconfig cert to be deleted
       ansible.builtin.wait_for:
-        timeout: 3
+        timeout: 5
 
     - name: "Get current API Server"
       ansible.builtin.shell: "kubectl config view -ojsonpath='{.clusters[0].cluster.server}'"
@@ -84,7 +87,7 @@
 
     - name: Pause for 3 seconds for BootstrapKubeconfig cert to be created
       ansible.builtin.wait_for:
-        timeout: 3
+        timeout: 5
 
     - name: "Read bootstrapkubeconfig-{{ inventory_hostname }}"
       kubernetes.core.k8s_info:
@@ -257,39 +260,45 @@
     - name: Update apt cache - again
       ansible.builtin.apt:
         update_cache: true
+      register: apt_res
+      retries: 15
+      until: apt_res is success
 
     - name: Install k8s dependent packages
       ansible.builtin.apt:
         name: ['conntrack', 'ipvsadm']
         force: true
         state: present
+      register: apt_res
+      retries: 15
+      until: apt_res is success
 
-    - name: Install kubeadm and friends
-      ansible.builtin.apt:
-        name: ["kubectl={{ byoh_kube_version }}", "kubeadm={{ byoh_kube_version }}", "kubelet={{ byoh_kube_version }}"]
-        force: true
-        state: present
-      notify:
-        - Restart kubelet
+    # - name: Install kubeadm and friends
+    #   ansible.builtin.apt:
+    #     name: ["kubectl={{ byoh_kube_version }}", "kubeadm={{ byoh_kube_version }}", "kubelet={{ byoh_kube_version }}"]
+    #     force: true
+    #     state: present
+    #   notify:
+    #     - Restart kubelet
 
-    - name: Pin kube* versions
-      ansible.builtin.dpkg_selections:
-        name: "{{ item }}"
-        selection: hold
-      with_items:
-        - "kubectl"
-        - "kubeadm"
-        - "kubelet"
+    # - name: Pin kube* versions
+    #   ansible.builtin.dpkg_selections:
+    #     name: "{{ item }}"
+    #     selection: hold
+    #   with_items:
+    #     - "kubectl"
+    #     - "kubeadm"
+    #     - "kubelet"
 
-    # https://stackoverflow.com/questions/36517472/is-it-possible-to-add-swap-space-on-kubernetes-nodes
-    - name: Enable swap - disable error
-      ansible.builtin.lineinfile:
-        line: 'KUBELET_EXTRA_ARGS="--fail-swap-on=false"'
-        path: /etc/default/kubelet
-        create: true
-        owner: root
-        group: root
-        mode: 0644
+    # # https://stackoverflow.com/questions/36517472/is-it-possible-to-add-swap-space-on-kubernetes-nodes
+    # - name: Enable swap - disable error
+    #   ansible.builtin.lineinfile:
+    #     line: 'KUBELET_EXTRA_ARGS="--fail-swap-on=false"'
+    #     path: /etc/default/kubelet
+    #     create: true
+    #     owner: root
+    #     group: root
+    #     mode: 0644
 
     - name: Ensure /etc/NetworkManager/conf.d exists
       ansible.builtin.file:

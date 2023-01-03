@@ -12,7 +12,7 @@ byoh_agent_version: v0.3.1
 byoh_agent_url: https://github.com/vmware-tanzu/cluster-api-provider-bringyourownhost/releases/download
 
 byoh_kubernetes_ubuntu_version: xenial
-byoh_kubernetes_version: 1.25.4
+byoh_kubernetes_version: 1.24.2
 byoh_kube_version: "{{ byoh_kubernetes_version }}-00"
 
 byoh_k8s_deb_repo_key_url: https://packages.cloud.google.com/apt/doc/apt-key.gpg

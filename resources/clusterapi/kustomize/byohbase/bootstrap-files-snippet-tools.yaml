@@ -22,7 +22,7 @@
       echo "Running the cluster initialisation: install prereq tools [happens on workers]"
       set -x
       apt update
-      apt install -y --allow-change-held-packages gettext-base git ca-certificates net-tools
+      apt install -y --allow-change-held-packages gettext-base git ca-certificates net-tools python3 python3-pip
       pip3 install ansible kubernetes
       rm -rf /usr/src/ska-ser-ansible-collections
       cd /usr/src && \
