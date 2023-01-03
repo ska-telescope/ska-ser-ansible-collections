@@ -1,0 +1,41 @@
+---
+- name: Add metallb chart repo
+  kubernetes.core.helm_repository:
+    name: bitnami
+    repo_url: "https://charts.bitnami.com/bitnami"
+
+- name: Deploy metallb chart with values
+  block:
+    - name: Template metallb values yaml
+      template:
+        src: "values.metallb.yaml.j2"
+        dest: "/tmp/metallb.values.yaml"
+        mode: "0644"
+    - name: Deploy metallb chart with values
+      kubernetes.core.helm:
+        name: metallb
+        chart_ref: bitnami/metallb
+        chart_version: "{{ metallb_chart_version }}"
+        release_namespace: metallb
+        create_namespace: true
+        values_files:
+          - "/tmp/metallb.values.yaml"
+  always:
+    - name: Remove values
+      ansible.builtin.file:
+        path: "/tmp/metallb.values.yaml"
+        state: absent
+
+- name: Add CoreDNS chart repo
+  kubernetes.core.helm_repository:
+    name: coredns
+    repo_url: "https://coredns.github.io/helm"
+
+- name: Deploy CoreDNS chart with values loaded from template
+  kubernetes.core.helm:
+    name: extdns
+    chart_ref: coredns/coredns
+    chart_version: "{{ coredns_chart_version }}"
+    release_namespace: extdns
+    create_namespace: true
+    values: "{{ lookup('file', '{{ role_path }}/values/external-coredns.yaml') | from_yaml }}"

@@ -1,0 +1,7 @@
+# Installs mettalb and coredns
+- name: "Install Metallb"
+  hosts:
+    - "{{ target_hosts }}" #masters[0]
+  become: true
+  roles:
+    - role: metallb
