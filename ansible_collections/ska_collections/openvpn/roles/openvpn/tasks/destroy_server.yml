@@ -1,8 +1,14 @@
 ---
 
-- name: Stop and disable dnsmasq
+- name: Stop and disable openvpn
   ansible.builtin.service:
-    name: "openvpn"
+    name: "{{ openvpn_service }}"
+    state: "stopped"
+    enabled: false
+
+- name: Stop and disable openvpn 2
+  ansible.builtin.service:
+    name: "{{ openvpn_service }}2"
     state: "stopped"
     enabled: false
 

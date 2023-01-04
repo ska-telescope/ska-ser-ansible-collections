@@ -12,7 +12,7 @@
 # for TCP service
 - name: Restart openvpn2
   ansible.builtin.service:
-    name: "openvpn@server2"
+    name: "{{ openvpn_service }}2"
     state: restarted
   when:
     - not ansible_check_mode | bool

@@ -20,12 +20,12 @@ vars:
 install: check_hosts ## Install openvpn server
 	ansible-playbook $(PLAYBOOKS_DIR)/openvpn_server.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -vvv
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 install_client: check_hosts ## Install openvpn client
 	ansible-playbook $(PLAYBOOKS_DIR)/openvpn_client.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -vvv
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 destroy: check_hosts ## Destroy openvpn server
 	ansible-playbook $(PLAYBOOKS_DIR)/openvpn_server_destroy.yml \
