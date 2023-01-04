@@ -8,4 +8,4 @@
   ansible.builtin.service:
     name: byohagent.service
     state: restarted
-    enabled: yes
+    enabled: true

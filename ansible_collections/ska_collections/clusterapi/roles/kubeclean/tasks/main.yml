@@ -1,8 +1,10 @@
 ---
 
 - name: Clean out kubeadm install
+  when: ansible_hostname in groups['nodes']
   block:
-    - name: force stopped byohagent
+
+    - name: Force stopped byohagent
       ansible.builtin.service:
         name: byohagent.service
         state: stopped
@@ -11,33 +13,25 @@
       ansible.builtin.service:
         name: kubelet.service
         state: stopped
-      ignore_errors: true
-
+      failed_when: false
 
     - name: Force stopped containerd
       ansible.builtin.service:
         name: containerd.service
         state: stopped
-      ignore_errors: true
+      failed_when: false
 
     - name: Force stopped docker
       ansible.builtin.service:
         name: docker.service
         state: stopped
-      ignore_errors: true
-
-    # - name: remove kube packages
-    #   ansible.builtin.apt:
-    #     name: ['kubeadm', 'kubelet', 'kubectl', 'containerd.io', 'containerd', 'docker-ce-cli', 'docker-ce']
-    #     force: true
-    #     purge: yes
-    #     state: absent
+      failed_when: false
 
     - name: Remove kube packages
       ansible.builtin.apt:
         name: ['kubeadm', 'kubelet', 'kubectl', 'docker-ce-cli', 'docker-ce']
         force: true
-        purge: yes
+        purge: true
         state: absent
 
     - name: Reload systemctl
@@ -129,8 +123,6 @@
       ansible.builtin.file:
         path: "/etc/systemd/system/containerd.service.d"
         state: absent
-
-  when: ansible_hostname in groups['nodes']
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers
