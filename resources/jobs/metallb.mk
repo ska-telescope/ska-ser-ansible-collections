@@ -18,12 +18,17 @@ vars:
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
 install: check_hosts ## Install metallb's helm chart
-	ansible-playbook $(PLAYBOOKS_DIR)/install.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/metallb.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 destroy: check_hosts ## Destroy metallb's helm chart
-	ansible-playbook $(PLAYBOOKS_DIR)/destroy.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/metallb_destroy.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+openstack_disable_port_security: check_hosts ## Disable openstack port security
+	ansible-playbook $(PLAYBOOKS_DIR)/metallb_openstack.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
