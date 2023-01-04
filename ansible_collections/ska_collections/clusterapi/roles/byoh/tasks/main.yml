@@ -5,6 +5,16 @@
   become: true
   block:
 
+    - name: Update /etc/hosts
+      ansible.builtin.lineinfile:
+        dest: /etc/hosts
+        regexp: '.*{{ hostvars[item].inventory_hostname }}.*'
+        line: "{{ hostvars[item].ip }} {{ hostvars[item].inventory_hostname }}"
+        state: present
+      with_items: '{{ groups["workload-cluster"] }}'
+      when: not item == "localhost"
+      register: updatehosts
+
     - name: Ensure that the apt cache is updated
       ansible.builtin.apt:
         update_cache: true
