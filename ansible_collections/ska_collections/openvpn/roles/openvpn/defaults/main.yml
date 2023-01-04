@@ -11,3 +11,9 @@ openvpn_role: server
 # openvpn_client_server: vpn.example.com
 
 openvpn_client_cert_expires: 30
+
+openvpn_routes:
+  - ip: 192.168.99.0
+    mask: 255.255.255.0
+  - ip: 10.200.0.0
+    mask: 255.255.255.0

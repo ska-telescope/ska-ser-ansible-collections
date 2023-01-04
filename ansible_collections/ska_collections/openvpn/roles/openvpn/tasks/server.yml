@@ -182,7 +182,7 @@
     group: "{{ openvpn_group }}"
     mode: "0640"
   notify:
-    - restart openvpn
+    - Restart openvpn
 
 - name: Place server2.conf - for TCP
   ansible.builtin.template:
@@ -192,4 +192,4 @@
     group: "{{ openvpn_group }}"
     mode: "0640"
   notify:
-    - restart openvpn
+    - Restart openvpn
