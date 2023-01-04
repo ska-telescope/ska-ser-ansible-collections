@@ -1,0 +1,81 @@
+{{ ansible_managed | comment }}
+
+# Windows needs the TAP-Win32 adapter name
+# from the Network Connections panel
+# if you have more than one.  On XP SP2,
+# you may need to disable the firewall
+# for the TAP adapter.
+;dev-node MyTap
+
+# The hostname/IP and port of the server.
+client
+dev tun
+remote {{ fixed_ip }} 1194
+proto udp
+resolv-retry infinite
+nobind
+
+# Downgrade privileges after initialization (non-Windows only)
+user nobody
+group nogroup
+
+# Try to preserve some state across restarts.
+persist-key
+persist-tun
+
+# Wireless networks often produce a lot
+# of duplicate packets.  Set this flag
+# to silence duplicate packet warnings.
+;mute-replay-warnings
+
+remote-cert-tls server
+
+# Select a cryptographic cipher.
+cipher AES-256-GCM
+auth SHA256
+key-direction 1
+
+# Enable compression on the VPN link.
+# Don't enable this unless it is also
+# enabled in the server config file.
+#comp-lzo
+
+# MacOS: the compress should be commented out
+; compress
+
+# MacOS: there are also sometimes issues with the MTU, so try the following
+; tun-mtu 1500
+
+# Uncomment the following two lines when using Tunnelblick
+# on MacOS
+;;route-nopull # Make sure not to pull the default routes
+;;route 192.168.99.0 255.255.255.0
+
+# Uncomment the following line to force DNS to point
+# down the tunnel
+;;dhcp-option DNS 192.168.99.194
+
+
+# Set log file verbosity.
+verb 3
+
+# Silence repeating messages
+;mute 20
+
+# If you do not use systemd-resolve, then use the following:
+; script-security 2
+; up /etc/openvpn/update-resolv-conf
+; down /etc/openvpn/update-resolv-conf
+
+# If you do use systemd-resolved use the following:
+# clone https://github.com/jonathanio/update-systemd-resolved
+# copy script update-systemd-resolved to /etc/openvpn/update-systemd-resolved
+# or:
+# sudo apt install network-manager-openvpn-gnome openvpn-systemd-resolved
+
+; script-security 2
+; setenv PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+; up /etc/openvpn/update-systemd-resolved
+; up-restart
+; down /etc/openvpn/update-systemd-resolved
+; down-pre

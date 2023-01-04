@@ -1,0 +1,48 @@
+---
+# tasks file for openvpn
+
+- name: Include assert.yml
+  ansible.builtin.import_tasks: assert.yml
+  run_once: true
+  delegate_to: localhost
+
+- name: Add focal universe for easy-rsa
+  ansible.builtin.lineinfile:
+    line: "deb http://gb.archive.ubuntu.com/ubuntu focal universe"
+    dest: /etc/apt/sources.list.d/easy-rsa.list
+    create: true
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Set net.ipv4.ip_forward to 1
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    state: present
+    ignoreerrors: true
+
+- name: Install openvpn packages
+  ansible.builtin.package:
+    name: "{{ openvpn_packages }}"
+    state: present
+
+- name: Setup openvpn server
+  ansible.builtin.include_tasks: server.yml
+  when:
+    - openvpn_role == "server"
+
+- name: Setup openvpn client
+  ansible.builtin.include_tasks: client.yml
+  when:
+    - openvpn_role == "client"
+
+- name: Start and enable openvpn
+  ansible.builtin.service:
+    name: "{{ openvpn_service }}"
+    state: started
+    enabled: true
