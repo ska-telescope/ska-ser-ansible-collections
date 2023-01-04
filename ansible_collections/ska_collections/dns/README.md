@@ -13,6 +13,16 @@ Tested with the current Ansible 6.5.x releases.
 | ---- | ----------- | ------- | --- | ---|
 | [dns](./roles/dns) | Install and configure dnsmasq | 2.79 (Bionic), 2.80 (Focal), 2.86 (Jammy) | Ubuntu 18+ (LTS) | -
 
+##
+Make sure you have the variables in the hostvars for the target_host
+
+ex:
+***dns_addvertise_domain***: skao.stfc
+(fill array if you want custom domains added to your configuration)
+***dns_server_addresses***:
+	- name: test.skao.stfc
+	  address: 192.168.XX.XX
+
 ## Installation
 
 In order to run these playbooks, it's needed to specify the Ansible Inventory location and the respective group/hosts ***target_hosts*** variable.

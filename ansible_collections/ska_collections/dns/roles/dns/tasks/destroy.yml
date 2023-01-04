@@ -1,6 +1,6 @@
 ---
 
-- name: "Destroy filebeat config"
+- name: Destroy dnsmasq config
   ansible.builtin.file:
     path: /etc/dnsmasq.d/01skaoint.conf
     state: absent

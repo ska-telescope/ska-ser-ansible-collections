@@ -28,7 +28,7 @@
     owner: root
     mode: "0640"
   notify:
-    - restart dnsmasq
+    - Restart dnsmasq
 
 - name: Flush Handlers
   ansible.builtin.meta: flush_handlers

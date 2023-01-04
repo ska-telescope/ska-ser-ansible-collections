@@ -12,8 +12,7 @@ bind-interfaces
 # Use open source DNS servers
 server=1.1.1.1
 server=1.0.0.1
-server=/svc.cluster.local/10.200.10.1
-#server=1.2.3.4
+server=/svc.cluster.local/{{ svc_cluster_local_dns_address }}
 
 # Create custom 'domains'.
 # Custom 'domains' can also be added in /etc/hosts
