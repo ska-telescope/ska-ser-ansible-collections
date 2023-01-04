@@ -1,0 +1,31 @@
+#!/usr/bin/env ansible-playbook
+- name: CA certificate is functional
+  hosts:
+    - "{{ target_hosts + '-master' }}"
+    - "{{ target_hosts + '-data' }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: CA host is running
+      ansible.builtin.wait_for:
+        port: 22
+        host: "192.168.99.13"  # Change to variable
+        timeout: 60
+
+    - name: Certificate CRT and Key are on CA server
+      stat:
+        path: #/etc/pki/tls/private/ca-certificate.crt
+        register: result
+        path: #/etc/pki/tls/private/ca-certificate.key
+        register: result
+
+    - name: If files exist
+      ansible.builtin.debug:
+        msg: "Certificates files are available"
+    
+    - name: Ensure that the existing certificate belongs to the specified private key
+      openssl_certificate:
+      path: /etc/pki/tls/private/ca-certificate.crt
+      privatekey_path: /etc/pki/tls/private/ca-certificate.key
+      provider: assertonly
