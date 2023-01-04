@@ -1,0 +1,10 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: "Apply the kubeclean role to controlplane and worker nodes"
+  hosts: "{{ target_hosts }}"
+  become: true
+  vars:
+    target_hosts: localhost
+  roles:
+    - kubeclean

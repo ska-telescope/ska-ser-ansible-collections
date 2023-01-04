@@ -1,0 +1,11 @@
+---
+
+- name: Reload systemctl
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart byohagent
+  ansible.builtin.service:
+    name: byohagent.service
+    state: restarted
+    enabled: yes
