@@ -1,0 +1,15 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: OpenVPN client
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Create openvpn client
+      ansible.builtin.include_role:
+        name: openvpn
+      vars:
+        openvpn_role: "client"

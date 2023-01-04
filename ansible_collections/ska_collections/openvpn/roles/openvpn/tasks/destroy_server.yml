@@ -1,0 +1,18 @@
+---
+
+- name: Stop and disable openvpn
+  ansible.builtin.service:
+    name: "{{ openvpn_service }}"
+    state: "stopped"
+    enabled: false
+
+- name: Stop and disable openvpn 2
+  ansible.builtin.service:
+    name: "{{ openvpn_service }}2"
+    state: "stopped"
+    enabled: false
+
+- name: Remove openvpn packages
+  ansible.builtin.package:
+    name: "{{ openvpn_packages }}"
+    state: absent

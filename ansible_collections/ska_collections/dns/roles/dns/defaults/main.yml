@@ -1,0 +1,3 @@
+dns_addvertise_domain: a.b
+dns_server_addresses: []
+svc_cluster_local_dns_address: 10.200.10.1

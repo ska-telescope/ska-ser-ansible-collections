@@ -1,0 +1,14 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Destroy openvpn Server
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Destroy openvpn server
+      ansible.builtin.import_role:
+        name: openvpn
+        tasks_from: destroy_server

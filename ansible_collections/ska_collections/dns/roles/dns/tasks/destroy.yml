@@ -1,0 +1,17 @@
+---
+
+- name: Destroy dnsmasq config
+  ansible.builtin.file:
+    path: /etc/dnsmasq.d/01skaoint.conf
+    state: absent
+
+- name: Stop and disable dnsmasq
+  ansible.builtin.service:
+    name: "dnsmasq"
+    state: "stopped"
+    enabled: false
+
+- name: Remove dnsmasq
+  ansible.builtin.apt:
+    pkg: dnsmasq
+    state: absent

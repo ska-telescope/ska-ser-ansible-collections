@@ -1,0 +1,195 @@
+---
+# https://linuxconfig.org/how-to-setup-a-openvpn-server-on-ubuntu-20-04
+# https://www.digitalocean.com/community/tutorials/how-to-set-up-and-configure-an-openvpn-server-on-ubuntu-20-04
+
+- name: Ensure /etc/openvpn/easy-rsa exists
+  ansible.builtin.file:
+    path: /etc/openvpn/easy-rsa
+    state: directory
+    mode: "0755"
+
+- name: Ensure /etc/openvpn/easy-rsa/client-configs exists
+  ansible.builtin.file:
+    path: /etc/openvpn/easy-rsa/client-configs
+    state: directory
+    mode: "0700"
+
+- name: Place mkclient.sh
+  ansible.builtin.copy:
+    dest: /etc/openvpn/easy-rsa/mkclient.sh
+    content: |
+      #!/bin/sh
+
+      if [ -f "/etc/openvpn/easy-rsa/pki/issued/$1.crt" ]; then
+        echo "Certificate already exists for $1 (/etc/openvpn/easy-rsa/pki/issued/$1.crt) - aborting!"
+        exit 1
+      fi
+
+      cd /etc/openvpn/easy-rsa
+
+      # generate key and signing request
+      export EASYRSA_CERT_EXPIRE={{ openvpn_client_cert_expires }} \
+             EASYRSA_DN="cn_only" \
+             EASYRSA_KEY_SIZE=4096 \
+             EASYRSA_ALGO="ec" \
+             EASYRSA_DIGEST="sha512" \
+             EASYRSA_BATCH="yes" \
+             EASYRSA_REQ_CN="$1" \
+             EASYRSA_REQ_COUNTRY="SKAO" \
+             EASYRSA_REQ_ORG="SKAO" \
+             EASYRSA_REQ_OU="Systems Team"
+
+      /usr/share/easy-rsa/easyrsa --batch gen-req $1 nopass
+
+      # import signing request - not required on this server
+      #/usr/share/easy-rsa/easyrsa --batch import-req /etc/openvpn/easy-rsa/pki/reqs/$1.req $1
+
+      # sign request
+      /usr/share/easy-rsa/easyrsa --batch sign-req client $1
+    mode: "0755"
+
+- name: Place revoke.sh
+  ansible.builtin.copy:
+    dest: /etc/openvpn/easy-rsa/revoke.sh
+    content: |
+      #!/bin/sh
+
+      # revoke a certificate
+      cd /etc/openvpn/easy-rsa
+      /usr/share/easy-rsa/easyrsa --batch revoke $1.crt
+      rm /etc/openvpn/easy-rsa/client-configs/$1.ovpn
+
+    mode: "0755"
+
+- name: Place mkconfig.sh
+  ansible.builtin.copy:
+    dest: /etc/openvpn/easy-rsa/mkconfig.sh
+    content: |
+      #!/bin/bash
+
+      cd /etc/openvpn/easy-rsa
+      KEY_DIR=/etc/openvpn/easy-rsa/pki
+      OUTPUT_DIR=/etc/openvpn/easy-rsa/client-configs
+      BASE_CONFIG=./base.conf
+      mkdir -p ${OUTPUT_DIR} && chmod 700 ${OUTPUT_DIR}
+
+      cat ${BASE_CONFIG} \
+          <(echo -e '<ca>') \
+          ${KEY_DIR}/ca.crt \
+          <(echo -e '</ca>\n<cert>') \
+          ${KEY_DIR}/issued/${1}.crt \
+          <(echo -e '</cert>\n<key>') \
+          ${KEY_DIR}/private/${1}.key \
+          <(echo -e '</key>\n<tls-crypt>') \
+          ${KEY_DIR}/ta.key \
+          <(echo -e '</tls-crypt>') \
+          > ${OUTPUT_DIR}/${1}.ovpn
+    mode: "0755"
+
+- name: Place base.conf
+  ansible.builtin.template:
+    src: client.conf.j2
+    dest: "/etc/openvpn/easy-rsa/base.conf"
+    owner: root
+    group: "{{ openvpn_group }}"
+    mode: "0640"
+
+- name: Run easyrsa init-pki
+  ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa init-pki"
+  args:
+    chdir: /etc/openvpn/easy-rsa
+    creates: /etc/openvpn/easy-rsa/pki
+
+- name: Run easyrsa build-ca
+  ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa build-ca nopass"
+  args:
+    chdir: /etc/openvpn/easy-rsa
+    creates: /etc/openvpn/easy-rsa/pki/ca.crt
+  environment:
+    EASYRSA_BATCH: "yes"
+    EASYRSA_ALGO: "ec"
+    EASYRSA_DIGEST: "sha512"
+    EASYRSA_REQ_COUNTRY: "UK"
+    EASYRSA_REQ_PROVINCE: "Cheshire"
+    EASYRSA_REQ_CITY: "Macclesfield"
+    EASYRSA_REQ_ORG: "SKAO INT"
+    EASYRSA_REQ_CN: "SKATechOps"
+    EASYRSA_REQ_EMAIL: "P.Harding@skatelescope.org"
+    EASYRSA_REQ_OU: "Systems Team"
+
+- name: Run easyrsa gen-dh
+  ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa gen-dh"
+  args:
+    chdir: /etc/openvpn/easy-rsa
+    creates: /etc/openvpn/easy-rsa/pki/dh.pem
+
+- name: Run easyrsa build-server-full server nopass
+  ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa build-server-full server nopass"
+  args:
+    chdir: /etc/openvpn/easy-rsa
+    creates: /etc/openvpn/easy-rsa/pki/issued/server.crt
+
+- name: Run easyrsa build-client-full client nopass
+  ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa build-client-full client nopass"
+  args:
+    chdir: /etc/openvpn/easy-rsa
+    creates: /etc/openvpn/easy-rsa/pki/issued/client.crt
+
+- name: Run easyrsa gen-crl
+  ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa gen-crl"
+  args:
+    chdir: /etc/openvpn/easy-rsa
+    creates: /etc/openvpn/easy-rsa/pki/crl.pem
+
+- name: Run openvpn --genkey --secret /etc/openvpn/easy-rsa/pki/ta.key
+  ansible.builtin.command: openvpn --genkey --secret /etc/openvpn/easy-rsa/pki/ta.key
+  args:
+    creates: /etc/openvpn/easy-rsa/pki/ta.key
+
+- name: Copy files to /etc/openvpn/server
+  ansible.builtin.copy:
+    src: /etc/openvpn/easy-rsa/pki/{{ item }}
+    dest: /etc/openvpn/server/{{ item | basename }}
+    mode: "0640"
+    remote_src: true
+  loop:
+    - ca.crt
+    - dh.pem
+    - ta.key
+    - issued/client.crt
+    - issued/server.crt
+    - private/ca.key
+    - private/client.key
+    - private/server.key
+
+- name: Place rc.local
+  ansible.builtin.template:
+    src: rc.local.j2
+    dest: "/etc/rc.local"
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Run rc.local once
+  ansible.builtin.command: /etc/rc.local
+  changed_when: false
+
+- name: Place server.conf - for UDP
+  ansible.builtin.template:
+    src: server.conf.j2
+    dest: "{{ openvpn_configuration_directory }}/server.conf"
+    owner: root
+    group: "{{ openvpn_group }}"
+    mode: "0640"
+  notify:
+    - Restart openvpn
+
+- name: Place server2.conf - for TCP
+  ansible.builtin.template:
+    src: server2.conf.j2
+    dest: "{{ openvpn_configuration_directory }}/server2.conf"
+    owner: root
+    group: "{{ openvpn_group }}"
+    mode: "0640"
+  notify:
+    - Restart openvpn
