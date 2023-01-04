@@ -22,7 +22,7 @@
       echo "Running the cluster initialisation: install prereq tools"
       set -x
       apt update
-      apt install -y --allow-change-held-packages gettext-base git ca-certificates net-tools
+      apt install -y --allow-change-held-packages gettext-base git ca-certificates net-tools python3 python3-pip
       pip3 install ansible kubernetes
       cd /usr/src && \
       git clone --depth 1 https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections.git \
