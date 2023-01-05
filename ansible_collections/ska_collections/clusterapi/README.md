@@ -28,7 +28,7 @@ Clusterapi is an operator that works on the same princples as any other custom r
 The user defines a collection of manifests that describe the machine and cluster layout for the desired workload cluster.  The manifest is then applied to the management cluster which then orchestrates the creation of the workload cluster by communicating with the infrastructure provider, and driving the `kubeadm` configuration manager (https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/).  These manifests are templated by the `clusterctl generate cluster` command.
 
 
-The clusterapi manifest specification enables a set of pre and post kubeadm hooks that are applied to both controlplane nodes and worker nodes in the target workload cluster.  These hooks enable customisation of the deployment to be injected into the deployment workflow.  This cannot be achieved by the `clusterctl generate cluster` flow directly, so `kustomize` (https://kustomize.io/) templates have been developed to inject the necessary changes(See: [resources/clusterapi](../../../../resources/clusterapi) ).  These templates add in different sets of `ansible-playbook` flows for controlplane and worker nodes for each infrastructure provider, so that the hosts are customised, and the necessary baseline services are installed into the workload cluster eg: containerd mirror configs, ingress controller, rook, metallb, storageclasses etc.
+The clusterapi manifest specification enables a set of pre and post kubeadm hooks that are applied to both controlplane nodes and worker nodes in the target workload cluster.  These hooks enable customisation of the deployment to be injected into the deployment workflow.  This cannot be achieved by the `clusterctl generate cluster` flow directly, so `kustomize` (https://kustomize.io/) templates have been developed to inject the necessary changes(See: [resources/clusterapi](../../../../resources/clusterapi/kustomize) ).  These templates add in different sets of `ansible-playbook` flows for controlplane and worker nodes for each infrastructure provider, so that the hosts are customised, and the necessary baseline services are installed into the workload cluster eg: containerd mirror configs, ingress controller, rook, metallb, storageclasses etc.
 
 
 ## Roles and Playbooks
@@ -37,8 +37,38 @@ The enclosed roles and playbooks facilitate the creation of the management clust
 
 ## Workflow
 
+See the `make` targets in [clusterapi.mk](../../../../resources/jobs/clusterapi.mk) .  These are designed to work in the context of [Infra Machinery](https://gitlab.com/ska-telescope/sdi/ska-ser-infra-machinery).
+
 ### Create management cluster
 
+Establish a single node management cluster based on Minikube:
+
+Setup `PrivateRules.mak`:
+```
+DATACENTRE = stfc-techops
+ENVIRONMENT = production
+SERVICE = clusterapi
+ANSIBLE_SECRETS_PROVIDER = notlegacy
+ANSIBLE_EXTRA_VARS+= --extra-vars "metallb_openstack_network_cidr=10.100.0.0/16"
+TF_HTTP_USERNAME = <user>
+TF_HTTP_PASSWORD = <password>
+```
+
+Build the host:
+```
+# define the datacentre/<dc>/<environment>/<service> and
+#  datacentre/<dc>/<environment>/orchestration/<service>
+$ make orch init DATACENTRE=stfc-techops ENVIRONMENT=production SERVICE=clusterapi
+$ make orch plan DATACENTRE=stfc-techops ENVIRONMENT=production SERVICE=clusterapi
+$ make orch apply DATACENTRE=stfc-techops ENVIRONMENT=production SERVICE=clusterapi
+$ make orch generate-inventory DATACENTRE=stfc-techops ENVIRONMENT=production SERVICE=clusterapi
+# mv the installation/inventory.yml file to installation/clusterapi.yml
+```
+
+Deploy Minikube and then install clusterapi and velero backup:
+```
+$ make playbooks clusterapi clusterapi PLAYBOOKS_HOSTS=management-cluster
+```
 
 
 ### OpenStack - Create VM Image
@@ -71,7 +101,7 @@ collections:
 - name: ska_collections.clusterapi
 ```
 
-Carefully review the default vars for each role before use: [./clusterctl/defaults/main.yml](./clusterctl/defaults/main.yml).
+Carefully review the default vars for each role before use: [eg: ./clusterctl/defaults/main.yml](./clusterctl/defaults/main.yml).
 Also see the [playbooks](./playbooks/) for usuage examples.
 
 
