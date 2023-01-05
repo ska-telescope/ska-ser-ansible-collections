@@ -103,7 +103,7 @@ clusterapi-velero-backups:  ## Configure Velero backups on Minikube management c
 	--extra-vars "cloud=$(CLUSTERAPI_CLOUD)" \
 	--limit "management-cluster"
 
-# velero restore
+# Notes for velero restore
 # velero restore create test \
 # --from-backup  every6h-20221021144151 \
 # --existing-resource-policy=update \
@@ -115,5 +115,3 @@ clusterapi-velero-backups:  ## Configure Velero backups on Minikube management c
 
 # get logs
 # kubectl -n velero logs $(kubectl -n velero get pods -l component=velero  -o name) > logs.txt
-
-#
