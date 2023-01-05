@@ -9,10 +9,11 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-  become: true
+  become: false
   roles:
     - role: metallb_openstack
       environment:
+        OS_CLOUD: "{{ lookup('env', 'OS_CLOUD') }}"
         OS_AUTH_TYPE: "{{ lookup('env', 'OS_AUTH_TYPE') }}"
         OS_AUTH_URL: "{{ lookup('env', 'OS_AUTH_URL') }}"
         OS_IDENTITY_API_VERSION: "{{ lookup('env', 'OS_IDENTITY_API_VERSION') }}"

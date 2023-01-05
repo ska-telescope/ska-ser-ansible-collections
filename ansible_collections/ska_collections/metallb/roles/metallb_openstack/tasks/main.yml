@@ -1,13 +1,18 @@
 ---
-- name: Fetch Openstack env variable
+- name: Fetch Openstack env variable OS_AUTH_TYPE
   ansible.builtin.debug:
     msg: "{{ lookup('env', 'OS_AUTH_TYPE') }}"
-  register: os_var
+  register: os_var_auth
+
+- name: Fetch Openstack env variable OS_CLOUD
+  ansible.builtin.debug:
+    msg: "{{ lookup('env', 'OS_CLOUD') }}"
+  register: os_var_cloud
 
 - name: Fail if the Openstack env variable are not defined
   ansible.builtin.fail:
     msg: Source the OpenStack RC File. Download it on the OpenStack Dashboard.
-  when: os_var.msg == ""
+  when: os_var_cloud.msg == "" and os_var_auth.msg == ""
   any_errors_fatal: true
 
 - name: Get Kubernetes network on Openstack
