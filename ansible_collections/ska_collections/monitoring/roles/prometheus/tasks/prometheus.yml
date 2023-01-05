@@ -55,7 +55,7 @@
     certificate_name: "prometheus"
     certificate_key_name: "prometheus"
     certificate_dns_alt_name: "{{ prometheus_alt_name }}"
-    certificates_recreate: true
+    certificate_recreate: true
 
 - name: Create alerting rules file
   ansible.builtin.template:
