@@ -2,6 +2,52 @@
 
 This directory contains the `ska_collections.clusterapi` Ansible Collection. The collection includes roles and playbooks for `clusterapi` based Kubernetes deployments.
 
+It is a collection of helpers that facilitate the deployment of Kubernetes clusters using:
+
+* cluster api provider openstack - https://github.com/kubernetes-sigs/cluster-api-provider-openstack
+* clusterapi provider BYOH - https://github.com/vmware-tanzu/cluster-api-provider-bringyourownhost
+
+
+## OpenStack
+
+Enables full integration with the OpenStack platform, where the provider:
+
+* uses Octavia for the load balancer frontend to etcd and apiserver
+* uses Nova to generate workload cluster nodes based on specified flavours
+
+
+## BYOH
+
+Enables deployment of Kubernetes clusters on existing baremetal and/or VMs
+
+
+## How it works
+
+Clusterapi is an operator that works on the same princples as any other custom resource declarative interface.  The operator is deployed in a management cluster along with the desired infrastructure providers (OpenStack, and BYOH) that provide the driver interface for communicating with the specific infrastructure context.  See the clusterapi book for details https://cluster-api.sigs.k8s.io/user/concepts.html .
+
+The user defines a collection of manifests that describe the machine and cluster layout for the desired workload cluster.  The manifest is then applied to the management cluster which then orchestrates the creation of the workload cluster by communicating with the infrastructure provider, and driving the `kubeadm` configuration manager (https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/).  These manifests are templated by the `clusterctl generate cluster` command.
+
+
+The clusterapi manifest specification enables a set of pre and post kubeadm hooks that are applied to both controlplane nodes and worker nodes in the target workload cluster.  These hooks enable customisation of the deployment to be injected into the deployment workflow.  This cannot be achieved by the `clusterctl generate cluster` flow directly, so `kustomize` (https://kustomize.io/) templates have been developed to inject the necessary changes(See: [../../../../resources/clusterapi]).  These templates add in different sets of `ansible-playbook` flows for controlplane and worker nodes for each infrastructure provider, so that the hosts are customised, and the necessary baseline services are installed into the workload cluster eg: containerd mirror configs, ingress controller, rook, metallb, storageclasses etc.
+
+
+## Roles and Playbooks
+
+The enclosed roles and playbooks facilitate the creation of the management cluster, VM Images for OpenStack (uses Packer) workload cluster manifests, and workload cluster customisation.
+
+## Workflow
+
+### Create management cluster
+
+### OpenStack - Create VM Image
+
+### BYOH - prepare hosts
+
+### Generate and Apply Manifests
+
+
+# Testing
+
 ## Tested with Ansible
 
 Tested with the current Ansible 6.4.x releases.
