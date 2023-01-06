@@ -8,6 +8,10 @@ grafana_provisioning_config_dir: /etc/grafana/provisioning
 grafana_data: /var/lib/grafana
 grafana_datasource_name: Thanos
 grafana_datasource_url: https://{{ ansible_fqdn | default(ansible_host) | default('localhost') }}:9095
+grafana_mid_eda_datasource_url: 10.200.10.248:5432
+grafana_mid_eda_datasource_user: admin
+grafana_mid_eda_datasource_database: mid_archiver_db_master
+grafana_postgres_datasource_version: 1212 # version 12.12
 grafana_dashboards_path: "{{ grafana_provisioning_config_dir }}/dashboards"
 grafana_plugins:
   - vonage-status-panel
@@ -26,3 +30,7 @@ grafana_docker_tags: '9.0.0'
 grafana_azuread_tenant_id: "{{ _ | mandatory('`grafana_azuread_tenant_id` definition is mandatory') }}"
 grafana_azuread_client_secret: "{{ _ | mandatory('`grafana_azuread_client_secret` definition is mandatory') }}"
 grafana_azuread_client_id: "{{ _ | mandatory('`grafana_azuread_client_id` definition is mandatory') }}"
+
+# secrets
+
+grafana_mid_eda_datasource_password: "{{ _ | mandatory('`grafana_mid_eda_datasource_password` definition is mandatory') }}"

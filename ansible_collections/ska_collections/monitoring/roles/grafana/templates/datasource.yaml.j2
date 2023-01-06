@@ -22,3 +22,18 @@ datasources:
     httpMode: POST
     tlsSkipVerify: true
     timeInterval: "1m"
+
+- name: MidEDA
+  type: postgres
+  url: {{ grafana_mid_eda_datasource_url }}
+  database: {{ grafana_mid_eda_datasource_database }}
+  user: {{ grafana_mid_eda_datasource_user }}
+  secureJsonData:
+      password: {{ grafana_mid_eda_datasource_password }}
+  jsonData:
+      sslmode: 'require' 
+      maxOpenConns: 0 # unlimited
+      maxIdleConns: 2 
+      connMaxLifetime: 14400 
+      postgresVersion: {{ grafana_postgres_datasource_version }} # 903=9.3, 904=9.4, 905=9.5, 906=9.6, 1000=10
+      timescaledb: true
