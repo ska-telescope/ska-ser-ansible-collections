@@ -29,7 +29,7 @@ datasources:
   database: {{ grafana_mid_eda_datasource_database }}
   user: {{ grafana_mid_eda_datasource_user }}
   secureJsonData:
-      password: {{ grafana_mid_eda_datasource_password }}
+      password: '{{ grafana_mid_eda_datasource_password }}'
   jsonData:
       sslmode: 'require' 
       maxOpenConns: 0 # unlimited
