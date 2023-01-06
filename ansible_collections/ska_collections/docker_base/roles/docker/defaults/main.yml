@@ -35,3 +35,6 @@ docker_deb_pkg_version: 5:20.10.22~3-0
 docker_deb_pkgs:
   - "docker-ce"
   - "docker-ce-cli"
+
+docker_registry_mirrors:
+  - "http://{{ nexus }}:{{ nexus_docker_group_port }}"

@@ -31,3 +31,10 @@ containerd_redhat_dependencies:
   - device-mapper-persistent-data
   - lvm2
   - python3-pip
+
+containerd_registry_mirrors:
+  - "http://{{ nexus }}:{{ nexus_docker_group_port }}"
+
+containerd_upstream_registries:
+  - docker.io
+  - registry.gitlab.com

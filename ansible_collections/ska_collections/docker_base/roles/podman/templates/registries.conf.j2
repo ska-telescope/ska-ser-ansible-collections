@@ -4,6 +4,8 @@ unqualified-search-registries = ["docker.io"]
 location = "docker.io"
 insecure = false
 
+{% for registry in podman_registry_mirrors -%}
 [[registry.mirror]]
-location = "{{ nexus }}:{{ nexus_docker_group_port }}"
+location = "{{ registry }}"
 insecure = true
+{% endfor %}
