@@ -160,6 +160,12 @@
   ansible.builtin.set_fact:
     capi_cluster_manifest: "{{ slurped_cluster_instance_manifest.content | b64decode }}"
 
+- name: "Remove local manifest copy /tmp/*-cluster-manifest.yaml"
+  ansible.builtin.file:
+    path: "/tmp/{{ capi_cluster }}-cluster-manifest.yaml"
+    state: absent
+  delegate_to: localhost
+
 - name: Output cluster instance manifest file  # noqa: template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ capi_cluster_manifest }}"

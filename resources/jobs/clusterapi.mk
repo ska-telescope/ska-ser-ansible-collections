@@ -13,7 +13,8 @@ ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
 
 CLUSTERAPI_APPLY ?= false ## Apply workload cluster: true or false - default: false
-CLUSTERAPI_AC_BRANCH ?= bang-105-add-byoh
+CLUSTERAPI_AC_BRANCH ?= bang-105-add-byoh ## Ansible Collections branch to apply to workload cluster
+CLUSTERAPI_CLUSTER ?= test ## Name of workload cluster to create
 
 
 .DEFAULT_GOAL := clusterapi
@@ -24,6 +25,9 @@ vars:
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 	@echo "ANSIBLE_PLAYBOOK_ARGUMENTS=$(ANSIBLE_PLAYBOOK_ARGUMENTS)"
 	@echo "ANSIBLE_EXTRA_VARS=$(ANSIBLE_EXTRA_VARS)"
+	@echo "CLUSTERAPI_CLUSTER=$(CLUSTERAPI_CLUSTER)"
+	@echo "CLUSTERAPI_APPLY=$(CLUSTERAPI_APPLY)"
+	@echo "CLUSTERAPI_AC_BRANCH=$(CLUSTERAPI_AC_BRANCH)"
 
 clusterapi-install-base:  ## Install base for management server
 	ansible-playbook $(PLAYBOOKS_DIR)/docker_base/playbooks/containers.yml \
@@ -49,9 +53,9 @@ clusterapi-createworkload: clusterapi-check-cluster-type  ## Template workload m
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/createworkload.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER)" \
 	--extra-vars "capi_kustomize_overlay=$(CLUSTERAPI_CLUSTER_TYPE)" \
 	--extra-vars '{"cluster_apply": $(CLUSTERAPI_APPLY)}' \
-	--extra-vars '{"capi_cluster_extra_vars": {$(CLUSTERAPI_CLUSTER_EXTRA_VARS)} }' \
 	--extra-vars 'capi_collections_branch=$(CLUSTERAPI_AC_BRANCH)' \
 	--limit "management-cluster"
 

@@ -75,7 +75,55 @@ $ make playbooks clusterapi clusterapi PLAYBOOKS_HOSTS=management-cluster
 
 ### BYOH - prepare hosts
 
+For testing purposes, VMs can be created in OpenStack to simulate baremetal (BYOH) hosts.  An example of this is available under stfc-techops/staging.  Set `PrivateRules.mak` vars as follows:
+```
+DATACENTRE = stfc-techops
+ENVIRONMENT = staging
+SERVICE = byohosts
+```
+
+Then build the 7 VMs (byohosts-i00 to byohosts-i06) with:
+```
+$ make orch init
+$ make orch plan
+$ make orch apply
+$ make orch generate-inventory
+# mv the installation/inventory.yml file to installation/byohosts.yml
+#
+# may need to fix port names where terraform has not set them:
+#for i in `openstack port list --network SKA-TechOps-ClusterAPI1 --long | grep ACTIVE | grep compute:ceph | awk '{print $2}'`; do openstack port set $i --name $i; done
+#
+# disable port security
+$ make playbooks clusterapi clusterapi-byoh-port-security
+```
+
+Edit `datacentres/stfc-techops/staging/installation/byohosts` to set the clusterapi IP address correctly:
+```
+[capi]
+clusterapi ansible_host=192.168.99.227 ansible_user=ubuntu
+```
+
+Now prepare the hosts:
+```
+$ make playbooks clusterapi clusterapi-byoh PLAYBOOKS_HOSTS=workload-cluster
+```
+
+
 ### Generate and Apply Manifests
+
+The cluster manifests are generated remotely on the management-cluster.  These are not applied by default so can be reviewed prior to deployment.
+
+Generate manifests:
+```
+$ make playbooks clusterapi clusterapi-createworkload PLAYBOOKS_HOSTS=management-cluster \
+  CLUSTERAPI_CLUSTER_TYPE=byoh CLUSTERAPI_CLUSTER=test-byoh
+#  review manifests in /tmp/test-byoh-cluster-manifest.yaml
+# Now apply:
+$ make playbooks clusterapi clusterapi-createworkload PLAYBOOKS_HOSTS=management-cluster \
+  CLUSTERAPI_CLUSTER_TYPE=byoh CLUSTERAPI_CLUSTER=test-byoh CLUSTERAPI_APPLY=true
+```
+
+
 
 
 # Testing
