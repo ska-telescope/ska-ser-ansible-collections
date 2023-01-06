@@ -24,26 +24,6 @@
       ansible.builtin.include_vars:
         file: "{{ inventory_dir }}/group_vars/nexus.yml"
 
-- name: Apply the common and docker roles
-  hosts: "{{ target_hosts }}"
-  vars:
-    target_hosts: localhost
-    nexus_docker_deb_version: 5:20.10.21~3-0~ubuntu-jammy
-    nexus_containerd_version: 1.6.9-1
-    docker_deb_version: "{{ nexus_docker_deb_version }}"
-    containerd_version: "{{ nexus_containerd_version }}"
-  become: true
-  tasks:
-    - name: Instance common role
-      ansible.builtin.include_role:
-        name: ska_collections.instance_common.init
-
-    - name: Docker role
-      ansible.builtin.include_role:
-        name: ska_collections.docker_base.docker
-  tags:
-    - common
-
 - name: Nexus Pre-install
   hosts: "{{ target_hosts }}"
   vars:

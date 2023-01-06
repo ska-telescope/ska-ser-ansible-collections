@@ -9,7 +9,7 @@ nexus: "{{ _ | mandatory('`nexus` definition is mandatory') }}"
 nexus_docker_hosted_port: 9080
 nexus_docker_group_port: 9082
 
-docker_allow_upgrade: false
+docker_allow_version_change: false
 
 docker_activate_nvidia: false
 docker_ignore_nvidia_fail: false
@@ -31,6 +31,7 @@ docker_deb_dependencies:
   - software-properties-common
   - python3-pip
 
+docker_deb_pkg_version: 5:20.10.18~3-0
 docker_deb_pkgs:
   - "docker-ce"
   - "docker-ce-cli"
