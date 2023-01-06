@@ -3,6 +3,7 @@ ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/monitoring/playbooks
 TESTS_DIR ?= ./ansible_collections/ska_collections/monitoring/tests
+ANSIBLE_EXTRA_VARS ?=
 
 ## EXECUTION VARIABLES
 NODES ?= all
@@ -77,7 +78,7 @@ prometheus: check_hosts ## Install Prometheus Server
 
 grafana: check_hosts ## Install Grafana Server
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_grafana.yml \
-		-i $(INVENTORY) \
+		-i $(INVENTORY) $(ANSIBLE_EXTRA_VARS) \
 		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		--extra-vars="grafana_azuread_client_id='$(AZUREAD_CLIENT_ID)' grafana_azuread_client_secret='$(AZUREAD_CLIENT_SECRET)' grafana_azuread_tenant_id='$(AZUREAD_TENANT_ID)'" \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
