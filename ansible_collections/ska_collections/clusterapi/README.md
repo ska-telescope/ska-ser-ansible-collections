@@ -145,7 +145,18 @@ $ make playbooks clusterapi clusterapi-createworkload PLAYBOOKS_HOSTS=management
 ```
 
 
+### Using the OpeStack Infrastructure Provider
 
+Make sure the appropriate OS image has been generated for the Kubernetes version being deployed.  This can be generated with:
+```
+$ make playbooks clusterapi clusterapi-imagebuilder PLAYBOOKS_HOSTS=management-cluster
+```
+
+Generate and apply the manifests using capo:
+```
+$ make playbooks clusterapi clusterapi-createworkload PLAYBOOKS_HOSTS=management-cluster \
+  CLUSTERAPI_CLUSTER_TYPE=capo CLUSTERAPI_CLUSTER=test-capo CLUSTERAPI_APPLY=true
+```
 
 # Testing
 

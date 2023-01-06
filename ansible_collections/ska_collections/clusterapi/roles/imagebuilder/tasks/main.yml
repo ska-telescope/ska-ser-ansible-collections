@@ -12,6 +12,18 @@
   ansible.builtin.include_tasks: "{{ role_path }}/../configcapo/tasks/os_config.yml"
   tags: [always]
 
+- name: Install ansible with pip3
+  ansible.builtin.pip:
+    name: ["ansible"]
+    executable: pip3
+    state: present
+
+- name: Install openstacksdk with pip3
+  ansible.builtin.pip:
+    name: ["openstacksdk<=0.98.999"]
+    executable: pip3
+    state: present
+
 - name: "Gather information about: {{ ib_os_image_name }}"
   openstack.cloud.image_info:
     cloud: "{{ capo_selected_cloud }}"
@@ -31,12 +43,6 @@
   retries: 5
   until: apt_res is success
   become: true
-
-- name: Install ansible with pip3
-  ansible.builtin.pip:
-    name: ["ansible", "openstacksdk<=0.98.999"]
-    executable: pip3
-    state: present
 
 - name: Install packages required for image-builder
   ansible.builtin.apt:
