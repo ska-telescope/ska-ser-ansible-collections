@@ -52,6 +52,27 @@ ANSIBLE_SECRETS_PROVIDER = notlegacy
 ANSIBLE_EXTRA_VARS+= --extra-vars "metallb_openstack_network_cidr=10.100.0.0/16"
 TF_HTTP_USERNAME = <user>
 TF_HTTP_PASSWORD = <password>
+# point to the location of the contents of the /etc/ceph directory
+# related to the target Ceph storage cluster
+ETC_CEPH = $(THIS_BASE)/../ska-cicd-deployment-on-stfc-cloud/clusterapi/ceph
+```
+
+Note that the default OS_CLOUD used for Velero backups, and any other OpenStack integrations is 'skatechops'.  This must exist in the `~/.config/openstack/clouds.yaml` file for the current shell user executing Ansible.
+See also Ansible variables:
+
+* `capo_openstack_cloud`
+* `capo_cloud` and `capo_cloud_config`
+* `velero_cloud` and `velero_cloud_config`
+
+And the `kustomize` template references for OpenStack - eg:
+```
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
+kind: OpenStackCluster
+metadata:
+  name:  ${CLUSTER_NAME}
+spec:
+  cloudName: skatechops
+...
 ```
 
 Build the host:

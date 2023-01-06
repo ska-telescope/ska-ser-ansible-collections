@@ -4,7 +4,6 @@ resources:
 - cluster-template-byoh.orig.yaml
 patchesStrategicMerge:
 - cluster-snippet.yaml
-# - openstackcluster-snippet.yaml
 - control-plane-snippet-config.yaml
 - bootstrap-kubeadmconfigtemplate-files.yaml
 - bootstrap-snippet-config.yaml
