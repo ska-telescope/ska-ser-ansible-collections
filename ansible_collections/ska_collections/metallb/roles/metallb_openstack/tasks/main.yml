@@ -31,6 +31,7 @@
   openstack.cloud.port:
     state: present
     port_security_enabled: false
+    no_security_groups: true
     name: "{{ item.name }}"
   loop: "{{ result_ports.openstack_ports }}"
   when: result_ports is defined and item.name != "" and item.status == "ACTIVE"
