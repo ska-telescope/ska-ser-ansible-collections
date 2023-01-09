@@ -12,6 +12,17 @@
     state: "stopped"
     enabled: false
 
+- name: Delete server.conf - UDP
+  ansible.builtin.file:
+    path: "{{ openvpn_configuration_directory }}/server.conf"
+    state: absent
+
+- name: Delete server.conf - TCP
+  ansible.builtin.file:
+    path: "{{ openvpn_configuration_directory }}/server2.conf"
+    state: absent
+
+
 - name: Remove openvpn packages
   ansible.builtin.package:
     name: "{{ openvpn_packages }}"

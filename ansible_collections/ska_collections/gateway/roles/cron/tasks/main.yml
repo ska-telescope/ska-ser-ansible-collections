@@ -1,0 +1,46 @@
+- name: Install cron
+  apt:
+    pkg:
+      - cron
+    state: present
+    update_cache: true
+
+
+- name: Ensure logging directory exists
+  file:
+    path: /srv/logs
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0755
+  become: true
+
+- name: Copy cron scripts to /usr/local/bin
+  # ansible.builtin.debug:
+  #   msg: "copying {{ item }} to /usr/local/bin: "
+  copy:
+    src: "{{ playbook_dir }}/../roles/cron/files/{{ item }}"
+    dest: "/usr/local/bin"
+    mode: '0755'
+  loop:
+    - clean_runner_namespaces.sh
+    - create_filebeat_metrics.sh
+    - etcd_backup.sh
+    - monitor-skagitrunners-stfc.sh
+    - monitor-skavpn-stfc.sh
+
+  become: true
+
+- name: Add cron job
+  cron:
+    name: "{{ item.name }}"
+    minute: "{{ item.minute }}"
+    hour: "{{ item.hour }}"
+    day: "{{ item.day }}"
+    month: "{{ item.month }}"
+    weekday: "{{ item.weekday }}"
+    user: "{{ item.user }}"
+    job: "{{ item.job }}"
+    cron_file: "{{ cron_file }}"
+  become: true
+  with_items: "{{ cron_job_lines }}"

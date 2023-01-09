@@ -9,7 +9,7 @@
     pkg:
       - dnsmasq
   notify:
-    - restart dnsmasq
+    - Restart dnsmasq
 
 - name: Update /etc/hosts for all
   ansible.builtin.lineinfile:
