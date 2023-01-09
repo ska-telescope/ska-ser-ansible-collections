@@ -1,0 +1,78 @@
+# !/usr/bin/env ansible-playbook
+---
+- name: Show debug info
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: "Show stack nodes info"
+      ansible.builtin.debug:
+        var: hostvars[inventory_hostname]
+      when: debug
+
+- name: Retrieve defaults but keep the variable hierarchy
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: Retrieve all datacenter values
+      ansible.builtin.include_vars:
+        file: "{{ inventory_dir }}/group_vars/all.yml"
+    - name: Retrieve nexus datacenter values
+      ansible.builtin.include_vars:
+        file: "{{ inventory_dir }}/group_vars/nexus.yml"
+
+- name: Get list of artifacts from upstream nexus
+  hosts: "{{ target_hosts }}" 
+  uri:
+    url: "{{ nexus_public_hostname }}/service/rest/v1/asssets"
+    method: GET 
+    user: "{{ user }}"
+    password: "{{ password }}"
+    force_basic_auth: yes
+    status_code:
+      - 200
+    register: upstream_list
+
+- name: Get list of artifacts from cache nexus
+  hosts: "{{ target_hosts }}" 
+  uri:
+    url: "{{ nexus_cache_hostname }}/service/rest/v1/asssets"
+    method: GET 
+    user: "{{ user }}"
+    password: "{{ password }}"
+    force_basic_auth: yes
+    status_code:
+      - 200
+    register: cache_list
+
+- name: Find asset id not in cache list
+
+- name: Check response for asset id from cache server returns a 404
+  hosts: "{{ target_hosts }}"
+  uri:
+    url: "{{ nexus_cache_hostname }}/service/rest/v1/asssets/{{ asset_id }}"
+    method: GET
+    user: "{{ user }}"
+    password: "{{ password }}"
+    force_basic_auth: yes
+    status_code:
+      - 404
+    register: first_response_code 
+
+- name: Download / install non cached asset
+
+
+- name: Check response from cache server returns cached response
+  hosts: "{{ target_hosts }}"
+  uri:
+    url: "{{ nexus_cache_hostname }}/service/rest/v1/asssets/{{ asset_id }}"
+    method: GET
+    user: "{{ user }}"
+    password: "{{ password }}"
+    force_basic_auth: yes
+    status_code:
+      - 200
+    register: second_response_code 
