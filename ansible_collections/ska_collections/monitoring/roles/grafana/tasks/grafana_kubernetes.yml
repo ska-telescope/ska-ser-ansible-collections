@@ -24,6 +24,7 @@
     - k8s-resources-namespace.json
     - k8s-resources-node.json
     - k8s-resources-pod.json
+    - k8s-resources-deviceserver.json
     - k8s-resources-workload.json
     - k8s-resources-workloads-namespace.json
     - kubelet.json
