@@ -3,7 +3,7 @@
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
-PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/openvpn/playbooks
+PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/gateway/playbooks
 
 -include $(BASE_PATH)/PrivateRules.mak
 
@@ -17,16 +17,17 @@ vars:
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
-install: check_hosts ## Install openvpn server
-	ansible-playbook $(PLAYBOOKS_DIR)/openvpn_server.yml \
+jumphost: check_hosts ## Add ubuntu users and configure jumphost
+	ansible-playbook $(PLAYBOOKS_DIR)/configure_user_access.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-destroy: check_hosts ## Destroy openvpn server
-	ansible-playbook $(PLAYBOOKS_DIR)/openvpn_server_destroy.yml \
+cronjob: check_hosts ## Add ubuntu users and configure jumphost
+	ansible-playbook $(PLAYBOOKS_DIR)/add_configure_cronjob.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-help: ## Show Help
-	@echo "openvpn targets - make playbooks openvpn <target>:"
-	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+kubectl: check_hosts ## Add ubuntu users and configure jumphost
+	ansible-playbook $(PLAYBOOKS_DIR)/kubectl.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"

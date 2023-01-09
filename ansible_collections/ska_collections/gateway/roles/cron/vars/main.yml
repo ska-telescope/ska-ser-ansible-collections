@@ -1,0 +1,41 @@
+cron_job_lines:
+    - name: clean runner namespaces
+      minute: "*/10"
+      hour: "*"
+      day: "*"
+      month: "*"
+      weekday: "*"
+      job: KUBECONFIG=/etc/kubernetes/admin.conf /usr/local/bin/clean_runner_namespaces.sh > /srv/logs/clean_runner_namespaces 2>&1
+      user: ubuntu
+    - name: etcd hourly backup
+      minute: "0"
+      hour: "*/1"
+      day: "*"
+      month: "*"
+      weekday: "*"
+      job: /usr/local/bin/etcd_backup.sh > /srv/logs/etcd_backup
+      user: root
+    - name: generate filebeat metrics
+      minute: "*"
+      hour: "*"
+      day: "*"
+      month: "*"
+      weekday: "*"
+      job: /usr/local/bin/create_filebeat_metrics.sh > /srv/logs/filebeat_metrics
+      user: root
+    - name: Monitor Gitlab Runners
+      minute: "*/5"
+      hour: "*"
+      day: "*"
+      month: "*"
+      weekday: "*"
+      job: /usr/local/bin/monitor-skagitrunners-stfc.sh >> /srv/logs/skagitrunners 2>&1
+      user: root
+    - name: Monitor VPN
+      minute: "*/5"
+      hour: "*"
+      day: "*"
+      month: "*"
+      weekday: "*"
+      job: /usr/local/bin/monitor-skavpn-stfc.sh > /srv/logs/skavpn 2>&1
+      user: root
