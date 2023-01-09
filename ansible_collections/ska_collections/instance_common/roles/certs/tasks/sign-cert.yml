@@ -11,7 +11,7 @@
 
 - name: Create certificates
   become: true
-  when: not (check_key.stat.exists and check_cert.stat.exists) or certificate_recreate
+  when: (not (check_key.stat.exists and check_cert.stat.exists)) or certificate_recreate
   block:
     - name: Create certificates directory
       ansible.builtin.file:
