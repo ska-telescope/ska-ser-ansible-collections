@@ -3,4 +3,4 @@ gateway_server_kubectl_name: kubectl
 gateway_server_kubectl_install_dir: /usr/local/bin
 gateway_server_kubectl_url: 'https://storage.googleapis.com/kubernetes-release/release/{{ gateway_server_kubectl_version }}/bin/linux/amd64/{{ gateway_server_kubectl_name }}' # noqa yaml[line-length]
 
-gateway_kubeconfig: 
+gateway_kubeconfig: ~/.kube/config

@@ -174,4 +174,3 @@
     state: absent
   loop: "{{ remove_ssh_keys|flatten(levels=1) if remove_ssh_keys is iterable else [] }}"
   when: remove_ssh_keys is iterable
-
