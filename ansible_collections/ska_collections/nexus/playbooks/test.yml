@@ -24,51 +24,48 @@
       ansible.builtin.include_vars:
         file: "{{ inventory_dir }}/group_vars/nexus.yml"
 
-- name: Get list of artifacts from upstream nexus
-  hosts: "{{ target_hosts }}" 
-  uri:
-    url: "{{ nexus_public_hostname }}/service/rest/v1/asssets"
-    method: GET 
-    user: "{{ user }}"
-    password: "{{ password }}"
-    force_basic_auth: yes
-    status_code:
-      - 200
-    register: upstream_list
+- name: Apply the docker role
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: Docker role
+      ansible.builtin.include_role:
+        name: ska_collections.docker_base.docker
 
-- name: Get list of artifacts from cache nexus
-  hosts: "{{ target_hosts }}" 
-  uri:
-    url: "{{ nexus_cache_hostname }}/service/rest/v1/asssets"
-    method: GET 
-    user: "{{ user }}"
-    password: "{{ password }}"
-    force_basic_auth: yes
-    status_code:
-      - 200
-    register: cache_list
-
-- name: Find asset id not in cache list
-
-- name: Check response for asset id from cache server returns a 404
+- name: Check test image not in nexus
   hosts: "{{ target_hosts }}"
   uri:
-    url: "{{ nexus_cache_hostname }}/service/rest/v1/asssets/{{ asset_id }}"
+    url: "{{ nexus_cache_hostname }}/service/rest/v1/search/assets?<ARGS>"
     method: GET
     user: "{{ user }}"
     password: "{{ password }}"
     force_basic_auth: yes
     status_code:
       - 404
-    register: first_response_code 
 
-- name: Download / install non cached asset
+- name: Pull test image
+  community.docker.docker_image:
+    name: hello-world
+    source: pull
 
-
-- name: Check response from cache server returns cached response
+- name: Check test image appears in nexus
   hosts: "{{ target_hosts }}"
   uri:
-    url: "{{ nexus_cache_hostname }}/service/rest/v1/asssets/{{ asset_id }}"
+    url: "{{ nexus_cache_hostname }}/service/rest/v1/search/assets?<ARGS>"
+    method: GET
+    user: "{{ user }}"
+    password: "{{ password }}"
+    force_basic_auth: yes
+    status_code:
+      - 302
+    register: testImage
+
+- name: Delete test image from nexus
+  hosts: "{{ target_hosts }}"
+  uri:
+    url: "{{ nexus_cache_hostname }}/service/rest/v1/asssets/{{ testImage | json_query('items[0].id') }}"
     method: GET
     user: "{{ user }}"
     password: "{{ password }}"
