@@ -2,7 +2,7 @@
 - name: Update /etc/hosts
   ansible.builtin.lineinfile:
     dest: /etc/hosts
-    regexp: '.*{{ hostvars[item].inventory_hostname }}.*'
+    regexp: '{{ hostvars[item].inventory_hostname }}$'
     line: "{{ hostvars[item].ip }} {{ hostvars[item].inventory_hostname }}"
     state: present
   with_items: '{{ groups["all"] }}'
