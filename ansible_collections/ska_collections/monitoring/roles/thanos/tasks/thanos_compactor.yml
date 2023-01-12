@@ -18,7 +18,7 @@
     certificate_name: "thanos_compactor"
     certificate_key_name: "thanos_compactor"
     certificate_dns_alt_name: "{{ thanos_alt_name }}"
-    certificates_recreate: true
+    certificate_recreate: true
 
 - name: Ensure thanos configuration directory
   ansible.builtin.file:

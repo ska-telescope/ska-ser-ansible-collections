@@ -1,0 +1,53 @@
+#!/usr/bin/env ansible-playbook
+- name: CA certificate is functional
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: Check that CA certificate exists and is valid
+      community.crypto.x509_certificate_info:
+        path: "{{ certificates_dir }}/ca-certificate.crt"
+      register: ca_certificate_crt_info
+
+    - name: Check that CA key exists and is valid
+      community.crypto.openssl_privatekey_info:
+        path: "{{ certificates_dir }}/ca-certificate.key"
+        passphrase: "{{ ca_cert_password }}"
+      register: ca_certificate_key_info
+
+    - name: Check that CA certificate was signed by CA key and is valid
+      ansible.builtin.assert:
+        that:
+          - not ca_certificate_crt_info.expired
+          - ca_certificate_crt_info.issuer.commonName == "SKAO CA"
+          - ca_certificate_crt_info.public_key_data.modulus == ca_certificate_key_info.public_data.modulus
+
+    - name: Sign certificate using our CA
+      ansible.builtin.import_role:
+        name: ska_collections.instance_common.certs
+        tasks_from: sign-cert
+      vars:
+        certificate_name: test-ca-cert
+        certificate_dns_alt_name: "{{ ansible_hostname }}"
+        certificate_recreate: true
+        ca_host: "{{ inventory_hostname }}"
+
+    - name: Check that signed certificate exists and is valid
+      community.crypto.x509_certificate_info:
+        path: "{{ certificates_dir }}/test-ca-cert.crt"
+      register: certificate_crt_info
+
+    - name: Check that signed certificate key exists and is valid
+      community.crypto.openssl_privatekey_info:
+        path: "{{ certificates_dir }}/test-ca-cert.key"
+      register: certificate_key_info
+
+    - name: Check that certificate was signed by CA and is valid
+      ansible.builtin.assert:
+        that:
+          - not certificate_crt_info.expired
+          - certificate_crt_info.issuer.commonName == ca_certificate_crt_info.subject.commonName
+          - certificate_crt_info.authority_key_identifier == ca_certificate_crt_info.subject_key_identifier
+          - certificate_crt_info.subject.commonName == ansible_hostname
+          - certificate_crt_info.public_key_data.modulus == certificate_key_info.public_data.modulus
