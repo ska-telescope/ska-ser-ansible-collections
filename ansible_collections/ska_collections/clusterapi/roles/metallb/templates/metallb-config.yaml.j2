@@ -8,7 +8,7 @@ metadata:
   namespace: {{ metallb_namespace }}
 spec:
   addresses:
-  - 10.100.10.1-10.100.253.254
+  - {{ metallb_addresses }}
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
@@ -19,3 +19,17 @@ metadata:
 spec:
   ipAddressPools:
   - default
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations:
+  name: config
+  namespace: {{ metallb_namespace }}
+data:
+  config: |
+    address-pools:
+    - name: default
+      protocol: layer2
+      addresses:
+      - {{ metallb_addresses }}

@@ -1,0 +1,145 @@
+---
+- name: Include vars
+  ansible.builtin.include_vars:
+    file: ../clusterapi/defaults/main.yml
+  tags: [always]
+
+- name: Set clusterapi config dir
+  ansible.builtin.file:
+    path: "{{ clusterapi_config_dir }}"
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: Get current BYOH template verion  # noqa: command-instead-of-module
+  ansible.builtin.shell: |
+    set -o pipefail && \
+    curl -s -H "Accept: application/json" -L `clusterctl config repositories | grep bringyourownhost | awk '{print $3}'` | jq -r .tag_name
+  args:
+    executable: /usr/bin/bash
+  changed_when: false
+  register: byoh_template_check
+
+- name: Current BYOH template verion
+  ansible.builtin.set_fact:
+    byoh_template_version_latest: "{{ byoh_template_check.stdout }}"
+
+- name: "Show the latest BYOH template version"
+  ansible.builtin.debug:
+    var: byoh_template_version_latest
+
+- name: Tidy up BYOH template
+  ansible.builtin.file:
+    path: "{{ clusterapi_config_dir }}/{{ byoh_template_name }}"
+    state: absent
+  become: true
+
+- name: Download BYOH template
+  ansible.builtin.get_url:
+    url: "https://github.com/vmware-tanzu/cluster-api-provider-bringyourownhost/releases/download/{{ byoh_template_version }}/cluster-template.yaml"
+    dest: "{{ clusterapi_config_dir }}/{{ byoh_template_name }}"
+    mode: '0644'
+  become: true
+
+- name: Find the local running user
+  ansible.builtin.set_fact:
+    whoami: "{{ lookup('env', 'USER') }}"
+
+- name: Copy clusterapi BYOH template back
+  ansible.builtin.slurp:
+    src: "{{ clusterapi_config_dir }}/{{ byoh_template_name }}"
+  register: slurped_cluster_template
+  become: true
+
+- name: Output cluster template file  # noqa: template-instead-of-copy
+  ansible.builtin.copy:
+    content: "{{ slurped_cluster_template.content | b64decode }}"
+    dest: "{{ playbook_dir }}/../../../../resources/clusterapi/kustomize/byohbase/{{ byoh_template_name }}"
+    mode: 0644
+  delegate_to: localhost
+
+- name: Check BYOH is running
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: byoh-controller-manager
+    namespace: byoh-system
+  register: byoh_controller_check
+
+- name: Start BYOH
+  # BYOH is not started
+  when: "not byoh_controller_check.resources"
+  block:
+
+    - name: Start up BYOH
+      ansible.builtin.command: "{{ clusterctl_exe_dir }}/clusterctl init --infrastructure byoh"
+      changed_when: false
+      register: clusterctl_byoh_check
+
+    - name: Wait clusterapi CRD
+      kubernetes.core.k8s_info:
+        kind: CustomResourceDefinition
+        api_version: apiextensions.k8s.io/v1
+        name: kubeadmconfigs.bootstrap.cluster.x-k8s.io
+        wait: true
+        wait_sleep: 15
+        wait_timeout: 300
+        wait_condition:
+          type: Established
+
+    - name: Wait for deploy/capi-kubeadm-bootstrap-controller-manager
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        api_version: apps/v1
+        name: capi-kubeadm-bootstrap-controller-manager
+        namespace: capi-kubeadm-bootstrap-system
+        wait: true
+        wait_sleep: 10
+        wait_timeout: 300
+        wait_condition:
+          type: Available
+          # status: True
+          # reason: MinimumReplicasAvailable
+
+    - name: Wait for deploy/capi-controller-manager
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        api_version: apps/v1
+        name: capi-controller-manager
+        namespace: capi-system
+        wait: true
+        wait_sleep: 10
+        wait_timeout: 300
+        wait_condition:
+          type: Available
+
+    - name: Wait for cert-manager
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        api_version: apps/v1
+        name: "{{ item }}"
+        namespace: cert-manager
+        wait: true
+        wait_sleep: 10
+        wait_timeout: 150
+        wait_condition:
+          type: Available
+      with_items:
+        - "cert-manager"
+        - "cert-manager-cainjector"
+        - "cert-manager-webhook"
+
+    - name: Wait for deploy/byoh-controller-manager
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        api_version: apps/v1
+        name: byoh-controller-manager
+        namespace: byoh-system
+        wait: true
+        wait_sleep: 10
+        wait_timeout: 300
+        wait_condition:
+          type: Available
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers

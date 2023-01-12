@@ -1,0 +1,20 @@
+---
+
+- name: Reload systemctl
+  ansible.builtin.systemd:
+    daemon_reload: true
+  become: true
+
+- name: Restart byohagent
+  ansible.builtin.service:
+    name: byohagent.service
+    state: restarted
+    enabled: true
+  become: true
+
+- name: Restart kubelet
+  become: true
+  ansible.builtin.service:
+    name: kubelet
+    state: restarted
+    enabled: true

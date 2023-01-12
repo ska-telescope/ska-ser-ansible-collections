@@ -1,0 +1,355 @@
+---
+
+- name: Setup BYOH
+  when: ansible_hostname in groups['workload-cluster']
+  become: true
+  block:
+
+    - name: Update /etc/hosts
+      ansible.builtin.lineinfile:
+        dest: /etc/hosts
+        regexp: '.*{{ hostvars[item].inventory_hostname }}.*'
+        line: "{{ hostvars[item].ip }} {{ hostvars[item].inventory_hostname }}"
+        state: present
+      with_items: '{{ groups["workload-cluster"] }}'
+      when: not item == "localhost"
+      register: updatehosts
+
+    - name: Ensure that the apt cache is updated
+      ansible.builtin.apt:
+        update_cache: true
+      register: apt_res
+      retries: 5
+      until: apt_res is success
+
+    - name: Install BYOH dependent packages
+      ansible.builtin.apt:
+        name: ['conntrack', 'socat', 'ebtables', 'ethtool', 'cgroupfs-mount', 'cgroup-tools']
+        force: true
+        state: present
+      register: apt_res
+      retries: 15
+      until: apt_res is success
+
+# Only attempt this for x86, as it can break some rpi4
+    - name: Install BYOH CEPH dependent packages
+      ansible.builtin.apt:
+        name: 'linux-image-extra-virtual'
+        force: true
+        state: present
+      when: ansible_architecture == 'x86_64'
+
+    - name: Install BYOH CEPH dependent packages
+      ansible.builtin.apt:
+        name: 'ceph-common'
+        force: true
+        state: present
+
+    - name: "Remove KUBECONFIG {{ byoh_local_kubeconfig_file }}"
+      ansible.builtin.file:
+        path: "/tmp/{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
+        state: absent
+      delegate_to: "clusterapi"
+
+    - name: "Remove bootstrapkubeconfig-{{ inventory_hostname }}"
+      kubernetes.core.k8s:
+        state: absent
+        api_version: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: BootstrapKubeconfig
+        namespace: "{{ byoh_kube_namespace }}"
+        name: "bootstrapkubeconfig-{{ inventory_hostname }}"
+      delegate_to: "clusterapi"
+      become: false
+
+    - name: Pause for 3 seconds for BootstrapKubeconfig cert to be deleted
+      ansible.builtin.wait_for:
+        timeout: 5
+
+    - name: "Get current API Server"
+      ansible.builtin.shell: "kubectl config view -ojsonpath='{.clusters[0].cluster.server}'"
+      register: apiserver_var
+      changed_when: false
+      delegate_to: "clusterapi"
+      become: false
+
+    - name: Apiserver_var
+      ansible.builtin.debug:
+        var: apiserver_var
+
+    - name: "Get current CA Cert"
+      ansible.builtin.shell: "kubectl config view --flatten -ojsonpath='{.clusters[0].cluster.certificate-authority-data}'"
+      register: cacert_var
+      changed_when: false
+      delegate_to: "clusterapi"
+      become: false
+
+    - name: Cacert_var
+      ansible.builtin.debug:
+        var: cacert_var
+
+    - name: "Create bootstrapkubeconfig-{{ inventory_hostname }}"
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+          kind: BootstrapKubeconfig
+          metadata:
+            namespace: "{{ byoh_kube_namespace }}"
+            name: "bootstrapkubeconfig-{{ inventory_hostname }}"
+          spec:
+            apiserver: "{{ apiserver_var.stdout }}"
+            certificate-authority-data: "{{ cacert_var.stdout }}"
+      delegate_to: "clusterapi"
+      become: false
+
+    - name: Pause for 3 seconds for BootstrapKubeconfig cert to be created
+      ansible.builtin.wait_for:
+        timeout: 5
+
+    - name: "Read bootstrapkubeconfig-{{ inventory_hostname }}"
+      kubernetes.core.k8s_info:
+        kind: BootstrapKubeconfig
+        api_version: "infrastructure.cluster.x-k8s.io/v1beta1"
+        namespace: "{{ byoh_kube_namespace }}"
+        name: "bootstrapkubeconfig-{{ inventory_hostname }}"
+      register: kubeconfig_var
+      delegate_to: "clusterapi"
+      become: false
+
+    - name: Kubeconfig_var
+      ansible.builtin.debug:
+        var: kubeconfig_var.resources[0].status.bootstrapKubeconfigData
+
+    - name: "Write bootstrapkubeconfig {{ byoh_local_kubeconfig_file + '-' + inventory_hostname }}"
+      ansible.builtin.copy:
+        content: "{{ kubeconfig_var.resources[0].status.bootstrapKubeconfigData }}"
+        dest: "/tmp/{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
+        mode: 0644
+      delegate_to: "clusterapi"
+      become: false
+
+    - name: Set server correctly to default IP for locahost aka management-cluster
+      ansible.builtin.lineinfile:
+        path: "/tmp/{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
+        regexp: '^    server: '
+        line: "    server: https://{{ hostvars[groups['management-cluster'][0]].ansible_default_ipv4.address }}:6443"
+      delegate_to: "clusterapi"
+      become: false
+
+    - name: When arm64 use locally built agent
+      when: ansible_architecture == 'aarch64'
+      block:
+        - name: Distribute byoh agent
+          ansible.builtin.copy:
+            src: "{{ byoh_local_agent_file }}"
+            dest: "{{ byoh_remote_agent_file }}"
+            owner: ubuntu
+            group: ubuntu
+            mode: '0755'
+          notify:
+            - Reload systemctl
+            - Restart byohagent
+
+    - name: When x86_64 use locally built agent
+      when: ansible_architecture == 'x86_64'
+      block:
+
+        - name: Check if byoh agent exists
+          ansible.builtin.stat:
+            path: "{{ byoh_remote_agent_file }}"
+          register: stat_byohagent
+
+        - name: Check if the kubectl version is installed
+          ansible.builtin.command: "{{ byoh_remote_agent_file }} --version 2>&1"
+          changed_when: false
+          register: byohagent_version_check
+          ignore_errors: true
+
+        - name: Tidy up byohagent
+          ansible.builtin.file:
+            path: "{{ byoh_remote_agent_file }}"
+            state: absent
+          when: "not stat_byohagent.stat.exists or
+            byohagent_version_check.stdout.find(byoh_agent_version) == -1"
+          become: true
+
+        - name: Calculate version vars
+          ansible.builtin.set_fact:
+            os_binary: "{% if ansible_facts.architecture == 'x86_64' %}amd64{% else %}unknown{% endif %}"
+
+        - name: Byohagent install
+          ansible.builtin.get_url:
+            url: "{{ byoh_agent_url }}/{{ byoh_agent_version }}/byoh-hostagent-linux-{{ os_binary }}"
+            dest: "{{ byoh_remote_agent_file }}"
+            mode: "0755"
+          when: "not stat_byohagent.stat.exists or
+            byohagent_version_check.stdout.find(byoh_agent_version) == -1"
+          become: true
+
+    - name: Set the host grouping
+      ansible.builtin.set_fact:
+        host_grouping: "{% if inventory_hostname in groups['controlplane'] %}controlplane{% else %}worker{% endif %}"
+
+# https://stackoverflow.com/questions/35984151/how-to-create-new-system-service-by-ansible-playbook
+    - name: Byohagent | Create environment file
+      ansible.builtin.template:
+        src: byohagent.env.j2
+        dest: /etc/default/byohagent
+        mode: "0644"
+      notify:
+        - Reload systemctl
+        - Restart byohagent
+
+    - name: Byohagent | Create Unit file
+      ansible.builtin.template:
+        src: byohagent.service.j2
+        dest: /lib/systemd/system/byohagent.service
+        mode: 0644
+      notify:
+        - Reload systemctl
+        - Restart byohagent
+
+    - name: Reload systemctl
+      ansible.builtin.systemd:
+        daemon_reload: true
+      become: true
+
+    - name: Stop byohagent
+      ansible.builtin.service:
+        name: byohagent.service
+        state: stopped
+        enabled: true
+      become: true
+
+    - name: Fetch the  clusterapi bootstrap kubeconfig
+      ansible.builtin.fetch:
+        src: "/tmp/{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
+        dest: "/tmp/{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
+        flat: true
+      delegate_to: "clusterapi"
+
+    - name: Distribute clusterapi bootstrap kubeconfig
+      ansible.builtin.copy:
+        src: "/tmp/{{ byoh_local_kubeconfig_file }}-{{ inventory_hostname }}"
+        dest: "{{ byoh_remote_kubeconfig_file }}"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+      notify:
+        - Reload systemctl
+        - Restart byohagent
+
+    - name: Start byohagent
+      ansible.builtin.service:
+        name: byohagent.service
+        state: started
+        enabled: true
+      become: true
+
+    - name: Check if firewalld service exists
+      ansible.builtin.stat:
+        path: /usr/lib/systemd/system/firewalld.service
+      register: service_status
+
+    - name: Stopping and Disabling the firewalld
+      ansible.builtin.service:
+        name: firewalld
+        state: stopped
+        enabled: false
+      when: service_status.stat.exists
+
+    - name: "Check if exists: {{ byoh_k8s_key_file_gpg }}"
+      ansible.builtin.stat:
+        path: "{{ byoh_k8s_key_file_gpg }}"
+      register: k8s_key_result
+
+    - name: Add k8s project apt key
+      ansible.builtin.get_url:
+        url: "{{ byoh_k8s_deb_repo_key_url }}"
+        dest: "{{ byoh_k8s_key_file }}"
+        mode: '0644'
+        force: true
+      when: not k8s_key_result.stat.exists
+
+    - name: "Armour the key {{ byoh_k8s_key_file }}"
+      ansible.builtin.command: "gpg --dearmour -o {{ byoh_k8s_key_file_gpg }} {{ byoh_k8s_key_file }}"
+      args:
+        creates: "{{ byoh_k8s_key_file_gpg }}"
+      changed_when: false
+      when: not k8s_key_result.stat.exists
+
+    - name: "Remove {{ byoh_k8s_key_file }}"
+      ansible.builtin.file:
+        path: "{{ byoh_k8s_key_file }}"
+        state: absent
+
+    - name: Add k8s apt source
+      ansible.builtin.lineinfile:
+        line: "{{ byoh_k8s_deb_repo_url }}"
+        regexp: 'deb '
+        path: /etc/apt/sources.list.d/kubernetes.list
+        create: true
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Update apt cache - again
+      ansible.builtin.apt:
+        update_cache: true
+      register: apt_res
+      retries: 15
+      until: apt_res is success
+
+    - name: Install k8s dependent packages
+      ansible.builtin.apt:
+        name: ['conntrack', 'ipvsadm']
+        force: true
+        state: present
+      register: apt_res
+      retries: 15
+      until: apt_res is success
+
+    - name: Install kubeadm and friends
+      ansible.builtin.apt:
+        name: ["kubectl={{ byoh_kube_version }}", "kubeadm={{ byoh_kube_version }}", "kubelet={{ byoh_kube_version }}"]
+        force: true
+        state: present
+      notify:
+        - Restart kubelet
+
+    - name: Pin kube* versions
+      ansible.builtin.dpkg_selections:
+        name: "{{ item }}"
+        selection: hold
+      with_items:
+        - "kubectl"
+        - "kubeadm"
+        - "kubelet"
+
+    # # https://stackoverflow.com/questions/36517472/is-it-possible-to-add-swap-space-on-kubernetes-nodes
+    # - name: Enable swap - disable error
+    #   ansible.builtin.lineinfile:
+    #     line: 'KUBELET_EXTRA_ARGS="--fail-swap-on=false"'
+    #     path: /etc/default/kubelet
+    #     create: true
+    #     owner: root
+    #     group: root
+    #     mode: 0644
+
+    - name: Ensure /etc/NetworkManager/conf.d exists
+      ansible.builtin.file:
+        path: /etc/NetworkManager/conf.d
+        state: directory
+        mode: 0755
+
+    - name: Calico config for NetworkManager
+      ansible.builtin.blockinfile:
+        path: /etc/NetworkManager/conf.d/calico.conf
+        mode: 644
+        create: true
+        block: |
+          [keyfile]
+          unmanaged-devices=interface-name:cali*;interface-name:tunl*;interface-name:vxlan.calico
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers

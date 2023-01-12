@@ -1,36 +1,36 @@
 ---
 
-- name: "Check ceph.conf exists {{ capo_ceph_conf_ini_file }}"
+- name: "Check ceph.conf exists {{ capi_ceph_conf_ini_file }}"
   ansible.builtin.stat:
-    path: "{{ capo_ceph_conf_ini_file }}"
+    path: "{{ capi_ceph_conf_ini_file }}"
   register: check_ceph_conf
   delegate_to: localhost
 
 - name: Abort playbook on missing ceph.conf
   ansible.builtin.fail:
     msg: >
-      "Could not find ceph.conf file: {{ capo_ceph_conf_ini_file }}"
+      "Could not find ceph.conf file: {{ capi_ceph_conf_ini_file }}"
   when: not check_ceph_conf.stat.exists
 
-- name: "Check ceph.conf exists {{ capo_ceph_conf_key_ring }}"
+- name: "Check ceph.conf exists {{ capi_ceph_conf_key_ring }}"
   ansible.builtin.stat:
-    path: "{{ capo_ceph_conf_key_ring }}"
+    path: "{{ capi_ceph_conf_key_ring }}"
   register: check_ceph_key_ring
   delegate_to: localhost
 
 - name: Abort playbook on missing ceph key ring file
   ansible.builtin.fail:
     msg: >
-      "Could not find ceph key ring file: {{ capo_ceph_conf_key_ring }}"
+      "Could not find ceph key ring file: {{ capi_ceph_conf_key_ring }}"
   when: not check_ceph_key_ring.stat.exists
 
 - name: Get Ceph conf global section
   ansible.builtin.set_fact:
-    capo_ceph_conf_global_fsid: "{{ lookup('ansible.builtin.ini', 'fsid', section='global', file=capo_ceph_conf_ini_file) }}"
-    capo_ceph_conf_global_mon_host: "{{ lookup('ansible.builtin.ini', 'mon host', section='global', file=capo_ceph_conf_ini_file) | ska_collections.clusterapi.cephmons }}"  # noqa: yaml
-    capo_ceph_conf_global_mons_data: "{{ lookup('ansible.builtin.ini', 'mon host', section='global', file=capo_ceph_conf_ini_file) | ska_collections.clusterapi.cephmonsdata }}"  # noqa: yaml
-    capo_ceph_conf_global_monitors: "{{ lookup('ansible.builtin.ini', 'mon host', section='global', file=capo_ceph_conf_ini_file) | ska_collections.clusterapi.cephmonitors }}"  # noqa: yaml
-    capo_ceph_key: "{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=capo_ceph_conf_key_ring) }}"
+    capo_ceph_conf_global_fsid: "{{ lookup('ansible.builtin.ini', 'fsid', section='global', file=capi_ceph_conf_ini_file) }}"
+    capo_ceph_conf_global_mon_host: "{{ lookup('ansible.builtin.ini', 'mon host', section='global', file=capi_ceph_conf_ini_file) | ska_collections.clusterapi.cephmons }}"  # noqa: yaml
+    capo_ceph_conf_global_mons_data: "{{ lookup('ansible.builtin.ini', 'mon host', section='global', file=capi_ceph_conf_ini_file) | ska_collections.clusterapi.cephmonsdata }}"  # noqa: yaml
+    capo_ceph_conf_global_monitors: "{{ lookup('ansible.builtin.ini', 'mon host', section='global', file=capi_ceph_conf_ini_file) | ska_collections.clusterapi.cephmonitors }}"  # noqa: yaml
+    capo_ceph_key: "{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=capi_ceph_conf_key_ring) }}"
 
 - name: "Show capo_ceph_conf_global_mon_host"
   ansible.builtin.debug:

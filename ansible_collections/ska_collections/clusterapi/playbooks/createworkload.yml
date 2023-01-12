@@ -5,5 +5,7 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
+    capi_kustomize_overlay: capo
+    cluster_apply: false
   roles:
     - createworkload

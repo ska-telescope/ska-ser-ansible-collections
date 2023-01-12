@@ -1,0 +1,29 @@
+- op: add
+  path: /spec/template/spec/preKubeadmCommands/-
+  target:
+    kind: KubeadmConfigTemplate
+    name: ${CLUSTER_NAME}-md-0
+  value:
+    '/usr/bin/bash /etc/kubernetes/kubeadm-pre-deploy.sh >>/tmp/capo-config.log 2>&1'
+
+- op: add
+  path: /spec/template/spec/files/-
+  target:
+    kind: KubeadmConfigTemplate
+    name: ${CLUSTER_NAME}-md-0
+  value:
+    owner: root:root
+    path: /etc/kubernetes/kubeadm-pre-deploy.sh
+    content: |
+      #!/usr/bin/bash
+      echo ""
+      echo "==================================================================="
+      echo "preKubeadmCommands [happens on workers] kubeadm-pre: deploy $(date)"
+      set -x
+
+      /usr/src/ska-ser-ansible-collections/run-play.sh containerd.yml -vv
+
+      /usr/src/ska-ser-ansible-collections/run-play.sh install-tools.yml --tags helm -vv
+
+      echo "preKubeadmCommands: end $(date)"
+      exit 0

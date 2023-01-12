@@ -1,6 +1,8 @@
 ---
 debug: false
 
-metallb_version: 0.13.4
+metallb_version: 0.13.7
 
 metallb_namespace: metallb-system
+
+metallb_addresses: 10.100.10.1-10.100.253.254

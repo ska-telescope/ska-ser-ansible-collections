@@ -3,7 +3,7 @@ debug: false
 
 minikube_exe_dir: /usr/local/bin
 minikube_version: v1.28.0
-kubernetes_version: v1.25.4
+kubernetes_version: v1.25.5
 helm_version: v3.10.2
 k9s_version: v0.26.7
 ## yq tool version to install https://github.com/mikefarah/yq/releases
