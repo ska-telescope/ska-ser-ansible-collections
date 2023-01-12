@@ -25,7 +25,7 @@ vars:
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 	@echo "ANSIBLE_PLAYBOOK_ARGUMENTS=$(ANSIBLE_PLAYBOOK_ARGUMENTS)"
 	@echo "ANSIBLE_EXTRA_VARS=$(ANSIBLE_EXTRA_VARS)"
-	@echo "CLUSTERAPI_CLUSTER=$(CLUSTERAPI_CLUSTER)"
+	@echo "CLUSTERAPI_CLUSTER=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)"
 	@echo "CLUSTERAPI_APPLY=$(CLUSTERAPI_APPLY)"
 	@echo "CLUSTERAPI_AC_BRANCH=$(CLUSTERAPI_AC_BRANCH)"
 
@@ -53,7 +53,7 @@ clusterapi-createworkload: clusterapi-check-cluster-type  ## Template workload m
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/createworkload.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER)" \
+	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
 	--extra-vars "capi_kustomize_overlay=$(CLUSTERAPI_CLUSTER_TYPE)" \
 	--extra-vars '{"cluster_apply": $(CLUSTERAPI_APPLY)}' \
 	--extra-vars 'capi_collections_branch=$(CLUSTERAPI_AC_BRANCH)' \
@@ -75,11 +75,11 @@ clusterapi-byoh-port-security:  ## Unset port security on byohosts
 	--extra-vars "target_hosts=localhost" -v
 
 clusterapi-byoh:  ## Deploy byoh agent and tokens to workload hosts
-	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	ANSIBLE_SSH_ARGS="-o ControlPersist=30m -o StrictHostKeyChecking=no -F $(PLAYBOOKS_ROOT_DIR)/ssh.config" \
-	ansible-playbook $(PLAYBOOKS_DIR)/docker_base/playbooks/containerd.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v
+	# ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
+	# ANSIBLE_SSH_ARGS="-o ControlPersist=30m -o StrictHostKeyChecking=no -F $(PLAYBOOKS_ROOT_DIR)/ssh.config" \
+	# ansible-playbook $(PLAYBOOKS_DIR)/docker_base/playbooks/containerd.yml \
+	# -i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	# --extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v
 
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
 	ANSIBLE_SSH_ARGS="-o ControlPersist=30m -o StrictHostKeyChecking=no -F $(PLAYBOOKS_ROOT_DIR)/ssh.config" \
@@ -119,3 +119,10 @@ clusterapi-velero-backups:  ## Configure Velero backups on Minikube management c
 
 # get logs
 # kubectl -n velero logs $(kubectl -n velero get pods -l component=velero  -o name) > logs.txt
+
+
+# velero restore create test \
+# --from-backup  every6h-20230110020153 \
+# --existing-resource-policy=update \
+# --exclude-namespaces kube-system,ingress-nginx,kube-node-lease,kube-public,metallb-system,velero  \
+# --include-cluster-resources=true

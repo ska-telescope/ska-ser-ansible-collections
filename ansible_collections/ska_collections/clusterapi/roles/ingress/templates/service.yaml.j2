@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: ingress-nginx
     app.kubernetes.io/version: {{ ingress_nginx_version }}
-  name: ingress-nginx-controller-lb
+  name: ingress-nginx-controller-lb-{{ inventory_hostname }}
   namespace: ingress-nginx
   annotations:
     service.beta.kubernetes.io/openstack-internal-load-balancer: "true"

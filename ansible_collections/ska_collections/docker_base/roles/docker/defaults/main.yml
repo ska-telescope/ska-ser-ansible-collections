@@ -31,7 +31,7 @@ docker_deb_dependencies:
   - software-properties-common
   - python3-pip
 
-docker_deb_pkg_version: 5:20.10.18~3-0
+docker_deb_pkg_version: 5:20.10.22~3-0
 docker_deb_pkgs:
   - "docker-ce"
   - "docker-ce-cli"
