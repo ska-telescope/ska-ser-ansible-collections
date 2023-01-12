@@ -22,6 +22,7 @@
       echo "postKubeadmCommands [happens on controlplane] : start $(date)"
 
       export KUBECONFIG=/etc/kubernetes/admin.conf
+      export CLUSTER_NAME=${CLUSTER_NAME}
 
       export CALICO_VERSION=${CALICO_VERSION}
       export CALICO_IPV4POOL_CIDR=${CIDR_BLOCK}
@@ -99,6 +100,7 @@
       echo "Running the cluster initialisation: Ingress"
       /usr/src/ska-ser-ansible-collections/run-play.sh ingress.yml \
         -e "ingress_nginx_version=${NGINX_VERSION}" \
+        -e "ingress_lb_suffix=${CLUSTER_NAME}"
         -vv
 
       echo "Running the cluster initialisation: RookIO"
