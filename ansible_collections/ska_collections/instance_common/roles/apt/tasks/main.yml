@@ -1,0 +1,11 @@
+---
+- name: Comment out and replace default apt repository URLs with nexus cache in sources.list file
+  ansible.builtin.replace:
+    path: /etc/apt/sources.list
+    regexp: '((^[^#,\n].*){{ item.default }}(.*))'
+    replace: '#\1\n\2{{ common_apt_repo_mirror_base }}{{ item.mirror }}\3'
+  with_items: "{{ common_apt_repo_mirrors }}"
+
+- name: Ensure that the apt cache is updated
+  ansible.builtin.apt:
+    update_cache: true

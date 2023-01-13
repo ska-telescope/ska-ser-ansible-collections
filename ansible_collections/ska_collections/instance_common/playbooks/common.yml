@@ -15,3 +15,8 @@
   become: true
   roles:
     - ska_collections.instance_common.init
+  
+- name: Apply the apt role to the node
+  hosts: "{{ target_hosts }}"
+  roles:
+    - ska_collections.instance_common.apt
