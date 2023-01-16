@@ -1,0 +1,51 @@
+---
+# load shared vars with clusterapi
+- name: Include vars
+  ansible.builtin.include_vars:
+    file: "{{ item }}"
+  with_items:
+    - ../clusterapi/defaults/main.yml
+    - ../configcapo/defaults/main.yml
+  tags: [always]
+
+- name: Save cluster kubeconfig credentials # noqa no-changed-when risky-shell-pipe
+  ansible.builtin.shell: |
+    kubectl get secret/{{ capi_cluster }}-kubeconfig -o json | \
+    jq -r .data.value | \
+    base64 --decode
+  register: workload_kubeconfig
+
+- name: "Remove workload kubeconfig copy {{ clusterapi_config_dir }}/{{ capi_cluster }}-kubeconfig"
+  ansible.builtin.file:
+    path: "{{ clusterapi_config_dir }}/{{ capi_cluster }}-kubeconfig"
+    state: absent
+  become: true
+
+- name: Output workload kubeconfig copy  # noqa: template-instead-of-copy
+  ansible.builtin.copy:
+    content: "{{ workload_kubeconfig.stdout }}"
+    dest: "{{ clusterapi_config_dir }}/{{ capi_cluster }}-kubeconfig"
+    mode: 0644
+  become: true
+
+- name: workload cluster kubeconfig
+  ansible.builtin.debug:
+    var: workload_kubeconfig.stdout
+
+- name: "Remove workload local kubeconfig copy ./{{ capi_cluster }}-kubeconfig"
+  ansible.builtin.file:
+    path: "{{ playbook_dir }}/../../../../../{{ capi_cluster }}-kubeconfig"
+    state: absent
+  delegate_to: localhost
+
+- name: Output workload local kubeconfig copy  # noqa: template-instead-of-copy
+  ansible.builtin.copy:
+    content: "{{ workload_kubeconfig.stdout }}"
+    dest: "{{ playbook_dir }}/../../../../../{{ capi_cluster }}-kubeconfig"
+    mode: 0644
+  delegate_to: localhost
+
+
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers
