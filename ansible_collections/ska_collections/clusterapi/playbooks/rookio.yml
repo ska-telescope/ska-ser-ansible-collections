@@ -5,5 +5,34 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
+    capi_kubeconfig: "/etc/clusterapi/{{ capi_cluster }}-kubeconfig"
+    capi_ceph_conf_ini_file: ""
+    capi_ceph_conf_key_ring: ""
+    in_rook_version: "{{ lookup('ansible.builtin.env', 'ROOK_VERSION', default=rook_version) | mandatory }}"
+    in_rook_namespace: "{{ lookup('ansible.builtin.env', 'ROOK_NAMESPACE', default=rook_namespace) | mandatory }}"
+    in_kube_namespace: "{{ lookup('ansible.builtin.env', 'KUBE_NAMESPACE', default=kube_namespace) | mandatory }}"
+    in_rook_external_fsid: "{{ lookup('ansible.builtin.env', 'ROOK_EXTERNAL_FSID', default='') | mandatory }}"
+    in_rook_external_admin_secret: "{{ lookup('ansible.builtin.env', 'ROOK_EXTERNAL_ADMIN_SECRET', default=rook_external_admin_secret) | mandatory }}"
+    in_rook_external_admin_key: "{{ lookup('ansible.builtin.env', 'ROOK_EXTERNAL_ADMIN_KEY', default=rook_external_admin_key) | mandatory }}"
+    in_rook_external_ceph_mon_data: "{{ lookup('ansible.builtin.env', 'ROOK_EXTERNAL_CEPH_MON_DATA', default=rook_external_ceph_mon_data) | mandatory }}"
+    in_rook_external_ceph_monitors: "{{ lookup('ansible.builtin.env', 'ROOK_EXTERNAL_CEPH_MONITORS', default=rook_external_ceph_monitors) | mandatory }}"
+    in_rook_rbd_pool_name: "{{ lookup('ansible.builtin.env', 'RBD_POOL_NAME', default=rook_rbd_pool_name) | mandatory }}"
+    in_rook_rgw_pool_prefix: "{{ lookup('ansible.builtin.env', 'RGW_POOL_PREFIX', default=rook_rgw_pool_prefix) | mandatory }}"
+    in_rook_csi_rbd_node_secret_name: "{{ lookup('ansible.builtin.env', 'CSI_RBD_NODE_SECRET_NAME', default=rook_csi_rbd_node_secret_name) | mandatory }}"
+    in_rook_csi_rbd_provisioner_secret_name: "{{ lookup('ansible.builtin.env', 'CSI_RBD_PROVISIONER_SECRET_NAME', default=rook_csi_rbd_provisioner_secret_name) | mandatory }}"
+    in_rook_csi_cephfs_node_secret_name: "{{ lookup('ansible.builtin.env', 'CSI_CEPHFS_NODE_SECRET_NAME', default=rook_csi_cephfs_node_secret_name) | mandatory }}"
+    in_rook_csi_cephfs_provisioner_secret_name: "{{ lookup('ansible.builtin.env', 'CSI_CEPHFS_PROVISIONER_SECRET_NAME', default=rook_csi_cephfs_provisioner_secret_name) | mandatory }}"
+    in_rook_csi_rbd_node_secret: "{{ lookup('ansible.builtin.env', 'CSI_RBD_NODE_SECRET', default=rook_csi_rbd_node_secret) | mandatory }}"
+    in_rook_csi_rbd_provisioner_secret: "{{ lookup('ansible.builtin.env', 'CSI_RBD_PROVISIONER_SECRET', default=rook_csi_rbd_provisioner_secret) | mandatory }}"
+    in_rook_csi_cephfs_node_secret: "{{ lookup('ansible.builtin.env', 'CSI_CEPHFS_NODE_SECRET', default=rook_csi_cephfs_node_secret) | mandatory }}"
+    in_rook_csi_cephfs_provisioner_secret: "{{ lookup('ansible.builtin.env', 'CSI_CEPHFS_PROVISIONER_SECRET', default=rook_csi_cephfs_provisioner_secret) | mandatory }}"
+
+  pre_tasks:
+    - name: Check capi_kubeconfig
+      ansible.builtin.debug:
+        var: capi_kubeconfig
+
   roles:
     - ska_collections.clusterapi.rookio
+  environment:
+    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=capi_kubeconfig) | mandatory }}"

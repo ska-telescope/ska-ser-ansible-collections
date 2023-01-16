@@ -82,6 +82,9 @@
         -e "calico_ip_autodetection_method=${IP_AUTODETECTION_METHOD}" \
         -vv
 
+
+      ## extract all for post deployment
+
       echo "Running the cluster initialisation: deploy standard StorageClasses"
       /usr/src/ska-ser-ansible-collections/run-play.sh standardprovisioner.yml \
         -e "ingress_nginx_version=${NGINX_VERSION}" \
