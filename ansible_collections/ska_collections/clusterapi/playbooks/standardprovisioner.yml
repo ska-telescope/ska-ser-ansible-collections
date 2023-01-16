@@ -8,7 +8,7 @@
     capi_kubeconfig: "/etc/clusterapi/{{ capi_cluster }}-kubeconfig"
 
   pre_tasks:
-    - name : Check capi_kubeconfig
+    - name: Check capi_kubeconfig
       ansible.builtin.debug:
         var: capi_kubeconfig
 

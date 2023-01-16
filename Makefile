@@ -7,7 +7,7 @@ INVENTORY?=$(PLAYBOOKS_ROOT_DIR)
 JOBS_DIR=resources/jobs
 ANSIBLE_COLLECTIONS_PATHS ?=
 PLAYBOOKS_ROOT_DIR ?=
-ANSIBLE_LINT_PARAMETERS=--exclude ansible_collections/ska_collections/monitoring/roles/prometheus/files
+ANSIBLE_LINT_PARAMETERS=--exclude ansible_collections/ska_collections/monitoring/roles/prometheus/files --skip-list "yaml[line-length]"
 PLAYBOOKS_HOSTS ?=
 ANSIBLE_CONFIG ?=
 ANSIBLE_SSH_ARGS ?=
@@ -135,7 +135,7 @@ dns: ac-check-env ## dns targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/dns.mk
 
 openvpn: ac-check-env ## openvpn targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/openvpn.mk	
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/openvpn.mk
 
 ac-print-targets: ## Show Help
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {p=index($$1,":")} {printf "\033[36m%-30s\033[0m %s\n", substr($$1,p+1), $$2}';

@@ -15,7 +15,7 @@
     base64 --decode
   register: workload_kubeconfig
 
-- name: "Remove workload kubeconfig copy {{ clusterapi_config_dir }}/{{ capi_cluster }}-kubeconfig"
+- name: "Remove workload kubeconfig copy {{ clusterapi_config_dir }}/{{ capi_cluster }}-kubeconfig"  # noqa: name[template]
   ansible.builtin.file:
     path: "{{ clusterapi_config_dir }}/{{ capi_cluster }}-kubeconfig"
     state: absent
@@ -28,11 +28,11 @@
     mode: 0644
   become: true
 
-- name: workload cluster kubeconfig
+- name: Workload cluster kubeconfig
   ansible.builtin.debug:
     var: workload_kubeconfig.stdout
 
-- name: "Remove workload local kubeconfig copy ./{{ capi_cluster }}-kubeconfig"
+- name: "Remove workload local kubeconfig copy ./{{ capi_cluster }}-kubeconfig"  # noqa: name[template]
   ansible.builtin.file:
     path: "{{ playbook_dir }}/../../../../../{{ capi_cluster }}-kubeconfig"
     state: absent
@@ -44,8 +44,6 @@
     dest: "{{ playbook_dir }}/../../../../../{{ capi_cluster }}-kubeconfig"
     mode: 0644
   delegate_to: localhost
-
-
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers
