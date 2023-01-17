@@ -5,6 +5,12 @@ ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/openvpn/playbooks
 
+## VPN args
+OPENVPN_CLIENT ?=
+OPENVPN_CLIENT_EMAIL ?=
+KEYSERVER ?= keyserver.ubuntu.com
+
+
 -include $(BASE_PATH)/PrivateRules.mak
 
 check_hosts:
@@ -26,6 +32,28 @@ destroy: check_hosts ## Destroy openvpn server
 	ansible-playbook $(PLAYBOOKS_DIR)/openvpn_server_destroy.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+vpnclient: mkvpnclient getvpnclient ## Create OpenVPN client certs and config and fetch (user name: OPENVPN_CLIENT)
+
+mkvpnclient: ## Create VPN Client Certificates
+	ansible -i $(INVENTORY) $(PLAYBOOKS_HOSTS) \
+	                         -b -m shell -a 'cd /etc/openvpn/easy-rsa/ && ./mkclient.sh $(OPENVPN_CLIENT)'
+	ansible -i $(INVENTORY) $(PLAYBOOKS_HOSTS) \
+	                         -b -m shell -a 'cd /etc/openvpn/easy-rsa/ && ./mkconfig.sh $(OPENVPN_CLIENT)'
+
+getvpnclient: ## Get VPN Client Config
+	ansible -i $(INVENTORY) $(PLAYBOOKS_HOSTS) \
+	                         -b -m fetch -a 'src=/etc/openvpn/easy-rsa/client-configs/$(OPENVPN_CLIENT).ovpn dest=$(THIS_BASE)/ flat=yes'
+
+import_gpg_key: ## Import GPG key from keyserver
+	gpg --keyserver $(KEYSERVER) --search-keys $(OPENVPN_CLIENT_EMAIL)
+
+encrypt_vpnclient: import_gpg_key ## Encrypt OVPN file using gpg
+	gpg --output $(THIS_BASE)/$(OPENVPN_CLIENT).ovpn.gpg --encrypt --recipient $(OPENVPN_CLIENT_EMAIL) /home/clean/ska-ser-infra-machinery/nzotho.ovpn
+
+rm_vpnclient: ## Revoke VPN cert and remove records
+	ansible -i $(INVENTORY) $(PLAYBOOKS_HOSTS) \
+	                         -b -m shell -a 'cd /etc/openvpn/easy-rsa/ && ./revoke.sh $(OPENVPN_CLIENT)'
 
 help: ## Show Help
 	@echo "openvpn targets - make playbooks openvpn <target>:"

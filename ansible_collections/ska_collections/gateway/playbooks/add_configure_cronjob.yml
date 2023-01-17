@@ -1,6 +1,6 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: Add User Accounts
+- name: Configure cronjob
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
@@ -8,6 +8,6 @@
   gather_facts: true
 
   tasks:
-    - name: Add User accounts
+    - name: Configure cronjob
       ansible.builtin.include_role:
         name: cron

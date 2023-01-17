@@ -1,13 +1,12 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: Add User Accounts
+- name: Install kubectl
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
   become: true
-  gather_facts: true
 
   tasks:
-    - name: Add User accounts
+    - name: Install kubectl
       ansible.builtin.include_role:
         name: kubectl

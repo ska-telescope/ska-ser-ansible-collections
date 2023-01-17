@@ -13,7 +13,7 @@ ifndef PLAYBOOKS_HOSTS
 endif
 
 vars:
-	@echo "\033[36mopenvpn:\033[0m"
+	@echo "\033[36gateway:\033[0m"
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
@@ -24,10 +24,5 @@ jumphost: check_hosts ## Add ubuntu users and configure jumphost
 
 cronjob: check_hosts ## Add ubuntu users and configure jumphost
 	ansible-playbook $(PLAYBOOKS_DIR)/add_configure_cronjob.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
-
-kubectl: check_hosts ## Add ubuntu users and configure jumphost
-	ansible-playbook $(PLAYBOOKS_DIR)/kubectl.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"

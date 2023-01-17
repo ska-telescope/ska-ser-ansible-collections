@@ -6,7 +6,7 @@
 
 - name: Ensure target directory
   ansible.builtin.file:
-    path: '{{ gateway_server_kubectl_install_dir }}'
+    path: '{{ common_server_kubectl_install_dir }}'
     state: directory
     mode: '0755'
   when: kubectl_version.rc != 0
@@ -14,8 +14,8 @@
 - name: Download kubectl
   become: true
   ansible.builtin.get_url:
-    url: '{{ gateway_server_kubectl_url }}'
-    dest: '{{ gateway_server_kubectl_install_dir }}/{{ gateway_server_kubectl_name }}-{{ gateway_server_kubectl_version }}'
+    url: '{{ common_server_kubectl_url }}'
+    dest: '{{ common_server_kubectl_install_dir }}/{{ common_server_kubectl_name }}-{{ common_server_kubectl_version }}'
     mode: 0755
   when: kubectl_version.rc != 0
 
@@ -23,8 +23,8 @@
   become: true
   ignore_errors: true
   ansible.builtin.file:
-    src: '{{ gateway_server_kubectl_install_dir }}/{{ gateway_server_kubectl_name }}-{{ gateway_server_kubectl_version }}'
-    dest: '{{ gateway_server_kubectl_install_dir }}/{{ gateway_server_kubectl_name }}'
+    src: '{{ common_server_kubectl_install_dir }}/{{ common_server_kubectl_name }}-{{ common_server_kubectl_version }}'
+    dest: '{{ common_server_kubectl_install_dir }}/{{ common_server_kubectl_name }}'
     state: link
     mode: 0755
   when: kubectl_version.rc != 0
@@ -37,7 +37,7 @@
 
 - name: Copy KUBECONFIG file
   ansible.builtin.copy:
-    src: "{{ gateway_kubeconfig }}"
+    src: "{{ common_kubeconfig }}"
     dest: "/etc/kubernetes/admin.conf"
     mode: 0755
   become: true
