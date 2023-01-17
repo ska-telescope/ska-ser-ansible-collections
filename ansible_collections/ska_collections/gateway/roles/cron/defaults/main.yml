@@ -1,4 +1,4 @@
 ---
 cron_file: gateway-cron
-cron_prometheus_ip: 192.168.99.88
-cron_etcd_endpoint: 192.168.100.83
+cron_prometheus_ip: "{{ _ | mandatory('`cron_prometheus_ip` definition is mandatory') }}"
+cron_etcd_endpoint: "{{ _ | mandatory('`cron_etcd_endpoint` definition is mandatory') }}"

@@ -24,6 +24,30 @@ ansible-playbook <playbooks-folder-path>/dns/playbooks/openvpn_server.yml \
 	--extra-vars "target_hosts=<target-hosts>"
 ```
 
+## Usage
+
+Installation playbooks for each engine can be found in the [playbooks/](./playbooks) folder in the following files:
+
+| Name | Description |
+| ---- | ----------- |
+| [openvpn_add_client.yml](./playbooks/openvpn_add_client.yml) | Adds new client to openvpn server |
+| [openvpn_remove_client.yml](./playbooks/openvpn_remove_client.yml) | Configure User Account access to gateway |
+
+In order to run these playbooks, it's needed to specify the Ansible Inventory location and the respective group/hosts ***target_hosts*** variable.
+
+Install **openvpn_add_client** as an example:
+```
+ansible-playbook <playbooks-folder-path>/add_configure_cronjob.yml \
+	-i $(INVENTORY) \
+	--extra-vars "target_hosts=<target-hosts>" \
+	--extra-vars "OPENVPN_CLIENT=<target-hosts>" \
+	--extra-vars "OPENVPN_CLIENT_EMAIL=<target-hosts>"
+```
+
+### Prompt
+
+After running the [openvpn_add_client.yml](./playbooks/openvpn_add_client.yml) the developer will be promped with a question where there is a need to select the GPG key to be imported for then encrypt the gpg file.
+
 ## [Role Variables](#role-variables)
 
 These variables are set in `defaults/main.yml`:
