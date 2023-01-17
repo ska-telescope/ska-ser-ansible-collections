@@ -5,7 +5,6 @@
   vars:
     target_hosts: localhost
   become: true
-
   tasks:
     - name: Update kubectl Version
       ansible.builtin.include_role:
