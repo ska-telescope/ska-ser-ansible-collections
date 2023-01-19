@@ -27,6 +27,9 @@ reverseproxy_nginx_log_options:
   max-file: "3"
   labels: "org.ska.app.group"
 
+reverseproxy_redis_name: o2predis
+reverseproxy_redis_image: redis:7.0.8
+reverseproxy_redis_port: 6379
 reverseproxy_oauth2proxy_enabled: true
 reverseproxy_oauth2proxy_name: oauth2proxy
 reverseproxy_oauth2proxy_image: quay.io/oauth2-proxy/oauth2-proxy:v7.2.1
