@@ -25,7 +25,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": 43,
-  "iteration": 1674054313167,
+  "iteration": 1674145636197,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -62,34 +62,10 @@
                 "value": 10
               }
             ]
-          }
+          },
+          "unit": "dtdurations"
         },
-        "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "cspcontroller-controller"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": true
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 9,
@@ -101,9 +77,11 @@
       "options": {
         "bucketOffset": 0,
         "legend": {
-          "calcs": [],
+          "calcs": [
+            "last"
+          ],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "right"
         }
       },
       "pluginVersion": "9.0.0",
@@ -3386,7 +3364,7 @@
       ]
     }
   ],
-  "refresh": "10s",
+  "refresh": false,
   "schemaVersion": 36,
   "style": "dark",
   "tags": [],
@@ -3443,8 +3421,8 @@
       {
         "current": {
           "selected": false,
-          "text": "ci-ska-skampi-3623328041-low",
-          "value": "ci-ska-skampi-3623328041-low"
+          "text": "ci-ska-skampi-3624124766-mid",
+          "value": "ci-ska-skampi-3624124766-mid"
         },
         "datasource": {
           "type": "prometheus",
@@ -3472,8 +3450,8 @@
       {
         "current": {
           "selected": false,
-          "text": "sdpsubarrayleafnode-03",
-          "value": "sdpsubarrayleafnode-03"
+          "text": "subarraynode-01",
+          "value": "subarraynode-01"
         },
         "datasource": {
           "type": "prometheus",
@@ -3501,8 +3479,8 @@
       {
         "current": {
           "selected": false,
-          "text": "deviceserver-sdpsubarrayleafnode-03-0",
-          "value": "deviceserver-sdpsubarrayleafnode-03-0"
+          "text": "deviceserver-subarraynode-01-0",
+          "value": "deviceserver-subarraynode-01-0"
         },
         "datasource": {
           "type": "prometheus",
@@ -3527,8 +3505,8 @@
     ]
   },
   "time": {
-    "from": "now-1h",
-    "to": "now"
+    "from": "2023-01-18T14:54:33.700Z",
+    "to": "2023-01-18T18:54:33.700Z"
   },
   "timepicker": {
     "refresh_intervals": [
@@ -3558,6 +3536,6 @@
   "timezone": "UTC",
   "title": "Kubernetes / Compute Resources / DeviceServer",
   "uid": "e0tiv654k",
-  "version": 13,
+  "version": 14,
   "weekStart": ""
 }
