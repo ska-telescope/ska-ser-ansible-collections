@@ -68,101 +68,49 @@ clusterapi-workload-kubeconfig: clusterapi-check-cluster-type  ## Post deploymen
 
 clusterapi-post-deployment: clusterapi-check-cluster-type  ## Post deployment for workload cluster
 
-	# ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/standardprovisioner.yml \
-	# -i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	# --extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	# --extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
-	# --limit "management-cluster" \
-	# -vv
-
-    # #   echo "Controlplane initialise: cloud provider config"
-    # #   echo "$OPENSTACK_CLOUD_PROVIDER_CONF_B64" | base64 -d > /etc/kubernetes/cloud.conf
-	# #   cloud_provider_config: /etc/kubernetes/cloud.conf
-
-	# ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/cloud-provider.yml \
-	# -i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	# --extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	# --extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
-	# --extra-vars "ingress_nginx_version=${NGINX_VERSION}" \
-	# --extra-vars "ingress_lb_suffix=${CLUSTER_NAME}" \
-	# --limit "management-cluster" \
-	# -vv
-
-	# # --extra-vars 'metallb_version=0.13.7 metallb_namespace=metallb-system metallb_addresses="10.100.10.1-10.100.253.254"'
-	# ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/metallb.yml \
-	# -i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	# --extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	# --extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
-	# --limit "management-cluster" \
-	# -vv
-
-	# # --extra-vars 'ingress_nginx_version: 1.3.1 ingress_lb_suffix: "{{ capi_cluster }}"'
-	# ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/ingress.yml \
-	# -i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	# --extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	# --extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
-	# --limit "management-cluster" \
-	# -vv
-
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/rookio.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/standardprovisioner.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
 	--limit "management-cluster" \
 	-vv
 
-    #   cat <<EOF > run-play.sh
-    #   #!/usr/bin/bash
-    #   echo "run-play.sh args are: \$*"
-    #   cd /usr/src/ska-ser-ansible-collections
-    #   export THIS_BASE=$(pwd)
-    #   export PLAYBOOKS_HOSTS=clusterapi
-    #   export ANSIBLE_COLLECTIONS_PATHS="$THIS_BASE:$HOME/.ansible/collections:/usr/share/ansible/collections"
-    #   export KUBECONFIG="/etc/kubernetes/admin.conf"
-    #   ANSIBLE_CONFIG="$THIS_BASE/datacentres/production/installation/ansible.cfg"
-    #   ansible-playbook \
-    #     --connection=local \
-    #     --inventory 127.0.0.1, \
-    #     --limit 127.0.0.1 \
-    #      --become \
-    #     $THIS_BASE/ansible_collections/ska_collections/clusterapi/playbooks/\$1 \
-    #      --inventory /usr/src/ska-ser-ansible-collections/ansible_hosts \$${@:2}
-    #   EOF
-    #   chmod a+x run-play.sh
-    #   cat run-play.sh
+    #   echo "Controlplane initialise: cloud provider config"
+    #   echo "$OPENSTACK_CLOUD_PROVIDER_CONF_B64" | base64 -d > /etc/kubernetes/cloud.conf
+	#   cloud_provider_config: /etc/kubernetes/cloud.conf
 
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/cloud-provider.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
+	--extra-vars "ingress_nginx_version=${NGINX_VERSION}" \
+	--extra-vars "ingress_lb_suffix=${CLUSTER_NAME}" \
+	--limit "management-cluster" \
+	-vv
 
+	# --extra-vars 'metallb_version=0.13.7 metallb_namespace=metallb-system metallb_addresses="10.100.10.1-10.100.253.254"'
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/metallb.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
+	--limit "management-cluster" \
+	-vv
 
+	# --extra-vars 'ingress_nginx_version: 1.3.1 ingress_lb_suffix: "{{ capi_cluster }}"'
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/ingress.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
+	--limit "management-cluster" \
+	-vv
 
-
-    #   ## extract all for post deployment
-
-    #   echo "Running the cluster initialisation: RookIO"
-    #   /usr/src/ska-ser-ansible-collections/run-play.sh rookio.yml \
-    #     -e "rook_version=${ROOK_VERSION}" \
-    #     -e "rook_namespace="${ROOK_NAMESPACE}" \
-    #     -e "kube_namespace="${KUBE_NAMESPACE}" \
-    #     -e "namespace="${ROOK_NAMESPACE}" \
-    #     -e "rook_external_fsid="${ROOK_EXTERNAL_FSID}" \
-    #     -e "rook_external_admin_secret="${ROOK_EXTERNAL_ADMIN_SECRET}" \
-    #     -e "rook_external_admin_key="${ROOK_EXTERNAL_ADMIN_KEY}" \
-    #     -e "rook_external_ceph_mon_data="${ROOK_EXTERNAL_CEPH_MON_DATA}" \
-    #     -e "rook_external_ceph_monitors="${ROOK_EXTERNAL_CEPH_MONITORS}" \
-    #     -e "rook_rbd_pool_name="${RBD_POOL_NAME}" \
-    #     -e "rook_rgw_pool_prefix="${RGW_POOL_PREFIX}" \
-    #     -e "rook_csi_rbd_node_secret_name="${CSI_RBD_NODE_SECRET_NAME}" \
-    #     -e "rook_csi_rbd_provisioner_secret_name="${CSI_RBD_PROVISIONER_SECRET_NAME}" \
-    #     -e "rook_csi_cephfs_node_secret_name="${CSI_CEPHFS_NODE_SECRET_NAME}" \
-    #     -e "rook_csi_cephfs_provisioner_secret_name="${CSI_CEPHFS_PROVISIONER_SECRET_NAME}" \
-    #     -e "rook_csi_rbd_node_secret="${CSI_RBD_NODE_SECRET}" \
-    #     -e "rook_csi_rbd_provisioner_secret="${CSI_RBD_PROVISIONER_SECRET}" \
-    #     -e "rook_csi_cephfs_node_secret="${CSI_CEPHFS_NODE_SECRET}" \
-    #     -e "rook_csi_cephfs_provisioner_secret="${CSI_CEPHFS_PROVISIONER_SECRET}" \
-    #     -vv
-
-
-
-
+	# ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_ceph_conf_ini_file=<path to>/ceph.conf capi_ceph_conf_key_ring=<path to>/ceph.client.admin.keyring'
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/rookio.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
+	--limit "management-cluster" \
+	-vv
 
 clusterapi-byoh-reset:  ## Reset workload hosts
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
