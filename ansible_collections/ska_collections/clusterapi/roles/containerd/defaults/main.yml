@@ -12,3 +12,11 @@ nexus_hosted_cache: "192.168.99.204:9080"
 crictl_version: v1.24.2
 
 debian_arch: "{{ {'x86_64': 'amd64', 'aarch64': 'arm64'}[ansible_architecture] | default(ansible_architecture) }}"
+
+containerd_deb_dependencies:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - software-properties-common
+  - gnupg-agent
+  - python3-pip
