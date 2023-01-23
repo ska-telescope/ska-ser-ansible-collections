@@ -21,7 +21,5 @@ byoh_k8s_key_file_gpg: "{{ byoh_k8s_key_file }}.gpg"
 byoh_k8s_deb_repo_url: "deb [signed-by={{ byoh_k8s_key_file_gpg }}] http://apt.kubernetes.io/ kubernetes-{{ byoh_kubernetes_ubuntu_version }} main"
 
 # sudo curl -fsSLo /usr/share/keyrings/k8s.key https://packages.cloud.google.com/apt/doc/apt-key.gpg
-
 # https://packages.cloud.google.com/apt kubernetes-xenial
 # B53DC80D13EDEF05
-# https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xa362b822f6dedc652817ea46b53dc80d13edef05
