@@ -10,7 +10,7 @@
   ansible.builtin.fail:
     msg: >
       "Could not find ceph.conf file: {{ capi_ceph_conf_ini_file }}"
-  when: not check_ceph_conf.stat.exists
+  when: not check_ceph_conf.stat.exists and not (capo_ceph_conf_global_fsid | default(''))
 
 - name: "Check ceph.conf exists {{ capi_ceph_conf_key_ring }}"
   ansible.builtin.stat:
@@ -22,21 +22,21 @@
   ansible.builtin.fail:
     msg: >
       "Could not find ceph key ring file: {{ capi_ceph_conf_key_ring }}"
-  when: not check_ceph_key_ring.stat.exists
+  when: not check_ceph_key_ring.stat.exists and not (capi_ceph_external_admin_secret | default(''))
 
 - name: Get Ceph conf global section
   ansible.builtin.set_fact:
-    capo_ceph_conf_global_fsid: "{{ lookup('ansible.builtin.ini', 'fsid', section='global', file=capi_ceph_conf_ini_file) }}"
-    capo_ceph_conf_global_mon_host: "{{ lookup('ansible.builtin.ini', 'mon host', section='global', file=capi_ceph_conf_ini_file) | ska_collections.clusterapi.cephmons }}"  # noqa: yaml
-    capo_ceph_conf_global_mons_data: "{{ lookup('ansible.builtin.ini', 'mon host', section='global', file=capi_ceph_conf_ini_file) | ska_collections.clusterapi.cephmonsdata }}"  # noqa: yaml
-    capo_ceph_conf_global_monitors: "{{ lookup('ansible.builtin.ini', 'mon host', section='global', file=capi_ceph_conf_ini_file) | ska_collections.clusterapi.cephmonitors }}"  # noqa: yaml
-    capo_ceph_key: "{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=capi_ceph_conf_key_ring) }}"
-    capi_ceph_external_admin_secret: "{% if (capi_ceph_external_admin_secret|default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=capi_ceph_conf_key_ring) }}{% else %}{{ capi_ceph_external_admin_secret }}{% endif %}"
-    capi_ceph_external_admin_key: "{% if (capi_ceph_external_admin_key|default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=capi_ceph_conf_key_ring) }}{% else %}{{ capi_ceph_external_admin_key }}{% endif %}"
-    capi_ceph_csi_rbd_node_secret: "{% if (capi_ceph_csi_rbd_node_secret|default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=capi_ceph_conf_key_ring) }}{% else %}{{ capi_ceph_csi_rbd_node_secret }}{% endif %}"
-    capi_ceph_csi_rbd_provisioner_secret: "{% if (capi_ceph_csi_rbd_provisioner_secret|default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=capi_ceph_conf_key_ring) }}{% else %}{{ capi_ceph_csi_rbd_provisioner_secret }}{% endif %}"
-    capi_ceph_csi_cephfs_node_secret: "{% if (capi_ceph_csi_cephfs_node_secret|default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=capi_ceph_conf_key_ring) }}{% else %}{{ capi_ceph_csi_cephfs_node_secret }}{% endif %}"
-    capi_ceph_csi_cephfs_provisioner_secret: "{% if (capi_ceph_csi_cephfs_provisioner_secret|default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=capi_ceph_conf_key_ring) }}{% else %}{{ capi_ceph_csi_cephfs_provisioner_secret }}{% endif %}"
+    capo_ceph_conf_global_fsid: "{% if (capo_ceph_conf_global_fsid | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'fsid', section='global', file=capi_ceph_conf_ini_file) }}{% else %}{{ capo_ceph_conf_global_fsid }}{% endif %}"  # noqa: yaml
+    capo_ceph_conf_global_mon_host: "{% if (capo_ceph_conf_global_mon_host | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'mon host', section='global', file=capi_ceph_conf_ini_file) | ska_collections.clusterapi.cephmons }}{% else %}{{ capo_ceph_conf_global_mon_host }}{% endif %}"  # noqa: yaml
+    capo_ceph_conf_global_mons_data: "{% if (capo_ceph_conf_global_mons_data | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'mon host', section='global', file=capi_ceph_conf_ini_file) | ska_collections.clusterapi.cephmonsdata }}{% else %}{{ capo_ceph_conf_global_mons_data }}{% endif %}"  # noqa: yaml
+    capo_ceph_conf_global_monitors: "{% if (capo_ceph_conf_global_monitors | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'mon host', section='global', file=capi_ceph_conf_ini_file) | ska_collections.clusterapi.cephmonitors }}{% else %}{{ capo_ceph_conf_global_monitors }}{% endif %}"  # noqa: yaml
+    capo_ceph_key: "{% if (capo_ceph_key | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=capi_ceph_conf_key_ring) }}{% else %}{{ capo_ceph_key }}{% endif %}"  # noqa: yaml
+    capi_ceph_external_admin_secret: "{% if (capi_ceph_external_admin_secret | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=capi_ceph_conf_key_ring) }}{% else %}{{ capi_ceph_external_admin_secret }}{% endif %}"  # noqa: yaml
+    capi_ceph_external_admin_key: "{% if (capi_ceph_external_admin_key | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=capi_ceph_conf_key_ring) }}{% else %}{{ capi_ceph_external_admin_key }}{% endif %}"  # noqa: yaml
+    capi_ceph_csi_rbd_node_secret: "{% if (capi_ceph_csi_rbd_node_secret | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=capi_ceph_conf_key_ring) }}{% else %}{{ capi_ceph_csi_rbd_node_secret }}{% endif %}"  # noqa: yaml
+    capi_ceph_csi_rbd_provisioner_secret: "{% if (capi_ceph_csi_rbd_provisioner_secret | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=capi_ceph_conf_key_ring) }}{% else %}{{ capi_ceph_csi_rbd_provisioner_secret }}{% endif %}"  # noqa: yaml
+    capi_ceph_csi_cephfs_node_secret: "{% if (capi_ceph_csi_cephfs_node_secret | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=capi_ceph_conf_key_ring) }}{% else %}{{ capi_ceph_csi_cephfs_node_secret }}{% endif %}"  # noqa: yaml
+    capi_ceph_csi_cephfs_provisioner_secret: "{% if (capi_ceph_csi_cephfs_provisioner_secret | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=capi_ceph_conf_key_ring) }}{% else %}{{ capi_ceph_csi_cephfs_provisioner_secret }}{% endif %}"  # noqa: yaml
 
 - name: "Show capi_ceph_external_admin_secret"
   ansible.builtin.debug:
