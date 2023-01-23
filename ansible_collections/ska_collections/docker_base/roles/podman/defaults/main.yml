@@ -16,5 +16,9 @@ podman_deb_pkgs:
   - "buildah=100:1.28.0-1"
   - "skopeo=100:1.10.0-1"
 
-podman_registry_mirrors:
-  - "{{ nexus }}:{{ nexus_docker_group_port }}"
+podman_registry_mirrors: []
+
+podman_upstream_registries:
+  - docker.io
+  - artefact.skao.int
+  - registry.gitlab.com

@@ -36,5 +36,4 @@ docker_deb_pkgs:
   - "docker-ce"
   - "docker-ce-cli"
 
-docker_registry_mirrors:
-  - "http://{{ nexus }}:{{ nexus_docker_group_port }}"
+docker_registry_mirrors: []

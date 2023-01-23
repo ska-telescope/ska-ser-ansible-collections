@@ -60,16 +60,10 @@ version = 2
       [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
 {% for registry in containerd_upstream_registries %}
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ registry }}"]
-          endpoint = [{{ containerd_registry_mirrors | map("to_json") | join(", ") }}]
+          endpoint = [{{ containerd_upstream_mirrors | map("to_json") | join(", ") }}]
         [plugins."io.containerd.grpc.v1.cri".registry.configs."{{ registry }}".tls]
           insecure_skip_verify = true
 {% endfor %}
-{% if nexus and nexus_docker_group_port %}
-        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."artefact.skao.int"]
-          endpoint = ["http://{{ nexus }}:{{ nexus_docker_group_port }}"]
-        [plugins."io.containerd.grpc.v1.cri".registry.configs."artefact.skao.int".tls]
-          insecure_skip_verify = true
-{% endif %}
 {% if nexus and nexus_docker_hosted_port %}
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ nexus }}:{{ nexus_docker_hosted_port }}"]
           endpoint = ["http://{{ nexus }}:{{ nexus_docker_hosted_port }}"]
