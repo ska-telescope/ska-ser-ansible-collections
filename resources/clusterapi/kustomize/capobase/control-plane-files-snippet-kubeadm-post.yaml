@@ -127,6 +127,7 @@
         -e "rook_csi_rbd_provisioner_secret="${CSI_RBD_PROVISIONER_SECRET}" \
         -e "rook_csi_cephfs_node_secret="${CSI_CEPHFS_NODE_SECRET}" \
         -e "rook_csi_cephfs_provisioner_secret="${CSI_CEPHFS_PROVISIONER_SECRET}" \
+        -e "capi_kubeconfig=/etc/kubernetes/admin.conf" \
         -vv
 
       echo "postKubeadmCommands: end $(date)"
