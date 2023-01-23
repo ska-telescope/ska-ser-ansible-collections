@@ -3,6 +3,31 @@
 # https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/
 # https://oak-tree.tech/blog/k8s-nginx-oauth2-gitlab
 
+- name: "Docker pull image for {{ reverseproxy_redis_image }}"
+  community.general.docker_image:
+    source: pull
+    name: "{{ reverseproxy_redis_image }}"
+
+- name: Run redis container  # noqa no-handler
+  community.general.docker_container:
+    name: "{{ reverseproxy_redis_name }}"
+    image: "{{ reverseproxy_redis_image }}"
+    pull: true
+    command:
+      - redis-server
+      - --port {{ reverseproxy_redis_port }}
+      - --loglevel warning
+    recreate: true
+    restart_policy: always
+    state: started
+    privileged: true
+    network_mode: host
+    exposed_ports:
+      - "{{ reverseproxy_redis_port }}"
+    labels: "{{ reverseproxy_labels }}"
+    log_driver: "json-file"
+    log_options: "{{ reverseproxy_oauth2proxy_log_options }}"
+
 - name: "Docker pull image for {{ reverseproxy_oauth2proxy_image }}"
   community.general.docker_image:
     source: pull
@@ -29,6 +54,8 @@
       - --email-domain=*
       - --pass-access-token
       - --pass-authorization-header
+      - --session-store-type=redis
+      - --redis-connection-url=redis://{{ inventory_hostname }}:6379
     env:
       OAUTH2_PROXY_CLIENT_ID: "{{ reverseproxy_oauth2proxy_client_id }}"
       OAUTH2_PROXY_CLIENT_SECRET: "{{ reverseproxy_oauth2proxy_client_secret }}"
