@@ -18,7 +18,17 @@ vars:
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
+setup: check_hosts ## Run common tasks (setup host(s), mount volumes)
+	ansible-playbook $(PLAYBOOKS_DIR)/setup.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
 init: check_hosts ## Run common tasks (setup host(s), mount volumes)
+	ansible-playbook $(PLAYBOOKS_DIR)/init.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+apt: check_hosts ## Run apt tasks
 	ansible-playbook $(PLAYBOOKS_DIR)/common.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"

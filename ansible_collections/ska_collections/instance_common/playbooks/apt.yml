@@ -8,10 +8,13 @@
         msg: "{{ inventory_hostname }} at {{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
       when: debug
 
-- name: Apply the common role to the node
+- name: Apply roles
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
   become: true
-  roles:
-    - ska_collections.instance_common.init
+  tasks:
+    - name: Apply apt role
+      ansible.builtin.include_role:
+        name: ska_collections.instance_common.apt
+      when: ansible_os_family == "Debian"
