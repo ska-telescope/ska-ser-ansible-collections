@@ -9,7 +9,8 @@ Tested with the current Ansible 6.5.x releases.
 ## Ansible Roles
 | Name | Description | Version | OS Requirements | Dependencies |
 | ---- | ----------- | ------- | --- | ---|
-| [instance_common.init](./roles/init) | Install apt dependencies <br> Mounts volumes <br> Updates hosts | latest | Ubuntu 18+ (LTS) | |
+| [instance_common.init](./roles/init) | Mounts volumes <br> Updates hosts | latest | Ubuntu 18+ (LTS) | |
+| [instance_common.apt](./roles/apt) | Setup apt proxy <br> Install apt dependencies | latest | Ubuntu 18+ (LTS) | |
 | [instance_common.certs](./roles/certs) | Install and configure SSL certificates | latest | Ubuntu 18+ (LTS) | |
 
 ## Installation
@@ -33,7 +34,9 @@ Playbooks can be found in the [playbooks/](./playbooks) folder in the following 
 
 | Name | Description |
 | ---- | ----------- |
-| [common.yml](./playbooks/common.yml) | Install apt dependencies <br> Mounts volumes <br> Updates hosts |
+| [setup.yml](./playbooks/setup.yml) | Apply init role <br> Apply apt role|
+| [init.yml](./playbooks/init.yml) | Apply init role |
+| [apt.yml](./playbooks/apt.yml) | Apply apt role
 | [setup-ca.yml](./playbooks/setup-ca.yml) | Setups Certificate Authority |
 | [sign.yml](./playbooks/sign.yml) | Signs instance certificates |
 | [update-hosts.yml](./playbooks/update-hosts.yml) | Updates Hosts file |

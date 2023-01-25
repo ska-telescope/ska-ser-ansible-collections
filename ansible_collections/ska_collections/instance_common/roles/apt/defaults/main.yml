@@ -1,8 +1,22 @@
 ---
-common_apt_repo_mirror_base: "http://{{ nexus_cache_host }}:{{ nexus_cache_port }}/repository/"
+common_packages:
+  - man-db
+  - vim
+  - sysstat
+  - lsof
+  - netcat
+  - chrony
+  - iotop
+  - unzip
+  - curl
+  - wget
+  - ifenslave
+  - xfsprogs
+  - rsyslog
+  - libssl-dev
+  - dnsutils
+  - iperf
 
-common_apt_repo_mirrors:
-  - default: "http://security.ubuntu.com/ubuntu"
-    mirror: "apt_proxy_security_{{ ansible_distribution_release  }}/"
-  - default: "http://ceph.clouds.archive.ubuntu.com/ubuntu/"
-    mirror: "apt_proxy_ceph_clouds_archive_{{ ansible_distribution_release  }}/"
+common_apt_repo_mirror_base: "http://{{ upstream_mirror_nexus }}:{{ upstream_mirror_nexus_port }}/repository/"
+
+common_apt_repo_mirrors: []
