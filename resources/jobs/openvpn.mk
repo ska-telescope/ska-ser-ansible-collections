@@ -3,7 +3,7 @@
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
-PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/openvpn/playbooks
+PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/gateway/playbooks
 
 ## VPN args
 OPENVPN_CLIENT ?=

@@ -12,6 +12,8 @@ Tested with the current Ansible 6.5.x releases.
 | ---- | ----------- | ------- | --- | ---|
 | [gateway.cron](./roles/cron) | Install and configure cronjobs | latest | Ubuntu 18+ (LTS) | 
 | [gateway.jumphost](./roles/cron) | Configure User Accounts and ssh keys | latest | Ubuntu 18+ (LTS) | 
+| [gateway.openvpn](./roles/openvpn) | Install and configure openvpn | 2.4.4 (Bionic), 2.4.7 (Focal), 2.6.0 (Jammy) | Ubuntu 18+ (LTS) | -
+| [reverseproxy.reverseproxy](./roles/reverseproxy) | Install Reverse Proxy | | Ubuntu 18+ (LTS) | |
 
 ## Installation
 
@@ -33,8 +35,14 @@ Installation playbooks for each engine can be found in the [playbooks/](./playbo
 
 | Name | Description |
 | ---- | ----------- |
-| [add_configure_cronjob.yml](./playbooks/add_configure_cronjob.yml) | Install and Configure Cron |
-| [configure_user_access.yml](./playbooks/configure_user_access.yml) | Configure User Account access to gateway |
+| [cron_add_configure_cronjob.yml](./playbooks/add_configure_cronjob.yml) | Install and Configure Cron |
+| [jumphost_configure_user_access.yml](./playbooks/configure_user_access.yml) | Configure User Account access to gateway |
+| [openvpn_server.yml](./playbooks/openvpn_server.yml) | Deploy Openvpn Server |
+| [openvpn_add_client.yml](./playbooks/openvpn_add_client.yml) | Adds new client to openvpn server |
+| [openvpn_remove_client.yml](./playbooks/openvpn_remove_client.yml) | Configure User Account access to gateway |
+| [reverse_proxy_install.yml](./playbooks/install.yml) | Install Reverse Proxy  |
+| [reverse_proxy_destroy.yml](./playbooks/destroy.yml) | Destroy Reverse Proxy  |
+
 
 In order to run these playbooks, it's needed to specify the Ansible Inventory location and the respective group/hosts ***target_hosts*** variable.
 
@@ -45,15 +53,31 @@ ansible-playbook <playbooks-folder-path>/add_configure_cronjob.yml \
 	--extra-vars "target_hosts=<target-hosts>"
 ```
 
+### Required variables
+
+| Name | Ansible variable | ENV variable | Obs |
+| ---- | ----------- | ----- | ----- |
+| Reverse Proxy DNS name | reverseproxy_dns_name | | Should be set to the dns name of the reverse proxy (also used to issue self-signed certificates when needed) |
+| Reverse Proxy AzureAD OAuth2 Client ID | reverseproxy_oauth2proxy_client_id | | Should be set to the client id of the oauth2proxy |
+| Reverse Proxy AzureAD OAuth2 Tenant ID | reverseproxy_oauth2proxy_tenant_id | | Should be set to the tenant id of the oauth2proxy |
+
+
+### Required secrets
+
+| Name | Ansible variable | ENV variable | Obs |
+| ---- | ----------- | ------------ | ----- |
+| Reverse Proxy AzureAD OAuth2 Cookie Secret | reverseproxy_oauth2proxy_cookie_secret | AZUREAD_COOKIE_SECRET | Should be set to the cookie secret used for the oauth2proxy |
+| Reverse Proxy AzureAD OAuth2 Client Secret | reverseproxy_oauth2proxy_client_secret | AZUREAD_CLIENT_SECRET | Should be set to the client secret used for the oauth2proxy |
+
 ## Current services deployed in STFC-Techops Gateway
 
-- Reverse proxy - [install.yml](../reverseproxy/playbooks/install.yml)
-- DNS Server - [dns_server.yml](../dns/playbooks/dns_server.yml)
-- Openvpn Server TCP/UDP - [openvpn_server.yml](../openvpn/playbooks/openvpn_server.yml)
-- Docker/Containerd/Podman - [docker_base](../docker_base)
-- Certificate Authoraty - [setup-ca.yml](../instance_common/playbooks/setup-ca.yml)
+- Reverse proxy - [install.yml](roles/reverseproxy/playbooks/install.yml)
+- DNS Server - [dns_server.yml](roles/dns/playbooks/dns_server.yml)
+- Openvpn Server TCP/UDP - [openvpn_server.yml](roles/openvpn/playbooks/openvpn_server.yml)
+- Docker/Containerd/Podman - [docker_base](roles/docker_base)
+- Certificate Authoraty - [setup-ca.yml](roles/instance_common/playbooks/setup-ca.yml)
 - Cron Jobs - [add_configure_cronjob.yml](./playbooks/add_configure_cronjob.yml)
-- Node exporter, docker exporter - [deploy_node_exporter.yml](../monitoring/playbooks/deploy_node_exporter.yml)
+- Node exporter, docker exporter - [deploy_node_exporter.yml](roles/monitoring/playbooks/deploy_node_exporter.yml)
 - Jumphost - [configure_user_access.yml](./playbooks/configure_user_access.yml)
 
 
