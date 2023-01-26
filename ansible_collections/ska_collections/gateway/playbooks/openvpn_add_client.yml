@@ -1,0 +1,31 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: List client GPG Keys
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  gather_facts: true
+  tasks:
+    - name: List client keys
+      ansible.builtin.import_role:
+        name: openvpn
+        tasks_from: list_client_keys
+
+
+- name: Add new OpenVPN client
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  gather_facts: true
+  vars_prompt:
+    - name: gpg_selected_key
+      prompt: What GPG key do you want to use for the Client?
+      private: false
+
+  tasks:
+    - name: Add new OpenVPN client
+      ansible.builtin.import_role:
+        name: openvpn
+        tasks_from: add_client

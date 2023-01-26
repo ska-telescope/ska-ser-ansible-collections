@@ -1,0 +1,6 @@
+common_server_kubectl_version: 'v1.22.5'
+common_server_kubectl_name: kubectl
+common_server_kubectl_install_dir: /usr/local/bin
+common_server_kubectl_url: 'https://storage.googleapis.com/kubernetes-release/release/{{ common_server_kubectl_version }}/bin/linux/amd64/{{ common_server_kubectl_name }}' # noqa yaml[line-length]
+
+common_kubeconfig: ~/.kube/config-stfc

@@ -13,20 +13,16 @@ ifndef PLAYBOOKS_HOSTS
 endif
 
 vars:
-	@echo "\033[36mCommon:\033[0m"
+	@echo "\033[36gateway:\033[0m"
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
-install: check_hosts ## Install reverseproxy's nginx and oauth2 containers
-	ansible-playbook $(PLAYBOOKS_DIR)/reverse_proxy_install.yml \
+jumphost: check_hosts ## Add ubuntu users and configure jumphost
+	ansible-playbook $(PLAYBOOKS_DIR)/jumphost_configure_user_access.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-destroy: check_hosts ## Destroy reverseproxy's nginx and oauth2 containers
-	ansible-playbook $(PLAYBOOKS_DIR)/reverse_proxy_destroy.yml \
+cronjob: check_hosts ## Add ubuntu users and configure jumphost
+	ansible-playbook $(PLAYBOOKS_DIR)/cron_add_configure_cronjob.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
-
-help: ## Show Help
-	@echo "Reverseproxy targets - make playbooks reverseproxy <target>:"
-	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

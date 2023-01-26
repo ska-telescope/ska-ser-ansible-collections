@@ -1,0 +1,26 @@
+---
+# defaults file for openvpn
+
+# You can setup both a client and a server using this role.
+# Use `server` or `client` for `openvpn_role`.
+
+openvpn_role: server
+
+# If you are configuring a client, setup these variables:
+# openvpn_role: client
+# openvpn_client_server: vpn.example.com
+
+openvpn_client_cert_expires: 30
+
+openvpn_routes:
+  - ip: 192.168.99.0
+    mask: 255.255.255.0
+  - ip: 10.200.0.0
+    mask: 255.255.255.0
+
+openvpn_client:
+openvpn_client_email:
+openvpn_keyserver: keyserver.ubuntu.com
+openvpn_dir: /etc/openvpn/easy-rsa
+openvpn_certificates_dir: "{{ openvpn_dir }}/pki/issued"
+openvpn_clients_dir: "{{ openvpn_dir }}/client-configs"
