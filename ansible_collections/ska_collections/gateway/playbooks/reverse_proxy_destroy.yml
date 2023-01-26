@@ -20,5 +20,5 @@
   tasks:
     - name: Destroy nginx reverseproxy and oauth2proxy
       ansible.builtin.import_role:
-        name: ska_collections.reverseproxy.reverseproxy
+        name: ska_collections.gateway.reverseproxy
         tasks_from: destroy

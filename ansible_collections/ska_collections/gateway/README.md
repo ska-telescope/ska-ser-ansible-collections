@@ -14,6 +14,7 @@ Tested with the current Ansible 6.5.x releases.
 | [gateway.jumphost](./roles/cron) | Configure User Accounts and ssh keys | latest | Ubuntu 18+ (LTS) | 
 | [gateway.openvpn](./roles/openvpn) | Install and configure openvpn | 2.4.4 (Bionic), 2.4.7 (Focal), 2.6.0 (Jammy) | Ubuntu 18+ (LTS) | -
 | [reverseproxy.reverseproxy](./roles/reverseproxy) | Install Reverse Proxy | | Ubuntu 18+ (LTS) | |
+| [dns](./roles/dns) | Install and configure dnsmasq | 2.79 (Bionic), 2.80 (Focal), 2.86 (Jammy) | Ubuntu 18+ (LTS) | -
 
 ## Installation
 
@@ -42,6 +43,8 @@ Installation playbooks for each engine can be found in the [playbooks/](./playbo
 | [openvpn_remove_client.yml](./playbooks/openvpn_remove_client.yml) | Configure User Account access to gateway |
 | [reverse_proxy_install.yml](./playbooks/install.yml) | Install Reverse Proxy  |
 | [reverse_proxy_destroy.yml](./playbooks/destroy.yml) | Destroy Reverse Proxy  |
+| [dns_server.yml](./playbooks/dns_server.yml) | Install DNS Server  |
+| [dns_server_destroy.yml](./playbooks/dns_server_destroy.yml) | Destroy DNS Server  |
 
 
 In order to run these playbooks, it's needed to specify the Ansible Inventory location and the respective group/hosts ***target_hosts*** variable.
@@ -55,6 +58,8 @@ ansible-playbook <playbooks-folder-path>/add_configure_cronjob.yml \
 
 ### Required variables
 
+#### Reverse Proxy
+
 | Name | Ansible variable | ENV variable | Obs |
 | ---- | ----------- | ----- | ----- |
 | Reverse Proxy DNS name | reverseproxy_dns_name | | Should be set to the dns name of the reverse proxy (also used to issue self-signed certificates when needed) |
@@ -63,6 +68,8 @@ ansible-playbook <playbooks-folder-path>/add_configure_cronjob.yml \
 
 
 ### Required secrets
+
+#### Reverse Proxy
 
 | Name | Ansible variable | ENV variable | Obs |
 | ---- | ----------- | ------------ | ----- |
