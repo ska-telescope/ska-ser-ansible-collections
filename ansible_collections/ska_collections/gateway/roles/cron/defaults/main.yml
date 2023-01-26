@@ -1,0 +1,4 @@
+---
+cron_file: gateway-cron
+cron_prometheus_ip: "{{ _ | mandatory('`cron_prometheus_ip` definition is mandatory') }}"
+cron_etcd_endpoint: "{{ _ | mandatory('`cron_etcd_endpoint` definition is mandatory') }}"

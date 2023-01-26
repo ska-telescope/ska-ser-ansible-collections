@@ -3,7 +3,13 @@
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
-PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/openvpn/playbooks
+PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/gateway/playbooks
+
+## VPN args
+OPENVPN_CLIENT ?=
+OPENVPN_CLIENT_EMAIL ?=
+KEYSERVER ?= keyserver.ubuntu.com
+
 
 -include $(BASE_PATH)/PrivateRules.mak
 
@@ -22,15 +28,22 @@ install: check_hosts ## Install openvpn server
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-install_client: check_hosts ## Install openvpn client
-	ansible-playbook $(PLAYBOOKS_DIR)/openvpn_client.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
-
 destroy: check_hosts ## Destroy openvpn server
 	ansible-playbook $(PLAYBOOKS_DIR)/openvpn_server_destroy.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+add-client: check_hosts ## Destroy openvpn server
+	ansible-playbook $(PLAYBOOKS_DIR)/openvpn_add_client.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" --extra-vars "openvpn_client=$(OPENVPN_CLIENT)" \
+	--extra-vars "openvpn_client_email=$(OPENVPN_CLIENT_EMAIL)"
+
+delete-client: check_hosts ## Destroy openvpn server
+	ansible-playbook $(PLAYBOOKS_DIR)/openvpn_remove_client.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" --extra-vars "openvpn_client=$(OPENVPN_CLIENT)" \
+	--extra-vars "openvpn_client_email=$(OPENVPN_CLIENT_EMAIL)"
 
 help: ## Show Help
 	@echo "openvpn targets - make playbooks openvpn <target>:"

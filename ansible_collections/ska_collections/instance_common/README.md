@@ -40,6 +40,7 @@ Playbooks can be found in the [playbooks/](./playbooks) folder in the following 
 | [setup-ca.yml](./playbooks/setup-ca.yml) | Setups Certificate Authority |
 | [sign.yml](./playbooks/sign.yml) | Signs instance certificates |
 | [update-hosts.yml](./playbooks/update-hosts.yml) | Updates Hosts file |
+| [kubectl.yml](./playbooks/kubectl.yml) | Install and configure kubectl |
 
 In order to run these playbooks, it's needed to specify the Ansible Inventory location and the respective group/hosts ***target_hosts*** variable.
 

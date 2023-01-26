@@ -1,0 +1,6 @@
+- name: "Encrypt client ovpn: {{ openvpn_client }}"
+  ansible.builtin.expect:
+    command: gpg --keyserver {{ openvpn_keyserver }} --search-keys {{ openvpn_client_email }}
+    responses:
+      Key.*: "N"
+    echo: true
