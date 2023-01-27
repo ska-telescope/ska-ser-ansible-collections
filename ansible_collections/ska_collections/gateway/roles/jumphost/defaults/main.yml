@@ -1,0 +1,6 @@
+---
+jump_user: jump
+add_jump_ssh_keys: []
+add_ssh_keys_admin: []
+remove_ssh_keys: []
+groups_to_add: "adm,dialout,cdrom,floppy,sudo,audio,dip,video,plugdev,lxd,netdev,docker"

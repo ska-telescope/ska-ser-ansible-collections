@@ -18,8 +18,18 @@ vars:
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
-init: check_hosts ## Run common tasks (setup host(s), mount volumes)
-	ansible-playbook $(PLAYBOOKS_DIR)/common.yml \
+setup: check_hosts ## Run setup tasks (init and apt roles)
+	ansible-playbook $(PLAYBOOKS_DIR)/setup.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+init: check_hosts ## Run init task (setup host(s), mount volumes)
+	ansible-playbook $(PLAYBOOKS_DIR)/init.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+apt: check_hosts ## Run apt tasks
+	ansible-playbook $(PLAYBOOKS_DIR)/apt.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
@@ -35,6 +45,16 @@ setup-ca: check_hosts ## Setup a CA for self-signed certificates
 
 test-ca: check_hosts ## Test CA
 	ansible-playbook $(TESTS_DIR)/test-ca.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+kubectl-install: check_hosts ## Install Kubectl
+	ansible-playbook $(PLAYBOOKS_DIR)/kubectl.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+kubectl-update: check_hosts ## Update Kubectl version
+	ansible-playbook $(PLAYBOOKS_DIR)/kubectl-update.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 

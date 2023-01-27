@@ -1,0 +1,34 @@
+# https://medium.com/nuculabs/setting-up-a-simple-dns-server-859de750f6fe
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install dnsmasq
+  ansible.builtin.apt:
+    pkg:
+      - dnsmasq
+  notify:
+    - Restart dnsmasq
+
+- name: Update /etc/hosts for all
+  ansible.builtin.lineinfile:
+    dest: /etc/hosts
+    regexp: ".*{{ hostvars[item].inventory_hostname }}.*"
+    line: "{{ hostvars[item].ip }} {{ hostvars[item].inventory_hostname }}.{{ dns_addvertise_domain }} {{ hostvars[item].inventory_hostname }}"
+    state: present
+  with_items: '{{ groups["all"] }}'
+  when: not item == "localhost"
+  register: updatehosts
+
+- name: Set dnsmasq conf
+  ansible.builtin.template:
+    src: 01skaoint.conf.j2
+    dest: "/etc/dnsmasq.d/01skaoint.conf"
+    owner: root
+    mode: "0640"
+  notify:
+    - Restart dnsmasq
+
+- name: Flush Handlers
+  ansible.builtin.meta: flush_handlers

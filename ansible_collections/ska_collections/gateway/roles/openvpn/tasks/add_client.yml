@@ -1,0 +1,53 @@
+---
+- name: "Ensure folder exists: {{ openvpn_dir }}"
+  ansible.builtin.file:
+    path: "{{ openvpn_dir }}"
+    state: directory
+    owner: root
+    group: "{{ openvpn_group }}"
+    mode: 0750
+
+- name: "Check Client cert already exists: {{ openvpn_client }}"
+  ansible.builtin.stat:
+    path: "{{ openvpn_certificates_dir }}/{{ openvpn_client }}.crt"
+  register: client_crt_exists
+
+- name: "Check Client cert already exists: {{ openvpn_client }}"
+  community.crypto.x509_certificate_info:
+    path: "{{ openvpn_certificates_dir }}/{{ openvpn_client }}.crt"
+    valid_at:
+      next_day: "+1d"
+  register: client_crt_info
+  when: client_crt_exists.stat.exists
+
+- name: "Create new client: {{ openvpn_client }}"
+  ansible.builtin.shell: |
+    {{ openvpn_dir }}/mkclient.sh {{ openvpn_client }} &&
+    {{ openvpn_dir }}/mkconfig.sh {{ openvpn_client }}
+  when: not client_crt_exists.stat.exists or not client_crt_info.valid_at.next_day
+
+- name: Creates directory
+  ansible.builtin.file:
+    path: /tmp/openvpn-clients
+    state: directory
+    mode: 0750
+
+- name: "Get client key: {{ openvpn_client }}"
+  ansible.builtin.expect:
+    command: gpg --keyserver {{ openvpn_keyserver }} --search-keys {{ openvpn_client_email }}
+    responses:
+      Key.*: "{{ gpg_selected_key }}"
+    echo: true
+
+- name: "Encrypt client ovpn: {{ openvpn_client }}"
+  ansible.builtin.shell: |
+    gpg --output /tmp/openvpn-clients/{{ openvpn_client }}.ovpn.gpg --batch --yes --trust-model \
+    always --encrypt --recipient {{ openvpn_client_email }} {{ openvpn_clients_dir }}/{{ openvpn_client }}.ovpn
+  register: myoutput
+  changed_when: myoutput.rc != 0
+
+- name: "Fetch openvpn client file"
+  ansible.builtin.fetch:
+    src: /tmp/openvpn-clients/{{ openvpn_client }}.ovpn.gpg
+    dest: /tmp/openvpn-clients/
+    flat: true

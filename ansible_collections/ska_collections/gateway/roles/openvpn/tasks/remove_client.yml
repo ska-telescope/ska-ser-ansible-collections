@@ -1,0 +1,18 @@
+- name: "Ensure folder exists: {{ openvpn_dir }}"
+  ansible.builtin.file:
+    path: "{{ openvpn_dir }}"
+    state: directory
+    owner: root
+    group: "{{ openvpn_group }}"
+    mode: 0750
+
+- name: "Check Client cert exists: {{ openvpn_client }}"
+  ansible.builtin.stat:
+    path: "{{ openvpn_certificates_dir }}/{{ openvpn_client }}.crt"
+  register: client_crt_exists
+
+
+- name: "Remove client: {{ openvpn_client }}"
+  ansible.builtin.shell: |
+    {{ openvpn_dir }}/revoke.sh {{ openvpn_client }}
+  when: client_crt_exists.stat.exists

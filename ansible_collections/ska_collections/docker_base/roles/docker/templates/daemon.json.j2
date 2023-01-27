@@ -1,18 +1,18 @@
 {
+  "insecure-registries": [{{ docker_registry_mirrors | map("to_json") | join(", ") }}],
   "default-address-pools": [
     {
         "base": "172.21.0.0/16",
         "size": 24
     }
   ],
-  {% if nexus|length > 1 and nexus_docker_group_port is not undefined %}
-  "registry-mirrors": ["http://{{ nexus }}:{{ nexus_docker_group_port }}"],
-  {% endif %}
+{% if docker_registry_mirrors is defined and docker_registry_mirrors|length > 0 %}
+  "registry-mirrors": [{{ docker_registry_mirrors | map("to_json") | join(", ") }}],
+{% endif %}
   "metrics-addr" : "0.0.0.0:{{ docker_metrics_port }}",
-  {% if docker_mtu is defined %}
+{% if docker_mtu is defined %}
   "mtu" : {{ docker_mtu }},
-  {% endif %}
-  "experimental" : true,
+{% endif %}
   "log-driver": "json-file",
   "log-opts": {
       "max-size": "10m",
