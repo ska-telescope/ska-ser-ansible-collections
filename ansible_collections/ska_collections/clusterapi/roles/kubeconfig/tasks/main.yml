@@ -15,6 +15,12 @@
     base64 --decode
   register: workload_kubeconfig
 
+- name: Fail if Workload KUBECONFIG Secret is NOT found
+  ansible.builtin.fail:
+    msg: "Workload KUBECONFIG Secret is NOT found: secret/{{ capi_cluster }}-kubeconfig: {{ workload_kubeconfig.stderr }}"
+  when: "not workload_kubeconfig.stderr.find('Error from server') == -1"
+  any_errors_fatal: true
+
 - name: "Remove workload kubeconfig copy {{ clusterapi_config_dir }}/{{ capi_cluster }}-kubeconfig"  # noqa: name[template]
   ansible.builtin.file:
     path: "{{ clusterapi_config_dir }}/{{ capi_cluster }}-kubeconfig"

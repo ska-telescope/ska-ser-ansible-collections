@@ -15,7 +15,7 @@ PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
 CLUSTERAPI_APPLY ?= false ## Apply workload cluster: true or false - default: false
 CLUSTERAPI_AC_BRANCH ?= bang-105-add-byoh ## Ansible Collections branch to apply to workload cluster
 CLUSTERAPI_CLUSTER ?= test ## Name of workload cluster to create
-
+CLUSTERAPI_TAGS ?= all ## Ansible tags to run in post deployment processing
 
 .DEFAULT_GOAL := clusterapi
 
@@ -73,12 +73,15 @@ clusterapi-post-deployment: clusterapi-check-cluster-type  ## Post deployment fo
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
 	--limit "management-cluster" \
+	--tags "$(CLUSTERAPI_TAGS)" \
 	-vv
 
     #   echo "Controlplane initialise: cloud provider config"
     #   echo "$OPENSTACK_CLOUD_PROVIDER_CONF_B64" | base64 -d > /etc/kubernetes/cloud.conf
 	#   cloud_provider_config: /etc/kubernetes/cloud.conf
 
+ifneq (,$(findstring cloudprovider,$(CLUSTERAPI_TAGS)))
+    # cloudprovider is a target - avoid undefined ansible vars issue with tags
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/cloud-provider.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
@@ -86,7 +89,9 @@ clusterapi-post-deployment: clusterapi-check-cluster-type  ## Post deployment fo
 	--extra-vars "ingress_nginx_version=${NGINX_VERSION}" \
 	--extra-vars "ingress_lb_suffix=${CLUSTER_NAME}" \
 	--limit "management-cluster" \
+	--tags "$(CLUSTERAPI_TAGS)" \
 	-vv
+endif
 
 	# --extra-vars 'metallb_version=0.13.7 metallb_namespace=metallb-system metallb_addresses="10.100.10.1-10.100.253.254"'
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/metallb.yml \
@@ -94,6 +99,7 @@ clusterapi-post-deployment: clusterapi-check-cluster-type  ## Post deployment fo
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
 	--limit "management-cluster" \
+	--tags "$(CLUSTERAPI_TAGS)" \
 	-vv
 
 	# --extra-vars 'ingress_nginx_version: 1.3.1 ingress_lb_suffix: "{{ capi_cluster }}"'
@@ -102,15 +108,20 @@ clusterapi-post-deployment: clusterapi-check-cluster-type  ## Post deployment fo
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
 	--limit "management-cluster" \
+	--tags "$(CLUSTERAPI_TAGS)" \
 	-vv
 
 	# ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_ceph_conf_ini_file=<path to>/ceph.conf capi_ceph_conf_key_ring=<path to>/ceph.client.admin.keyring'
+ifneq (,$(findstring rookio,$(CLUSTERAPI_TAGS)))
+    # rookio is a target - avoid undefined ansible vars issue with tags
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/rookio.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
 	--limit "management-cluster" \
+	--tags "$(CLUSTERAPI_TAGS)" \
 	-vv
+endif
 
 clusterapi-byoh-reset:  ## Reset workload hosts
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \

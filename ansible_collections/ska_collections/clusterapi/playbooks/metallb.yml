@@ -16,3 +16,6 @@
     - ska_collections.clusterapi.metallb
   environment:
     KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=capi_kubeconfig) | mandatory }}"
+
+  tags:
+    - metallb

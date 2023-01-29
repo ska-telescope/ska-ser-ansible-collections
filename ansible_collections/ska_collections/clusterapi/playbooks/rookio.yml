@@ -36,3 +36,6 @@
     - ska_collections.clusterapi.rookio
   environment:
     KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=capi_kubeconfig) | mandatory }}"
+
+  tags:
+    - rookio

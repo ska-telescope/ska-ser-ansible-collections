@@ -4,10 +4,12 @@
   ansible.builtin.set_fact:
     local_ceph_conf_ini_file: "{{ capi_ceph_conf_ini_file }}"
     local_ceph_conf_key_ring: "{{ capi_ceph_conf_key_ring }}"
+  tags: [always]
 
 - name: Include createworkload vars
   ansible.builtin.include_vars:
     file: ../createworkload/defaults/main.yml
+  tags: [always]
 
 - name: Swap rook_* vars to capi_*
   ansible.builtin.set_fact:
@@ -29,6 +31,7 @@
     capi_ceph_csi_rbd_provisioner_secret: "{{ in_rook_csi_rbd_provisioner_secret }}"
     capi_ceph_csi_cephfs_node_secret: "{{ in_rook_csi_cephfs_node_secret }}"
     capi_ceph_csi_cephfs_provisioner_secret: "{{ in_rook_csi_cephfs_provisioner_secret }}"
+  tags: [always]
 
 - name: Load Ceph config
   when: (capi_ceph_conf_ini_file|length) > 0 and

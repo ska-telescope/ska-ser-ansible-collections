@@ -14,5 +14,8 @@
 
   roles:
     - ska_collections.clusterapi.standardprovisioner
+
   environment:
     KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=capi_kubeconfig) | mandatory }}"
+  tags:
+    - standardprovisioner

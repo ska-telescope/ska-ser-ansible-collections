@@ -1,4 +1,18 @@
 ---
+- name: Check KUBECONFIG
+  ansible.builtin.debug:
+    msg: "KUBECONFIG: {{ lookup('ansible.builtin.env', 'KUBECONFIG', default=capi_kubeconfig) | mandatory }}"
+
+- name: Check if KUBECONFIG is readable
+  ansible.builtin.stat:
+    path: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=capi_kubeconfig) | mandatory }}"
+  register: check_kubeconfig
+
+- name: Fail if KUBECONFIG is NOT readable
+  ansible.builtin.fail:
+    msg: "KUBECONFIG is NOT readable: {{ lookup('ansible.builtin.env', 'KUBECONFIG', default=capi_kubeconfig) | mandatory }}"
+  when: not check_kubeconfig.stat.exists
+  any_errors_fatal: true
 
 - name: Check Standard Storage Provisioner is running
   kubernetes.core.k8s_info:
