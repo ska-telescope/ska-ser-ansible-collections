@@ -47,11 +47,11 @@
     command:
       - "store"
       - "--data-dir=/local/state/data/dir"
-      - "--grpc-address='0.0.0.0:19090'"
-      - "--grpc-server-tls-cert='{{ certificates_dir }}/thanos_store.crt'"
-      - "--grpc-server-tls-key='{{ certificates_dir }}/thanos_store.key'"
-      - "--grpc-server-tls-client-ca='{{ certificates_dir }}/ca-certificate.crt'"
-      - "--objstore.config-file='{{ thanos_config_dir }}/swift.yml'"
+      - "--grpc-address=0.0.0.0:19090"
+      - "--grpc-server-tls-cert={{ certificates_dir }}/thanos_store.crt"
+      - "--grpc-server-tls-key={{ certificates_dir }}/thanos_store.key"
+      - "--grpc-server-tls-client-ca={{ certificates_dir }}/ca-certificate.crt"
+      - "--objstore.config-file={{ thanos_config_dir }}/swift.yml"
     user: root
     restart: true
     restart_policy: always
