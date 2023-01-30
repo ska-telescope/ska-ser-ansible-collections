@@ -135,14 +135,6 @@ prometheus_scrape_configs:
       - files:
           - 'ceph-mgr.json'
 
-  - job_name: "openstack_exporter"
-    scrape_interval: 60s
-    scrape_timeout: 45s
-    honor_labels: true
-    static_configs:
-      - targets:
-        - "{{ prometheus_openstack_exporter_addr }}"
-
 prometheus_blackbox_ssh_targets:
   - "{{ ansible_fqdn | default(ansible_host) | default('localhost') }}:22"  # matteo devenv
 
