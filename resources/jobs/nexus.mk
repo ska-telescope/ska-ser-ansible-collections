@@ -1,6 +1,7 @@
 .DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
+TESTS_DIR ?= ./ansible_collections/ska_collections/nexus/tests
 
 NEXUS_VAULT_ADMIN_PASSWORD ?= 'whatwhat'
 NEXUS_VAULT_USER_PASSWORD_GITLAB ?= 'whatwhat'
@@ -68,6 +69,11 @@ apply-patch:  ## apply patch to upstream nexus3-oss
 		./ansible_collections/ska_collections/nexus/resources/nexus3-oss.patch --verbose --unsafe-paths && \
 	touch ./ansible_collections/ansible-thoteam.nexus3-oss/.patched; \
 	fi
+
+test-apt-cache:  ## Test apt cache behavior
+	ansible-playbook $(TESTS_DIR)/apt-cache.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 help: ## Show Help
 	@echo "Nexus targets - make playbooks nexus <target>:"
