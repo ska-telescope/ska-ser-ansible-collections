@@ -45,3 +45,6 @@ xpack.security.http.ssl.key: "/usr/share/elasticsearch/config/certificates/{{ in
 xpack.security.http.ssl.certificate: "/usr/share/elasticsearch/config/certificates/{{ inventory_hostname }}.crt"
 xpack.security.http.ssl.certificate_authorities: [ "/usr/share/elasticsearch/config/certificates/ca-certificate.crt" ]
 xpack.security.http.ssl.client_authentication: "required"
+
+# Monitoring
+xpack.monitoring.collection.enabled: "true"

@@ -38,7 +38,7 @@ elasticsearch_api_keys: {}
 #
 
 elasticsearch_reinstall: false
-elasticsearch_clean_data_volume: false
+elasticsearch_clean_install: false
 
 elasticsearch_default_node_roles:
   - master

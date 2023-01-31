@@ -24,6 +24,12 @@
     state: directory
     mode: 0644
 
+- name: "Cleans kibana encryption keys"
+  ansible.builtin.file:
+    path: "{{ kibana_secrets_file_path }}"
+    state: absent
+  when: elasticsearch_clean_install
+
 - name: "Check if kibana encryption keys exist"
   ansible.builtin.stat:
     path: "{{ kibana_secrets_file_path }}"
@@ -83,6 +89,12 @@
     status_code: 200
   environment:
     SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+
+- name: "Cleans kibana service account token"
+  ansible.builtin.file:
+    path: "{{ kibana_service_account_path }}"
+    state: absent
+  when: elasticsearch_clean_install
 
 - name: "Create kibana service account token" # noqa yaml[line-length]
   ansible.builtin.uri:

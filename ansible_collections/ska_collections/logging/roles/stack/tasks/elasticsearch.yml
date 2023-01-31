@@ -16,7 +16,7 @@
   ansible.builtin.file:
     path: "{{ elasticsearch_data_dir }}"
     state: absent
-  when: elasticsearch_clean_data_volume
+  when: elasticsearch_clean_install
 
 - name: "Create elasticsearch config"
   ansible.builtin.template:

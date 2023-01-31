@@ -39,14 +39,26 @@
         name: ska_collections.logging.stack
         tasks_from: elasticsearch-status
 
-    - name: Prepare elasticsearch_first_install check
+    - name: Check if elasticsearch_first_install has been set
       ansible.builtin.set_fact:
+        elasticsearch_first_install_set: "{{ elasticsearch_first_install is defined | bool }}"
         elasticsearch_first_install: true
 
     - name: Assess elasticsearch_first_install from nodes
       ansible.builtin.set_fact:
         elasticsearch_first_install: "{{ (elasticsearch_first_install and (not hostvars[item]['elasticsearch_deployed_on_node'])) | bool }}"
       with_items: "{{ elasticsearch_nodes }}"
+      when: not elasticsearch_first_install_set
+
+    - name: Override elasticsearch_first_install on clean install
+      ansible.builtin.set_fact:
+        elasticsearch_first_install: true
+      when: elasticsearch_clean_install
+
+    - name: Check elasticsearch_first_install
+      ansible.builtin.debug:
+        var: elasticsearch_first_install
+      when: debug
   tags:
     - elasticsearch
 
