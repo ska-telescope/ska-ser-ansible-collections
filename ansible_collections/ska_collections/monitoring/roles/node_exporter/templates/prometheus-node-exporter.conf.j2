@@ -7,7 +7,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User=root
-ExecStart=/usr/bin/prometheus-node-exporter
+ExecStart=/usr/bin/prometheus-node-exporter --collector.textfile.directory="/var/lib/node_exporter/textfile_collector"
 
 [Install]
 WantedBy=multi-user.target
