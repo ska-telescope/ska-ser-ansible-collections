@@ -50,6 +50,23 @@
     mode: 0600
   when: not kibana_secrets_file.stat.exists
 
+- name: "Wait for elasticsearch to respond"
+  ansible.builtin.uri:
+    url: "https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}/_cat/health"
+    url_username: elastic
+    url_password: "{{ elasticsearch_password }}"
+    client_cert: "{{ certificates_dir }}/{{ inventory_hostname }}.crt"
+    client_key: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
+    force: true
+    method: GET
+    status_code: 200
+  environment:
+    SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+  register: cluster_wait
+  until: cluster_wait.status == 200
+  retries: 6
+  delay: 10
+
 - name: "Create custom kibana privileges role"
   ansible.builtin.uri:
     url: "https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}/_security/role/{{ kibana_privileges_role }}"
