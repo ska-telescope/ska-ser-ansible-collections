@@ -9,6 +9,10 @@ gitlab_runner_log_options:
 gitlab_runner_labels:
   org.ska.app.group: logging
 
+gitlab_runner_tags: "{{ gitlab_runner_name }}"
+gitlab_runner_docker_privileged: false
+gitlab_runner_docker_mount_socket: true
+
 gitlab_runner_recreate: false
 gitlab_runner_reregister: false
 gitlab_runner_unregister_all: false

@@ -22,15 +22,8 @@
     default_config_checksum: "{{ default_config.checksum }}"
     current_config_checksum: "{{ (config.stat | default({})).checksum | default('') }}"
 
-- name: Create gitlab runner template configuration
-  ansible.builtin.template:
-    src: config.template.toml.j2
-    dest: "{{ gitlab_runner_configuration_dir }}/config.template.toml"
-    mode: 0644
-  register: config_template
-
 - name: Register runner # noqa no-handler
-  when: not config.stat.exists or config_template.changed or default_config_checksum == config.stat.checksum or gitlab_runner_reregister
+  when: not config.stat.exists or default_config_checksum == config.stat.checksum or gitlab_runner_reregister
   block:
     - name: Unregister existing runner(s)
       ansible.builtin.import_tasks: unregister.yml
@@ -46,10 +39,9 @@
           - register
           - --non-interactive
           - --config "/etc/gitlab-runner/default-config.toml"
-          - --template-config "/etc/gitlab-runner/config.template.toml"
           - --url "https://gitlab.com/"
           - --registration-token "{{ gitlab_runner_registration_token }}"
-          - --tag-list "{{ gitlab_runner_name }}"
+          - --tag-list "{{ gitlab_runner_tags }}"
           - --name "{{ gitlab_runner_name }}"
           - --executor docker
           - --maintenance-note ""
