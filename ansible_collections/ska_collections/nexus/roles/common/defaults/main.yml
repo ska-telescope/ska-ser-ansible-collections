@@ -1,5 +1,17 @@
 ---
 nexus_common_ntp_service: chrony
 
-apt_test_package: python3-doc
-apt_test_repository: "apt_proxy_ceph_clouds_archive_{{ ansible_distribution_release }}"
+# These variables are required by the test playbooks. This role should be refactored into a full 'nexus'
+# role that installs nexus (by including the nexus3-oss role) and all variables are defined here, instead
+# of being directly in the "deploy.yml" playbook. This should be done as part of ST-1481
+
+nexus_apt_proxy_cache: "{{ hostvars[inventory_hostname].ip }}"
+nexus_vault_admin_password: "{{ _ | mandatory('`nexus_vault_admin_password` definition is mandatory') }}"
+nexus_default_port: 8881
+
+nexus_apt_proxy_cache_api_base_url: http://{{ nexus_apt_proxy_cache }}:{{ nexus_default_port }}/service/rest/v1
+nexus_apt_test_package: python3-doc
+nexus_apt_test_repository: "apt_proxy_ceph_clouds_archive_{{ ansible_distribution_release }}"
+nexus_apt_test_package_search_url: "{{ nexus_apt_proxy_cache_api_base_url }}/search?\
+repository={{ nexus_apt_test_repository }}&format=apt&name={{ nexus_apt_test_package }}"
+nexus_apt_test_repository_url: http://{{ nexus_apt_proxy_cache }}:{{ nexus_default_port }}/repository/{{ nexus_apt_test_repository }}
