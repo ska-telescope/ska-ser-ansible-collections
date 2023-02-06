@@ -6,13 +6,26 @@ nexus_common_ntp_service: chrony
 # of being directly in the "deploy.yml" playbook. This should be done as part of ST-1481
 
 nexus_apt_proxy_cache: "{{ hostvars[inventory_hostname].ip }}"
+nexus_oci_proxy_cache: "{{ hostvars[inventory_hostname].ip }}"
 nexus_vault_admin_password: "{{ _ | mandatory('`nexus_vault_admin_password` definition is mandatory') }}"
 nexus_default_port: 8881
+nexus_docker_group_port: 9082
 
-nexus_apt_proxy_cache_api_base_url: http://{{ nexus_apt_proxy_cache }}:{{ nexus_default_port }}/service/rest/v1
-nexus_apt_test_package: python3-doc
+nexus_apt_proxy_cache_api_base_url: "http://{{ nexus_apt_proxy_cache }}:{{ nexus_default_port }}/service/rest/v1"
+nexus_apt_test_package: "python3-doc"
 nexus_apt_test_repository: "apt_proxy_ceph_clouds_archive_{{ ansible_distribution_release }}"
 nexus_apt_test_package_search_url: "{{ nexus_apt_proxy_cache_api_base_url }}/search?\
 repository={{ nexus_apt_test_repository }}&format=apt&name={{ nexus_apt_test_package }}"
 nexus_apt_test_repository_url: "{{ nexus_apt_proxy_cache }}:{{ nexus_default_port }}/repository/{{ nexus_apt_test_repository }}"
 nexus_apt_test_update_sources: true
+
+nexus_oci_proxy_cache_api_base_url: "http://{{ nexus_oci_proxy_cache }}:{{ nexus_default_port }}/service/rest/v1"
+nexus_oci_proxy_cache_engine: "docker"
+nexus_oci_proxy_cache_insecure: true
+nexus_oci_test_image: "python"
+nexus_oci_test_image_tag: "3-alpine"
+nexus_oci_test_repository: "docker-proxy"
+nexus_oci_test_package_search_url: "{{ nexus_oci_proxy_cache_api_base_url }}/search?\
+repository={{ nexus_oci_test_repository }}&format=docker&name=library/{{ nexus_oci_test_image }}&version={{ nexus_oci_test_image_tag }}"
+nexus_oci_test_self: "{{ (hostvars[inventory_hostname].ip == nexus_oci_proxy_cache) | bool }}"
+nexus_oci_test_repository_url: "{{ nexus_oci_test_self | ternary('127.0.0.1', nexus_oci_proxy_cache) }}:{{ nexus_docker_group_port }}"
