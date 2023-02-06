@@ -42,6 +42,16 @@ alerting:
 scrape_configs:
   {{ prometheus_scrape_configs | to_nice_yaml(indent=2) | indent(2,False) }}
 
+{% if prometheus_openstack_exporter_addr is not none %}
+  - job_name: "openstack_exporter"
+    scrape_interval: 60s
+    scrape_timeout: 45s
+    honor_labels: true
+    static_configs:
+      - targets:
+        - "{{ prometheus_openstack_exporter_addr }}"
+{% endif %}
+
 {% if kubeconfig is not none %}
 
 # Deprecated - pxh

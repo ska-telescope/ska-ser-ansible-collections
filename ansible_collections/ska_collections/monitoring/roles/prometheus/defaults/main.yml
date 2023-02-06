@@ -21,7 +21,8 @@ prometheus_retention_time: "15d"
 prometheus_server_kubectl_version: 'v1.22.5'
 prometheus_server_kubectl_name: kubectl
 prometheus_server_kubectl_install_dir: /usr/local/bin
-prometheus_server_kubectl_url: 'https://storage.googleapis.com/kubernetes-release/release/
+prometheus_server_kubectl_url: >
+  'https://storage.googleapis.com/kubernetes-release/release/
   {{ prometheus_server_kubectl_version }}/bin/linux/amd64/{{ prometheus_server_kubectl_name }}'
 
 prometheus_k8s_api_server_port: "6443"

@@ -35,7 +35,7 @@
 
 - name: Task create sa for prometheus
   ansible.builtin.include_tasks: k8s_sa.yml
-  when: kubeconfig is not none
+  when: kubeconfig
 
 - name: Generate Prometheus configuration
   become: true

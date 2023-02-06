@@ -51,15 +51,15 @@
       - "query"
       - "--grpc-address=0.0.0.0:10902"
       - "--http-address=0.0.0.0:9091"
-      - "--grpc-server-tls-cert='{{ certificates_dir }}/thanos_query.crt'"
-      - "--grpc-server-tls-key='{{ certificates_dir }}/thanos_query.key'"
-      - "--grpc-server-tls-client-ca='{{ certificates_dir }}/ca-certificate.crt'"
-      - "--grpc-client-tls-cert='{{ certificates_dir }}/thanos_query_client.crt'"
-      - "--grpc-client-tls-key='{{ certificates_dir }}/thanos_query_client.key'"
-      - "--grpc-client-tls-ca='{{ certificates_dir }}/ca-certificate.crt'"
+      - "--grpc-server-tls-cert={{ certificates_dir }}/thanos_query.crt"
+      - "--grpc-server-tls-key={{ certificates_dir }}/thanos_query.key"
+      - "--grpc-server-tls-client-ca={{ certificates_dir }}/ca-certificate.crt"
+      - "--grpc-client-tls-cert={{ certificates_dir }}/thanos_query_client.crt"
+      - "--grpc-client-tls-key={{ certificates_dir }}/thanos_query_client.key"
+      - "--grpc-client-tls-ca={{ certificates_dir }}/ca-certificate.crt"
       - "--grpc-client-tls-secure"
       - "--grpc-client-tls-skip-verify"
-      - "--grpc-client-server-name='{{ ansible_hostname }}'"
+      - "--grpc-client-server-name={{ ansible_hostname }}"
 
 - name: Set fact about thanos query oci command
   ansible.builtin.set_fact:
