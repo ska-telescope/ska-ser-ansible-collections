@@ -40,7 +40,7 @@ frontend front-nexus-http-proxy
   option httplog
   acl url_api path_beg /v2
   acl url_conan_search path_beg /repository/conan-internal/v1/conans/search
-  use_backend back-nexus-api-backend if url_api
+  use_backend {{ nexus_haproxy_api_backend }} if url_api
   use_backend back-nexus-conan-backend if url_conan_search
   default_backend back-nexus-default-backend
   timeout client 1800s
