@@ -1,2 +1,5 @@
 ---
 nexus_common_ntp_service: chrony
+
+apt_test_package: python3-doc
+apt_test_repository: "apt_proxy_ceph_clouds_archive_{{ ansible_distribution_release }}"
