@@ -1,7 +1,8 @@
 .DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
-TESTS_DIR ?= ./ansible_collections/ska_collections/nexus/tests
+PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/nexus/playbooks
+TESTS_DIR ?= ./ansible_collections/ska_collections/nexus/playbooks/tests
 
 NEXUS_VAULT_ADMIN_PASSWORD ?= 'whatwhat'
 NEXUS_VAULT_USER_PASSWORD_GITLAB ?= 'whatwhat'
@@ -42,7 +43,7 @@ vars:  ## List Variables
 
 install: check_hosts apply-patch # apply-patch  ## Deploy Nexus
 	ANSIBLE_FILTER_PLUGINS=./ansible_collections/ansible-thoteam.nexus3-oss/filter_plugins \
-	ansible-playbook ./ansible_collections/ska_collections/nexus/playbooks/deploy.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/deploy.yml \
 	-i $(INVENTORY) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars " \
@@ -70,8 +71,8 @@ apply-patch:  ## apply patch to upstream nexus3-oss
 	touch ./ansible_collections/ansible-thoteam.nexus3-oss/.patched; \
 	fi
 
-test-apt-cache:  ## Test apt cache behavior
-	ansible-playbook $(TESTS_DIR)/apt-cache.yml \
+test-apt-proxy-cache:  ## Test apt proxy and caching behavior
+	ansible-playbook $(TESTS_DIR)/apt-proxy-cache.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
