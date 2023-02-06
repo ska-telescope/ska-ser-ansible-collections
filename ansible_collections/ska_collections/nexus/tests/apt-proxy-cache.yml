@@ -7,4 +7,4 @@
     - name: Test Nexus APT Proxy-Cache
       ansible.builtin.include_role:
         name: ska_collections.nexus.common
-        tasks_from: tests/apt-proxy-cache
+        tasks_from: ../tests/apt-proxy-cache

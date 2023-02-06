@@ -2,7 +2,7 @@
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/nexus/playbooks
-TESTS_DIR ?= ./ansible_collections/ska_collections/nexus/playbooks/tests
+TESTS_DIR ?= ./ansible_collections/ska_collections/nexus/tests
 
 NEXUS_VAULT_ADMIN_PASSWORD ?= 'whatwhat'
 NEXUS_VAULT_USER_PASSWORD_GITLAB ?= 'whatwhat'

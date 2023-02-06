@@ -1,12 +1,7 @@
 ---
-- name: Prepare test variables
-  ansible.builtin.set_fact:
-    api_endpoint: http://{{ hostvars[inventory_hostname].ip }}:{{ nexus_default_port }}/service/rest/v1
-    apt_test_repository_url: http://{{ hostvars[inventory_hostname].ip }}:{{ nexus_default_port }}/repository/{{ apt_test_repository }}
-
 - name: Check Nexus API status
   ansible.builtin.uri:
-    url: "{{ api_endpoint }}/status"
+    url: "{{ nexus_apt_proxy_cache_api_base_url }}/status"
     method: GET
     force: true
     return_content: true
@@ -14,19 +9,19 @@
   register: health_info
   until: "'OK' in health_info.msg"
 
-- name: "Check if target repository exists: {{ apt_test_repository }}"
+- name: "Check if target repository exists: {{ nexus_apt_test_repository }}"
   ansible.builtin.uri:
-    url: "{{ api_endpoint }}/search?repository={{ apt_test_repository }}"
+    url: "{{ nexus_apt_proxy_cache_api_base_url }}/repositories"
     method: GET
     force: true
     return_content: true
     status_code: [200]
   register: repository_info
-  until: "'OK' in health_info.msg"
+  failed_when: "nexus_apt_test_repository not in (repository_info | community.general.json_query('json[].name'))"
 
-- name: "Check if test package exists: {{ apt_test_package }}"
+- name: "Check if test package exists: {{ nexus_apt_test_package }}"
   ansible.builtin.uri:
-    url: "{{ api_endpoint }}/search?repository={{ apt_test_repository }}&format=apt&name={{ apt_test_package }}"
+    url: "{{ nexus_apt_test_package_search_url }}"
     method: GET
     force: true
     return_content: true
@@ -35,7 +30,7 @@
 
 - name: Delete test packages from cache
   ansible.builtin.uri:
-    url: "{{ api_endpoint }}/components/{{ item.id }}"
+    url: "{{ nexus_apt_proxy_cache_api_base_url }}/components/{{ item.id }}"
     method: DELETE
     force: true
     return_content: true
@@ -58,39 +53,42 @@
         remote_src: true
         src: /etc/apt/sources.list
         dest: /etc/apt/sources.list.backup
+        mode: 0644
       when: sources_file.stat.exists
     - name: Remove currently configured APT sources
       ansible.builtin.copy:
         content: |
           # empty
         dest: /etc/apt/sources.list
+        mode: 0644
         force: true
     - name: Add target repository as an APT source temporarily
       ansible.builtin.apt_repository:
-        repo: "deb {{ apt_test_repository_url }}/ {{ ansible_distribution_release }}-updates main restricted"
+        repo: "deb {{ nexus_apt_test_repository_url }}/ {{ ansible_distribution_release }}-updates main restricted"
         state: present
-        filename: test-apt-cache
+        filename: test-apt
         update_cache: true
     - name: Remove test package
       ansible.builtin.apt:
-        name: "{{ apt_test_package }}"
+        name: "{{ nexus_apt_test_package }}"
         state: absent
     - name: Install test package
       ansible.builtin.apt:
-        name: "{{ apt_test_package }}"
+        name: "{{ nexus_apt_test_package }}"
         update_cache: true
         clean: true
       register: package_installation
-      failed_when: 'apt_test_repository_url not in package_installation.stdout'
+      failed_when: 'package_installation.failed or apt_test_repository_url not in package_installation.stdout'
   always:
     - name: Restore the backed up sources
       ansible.builtin.copy:
         remote_src: true
         src: /etc/apt/sources.list.backup
         dest: /etc/apt/sources.list
+        mode: 0644
     - name: Remove test APT sources
       ansible.builtin.file:
-        path: /etc/apt/sources.list.d/test-apt-cache.list
+        path: /etc/apt/sources.list.d/test-apt.list
         state: absent
     - name: Remove APT sources backup
       ansible.builtin.file:
@@ -102,7 +100,7 @@
 
 - name: Check if test package was cached
   ansible.builtin.uri:
-    url: "{{ api_endpoint }}/components?repository={{ apt_test_repository }}&name={{ apt_test_package }}"
+    url: "{{ nexus_apt_test_package_search_url }}"
     method: GET
     force: true
     return_content: true
