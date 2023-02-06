@@ -82,7 +82,7 @@
       ansible.builtin.assert:
         that:
           - not package_installation.failed
-          - apt_test_repository_url not in package_installation.stdout
+          - nexus_apt_test_repository_url in package_installation.stdout
   always:
     - name: Restore the backed up sources
       ansible.builtin.copy:
