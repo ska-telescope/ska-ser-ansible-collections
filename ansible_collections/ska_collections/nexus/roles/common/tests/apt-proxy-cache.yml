@@ -78,7 +78,11 @@
         update_cache: true
         clean: true
       register: package_installation
-      failed_when: 'package_installation.failed or apt_test_repository_url not in package_installation.stdout'
+    - name: Assert that package installation came from the target cache
+      ansible.builtin.assert:
+        that:
+          - not package_installation.failed
+          - apt_test_repository_url not in package_installation.stdout
   always:
     - name: Restore the backed up sources
       ansible.builtin.copy:
