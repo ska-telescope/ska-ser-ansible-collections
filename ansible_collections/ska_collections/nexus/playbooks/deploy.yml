@@ -11,19 +11,6 @@
         var: hostvars[inventory_hostname]
       when: debug
 
-- name: Retrieve defaults but keep the variable hierarchy
-  hosts: "{{ target_hosts }}"
-  vars:
-    target_hosts: localhost
-  become: true
-  tasks:
-    - name: Retrieve all datacenter values
-      ansible.builtin.include_vars:
-        file: "{{ inventory_dir }}/group_vars/all.yml"
-    - name: Retrieve nexus datacenter values
-      ansible.builtin.include_vars:
-        file: "{{ inventory_dir }}/group_vars/nexus.yml"
-
 - name: Nexus Pre-install
   hosts: "{{ target_hosts }}"
   vars:
@@ -839,26 +826,6 @@
         keypair: |-
           {{ nexus_apt_bionic_quarentine_key }}
         passphrase: "{{ nexus_apt_bionic_quarentine_key_passphrase }}"
-
-    nexus_repos_apt_proxy:
-      - name: ubuntu18.04-proxy
-        remote_url: http://archive.ubuntu.com/ubuntu/
-        distribution: bionic
-        maximum_component_age: -1
-        maximum_metadata_age: -1
-        negative_cache_ttl: 60
-      - name: ubuntu20.04-proxy
-        remote_url: http://archive.ubuntu.com/ubuntu/
-        distribution: focal
-        maximum_component_age: -1
-        maximum_metadata_age: -1
-        negative_cache_ttl: 60
-      - name: ubuntu22.04-proxy
-        remote_url: http://archive.ubuntu.com/ubuntu/
-        distribution: jammy
-        maximum_component_age: -1
-        maximum_metadata_age: -1
-        negative_cache_ttl: 60
 
     nexus_repos_yum_hosted:
       - name: rpm-internal
