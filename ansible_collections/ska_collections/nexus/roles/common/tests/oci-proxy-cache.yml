@@ -68,5 +68,3 @@
       register: package_info
       failed_when: (package_info.json['items'] | length) == 0
   when: nexus_oci_proxy_cache_engine == "docker"
-
-

@@ -1,4 +1,4 @@
----    
+---
 - name: Backup currently configured APT sources
   ansible.builtin.copy:
     remote_src: true
