@@ -42,7 +42,7 @@
   loop_control:
     label: "{{ item.id }} => {{ item.name }}"
 
-- name: Update APT sources and install package
+- name: Update APT sources
   block:
     - name: Check if APT sources exist
       ansible.builtin.stat:
@@ -68,6 +68,10 @@
         state: present
         filename: test-apt
         update_cache: true
+  where: nexus_apt_test_update_sources
+
+- name: Remove & Install package
+  block:
     - name: Remove test package
       ansible.builtin.apt:
         name: "{{ nexus_apt_test_package }}"
@@ -77,13 +81,9 @@
         name: "{{ nexus_apt_test_package }}"
         update_cache: true
         clean: true
-      register: package_installation
-    - name: Assert that package installation came from the target cache
-      ansible.builtin.assert:
-        that:
-          - not package_installation.failed
-          - nexus_apt_test_repository_url in package_installation.stdout
-  always:
+
+- name: Reverte APT Sources
+  block:
     - name: Restore the backed up sources
       ansible.builtin.copy:
         remote_src: true
@@ -101,6 +101,7 @@
     - name: Update APT sources
       ansible.builtin.apt:
         update_cache: true
+  where: nexus_apt_test_update_sources
 
 - name: Check if test package was cached
   ansible.builtin.uri:

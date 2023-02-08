@@ -14,4 +14,5 @@ nexus_apt_test_package: python3-doc
 nexus_apt_test_repository: "apt_proxy_ceph_clouds_archive_{{ ansible_distribution_release }}"
 nexus_apt_test_package_search_url: "{{ nexus_apt_proxy_cache_api_base_url }}/search?\
 repository={{ nexus_apt_test_repository }}&format=apt&name={{ nexus_apt_test_package }}"
-nexus_apt_test_repository_url: http://{{ nexus_apt_proxy_cache }}:{{ nexus_default_port }}/repository/{{ nexus_apt_test_repository }}
+nexus_apt_test_repository_url: "{{ nexus_apt_proxy_cache }}:{{ nexus_default_port }}/repository/{{ nexus_apt_test_repository }}"
+nexus_apt_test_update_sources: true
