@@ -926,6 +926,7 @@
       - name: docker-all
         http_port: "{{ nexus_docker_group_port }}"
         v1_enabled: true
+        force_basic_auth: false  # enable anonymous access by disabling basic auth
         member_repos:
           - docker-internal
           - central-proxy
