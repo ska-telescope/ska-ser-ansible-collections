@@ -6,8 +6,9 @@ location = "{{ registry }}"
 
 {% for mirror in podman_registry_mirrors -%}
 [[registry.mirror]]
-location = "{{ mirror.url }}"
-{% if mirror.insecure  %}
+{% set prefix, domain = mirror.split('://') %}
+location = "{{ domain }}"
+{% if prefix == "http" %}
 insecure = true
 {% endif %}
 {% endfor %}
