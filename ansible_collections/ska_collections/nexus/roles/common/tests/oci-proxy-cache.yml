@@ -51,24 +51,13 @@
       community.general.docker_image:
         name: "{{ nexus_oci_test_image }}:{{ nexus_oci_test_image_tag }}"
         state: absent
-<<<<<<< HEAD
     - name: "Pull OCI image: {{ nexus_oci_test_image }}:{{ nexus_oci_test_image_tag }}"
       community.general.docker_image:
         name: "{{ nexus_oci_test_image }}:{{ nexus_oci_test_image_tag }}"
-=======
-    - name: Remove image from the local registry
-      community.general.docker_image:
-        name: "{{ nexus_oci_test_repository_url }}/{{ nexus_oci_test_image }}:{{ nexus_oci_test_image_tag }}"
-        state: absent
-    - name: "Pull OCI image: {{ nexus_oci_test_repository_url }}/{{ nexus_oci_test_image }}:{{ nexus_oci_test_image_tag }}"
-      community.general.docker_image:
-        name: "{{ nexus_oci_test_repository_url }}/{{ nexus_oci_test_image }}:{{ nexus_oci_test_image_tag }}"
->>>>>>> 35c65e8... ST-1449: Added test playbook for nexus oci image caching
         source: pull
         force_source: true
         state: present
       register: package_installation
-<<<<<<< HEAD
     - name: Check if test package was cached
       ansible.builtin.uri:
         url: "{{ nexus_oci_test_package_search_url }}"
@@ -81,21 +70,3 @@
   when: nexus_oci_proxy_cache_engine == "docker"
 
 
-=======
-    - name: Assert that package installation came from the target cache
-      ansible.builtin.assert:
-        that:
-          - not package_installation.failed
-          - nexus_oci_test_repository_url in (package_installation.actions | join('\n'))
-  when: nexus_oci_proxy_cache_engine == "docker"
-
-- name: Check if test package was cached
-  ansible.builtin.uri:
-    url: "{{ nexus_oci_test_package_search_url }}"
-    method: GET
-    force: true
-    return_content: true
-    status_code: [200]
-  register: package_info
-  failed_when: (package_info.json['items'] | length) == 0
->>>>>>> 35c65e8... ST-1449: Added test playbook for nexus oci image caching
