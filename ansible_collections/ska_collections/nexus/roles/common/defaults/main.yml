@@ -11,7 +11,7 @@ nexus_vault_admin_password: "{{ _ | mandatory('`nexus_vault_admin_password` defi
 nexus_default_port: 8881
 nexus_docker_group_port: 9082
 
-nexus_apt_proxy_cache_api_base_url: "http://{{ nexus_apt_proxy_cache }}:{{ nexus_default_port }}/service/rest/v1"
+nexus_apt_proxy_cache_api_base_url: "{{ nexus_apt_proxy_cache }}:{{ nexus_default_port }}/service/rest/v1"
 nexus_apt_test_package: "python3-doc"
 nexus_apt_test_repository: "apt_proxy_ceph_clouds_archive_{{ ansible_distribution_release }}"
 nexus_apt_test_package_search_url: "{{ nexus_apt_proxy_cache_api_base_url }}/search?\
@@ -19,7 +19,7 @@ repository={{ nexus_apt_test_repository }}&format=apt&name={{ nexus_apt_test_pac
 nexus_apt_test_repository_url: "{{ nexus_apt_proxy_cache }}:{{ nexus_default_port }}/repository/{{ nexus_apt_test_repository }}"
 nexus_apt_test_update_sources: true
 
-nexus_oci_proxy_cache_api_base_url: "http://{{ nexus_oci_proxy_cache }}:{{ nexus_default_port }}/service/rest/v1"
+nexus_oci_proxy_cache_api_base_url: "{{ nexus_oci_proxy_cache }}:{{ nexus_default_port }}/service/rest/v1"
 nexus_oci_proxy_cache_engine: "docker"
 nexus_oci_proxy_cache_insecure: true
 nexus_oci_test_image: "python"
