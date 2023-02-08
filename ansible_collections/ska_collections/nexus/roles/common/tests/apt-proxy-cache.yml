@@ -68,7 +68,7 @@
         state: present
         filename: test-apt
         update_cache: true
-  where: nexus_apt_test_update_sources
+  when: nexus_apt_test_update_sources
 
 - name: Remove & Install package
   block:
@@ -101,7 +101,7 @@
     - name: Update APT sources
       ansible.builtin.apt:
         update_cache: true
-  where: nexus_apt_test_update_sources
+  when: nexus_apt_test_update_sources
 
 - name: Check if test package was cached
   ansible.builtin.uri:
