@@ -13,7 +13,7 @@ ifndef PLAYBOOKS_HOSTS
 endif
 
 vars:
-	@echo "\033[36gateway:\033[0m"
+	@echo "\033[36mGateway:\033[0m"
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
