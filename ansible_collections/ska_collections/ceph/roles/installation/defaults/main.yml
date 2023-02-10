@@ -1,3 +1,5 @@
 ---
 cephadm_bootstrap_configs: []
 cephadm_commands: []
+post_cephadm_bootstrap_commands: []
+post_cephadm_commands: []
