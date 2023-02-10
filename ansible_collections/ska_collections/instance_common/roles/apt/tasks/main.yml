@@ -12,8 +12,8 @@
     regexp: '((^[^#,\n].*){{ item.remote }}(.*))'
     replace: '#\1\n\2{{ common_apt_repo_mirror_base }}{{ item.mirror }}\3'
   with_items: "{{ common_apt_repo_mirrors }}"
-  when: upstream_apt_mirror_nexus is defined
-    and upstream_apt_mirror_nexus_port is defined
+  when: nexus_apt_proxy_cache is defined
+    and nexus_default_port is defined
     and (common_apt_repo_mirrors|length) > 0
   register: upstream_mirror_setup_task
 
