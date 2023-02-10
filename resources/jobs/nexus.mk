@@ -4,6 +4,7 @@ INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/nexus/playbooks
 TESTS_DIR ?= ./ansible_collections/ska_collections/nexus/tests
 
+NEXUS_DEFAULT_ADMIN_PASSWORD ?=
 NEXUS_VAULT_ADMIN_PASSWORD ?= 'whatwhat'
 NEXUS_VAULT_USER_PASSWORD_GITLAB ?= 'whatwhat'
 NEXUS_VAULT_USER_PASSWORD_PUBLISHER ?= 'whatwhat'
@@ -29,6 +30,7 @@ endif
 vars:  ## List Variables
 	@echo "Current variable settings:"
 	@echo "INVENTORY=$(INVENTORY)"
+	@echo "NEXUS_DEFAULT_ADMIN_PASSWORD=$(NEXUS_DEFAULT_ADMIN_PASSWORD)"
 	@echo "NEXUS_VAULT_ADMIN_PASSWORD=$(NEXUS_VAULT_ADMIN_PASSWORD)"
 	@echo "NEXUS_VAULT_USER_PASSWORD_GITLAB=$(NEXUS_VAULT_USER_PASSWORD_GITLAB)"
 	@echo "NEXUS_VAULT_USER_PASSWORD_PUBLISHER=$(NEXUS_VAULT_USER_PASSWORD_PUBLISHER)"
@@ -47,6 +49,7 @@ install: check_hosts apply-patch # apply-patch  ## Deploy Nexus
 	-i $(INVENTORY) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars " \
+		nexus_default_admin_password=$(NEXUS_DEFAULT_ADMIN_PASSWORD) \
 		nexus_vault_admin_password=$(NEXUS_VAULT_ADMIN_PASSWORD) \
 		nexus_vault_user_password_gitlab=$(NEXUS_VAULT_USER_PASSWORD_GITLAB) \
 		nexus_vault_user_password_publisher=$(NEXUS_VAULT_USER_PASSWORD_PUBLISHER) \
