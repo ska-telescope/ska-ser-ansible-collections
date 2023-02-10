@@ -14,7 +14,7 @@
   ansible.builtin.include_role:
     name: stackhpc.cephadm.commands
   vars:
-    cephadm_commands: "{{ post_cephadm_bootstrap_commands }}"
+    cephadm_commands: "{{ cephadm_post_bootstrap_commands }}"
 
 - name: "Install ceph pools"
   ansible.builtin.include_role:
@@ -24,4 +24,4 @@
   ansible.builtin.include_role:
     name: stackhpc.cephadm.commands
   vars:
-    cephadm_commands: "{{ post_cephadm_commands }}"
+    cephadm_commands: "{{ cephadm_post_commands }}"
