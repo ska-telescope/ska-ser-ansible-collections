@@ -1,0 +1,70 @@
+---
+- name: Check test configuration
+  ansible.builtin.assert:
+    that:
+      - nexus_oci_proxy_cache_engine in ["docker"]
+
+- name: Check Nexus API status
+  ansible.builtin.uri:
+    url: "{{ nexus_oci_proxy_cache_api_base_url }}/status"
+    method: GET
+    force: true
+    return_content: true
+    status_code: [200]
+  register: health_info
+  until: "'OK' in health_info.msg"
+
+- name: "Check if target repository exists: {{ nexus_oci_test_repository }}"
+  ansible.builtin.uri:
+    url: "{{ nexus_oci_proxy_cache_api_base_url }}/repositories"
+    method: GET
+    force: true
+    return_content: true
+    status_code: [200]
+  register: repository_info
+  failed_when: "nexus_oci_test_repository not in (repository_info | community.general.json_query('json[].name'))"
+
+- name: Pulling OCI image using docker
+  block:
+    - name: "Check if test package exists: {{ nexus_oci_test_image }}:{{ nexus_oci_test_image_tag }}"
+      ansible.builtin.uri:
+        url: "{{ nexus_oci_test_package_search_url }}"
+        method: GET
+        force: true
+        return_content: true
+        status_code: [200]
+      register: package_info
+    - name: Delete test packages from cache
+      ansible.builtin.uri:
+        url: "{{ nexus_oci_proxy_cache_api_base_url }}/components/{{ item.id }}"
+        method: DELETE
+        force: true
+        return_content: true
+        status_code: [204]
+        url_username: admin
+        url_password: "{{ nexus_vault_admin_password }}"
+        force_basic_auth: true
+      with_items: "{{ package_info.json['items'] }}"
+      loop_control:
+        label: "{{ item.id }} => {{ item.name }}"
+    - name: Remove image from the local registry
+      community.general.docker_image:
+        name: "{{ nexus_oci_test_image }}:{{ nexus_oci_test_image_tag }}"
+        state: absent
+    - name: "Pull OCI image: {{ nexus_oci_test_image }}:{{ nexus_oci_test_image_tag }}"
+      community.general.docker_image:
+        name: "{{ nexus_oci_test_image }}:{{ nexus_oci_test_image_tag }}"
+        source: pull
+        force_source: true
+        state: present
+      register: package_installation
+    - name: Check if test package was cached
+      ansible.builtin.uri:
+        url: "{{ nexus_oci_test_package_search_url }}"
+        method: GET
+        force: true
+        return_content: true
+        status_code: [200]
+      register: package_info
+      failed_when: (package_info.json['items'] | length) == 0
+  when: nexus_oci_proxy_cache_engine == "docker"

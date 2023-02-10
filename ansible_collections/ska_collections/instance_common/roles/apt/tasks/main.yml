@@ -1,4 +1,11 @@
 ---
+- name: Backup currently configured APT sources
+  ansible.builtin.copy:
+    remote_src: true
+    src: /etc/apt/sources.list
+    dest: /etc/apt/sources.list.backup
+    mode: 0644
+
 - name: Comment out and replace remote apt repository URLs with nexus cache in sources.list file
   ansible.builtin.replace:
     path: /etc/apt/sources.list

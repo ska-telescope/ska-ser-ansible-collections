@@ -15,7 +15,7 @@ Tested with the current Ansible 6.5.x releases.
 | Name | Description | Version | OS Requirements | Dependencies |
 | ---- | ----------- | ------- | --- | ---|
 | [nexus.common](./roles/common) | Requirements installation and configurations | | Ubuntu 18+ (LTS) | |
-| [nexus.haproxy](./roles/haproxy) | Deploys HA Proxy | 2.4 | Ubuntu 18+ (LTS) | |
+| [nexus.haproxy](./roles/haproxy) | Deploys HA Proxy | 2.4 | Ubuntu 18+ (LTS) | Docker |
 | [nexus.nexus3-conan](./roles/beats) | Installs Nexus | 3.x | Ubuntu 18+ (LTS) | ansible-thoteam.nexus3-oss |
 
 ## Production site
