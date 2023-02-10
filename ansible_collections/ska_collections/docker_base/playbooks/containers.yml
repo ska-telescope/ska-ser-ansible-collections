@@ -11,20 +11,6 @@
         var: hostvars[inventory_hostname]
       when: debug
 
-- name: Ensure that the apt repositories are updated
-  hosts: "{{ target_hosts }}"
-  vars:
-    target_hosts: localhost
-  become: true
-  tasks:
-    - name: Ensure that the apt cache is updated
-      ansible.builtin.apt:
-        update_cache: true
-      register: apt_res
-      retries: 5
-      until: apt_res is success
-      when: ansible_os_family == "Debian"
-
 - name: Apply containerd, podman and docker roles
   hosts: "{{ target_hosts }}"
   vars:
