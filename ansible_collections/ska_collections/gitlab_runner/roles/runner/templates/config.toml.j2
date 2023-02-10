@@ -8,9 +8,7 @@ listen_address = '0.0.0.0:{{ gitlab_runner_metrics_port }}'
   [runners.docker]
     {% if gitlab_runner_docker_socket %}
     host = "unix:///var/run/docker.sock"
-    {% endif %}
-    privileged = "{{ gitlab_runner_docker_privileged }}"
-    image = "{{ gitlab_runner_base_image }}"
+    {%- endif -%}
     volumes = ["/certs/client"]
     [runners.docker.sysctls]
       "net.ipv4.ip_forward" = "1"
