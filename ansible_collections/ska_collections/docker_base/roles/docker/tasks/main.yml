@@ -21,6 +21,12 @@
     msg: The Nvidia driver has not been found (nvidia-smi --query) - aborting.
   when: docker_activate_nvidia | bool and not docker_ignore_nvidia_fail | bool and not nvidia_driver_exists | bool
 
+- name: Ensure that the apt cache is updated
+  ansible.builtin.apt:
+    update_cache: true
+    update_cache_retries: 30
+    update_cache_retry_max_delay: 30
+
 - name: Remove wrong packages for Docker
   ansible.builtin.apt:
     name: "{{ docker_deb_uninstall_pkgs }}"
@@ -48,9 +54,11 @@
     mode: 0644
   register: installeddocker
 
-- name: Update apt cache
+- name: Ensure that the apt cache is updated
   ansible.builtin.apt:
     update_cache: true
+    update_cache_retries: 30
+    update_cache_retry_max_delay: 30
 
 - name: Docker install
   ansible.builtin.include_tasks: install.yml

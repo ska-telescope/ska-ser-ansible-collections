@@ -56,10 +56,10 @@
     state: started
     command:
       - "compact"
-      - "--data-dir='/data'"
-      - "--objstore.config-file='{{ thanos_config_dir }}/swift.yml'"
-      - "--http-address='0.0.0.0:19091'"
-      - "--http.config='{{ thanos_config_dir }}/thanos_compactor.yaml'"
+      - "--data-dir=/data"
+      - "--objstore.config-file={{ thanos_config_dir }}/swift.yml"
+      - "--http-address=0.0.0.0:19091"
+      - "--http.config={{ thanos_config_dir }}/thanos_compactor.yaml"
       - "--wait"
       - "--wait-interval=60m"
     user: root

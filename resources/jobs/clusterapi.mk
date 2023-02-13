@@ -1,3 +1,4 @@
+-include $(BASE_PATH)/PrivateRules.mak
 
 clusterapi-check-hosts:
 ifndef PLAYBOOKS_HOSTS

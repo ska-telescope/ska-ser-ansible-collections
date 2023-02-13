@@ -1,0 +1,114 @@
+---
+- name: Check Nexus API status
+  ansible.builtin.uri:
+    url: "{{ nexus_apt_proxy_cache_api_base_url }}/status"
+    method: GET
+    force: true
+    return_content: true
+    status_code: [200]
+  register: health_info
+  until: "'OK' in health_info.msg"
+
+- name: "Check if target repository exists: {{ nexus_apt_test_repository }}"
+  ansible.builtin.uri:
+    url: "{{ nexus_apt_proxy_cache_api_base_url }}/repositories"
+    method: GET
+    force: true
+    return_content: true
+    status_code: [200]
+  register: repository_info
+  failed_when: "nexus_apt_test_repository not in (repository_info | community.general.json_query('json[].name'))"
+
+- name: "Check if test package exists: {{ nexus_apt_test_package }}"
+  ansible.builtin.uri:
+    url: "{{ nexus_apt_test_package_search_url }}"
+    method: GET
+    force: true
+    return_content: true
+    status_code: [200]
+  register: package_info
+
+- name: Delete test packages from cache
+  ansible.builtin.uri:
+    url: "{{ nexus_apt_proxy_cache_api_base_url }}/components/{{ item.id }}"
+    method: DELETE
+    force: true
+    return_content: true
+    status_code: [204]
+    url_username: admin
+    url_password: "{{ nexus_vault_admin_password }}"
+    force_basic_auth: true
+  with_items: "{{ package_info.json['items'] }}"
+  loop_control:
+    label: "{{ item.id }} => {{ item.name }}"
+
+- name: Update APT sources
+  block:
+    - name: Check if APT sources exist
+      ansible.builtin.stat:
+        path: /etc/apt/sources.list
+      register: sources_file
+    - name: Backup currently configured APT sources
+      ansible.builtin.copy:
+        remote_src: true
+        src: /etc/apt/sources.list
+        dest: /etc/apt/sources.list.backup
+        mode: 0644
+      when: sources_file.stat.exists
+    - name: Remove currently configured APT sources
+      ansible.builtin.copy:
+        content: |
+          # empty
+        dest: /etc/apt/sources.list
+        mode: 0644
+        force: true
+    - name: Add target repository as an APT source temporarily
+      ansible.builtin.apt_repository:
+        repo: "deb {{ nexus_apt_test_repository_url }}/ {{ ansible_distribution_release }}-updates main restricted"
+        state: present
+        filename: test-apt
+        update_cache: true
+  when: nexus_apt_test_update_sources
+
+- name: Remove & Install package
+  block:
+    - name: Remove test package
+      ansible.builtin.apt:
+        name: "{{ nexus_apt_test_package }}"
+        state: absent
+    - name: Install test package
+      ansible.builtin.apt:
+        name: "{{ nexus_apt_test_package }}"
+        update_cache: true
+        clean: true
+
+- name: Reverte APT Sources
+  block:
+    - name: Restore the backed up sources
+      ansible.builtin.copy:
+        remote_src: true
+        src: /etc/apt/sources.list.backup
+        dest: /etc/apt/sources.list
+        mode: 0644
+    - name: Remove test APT sources
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/test-apt.list
+        state: absent
+    - name: Remove APT sources backup
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.backup
+        state: absent
+    - name: Update APT sources
+      ansible.builtin.apt:
+        update_cache: true
+  when: nexus_apt_test_update_sources
+
+- name: Check if test package was cached
+  ansible.builtin.uri:
+    url: "{{ nexus_apt_test_package_search_url }}"
+    method: GET
+    force: true
+    return_content: true
+    status_code: [200]
+  register: package_info
+  failed_when: (package_info.json['items'] | length) == 0

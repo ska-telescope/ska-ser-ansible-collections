@@ -20,9 +20,11 @@
         mode: 0644
       register: installed_podman
 
-    - name: Update apt cache
+    - name: Ensure that the apt cache is updated
       ansible.builtin.apt:
         update_cache: true
+        update_cache_retries: 30
+        update_cache_retry_max_delay: 30
 
     - name: Upgrade all packages (apt)
       ansible.builtin.apt:

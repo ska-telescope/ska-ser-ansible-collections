@@ -57,6 +57,13 @@
         rm /tmp/node_exporter.tar.gz
       changed_when: true
 
+    - name: Ensure textfile collector directory exists
+      ansible.builtin.file:
+        path: /var/lib/node_exporter/textfile_collector
+        state: directory
+        mode: "0755"
+      changed_when: true
+
     - name: Create prometheus-node-exporter service
       become: true
       ansible.builtin.template:
