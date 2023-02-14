@@ -25,7 +25,7 @@ frontend stats
   stats hide-version
   stats realm Haproxy\ Statistics
   stats uri /haproxy_stats
-  stats auth {{ nexus_haproxy_user }}:{{ nexus_haproxy_passwd }}
+  stats auth {{ nexus_haproxy_stats_user }}:{{ nexus_haproxy_stats_password }}
   stats refresh 10s
   stats admin if LOCALHOST
 
@@ -40,7 +40,7 @@ frontend front-nexus-http-proxy
   option httplog
   acl url_api path_beg /v2
   acl url_conan_search path_beg /repository/conan-internal/v1/conans/search
-  use_backend {{ nexus_haproxy_api_backend }} if url_api
+  use_backend back-nexus-api-backend if url_api
   use_backend back-nexus-conan-backend if url_conan_search
   default_backend back-nexus-default-backend
   timeout client 1800s
@@ -61,7 +61,7 @@ backend back-nexus-default-backend
   option http-server-close
   option dontlognull
   balance roundrobin
-  server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_haproxy_http_port }} check
+  server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_default_port }} check
   timeout connect 10s
   timeout server 1800s
 
@@ -70,7 +70,7 @@ backend back-nexus-api-backend
   option http-server-close
   option dontlognull
   balance roundrobin
-  server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_haproxy_api_port }} check
+  server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_haproxy_docker_api_port }} check
   timeout connect 10s
   timeout server 1800s
 
@@ -79,7 +79,7 @@ backend back-nexus-conan-backend
   option http-server-close
   option dontlognull
   balance roundrobin
-  server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_haproxy_conan_search_proxy_port }} check
+  server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_conan_search_proxy_port }} check
   timeout connect 10s
   timeout server 1800s
 
@@ -89,23 +89,5 @@ backend back-nexus-quarantine-api-backend
   option dontlognull
   balance roundrobin
   server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_haproxy_quarantine_api_proxy_port }} check
-  timeout connect 10s
-  timeout server 1800s
-
-backend back-docker-all-group-backend
-  mode http
-  option http-server-close
-  option dontlognull
-  balance roundrobin
-  server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_haproxy_docker_group_port }} check
-  timeout connect 10s
-  timeout server 1800s
-
-backend back-gitlab-backend
-  mode http
-  option http-server-close
-  option dontlognull
-  balance roundrobin
-  server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_haproxy_gitlab_proxy_port }} check
   timeout connect 10s
   timeout server 1800s
