@@ -37,14 +37,13 @@
     name: "{{ nexus_conan_search_name }}"
   register: conan_search_info
 
-- name: "Run container {{ nexus_conan_search_name }}"  # noqa no-handler
+- name: "Run container {{ nexus_conan_search_name }}"
   community.docker.docker_container:
     name: "{{ nexus_conan_search_name }}"
     image: "{{ nexus_conan_search_container_image }}"
-    recreate: true
+    recreate: "{{ conan_search_config.changed or conan_search_image.changed or not conan_search_info.exists or not conan_search_info.container.State.Running }}"
     restart_policy: always
     state: started
-    privileged: true  # TODO: Check this
     network_mode: host
     exposed_ports:
       - "{{ nexus_conan_search_proxy_port }}"
@@ -55,4 +54,3 @@
       - /etc/conan_search_config:/etc/ncs_config
     command: "uvicorn app.main:app --proxy-headers --host 0.0.0.0 --port {{ nexus_conan_search_proxy_port }}"
     env: "{{ nexus_conan_search_defaults | combine(nexus_conan_search_env_variables) }}"
-  when: conan_search_config.changed or conan_search_image.changed or not conan_search_info.exists or not conan_search_info.container.State.Running

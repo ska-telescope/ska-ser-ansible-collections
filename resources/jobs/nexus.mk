@@ -19,9 +19,14 @@ vars:
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
-install: check_hosts apply-patch # apply-patch  ## Deploy Nexus
+install: check_hosts apply-patch ## Deploy Nexus
 	ANSIBLE_FILTER_PLUGINS=$(NEXUS_OSS_INSTALL_DIR)/filter_plugins \
-	ansible-playbook $(PLAYBOOKS_DIR)/deploy.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/install.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+destroy: check_hosts apply-patch ## Destroy Nexus
+	ansible-playbook $(PLAYBOOKS_DIR)/destroy.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 

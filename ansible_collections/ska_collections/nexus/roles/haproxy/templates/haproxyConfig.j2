@@ -40,23 +40,23 @@ frontend front-nexus-http-proxy
   option httplog
   acl url_api path_beg /v2
   acl url_conan_search path_beg /repository/conan-internal/v1/conans/search
-  use_backend back-nexus-api-backend if url_api
-  use_backend back-nexus-conan-backend if url_conan_search
-  default_backend back-nexus-default-backend
+  use_backend back-nexus-docker-api-backend if url_api
+  use_backend back-nexus-conan-search-backend if url_conan_search
+  default_backend back-nexus-api-backend
   timeout client 1800s
   timeout client-fin 50s
 
 frontend front-nexus-quarantine-http-proxy
-  bind *:{{ nexus_haproxy_quarantine_proxy_port }}
+  bind *:{{ nexus_haproxy_quarantine_port }}
   mode http
   option httplog
   acl url_api path_beg /v2
   use_backend back-nexus-quarantine-api-backend if url_api
-  default_backend back-nexus-default-backend
+  default_backend back-nexus-api-backend
   timeout client 1800s
   timeout client-fin 50s
 
-backend back-nexus-default-backend
+backend back-nexus-api-backend
   mode http
   option http-server-close
   option dontlognull
@@ -65,7 +65,7 @@ backend back-nexus-default-backend
   timeout connect 10s
   timeout server 1800s
 
-backend back-nexus-api-backend
+backend back-nexus-docker-api-backend
   mode http
   option http-server-close
   option dontlognull
@@ -74,7 +74,7 @@ backend back-nexus-api-backend
   timeout connect 10s
   timeout server 1800s
 
-backend back-nexus-conan-backend
+backend back-nexus-conan-search-backend
   mode http
   option http-server-close
   option dontlognull
@@ -88,6 +88,6 @@ backend back-nexus-quarantine-api-backend
   option http-server-close
   option dontlognull
   balance roundrobin
-  server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_haproxy_quarantine_api_proxy_port }} check
+  server {{ inventory_hostname }} {{ hostvars[inventory_hostname].ip }}:{{ nexus_docker_quarantine_port }} check
   timeout connect 10s
   timeout server 1800s

@@ -1,10 +1,6 @@
 ---
-nexus_installation_dir: '/var/lib/nexus/nexus'
-nexus_conan_search_proxy_port: 5000
-
-nexus_haproxy_port: 8081
-
 nexus_conan_search_name: nexus-conan-search
+nexus_conan_search_proxy_port: 5000
 nexus_conan_search_container_image: artefact.skao.int/ska-cicd-nexus-conan-search:0.1.3
 nexus_conan_search_container_log_options:
   max-size: "10m"
@@ -41,4 +37,9 @@ nexus_conan_search_defaults:
   KEEP_ALIVE: "50"
   LOG_LEVEL: "INFO"
   MAX_WORKERS: "10"
-  JSON_CONFIG_PATH: "/etc/conan_search_config/fastapi-plugins.conf.yaml"
+  JSON_CONFIG_PATH: "/etc/ncs_config/fastapi-plugins.conf.yaml"
+
+# Shared
+
+nexus_installation_dir: '/var/lib/nexus/nexus'
+nexus_haproxy_port: 8081

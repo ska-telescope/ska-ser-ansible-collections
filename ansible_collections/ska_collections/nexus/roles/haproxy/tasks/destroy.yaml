@@ -1,0 +1,12 @@
+- name: "Destroy container {{ nexus_haproxy_name }}"
+  community.docker.docker_container:
+    name: "{{ nexus_haproxy_name }}"
+    state: absent
+    stop_timeout: 60
+    timeout: 120
+    force_kill: false
+
+- name: Destroy haproxy config directory
+  ansible.builtin.file:
+    path: /etc/haproxy_config
+    state: absent

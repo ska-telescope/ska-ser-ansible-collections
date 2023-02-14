@@ -13,23 +13,23 @@
     path: "{{ certificates_dir }}"
     mode: 0770
 
-- name: "Change private key ownership"
+- name: Change private key ownership
   ansible.builtin.file:
     path: "{{ certificates_dir }}/{{ inventory_hostname }}.key"
     mode: 0640
 
-- name: "Create kibana secrets directory"
+- name: Create kibana secrets directory
   ansible.builtin.file:
     path: "{{ kibana_secrets_directory }}"
     state: directory
     mode: 0644
 
-- name: "Check if kibana encryption keys exist"
+- name: Check if kibana encryption keys exist
   ansible.builtin.stat:
     path: "{{ kibana_secrets_file_path }}"
   register: kibana_secrets_file
 
-- name: "Create kibana encryption keys"
+- name: Create kibana encryption keys
   ansible.builtin.set_fact:
     kibana_encryption_keys:
       reporting: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters') }}"
@@ -37,14 +37,14 @@
       encryptedSavedObjects: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters') }}"
   when: not kibana_secrets_file.stat.exists
 
-- name: "Store kibana encryption keys"  # noqa template-instead-of-copy
+- name: Store kibana encryption keys  # noqa template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ kibana_encryption_keys | to_json }}"
     dest: "{{ kibana_secrets_file_path }}"
     mode: 0600
   when: not kibana_secrets_file.stat.exists
 
-- name: "Create custom kibana privileges role"
+- name: Create custom kibana privileges role
   ansible.builtin.uri:
     url: "https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}/_security/role/{{ kibana_privileges_role }}"
     url_username: elastic
@@ -66,7 +66,7 @@
   environment:
     SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
 
-- name: "Create kibana user with viewer roles"
+- name: Create kibana user with viewer roles
   ansible.builtin.uri:
     url: "https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}/_security/user/{{ kibana_viewer_user }}"
     url_username: elastic
@@ -84,7 +84,7 @@
   environment:
     SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
 
-- name: "Create kibana service account token" # noqa yaml[line-length]
+- name: Create kibana service account token # noqa yaml[line-length]
   ansible.builtin.uri:
     url: 'https://{{ hostvars[elasticsearch_address].ip }}:{{ elasticsearch_api_port }}
       /_security/service/elastic/kibana/credential/token/{{ inventory_hostname }}'
@@ -101,17 +101,17 @@
   environment:
     SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
 
-- name: "Get kibana service account token"
+- name: Get kibana service account token
   ansible.builtin.command: cat "{{ kibana_service_account_path }}"
   register: kibana_serviceaccount
   changed_when: true
 
-- name: "Get kibana secrets"
+- name: Get kibana secrets
   ansible.builtin.command: cat "{{ kibana_secrets_file_path }}"
   register: kibana_secrets
   changed_when: true
 
-- name: "Create kibana configuration"
+- name: Create kibana configuration
   ansible.builtin.template:
     src: kibana.yml.j2
     dest: /etc/kibana.yml
@@ -140,13 +140,13 @@
       - "{{ kibana_port }}:{{ kibana_port }}"
     recreate: "{{ kibana_reinstall or kibana_config.changed | bool }}"
 
-- name: "Kibana is running"
+- name: Kibana is running
   ansible.builtin.wait_for:
     host: "{{ ansible_default_ipv4.address }}"
     port: "{{ kibana_port | int }}"
     timeout: 120
 
-- name: "Check if kibana default data view exists"
+- name: Check if kibana default data view exists
   ansible.builtin.uri:
     url: "http://{{ kibana_address }}/kibana/api/data_views/default"
     url_username: elastic
@@ -163,7 +163,7 @@
   retries: 6
   delay: 10
 
-- name: "Get kibana data views"
+- name: Get kibana data views
   ansible.builtin.uri:
     url: "http://{{ kibana_address }}/kibana/api/data_views"
     url_username: elastic
@@ -177,7 +177,7 @@
       kbn-xsrf: true
   register: kibana_dataviews
 
-- name: "Create new kibana data view"
+- name: Create new kibana data view
   ansible.builtin.uri:
     url: "http://{{ kibana_address }}/kibana/api/data_views/data_view"
     url_username: elastic
@@ -197,7 +197,7 @@
   when: 'kibana_default_dataview_name not in kibana_dataviews_names'
   register: kibana_dataview_create
 
-- name: "Set kibana default data view"
+- name: Set kibana default data view
   ansible.builtin.uri:
     url: "http://{{ kibana_address }}/kibana/api/data_views/default"
     url_username: elastic

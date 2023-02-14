@@ -22,14 +22,14 @@
     name: "{{ nexus_haproxy_name }}"
   register: haproxy_info
 
-- name: "Run container {{ nexus_haproxy_name }}"  # noqa no-handler
+- name: "Run container {{ nexus_haproxy_name }}"
   community.docker.docker_container:
     name: "{{ nexus_haproxy_name }}"
     image: "{{ nexus_haproxy_container_image }}"
-    recreate: true
+    command: -f /usr/local/etc/haproxy/haproxy.cfg
+    recreate: "{{ haproxy_config.changed or haproxy_image.changed or not haproxy_info.exists or not haproxy_info.container.State.Running }}"
     restart_policy: always
     state: started
-    privileged: true  # TODO: Check this
     network_mode: host
     exposed_ports:
       - "{{ nexus_haproxy_port }}"
@@ -38,5 +38,3 @@
     log_options: "{{ nexus_haproxy_container_log_options }}"
     volumes:
       - /etc/haproxy_config/:/usr/local/etc/haproxy/
-    command: -f /usr/local/etc/haproxy/haproxy.cfg
-  when: haproxy_config.changed or haproxy_image.changed or not haproxy_info.exists or not haproxy_info.container.State.Running

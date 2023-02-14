@@ -1,7 +1,6 @@
 #!/usr/bin/env ansible-playbook
 ---
-
-- name: "Apply the byoh role to controlplane and worker nodes"
+- name: Apply the byoh role to controlplane and worker nodes
   hosts: "{{ [ 'management-cluster' ] + [ target_hosts ] }}"
   vars:
     target_hosts: localhost

@@ -11,34 +11,29 @@
         var: hostvars[inventory_hostname]
       when: debug
 
-- name: Install Nexus
+- name: Destroy Nexus
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
   become: true
   tasks:
-    - name: Install dependencies and ntp server
-      ansible.builtin.import_role:
-        name: ska_collections.nexus.nexus3
-        tasks_from: init
-
-    # - name: Install Nexus
+    # - name: Destroy Nexus
     #  ansible.builtin.import_role:
     #    name: ska_collections.nexus.nexus3
-    #    tasks_from: install
+    #    tasks_from: destroy
 
-    - name: Install Nexus conan-search
+    - name: Destroy Nexus conan-search
       ansible.builtin.import_role:
         name: ska_collections.nexus.nexus3_conan
-        tasks_from: install
+        tasks_from: destroy
 
-- name: Install HAProxy
+- name: Destroy HAProxy
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
   become: true
   tasks:
-    - name: Install HAProxy
+    - name: Destroy HAProxy
       ansible.builtin.import_role:
         name: ska_collections.nexus.haproxy
-        tasks_from: install
+        tasks_from: destroy

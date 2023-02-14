@@ -6,7 +6,7 @@
     target_hosts: localhost
   become: true
   tasks:
-    - name: "Show stack nodes info"
+    - name: Show nodes info
       ansible.builtin.debug:
         var: hostvars[inventory_hostname]
       when: debug

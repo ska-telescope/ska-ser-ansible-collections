@@ -26,6 +26,6 @@
     capo_cacert: "{{ capo_selected_cloud.cacert | default('\n') }}"
     openstack_cloud_cacert_b64: "{{ capo_selected_cloud.cacert | default('\n') | b64encode }}"
 
-- name: "Show openstack_cloud_cacert_b64"
+- name: Show openstack_cloud_cacert_b64
   ansible.builtin.debug:
     var: openstack_cloud_cacert_b64
