@@ -40,6 +40,7 @@ apply-patch:  ## apply patch to upstream nexus3-oss
 	else \
 		git apply --directory $(NEXUS_OSS_INSTALL_DIR) \
 			./ansible_collections/ska_collections/nexus/resources/nexus3-oss.patch --verbose --unsafe-paths && \
+		touch $(NEXUS_OSS_INSTALL_DIR)/tasks/bootstrap.yml; \
 		touch $(NEXUS_OSS_INSTALL_DIR)/.patched; \
 		echo "Nexus OSS collection patched"; \
 	fi

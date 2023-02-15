@@ -22,10 +22,10 @@
         name: ska_collections.nexus.nexus3
         tasks_from: init
 
-    # - name: Install Nexus
-    #  ansible.builtin.import_role:
-    #    name: ska_collections.nexus.nexus3
-    #    tasks_from: install
+    - name: Install Nexus
+      ansible.builtin.import_role:
+        name: ska_collections.nexus.nexus3
+        tasks_from: install
 
     - name: Install Nexus conan-search
       ansible.builtin.import_role:

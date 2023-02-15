@@ -17,10 +17,10 @@
     target_hosts: localhost
   become: true
   tasks:
-    # - name: Destroy Nexus
-    #  ansible.builtin.import_role:
-    #    name: ska_collections.nexus.nexus3
-    #    tasks_from: destroy
+    - name: Destroy Nexus
+      ansible.builtin.import_role:
+        name: ska_collections.nexus.nexus3
+        tasks_from: destroy
 
     - name: Destroy Nexus conan-search
       ansible.builtin.import_role:
