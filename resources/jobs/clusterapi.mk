@@ -14,7 +14,7 @@ ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
 
 CLUSTERAPI_APPLY ?= false ## Apply workload cluster: true or false - default: false
-CLUSTERAPI_AC_BRANCH ?= bang-105-add-byoh ## Ansible Collections branch to apply to workload cluster
+CLUSTERAPI_AC_BRANCH ?= main ## Ansible Collections branch to apply to workload cluster
 CLUSTERAPI_CLUSTER ?= test ## Name of workload cluster to create
 CLUSTERAPI_TAGS ?= all ## Ansible tags to run in post deployment processing
 
@@ -31,7 +31,7 @@ vars:
 	@echo "CLUSTERAPI_APPLY=$(CLUSTERAPI_APPLY)"
 	@echo "CLUSTERAPI_AC_BRANCH=$(CLUSTERAPI_AC_BRANCH)"
 
-clusterapi-install-base:  ## Install base for management server
+clusterapi-install-base: clusterapi-check-hosts  ## Install base for management server
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(PLAYBOOKS_DIR)/docker_base/playbooks/containers.yml \
@@ -39,18 +39,15 @@ clusterapi-install-base:  ## Install base for management server
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--limit "management-cluster"
 
-clusterapi-management:
-# clusterapi-management: clusterapi-install-base  ## Install Minikube management cluster
+clusterapi-management: clusterapi-check-hosts  ## Install Minikube management cluster
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(PLAYBOOKS_DIR)/minikube/playbooks/minikube.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--limit "management-cluster" --tags "build" -vvvv
+	--limit "management-cluster" --tags "build" -vv
 
-# clusterapi:
-#clusterapi: clusterapi-check-hosts clusterapi-management clusterapi-velero-backups  ## Install clusterapi component
-clusterapi: clusterapi-check-hosts clusterapi-management  ## Install clusterapi component
+clusterapi: clusterapi-check-hosts  ## Install clusterapi component
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/clusterapi.yml \
@@ -58,6 +55,12 @@ clusterapi: clusterapi-check-hosts clusterapi-management  ## Install clusterapi 
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--limit "management-cluster"
 
+clusterapi-build-management-server:  # Complete stesp for building clusterapi management server
+	make clusterapi-install-base
+	make clusterapi-management
+	make clusterapi
+
+CLUSTERAPI_DNS_SERVERS?=
 clusterapi-createworkload: clusterapi-check-cluster-type  ## Template workload manifest and deploy
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
@@ -68,7 +71,8 @@ clusterapi-createworkload: clusterapi-check-cluster-type  ## Template workload m
 	--extra-vars "capi_kustomize_overlay=$(CLUSTERAPI_CLUSTER_TYPE)" \
 	--extra-vars '{"cluster_apply": $(CLUSTERAPI_APPLY)}' \
 	--extra-vars 'capi_collections_branch=$(CLUSTERAPI_AC_BRANCH)' \
-	--limit "management-cluster"
+	--limit "management-cluster" -vv
+	# --extra-vars 'capo_openstack_dns_servers=$(CLUSTERAPI_DNS_SERVERS)'
 
 clusterapi-workload-kubeconfig: clusterapi-check-cluster-type  ## Post deployment get workload kubeconfig
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/get-kubeconfig.yml \
@@ -149,18 +153,31 @@ clusterapi-byoh-port-security:  ## Unset port security on byohosts
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=localhost" -v
 
-clusterapi-byoh:  ## Deploy byoh agent and tokens to workload hosts
-	# ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	# ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
-	# ansible-playbook $(PLAYBOOKS_DIR)/docker_base/playbooks/containerd.yml \
-	# -i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	# --extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v
+clusterapi-byoh-init:  ## Initialise byoh workload hosts
+	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
+	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/init-hosts.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v
 
+clusterapi-byoh-engine:  ## Deploy byoh container engine on workload hosts
+	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
+	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
+	ansible-playbook $(PLAYBOOKS_DIR)/docker_base/playbooks/containers.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v
+
+clusterapi-byoh-agent:  ## Deploy byoh agent and tokens to workload hosts
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/byoh.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v
+
+clusterapi-byoh:  ## Prepare byoh nodes
+	make clusterapi-byoh-init
+	make clusterapi-byoh-engine
+	make clusterapi-byoh-agent
 
 clusterapi-destroy-management:  ## Destroy Minikube management cluster
 	ansible-playbook $(PLAYBOOKS_DIR)/minikube/playbooks/minikube.yml \
