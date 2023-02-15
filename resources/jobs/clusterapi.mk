@@ -72,7 +72,6 @@ clusterapi-createworkload: clusterapi-check-cluster-type  ## Template workload m
 	--extra-vars '{"cluster_apply": $(CLUSTERAPI_APPLY)}' \
 	--extra-vars 'capi_collections_branch=$(CLUSTERAPI_AC_BRANCH)' \
 	--limit "management-cluster" -vv
-	# --extra-vars 'capo_openstack_dns_servers=$(CLUSTERAPI_DNS_SERVERS)'
 
 clusterapi-workload-kubeconfig: clusterapi-check-cluster-type  ## Post deployment get workload kubeconfig
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/get-kubeconfig.yml \
