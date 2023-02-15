@@ -36,7 +36,7 @@ clusterapi-install-base: clusterapi-check-hosts  ## Install base for management 
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(PLAYBOOKS_DIR)/docker_base/playbooks/containers.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "target_hosts=management-cluster" \
 	--limit "management-cluster"
 
 clusterapi-management: clusterapi-check-hosts  ## Install Minikube management cluster
@@ -44,7 +44,7 @@ clusterapi-management: clusterapi-check-hosts  ## Install Minikube management cl
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(PLAYBOOKS_DIR)/minikube/playbooks/minikube.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "target_hosts=management-cluster" \
 	--limit "management-cluster" --tags "build" -vv
 
 clusterapi: clusterapi-check-hosts  ## Install clusterapi component
@@ -52,7 +52,7 @@ clusterapi: clusterapi-check-hosts  ## Install clusterapi component
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/clusterapi.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "target_hosts=management-cluster" \
 	--limit "management-cluster"
 
 clusterapi-build-management-server:  # Complete stesp for building clusterapi management server
@@ -66,7 +66,7 @@ clusterapi-createworkload: clusterapi-check-cluster-type  ## Template workload m
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/createworkload.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "target_hosts=management-cluster" \
 	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
 	--extra-vars "capi_kustomize_overlay=$(CLUSTERAPI_CLUSTER_TYPE)" \
 	--extra-vars '{"cluster_apply": $(CLUSTERAPI_APPLY)}' \
@@ -142,15 +142,7 @@ clusterapi-byoh-reset:  ## Reset workload hosts
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/reset-byoh.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v
-
-clusterapi-byoh-port-security:  ## Unset port security on byohosts
-	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
-	OS_CLOUD=skatechops \
-	ansible-playbook $(PLAYBOOKS_DIR)/metallb/playbooks/metallb_openstack.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=localhost" -v
+	--extra-vars "target_hosts=workload-cluster" -v
 
 clusterapi-byoh-init:  ## Initialise byoh workload hosts
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
@@ -171,7 +163,7 @@ clusterapi-byoh-agent:  ## Deploy byoh agent and tokens to workload hosts
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/byoh.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v
+	--extra-vars "target_hosts=workload-cluster" -v
 
 clusterapi-byoh:  ## Prepare byoh nodes
 	make clusterapi-byoh-init
@@ -183,6 +175,14 @@ clusterapi-destroy-management:  ## Destroy Minikube management cluster
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--limit "management-cluster" --tags "destroy"
+
+clusterapi-byoh-port-security:  ## Unset port security on byohosts
+	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
+	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
+	OS_CLOUD=skatechops \
+	ansible-playbook $(PLAYBOOKS_DIR)/metallb/playbooks/metallb_openstack.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=localhost" -v
 
 clusterapi-imagebuilder:  ## Build and upload OS Image Builder Kubernetes image
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/imagebuilder.yml \

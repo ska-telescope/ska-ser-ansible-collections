@@ -1,4 +1,8 @@
 ---
+- name: Include vars
+  ansible.builtin.include_vars:
+    file: ../byoh/defaults/main.yml
+  tags: [always]
 
 - name: Clean out kubeadm install
   when: ansible_hostname in groups['nodes']
@@ -29,9 +33,24 @@
 
     - name: Remove kube packages
       ansible.builtin.apt:
-        name: ['kubeadm', 'kubelet', 'kubectl', 'docker-ce-cli', 'docker-ce']
+        name: ['kubeadm', 'kubelet', 'kubectl']
         force: true
         purge: true
+        state: absent
+
+    - name: Remove /lib/systemd/system/byohagent.service
+      ansible.builtin.file:
+        path: "/lib/systemd/system/byohagent.service"
+        state: absent
+
+    - name: "Remove {{ byoh_remote_kubeconfig_file }}"
+      ansible.builtin.file:
+        path: "{{ byoh_remote_kubeconfig_file }}"
+        state: absent
+
+    - name: "Remove {{ byoh_remote_agent_file }}"
+      ansible.builtin.file:
+        path: "{{ byoh_remote_agent_file }}"
         state: absent
 
     - name: Reload systemctl
@@ -114,15 +133,15 @@
         path: "/etc/systemd/system/kubelet.service.d"
         state: absent
 
-    - name: Remove /etc/systemd/system/docker.service.d
-      ansible.builtin.file:
-        path: "/etc/systemd/system/docker.service.d"
-        state: absent
+    # - name: Remove /etc/systemd/system/docker.service.d
+    #   ansible.builtin.file:
+    #     path: "/etc/systemd/system/docker.service.d"
+    #     state: absent
 
-    - name: Remove /etc/systemd/system/containerd.service.d
-      ansible.builtin.file:
-        path: "/etc/systemd/system/containerd.service.d"
-        state: absent
+    # - name: Remove /etc/systemd/system/containerd.service.d
+    #   ansible.builtin.file:
+    #     path: "/etc/systemd/system/containerd.service.d"
+    #     state: absent
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers
