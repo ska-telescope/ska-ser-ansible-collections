@@ -1,15 +1,17 @@
 # !/usr/bin/env ansible-playbook
 ---
-- name: Show debug info
-  hosts: "{{ target_hosts }}"
-  vars:
-    target_hosts: localhost
-  become: true
+- name: Check destroy playbook execution
+  hosts: localhost
+  vars_prompt:
+    - name: ireallymeanit
+      prompt: This will destroy Nexus along with all the data. Confirm? [yes,no]
+      private: false
   tasks:
-    - name: Show nodes info
-      ansible.builtin.debug:
-        var: hostvars[inventory_hostname]
-      when: debug
+    - name: Abort playbook
+      ansible.builtin.fail:
+        msg: >
+          "Exiting destroy playbook. To really do it, say 'yes' on the prompt"
+      when: ireallymeanit != 'yes'
 
 - name: Destroy Nexus
   hosts: "{{ target_hosts }}"
