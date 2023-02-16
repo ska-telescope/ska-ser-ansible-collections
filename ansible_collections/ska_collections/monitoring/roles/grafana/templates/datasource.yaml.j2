@@ -23,6 +23,8 @@ datasources:
     tlsSkipVerify: true
     timeInterval: "1m"
 
+{% if grafana_mid_eda_datasource_password %}
+
 - name: MidEDA
   type: postgres
   url: {{ grafana_mid_eda_datasource_url }}
@@ -37,3 +39,5 @@ datasources:
       connMaxLifetime: 14400 
       postgresVersion: {{ grafana_postgres_datasource_version }} # 903=9.3, 904=9.4, 905=9.5, 906=9.6, 1000=10
       timescaledb: true
+
+{% endif %}
