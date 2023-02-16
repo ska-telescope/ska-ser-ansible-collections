@@ -269,3 +269,7 @@ prometheus_server_alert_rules:
       message: "{% raw %}Filebeat service metrics on node {{ $labels.instance }} have not been updated in the last 2 minutes.{% endraw %}"
       summary: "{% raw %}Node {{ $labels.instance }} - Filebeat metrics not updated.{% endraw %}"
 prometheus_k8s_external_dns_entry: k8s.stfc.skao.int
+
+snmp_config_dir: /etc/snmp
+snmp_server_docker_tags: v0.21.0
+snpm_exporter_enabled: null
