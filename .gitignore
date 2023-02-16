@@ -1,5 +1,6 @@
 ansible-lint-results.txt
 prometheus_node_metric_relabel_configs.yaml
+*.tgz
 PrivateRules.mak
 __pycache__
 stackhpc/

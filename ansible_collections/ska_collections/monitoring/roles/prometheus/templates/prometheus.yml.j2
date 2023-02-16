@@ -52,7 +52,7 @@ scrape_configs:
         - "{{ prometheus_openstack_exporter_addr }}"
 {% endif %}
 
-{% if kubeconfig is not none %}
+{% if kubeconfig %}
 
 # Deprecated - pxh
   # - job_name: kube-scheduler
