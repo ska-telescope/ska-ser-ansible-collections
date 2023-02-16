@@ -12,6 +12,7 @@
       ansible.builtin.service:
         name: byohagent.service
         state: stopped
+      failed_when: false
 
     - name: Force stop kubelet
       ansible.builtin.service:

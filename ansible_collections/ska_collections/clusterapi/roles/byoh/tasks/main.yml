@@ -41,6 +41,16 @@
         state: absent
       delegate_to: "{{ groups['management-cluster'][0] }}"
 
+    - name: "Temp Remove bootstrapkubeconfig-{{ inventory_hostname }}"
+      kubernetes.core.k8s:
+        state: absent
+        api_version: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: BootstrapKubeconfig
+        namespace: default
+        name: "bootstrapkubeconfig-{{ inventory_hostname }}"
+      delegate_to: "{{ groups['management-cluster'][0] }}"
+      become: false
+
     - name: "Remove bootstrapkubeconfig-{{ inventory_hostname }}"
       kubernetes.core.k8s:
         state: absent
@@ -126,55 +136,37 @@
       delegate_to: "{{ groups['management-cluster'][0] }}"
       become: false
 
-    - name: When arm64 use locally built agent
-      when: ansible_architecture == 'aarch64'
-      block:
-        - name: Distribute byoh agent
-          ansible.builtin.copy:
-            src: "{{ byoh_local_agent_file }}"
-            dest: "{{ byoh_remote_agent_file }}"
-            owner: ubuntu
-            group: ubuntu
-            mode: '0755'
-          notify:
-            - Reload systemctl
-            - Restart byohagent
+    - name: Check if byoh agent exists
+      ansible.builtin.stat:
+        path: "{{ byoh_remote_agent_file }}"
+      register: stat_byohagent
 
-    - name: When x86_64 use locally built agent
-      when: ansible_architecture == 'x86_64'
-      block:
+    - name: Check if the kubectl version is installed
+      ansible.builtin.command: "{{ byoh_remote_agent_file }} --version 2>&1"
+      changed_when: false
+      register: byohagent_version_check
+      ignore_errors: true
 
-        - name: Check if byoh agent exists
-          ansible.builtin.stat:
-            path: "{{ byoh_remote_agent_file }}"
-          register: stat_byohagent
+    - name: Tidy up byohagent
+      ansible.builtin.file:
+        path: "{{ byoh_remote_agent_file }}"
+        state: absent
+      when: "not stat_byohagent.stat.exists or
+        byohagent_version_check.stdout.find(byoh_agent_version) == -1"
+      become: true
 
-        - name: Check if the kubectl version is installed
-          ansible.builtin.command: "{{ byoh_remote_agent_file }} --version 2>&1"
-          changed_when: false
-          register: byohagent_version_check
-          ignore_errors: true
+    - name: Calculate version vars
+      ansible.builtin.set_fact:
+        os_binary: "{% if ansible_facts.architecture == 'x86_64' %}amd64{% else %}unknown{% endif %}"
 
-        - name: Tidy up byohagent
-          ansible.builtin.file:
-            path: "{{ byoh_remote_agent_file }}"
-            state: absent
-          when: "not stat_byohagent.stat.exists or
-            byohagent_version_check.stdout.find(byoh_agent_version) == -1"
-          become: true
-
-        - name: Calculate version vars
-          ansible.builtin.set_fact:
-            os_binary: "{% if ansible_facts.architecture == 'x86_64' %}amd64{% else %}unknown{% endif %}"
-
-        - name: Byohagent install
-          ansible.builtin.get_url:
-            url: "{{ byoh_agent_url }}/{{ byoh_agent_version }}/byoh-hostagent-linux-{{ os_binary }}"
-            dest: "{{ byoh_remote_agent_file }}"
-            mode: "0755"
-          when: "not stat_byohagent.stat.exists or
-            byohagent_version_check.stdout.find(byoh_agent_version) == -1"
-          become: true
+    - name: Byohagent install
+      ansible.builtin.get_url:
+        url: "{{ byoh_agent_url }}/{{ byoh_agent_version }}/byoh-hostagent-linux-{{ os_binary }}"
+        dest: "{{ byoh_remote_agent_file }}"
+        mode: "0755"
+      when: "not stat_byohagent.stat.exists or
+        byohagent_version_check.stdout.find(byoh_agent_version) == -1"
+      become: true
 
     - name: Set the host grouping
       ansible.builtin.set_fact:
@@ -188,7 +180,7 @@
         mode: "0644"
       notify:
         - Reload systemctl
-        - Restart byohagent
+        # - Restart byohagent
 
     - name: Byohagent | Create Unit file
       ansible.builtin.template:
@@ -197,7 +189,7 @@
         mode: 0644
       notify:
         - Reload systemctl
-        - Restart byohagent
+        # - Restart byohagent
 
     - name: Reload systemctl
       ansible.builtin.systemd:
@@ -227,7 +219,7 @@
         mode: '0755'
       notify:
         - Reload systemctl
-        - Restart byohagent
+        # - Restart byohagent
 
     - name: Start byohagent
       ansible.builtin.service:
