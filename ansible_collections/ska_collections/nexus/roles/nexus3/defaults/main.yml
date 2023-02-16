@@ -23,11 +23,12 @@ nexus_publisher_password: "{{ _ | mandatory('`nexus_publisher_password` definiti
 nexus_quarantiner_password: "{{ _ | mandatory('`nexus_quarantiner_password` definition is mandatory') }}"
 nexus_anonymous_access: true
 
-# nexus_public_hostname: 'artefact.skatelescope.org' -> TODO: Review this
+nexus_public_hostname: nexus.skao.int
 nexus_public_scheme: http
 nexus_npm_bearer_token_realm: true
 nexus_docker_bearer_token_realm: true
 
+nexus_email_server_enabled: false
 nexus_email_server_host: mailrelay.skatelescope.org
 nexus_email_server_port: 587
 nexus_email_server_password: "{{ _ | mandatory('`nexus_email_server_password` definition is mandatory') }}"
@@ -64,15 +65,16 @@ nexus_ldap_connections:
     ldap_group_subtree: true
 
 nexus_delete_default_repos: true
-nexus_config_maven: true
-nexus_config_pypi: true
+
 nexus_config_docker: true
-nexus_config_raw: true
-nexus_config_npm: true
-nexus_config_gitlfs: true
 nexus_config_apt: true
-nexus_config_helm: true
-nexus_config_conan: true
+nexus_config_maven: false
+nexus_config_npm: false
+nexus_config_gitlfs: false
+nexus_config_pypi: false
+nexus_config_raw: false
+nexus_config_helm: false
+nexus_config_conan: false
 
 nexus_repos_cleanup_policies:
   - name: mvn_cleanup
@@ -153,13 +155,15 @@ nexus_privileges:
       - browse
   - name: ska-project-deploy
     description: 'Deployments to all ska-projects'
-    type: repository-admin
+    type: repository-view
     format: '*'
     repository: '*'
     actions:
       - add
       - edit
       - update
+      - read
+      - browse
   - name: docker-login-privilege
     type: repository-content-selector
     contentSelector: docker-login
@@ -170,35 +174,30 @@ nexus_privileges:
       - browse
 
 nexus_roles:
-  - id: SKADevelopers
-    name: skadevelopers
-    description: All SKA developers
-    privileges:
-      - nx-search-read
-      - nx-component-upload
-      - nx-repository-view-*-*-add
-      - nx-repository-view-*-*-browse
-      - nx-repository-view-*-*-edit
-      - nx-repository-view-*-*-read
-    roles: []
   - id: ReadOnly
     name: readonly
     description: Read only access
     privileges:
       - nx-search-read
-      - nx-repository-view-*-*-browse
-      - nx-repository-view-*-*-read
+      - ska-all-repos-read
+    roles: []
+  - id: SKADevelopers
+    name: skadevelopers
+    description: All SKA developers
+    privileges:
+      - nx-search-read
+      - ska-all-repos-read
+      - ska-project-deploy
+      - nx-component-upload
     roles: []
   - id: SKAReadWrite
     name: skareadwrite
     description: SKA Read write access
     privileges:
       - nx-search-read
+      - ska-all-repos-read
+      - ska-project-deploy
       - nx-component-upload
-      - nx-repository-view-*-*-add
-      - nx-repository-view-*-*-browse
-      - nx-repository-view-*-*-edit
-      - nx-repository-view-*-*-read
     roles: []
   - id: SKAQuarantine
     name: skaquarantine
@@ -435,6 +434,7 @@ nexus_repos_docker_proxy:
     http_port: "{{ nexus_docker_proxy_port }}"
     blob_store: "default"
     v1_enabled: true
+    force_basic_auth: false
     index_type: "HUB"
     remote_url: "https://registry-1.docker.io"
     use_nexus_certificates_to_access_index: false
@@ -450,7 +450,7 @@ nexus_repos_docker_proxy:
     blob_store: "default"
     v1_enabled: true
     index_type: "REGISTRY"
-    remote_url: "https://artefact.skatelescope.org"
+    remote_url: "https://artefact.skao.int"
     use_nexus_certificates_to_access_index: false
     cache_foreign_layers: true
     foreign_layer_url_whitelist:
@@ -505,9 +505,66 @@ nexus_repos_gitlfs_hosted:
   - name: gitlfs-internal
     blob_store: "{{ nexus_blob_names.gitlfs.blob }}"
 
-# TODO: Review
+nexus_repos_apt_ubuntu_proxy:
+  - name: ubuntu-bionic-proxy
+    remote_url: http://archive.ubuntu.com/ubuntu/
+    distribution: bionic
+    maximum_component_age: -1
+    maximum_metadata_age: -1
+    negative_cache_ttl: 60
+  - name: ubuntu-focal-proxy
+    remote_url: http://archive.ubuntu.com/ubuntu/
+    distribution: focal
+    maximum_component_age: -1
+    maximum_metadata_age: -1
+    negative_cache_ttl: 60
+  - name: ubuntu-jammy-proxy
+    remote_url: http://archive.ubuntu.com/ubuntu/
+    distribution: jammy
+    maximum_component_age: -1
+    maximum_metadata_age: -1
+    negative_cache_ttl: 60
+  - name: ubuntu-security-bionic-proxy
+    remote_url: http://security.ubuntu.com/ubuntu/
+    distribution: bionic
+    maximum_component_age: -1
+    maximum_metadata_age: -1
+    negative_cache_ttl: 60
+  - name: ubuntu-security-focal-proxy
+    remote_url: http://security.ubuntu.com/ubuntu/
+    distribution: focal
+    maximum_component_age: -1
+    maximum_metadata_age: -1
+    negative_cache_ttl: 60
+  - name: ubuntu-security-jammy-proxy
+    remote_url: http://security.ubuntu.com/ubuntu/
+    distribution: jammy
+    maximum_component_age: -1
+    maximum_metadata_age: -1
+    negative_cache_ttl: 60
+
+nexus_repos_apt_ceph_clouds_proxy:
+  - name: ceph-clouds-ubuntu-bionic-proxy
+    remote_url: http://ceph.clouds.archive.ubuntu.com/ubuntu/
+    distribution: bionic
+    maximum_component_age: -1
+    maximum_metadata_age: -1
+    negative_cache_ttl: 60
+  - name: ceph-clouds-ubuntu-focal-proxy
+    remote_url: http://ceph.clouds.archive.ubuntu.com/ubuntu/
+    distribution: focal
+    maximum_component_age: -1
+    maximum_metadata_age: -1
+    negative_cache_ttl: 60
+  - name: ceph-clouds-ubuntu-jammy-proxy
+    remote_url: http://ceph.clouds.archive.ubuntu.com/ubuntu/
+    distribution: jammy
+    maximum_component_age: -1
+    maximum_metadata_age: -1
+    negative_cache_ttl: 60
+
 nexus_repos_apt_hosted: []
-nexus_repos_apt_proxy: []
+nexus_repos_apt_proxy: "{{ nexus_repos_apt_ubuntu_proxy }}"
 
 nexus_repos_helm_hosted:
   - name: helm-internal
@@ -554,7 +611,7 @@ nexus_oci_proxy_cache: "{{ hostvars[inventory_hostname].ip }}"
 
 nexus_apt_proxy_cache_api_base_url: "{{ nexus_apt_proxy_cache }}:{{ nexus_default_port }}/service/rest/v1"
 nexus_apt_test_package: "python3-doc"
-nexus_apt_test_repository: "apt_proxy_ceph_clouds_archive_{{ ansible_distribution_release }}"
+nexus_apt_test_repository: "ceph-clouds-ubuntu-{{ ansible_distribution_release }}-proxy"
 nexus_apt_test_package_search_url: "{{ nexus_apt_proxy_cache_api_base_url }}/search?\
 repository={{ nexus_apt_test_repository }}&format=apt&name={{ nexus_apt_test_package }}"
 nexus_apt_test_repository_url: "{{ nexus_apt_proxy_cache }}:{{ nexus_default_port }}/repository/{{ nexus_apt_test_repository }}"

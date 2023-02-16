@@ -5,7 +5,7 @@ nexus_haproxy_stats_password: "{{ _ | mandatory('`nexus_haproxy_stats_password` 
 nexus_haproxy_stats_port: 9000
 nexus_haproxy_port: 8081
 nexus_haproxy_quarantine_port: 8082
-nexus_haproxy_docker_api_port: "{{ nexus_docker_hosted_port }}"
+nexus_haproxy_docker_api_port: "{{ nexus_docker_group_port }}"
 
 nexus_haproxy_name: haproxy
 nexus_haproxy_container_image: haproxy:2.4
