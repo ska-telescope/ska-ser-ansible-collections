@@ -1,2 +1,4 @@
 ---
+init_host_group_list: '{{ groups["all"] }}'
+
 change_hostnames: true

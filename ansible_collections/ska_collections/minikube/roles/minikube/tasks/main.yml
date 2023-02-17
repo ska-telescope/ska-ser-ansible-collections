@@ -42,8 +42,8 @@
         --driver=docker \
         --container-runtime=docker \
         --kubernetes-version={{ kubernetes_version }} \
-        --cpus=4 \
-        --memory=8192 \
+        --cpus={{ minikube_cpus }} \
+        --memory={{ minikube_memory }} \
         --apiserver-port=6443 \
         --apiserver-names={{ ansible_hostname }} \
         --apiserver-names={{ ansible_fqdn }} \
@@ -58,7 +58,8 @@
 
       changed_when: false
       register: minikube_exec_check
-      become: false
+      become: true
+      become_user: ubuntu
 
     - name: Apply storage classes
       kubernetes.core.k8s:

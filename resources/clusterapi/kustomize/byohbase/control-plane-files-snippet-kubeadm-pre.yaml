@@ -21,8 +21,6 @@
       echo "preKubeadmCommands kubeadm-pre [happens on controlplane] : deploy $(date)"
       set -x
 
-      /usr/src/ska-ser-ansible-collections/run-play.sh containerd.yml -vv
-
       /usr/src/ska-ser-ansible-collections/run-play.sh install-tools.yml --tags helm -vv
 
       echo "preKubeadmCommands: end $(date)"

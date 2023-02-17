@@ -7,3 +7,6 @@
     target_hosts: localhost
   roles:
     - ska_collections.clusterapi.calico
+
+  tags:
+    - calico

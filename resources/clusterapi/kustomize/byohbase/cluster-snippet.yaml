@@ -7,3 +7,4 @@ spec:
     pods:
       cidrBlocks:
       - ${CIDR_BLOCK}
+    serviceDomain: za-itf-k8s.skao.int

@@ -49,6 +49,8 @@
         --inventory 127.0.0.1, \
         --limit 127.0.0.1 \
          --become \
+         --extra-vars "capi_cluster=${CLUSTER_NAME}" \
+         --extra-vars "capi_kubeconfig=/etc/kubernetes/admin.conf" \
         $THIS_BASE/ansible_collections/ska_collections/clusterapi/playbooks/\$1 \
          --inventory /usr/src/ska-ser-ansible-collections/ansible_hosts \$${@:2}
       EOF

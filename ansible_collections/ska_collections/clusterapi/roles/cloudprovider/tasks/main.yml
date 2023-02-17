@@ -1,10 +1,26 @@
 ---
+# load shared vars with clusterapi
+- name: Include vars
+  ansible.builtin.include_vars:
+    file: "{{ item }}"
+  with_items:
+    - ../clusterapi/defaults/main.yml
+    - ../configcapo/defaults/main.yml
+  tags: [always]
 
 - name: Load cloud config
   ansible.builtin.slurp:
-    src: "{{ cloud_provider_config }}"
-  register: cloud_provider_config_ini
+    src: "{{ clusterapi_config_dir }}/cloud-provider.ini"
+  register: base64_cloud_provider_config_ini
   become: true
+
+- name: "Show base64_cloud_config"
+  ansible.builtin.debug:
+    var: base64_cloud_provider_config_ini
+
+- name: Decode Clusterapi cloud config and store as fact
+  ansible.builtin.set_fact:
+    cloud_provider_config_ini: "{{ base64_cloud_provider_config_ini.content | b64decode }}"
 
 - name: Check Cloud Config Secret exist
   kubernetes.core.k8s_info:
@@ -27,7 +43,7 @@
             name: cloud-config
             namespace: kube-system
           data:
-            cloud.conf: "{{ cloud_provider_config_ini.content }}"
+            cloud.conf: "{{ cloud_provider_config_ini }}"
 
 - name: Tidy up Cloud Provider manifests
   ansible.builtin.file:

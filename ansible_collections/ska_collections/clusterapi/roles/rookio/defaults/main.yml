@@ -3,12 +3,11 @@ debug: false
 
 rook_version: release-1.10
 rook_namespace: rook-ceph
-kube_config: /etc/kubernetes/admin.conf
-# rook_version: v1.10.2
+capi_kubeconfig: /etc/kubernetes/admin.conf
 rook_ceph_image: quay.io/ceph/ceph:v17.2.0
 
 kube_namespace: "default"
-namespace: "{{ rook_namespace }}"
+# namespace: "{{ rook_namespace }}"
 rook_external_fsid: ""
 rook_external_admin_secret: ""
 rook_external_admin_user_name: "client.admin"
