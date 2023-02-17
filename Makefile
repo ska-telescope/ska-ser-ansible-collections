@@ -107,6 +107,10 @@ clusterapi: ac-check-env ## clusterapi targets
 common: ac-check-env ## common targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/common.mk
 
+
+k8s: ac-check-env ## k8s targets
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/k8s.mk
+
 oci: ac-check-env ## oci targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/oci.mk
 

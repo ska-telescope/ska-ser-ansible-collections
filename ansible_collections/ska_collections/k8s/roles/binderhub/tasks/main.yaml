@@ -1,0 +1,25 @@
+- name: Add binderhub chart repo
+  kubernetes.core.helm_repository:
+    name: jupyterhub
+    repo_url: "https://jupyterhub.github.io/helm-chart"
+- name: Deploy binderhub chart with values
+  block:
+    - name: Template binderhub values yaml
+      template:
+        src: values.yaml.j2
+        dest: "/tmp/binderhub.values.yaml"
+        mode: "0644"
+    - name: Deploy binderhub chart with values
+      kubernetes.core.helm:
+        name: binderhub
+        chart_ref: jupyterhub/binderhub
+        chart_version: "{{ binderhub_helm_chart_version }}"
+        release_namespace: "{{ binderhub_namespace }}"
+        create_namespace: true
+        values_files:
+          - "/tmp/binderhub.values.yaml"
+  always:
+    - name: Remove values
+      ansible.builtin.file:
+        path: "/tmp/binderhub.values.yaml"
+        state: absent

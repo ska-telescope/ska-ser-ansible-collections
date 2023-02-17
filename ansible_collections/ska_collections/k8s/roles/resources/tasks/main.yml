@@ -1,0 +1,28 @@
+---
+- name: Extract resource values from Helm chart
+  import_tasks: extract_chart.yml
+  tags: extractvalues
+
+- name: Create namespaces
+  shell: |
+    set -o pipefail && \
+    kubectl --kubeconfig=/etc/kubernetes/admin.conf get ns {{ item }} || kubectl --kubeconfig=/etc/kubernetes/admin.conf create ns {{ item }}
+  args:
+    executable: /bin/bash
+  with_items: "{{ charts_namespaces }}"
+  when: inventory_hostname == groups['masters'][0]
+
+- name: Apply quotas
+  block:
+    - name: resource quota config
+      template:
+        src: resource-quotas.yaml.j2
+        dest: "/tmp/resource-quotas.yaml"
+        mode: "0644"
+
+    - name: Apply quotas
+      command: kubectl --kubeconfig=/etc/kubernetes/admin.conf -n {{ item }} apply -f /tmp/resource-quotas.yaml
+      with_items: "{{ charts_namespaces }}"
+      register: quota_output
+      changed_when: quota_output.stdout_lines|map('split')|map(attribute="1")|unique|list != ["unchanged"]
+  when: inventory_hostname == groups['masters'][0]

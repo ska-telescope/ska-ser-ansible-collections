@@ -1,0 +1,21 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: "Apply the k8s ingress role to nodes"
+  hosts: "{{ groups[target_hosts][0] }}"
+  vars:
+    target_hosts: localhost
+    k8s_kubeconfig: "/etc/kubernetes/admin.conf"
+
+  pre_tasks:
+    - name: Check k8s_kubeconfig
+      ansible.builtin.debug:
+        var: k8s_kubeconfig
+
+  roles:
+    - ska_collections.k8s.ingress
+  environment:
+    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
+
+  tags:
+    - ingress

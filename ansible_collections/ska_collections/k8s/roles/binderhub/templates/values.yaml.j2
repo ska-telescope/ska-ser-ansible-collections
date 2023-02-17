@@ -1,0 +1,103 @@
+{% if binderhub_image is not none %}
+image:
+  name: "{{ binderhub_image.name }}"
+  tag: "{{ binderhub_image.tag }}"
+{% endif %}
+registry:
+  url: "{{ binderhub_oci_registry_host_full_url }}"
+  username: "{{ binderhub_oci_registry_username }}"
+  password: "{{ binderhub_oci_registry_password }}"
+config:
+  BinderHub:
+    use_registry: true
+    image_prefix: "{{ binderhub_oci_registry_host }}/binderhub/ska-jupy-"
+    auth_enabled: true
+    hub_url: "https://{{ k8s_external_dns_entry }}/{{ binderhub_namespace }}/jupyterhub/"
+    hub_url_local: "http://proxy-public/{{ binderhub_namespace }}/jupyterhub/"
+    base_url: "/{{ binderhub_namespace }}/"
+  DockerRegistry:
+    token_url: "{{ binderhub_oci_registry_host_full_url }}/v2/token?service="
+ingress:
+  enabled: true
+  pathSuffix: "{{ binderhub_namespace }}/(.*)"
+  pathType: Prefix
+  annotations:
+    kubernetes.io/ingress.class: nginx
+jupyterhub:
+  imagePullSecret:
+    create: true
+    automaticReferenceInjection: true
+    registry: "{{ binderhub_oci_registry_host_full_url }}"
+    username: "{{ binderhub_oci_registry_username }}"
+    password: "{{ binderhub_oci_registry_password }}"
+  cull:
+    enabled: true
+    users: true # cull authenticated users too
+    timeout: 7200
+  hub:
+    redirectToServer: false
+    baseUrl: "/{{ binderhub_namespace }}/jupyterhub"
+    allowNamedServers: true
+    namedServerLimitPerUser: {{ jupyterhub_named_server_limit_per_user }}
+    db:
+      pvc:
+        storageClassName: nfss1
+    config:
+      BinderSpawner:
+        auth_enabled: false
+      AzureAdOAuthenticator:
+        client_id: "{{ azuread_client_id }}"
+        client_secret: "{{ azuread_client_secret }}"
+        oauth_callback_url: "{{ jupyterhub_callback_url }}"
+        tenant_id: "{{ azuread_tenant_id }}"
+      JupyterHub:
+        authenticator_class: azuread
+    services:
+      binder:
+        oauth_no_confirm: true
+        oauth_redirect_uri: "{{ binderhub_callback_url }}"
+        oauth_client_id: "{{ azuread_client_id }}"
+        admin: true
+    extraConfig:
+      hub_extra: |
+        c.JupyterHub.redirect_to_server = False
+      binder: |
+        from kubespawner import KubeSpawner
+
+        class BinderSpawner(KubeSpawner):
+          def start(self):
+            if 'image' in self.user_options:
+              # binder service sets the image spec via user options
+              self.image = self.user_options['image']
+            return super().start()
+        c.JupyterHub.spawner_class = BinderSpawner
+    resources:
+      requests:
+        cpu: 100m     # 100m = 0.1 CPU
+        memory: 128Mi # 128Mi = 0.125 GB mem
+        ephemeral-storage: 512Mi
+      limits:
+        cpu: 200m     # 200m = 0.2 CPU
+        memory: 256Mi # 256Mi = 0.25 GB mem
+        ephemeral-storage: 1Gi
+  singleuser:
+    cmd: jupyterhub-singleuser
+    memory:
+      limit: 2G
+      guarantee: 2G
+    cpu:
+      limit: 1
+      guarantee: 1
+    storage:
+      type: dynamic
+      dynamic:
+        storageClass: nfss1
+        pvcNameTemplate: claim-{userid}-{servername}
+        volumeNameTemplate: vol-{userid}-{servername}
+      capacity: 2Gi
+  ingress:
+    enabled: true
+    pathSuffix: "(.*)"
+    pathType: Prefix
+    annotations:
+      kubernetes.io/ingress.class: nginx

@@ -1,0 +1,3 @@
+---
+echoserver_version: 1.10
+replicas: 3

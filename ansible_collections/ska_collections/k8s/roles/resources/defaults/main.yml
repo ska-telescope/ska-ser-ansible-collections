@@ -1,0 +1,25 @@
+---
+# defaults file for resources
+
+# Directory to copy. Default is: base folder where the playbook is run. Define this value to override it!
+# current_dir: /home/ubuntu/systems-common-roles
+
+# Memory size format. Set this true if you want csv file memory format to be human readable. It is false by default to enable easy calculations on values
+memory_format: false
+
+# helm chart variables for total values extraction
+# chart_url: https://gitlab.com/ska-telescope/skampi.git
+# chart_url: https://artefact.skao.int/repository/helm-internal/ska-archiver-0.1.8.tgz
+# chart_dir: charts/skampi
+
+charts_namespaces:
+  - integration
+
+charts_quotas_cpu_requests: 16000m
+charts_quotas_cpu_limits: 16000m
+
+charts_quotas_memory_requests: 16Gi
+charts_quotas_memory_limits: 16Gi
+
+charts_quotas_ephemeral_storage_requests: 15Gi
+charts_quotas_ephemeral_storage_limits: 20Gi

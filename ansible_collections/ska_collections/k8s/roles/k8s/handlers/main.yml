@@ -1,0 +1,7 @@
+---
+- name: Restart kubelet
+  become: true
+  service:
+    name: kubelet
+    state: restarted
+    enabled: true

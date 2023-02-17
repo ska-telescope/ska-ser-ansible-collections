@@ -1,0 +1,6 @@
+- name: "Install Binderhub"
+  hosts:
+    - masters[0]
+  become: true
+  roles:
+    - role: ska_cicd.k8s.binderhub

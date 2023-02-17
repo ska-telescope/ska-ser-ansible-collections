@@ -45,7 +45,7 @@
     initpause: 10
     wait: 20
     retries: 15
-    kubectl_kubeconfig: /etc/kubernetes/admin.conf
+    kubectl_kubeconfig: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=capi_kubeconfig) | mandatory }}"
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers
