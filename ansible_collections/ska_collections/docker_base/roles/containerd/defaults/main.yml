@@ -14,6 +14,7 @@ containerd_crictl_version: v1.24.2
 
 containerd_activate_nvidia: false
 containerd_ignore_nvidia_fail: false
+containerd_add_volume_prune_cron: true
 
 containerd_deb_dependencies:
   - apt-transport-https
