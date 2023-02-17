@@ -42,7 +42,7 @@ alerting:
 scrape_configs:
   {{ prometheus_scrape_configs | to_nice_yaml(indent=2) | indent(2,False) }}
 
-{% if prometheus_openstack_exporter_addr is defined %}
+{% if prometheus_openstack_exporter_addr | length > 0 %}
   - job_name: "openstack_exporter"
     scrape_interval: 60s
     scrape_timeout: 45s
