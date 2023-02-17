@@ -9,7 +9,7 @@ ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
 
-TAGS ?= all,metallb,rookio,standardprovisioner,metallb ## Ansible tags to run in post deployment processing
+TAGS ?= all,metallb,ingress,rookio,standardprovisioner,metallb ## Ansible tags to run in post deployment processing
 
 .DEFAULT_GOAL := help
 
