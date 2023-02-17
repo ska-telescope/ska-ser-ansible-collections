@@ -1,5 +1,5 @@
 ---
-- name: Generate relabel file
+- name: Generate targets and relabel files
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
@@ -16,6 +16,20 @@
       mode: "0700"
       recurse: true
       path: /tmp/relabel_prom
+
+  - name: Check if poetry is installed
+    ansible.builtin.shell: "poetry && echo 'present' || echo 'not_present'"
+    register: poetry_exists
+
+  - name: Install poetry with pip
+    ansible.builtin.pip:
+      name: poetry
+    when: poetry_exists.stdout  == "not_present"
+
+  - name: Copy Python dependencies file
+    ansible.builtin.copy:
+      src: ../roles/prometheus/files/helper/pyproject.toml
+      dest: "{{destination_path}}/pyproject.toml"
 
   - name: Copy python script to temp folder
     ansible.builtin.copy:
@@ -36,11 +50,16 @@
       mode: "755"
 
   - name: Run python script 
-    shell: python3 "{{destination_path}}/prom_helper.py" -g "{{destination_path}}/installation"
+    ansible.builtin.shell: |
+      cd {{destination_path}}; 
+      source $(poetry env info --path)/bin/activate; 
+      python3 "prom_helper.py" -g "installation"
+    args:
+      executable: /bin/bash
 
   - name: Find all json files
     ansible.builtin.find:
-      paths: /home/ubuntu
+      paths: "{{destination_path}}"
       patterns: '*.json'
       file_type: file
     register: json_files
@@ -54,6 +73,6 @@
 
   - name: Fetch relabel file
     ansible.builtin.fetch:
-      src: "prometheus_node_metric_relabel_configs.yaml"
+      src: "{{destination_path}}/prometheus_node_metric_relabel_configs.yaml"
       dest: "{{ playbook_dir }}/../../../../"
       flat: yes
