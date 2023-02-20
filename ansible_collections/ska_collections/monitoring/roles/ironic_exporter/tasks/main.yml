@@ -1,10 +1,10 @@
 ---
-# - name: "Clone Ironic exporter {{ ironic_exporter_version }}"
-#   ansible.builtin.git:
-#     repo: https://gitlab.com/piersharding/openstack-exporter.git
-#     dest: /home/ubuntu/exporter
-#     version: "{{ ironic_exporter_version }}"
-#     force: true
+- name: "Clone Ironic exporter {{ ironic_exporter_version }}"
+  ansible.builtin.git:
+    repo: https://gitlab.com/piersharding/openstack-exporter.git
+    dest: /home/ubuntu/exporter
+    version: "{{ ironic_exporter_version }}"
+    force: true
 
 - name: Build Ironic Exporter Image
   community.docker.docker_image:
@@ -42,5 +42,5 @@
     ports:
       - "9180:9180"
     volumes:
-      - "{{ironic_clouds_file}}:/home/ubuntu/.config/openstack/"
+      - "{{ ironic_clouds_file }}:/home/ubuntu/.config/openstack/"
       - "/etc/hosts:/etc/hosts:ro"

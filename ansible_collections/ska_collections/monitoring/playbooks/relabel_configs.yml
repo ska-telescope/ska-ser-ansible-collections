@@ -10,69 +10,73 @@
   become: true
   tasks:
 
-  - name: Ensure directories exists
-    ansible.builtin.file:
-      state: directory
-      mode: "0700"
-      recurse: true
-      path: /tmp/relabel_prom
+    - name: Ensure directories exists
+      ansible.builtin.file:
+        state: directory
+        mode: 0700
+        recurse: true
+        path: /tmp/relabel_prom
 
-  - name: Check if poetry is installed
-    ansible.builtin.shell: "poetry && echo 'present' || echo 'not_present'"
-    register: poetry_exists
+    - name: Check if poetry is installed
+      ansible.builtin.shell: "poetry && echo 'present' || echo 'not_present'"
+      register: poetry_exists
+      changed_when: false
 
-  - name: Install poetry with pip
-    ansible.builtin.pip:
-      name: poetry
-    when: poetry_exists.stdout  == "not_present"
+    - name: Install poetry with pip
+      ansible.builtin.pip:
+        name: poetry
+      when: poetry_exists.stdout == "not_present"
 
-  - name: Copy Python dependencies file
-    ansible.builtin.copy:
-      src: ../roles/prometheus/files/helper/pyproject.toml
-      dest: "{{destination_path}}/pyproject.toml"
+    - name: Copy Python dependencies file
+      ansible.builtin.copy:
+        src: ../roles/prometheus/files/helper/pyproject.toml
+        dest: "{{ destination_path }}/pyproject.toml"
+        mode: 0644
 
-  - name: Copy python script to temp folder
-    ansible.builtin.copy:
-      src: ../roles/prometheus/files/helper/prom_helper.py
-      dest: "{{destination_path}}/prom_helper.py"
+    - name: Copy python script to temp folder
+      ansible.builtin.copy:
+        src: ../roles/prometheus/files/helper/prom_helper.py
+        dest: "{{ destination_path }}/prom_helper.py"
+        mode: 0644
 
-  - name: Archive DataCentre inventory Files
-    community.general.archive:
-      path: "{{ inventory_path }}"
-      dest: inventory.tgz
-      mode: "644"
-    delegate_to: localhost
+    - name: Archive DataCentre inventory Files
+      community.general.archive:
+        path: "{{ inventory_path }}"
+        dest: inventory.tgz
+        mode: 0644
+      delegate_to: localhost
 
-  - name: Extract Into Configuration Folder
-    ansible.builtin.unarchive:
-      src: inventory.tgz
-      dest: "{{ destination_path }}"
-      mode: "755"
+    - name: Extract Into Configuration Folder
+      ansible.builtin.unarchive:
+        src: inventory.tgz
+        dest: "{{ destination_path }}"
+        mode: 0755
 
-  - name: Run python script 
-    ansible.builtin.shell: |
-      cd {{destination_path}}; 
-      source $(poetry env info --path)/bin/activate; 
-      python3 "prom_helper.py" -g "installation"
-    args:
-      executable: /bin/bash
+    - name: Run python script
+      ansible.builtin.shell: |
+        cd {{ destination_path }};
+        source $(poetry env info --path)/bin/activate;
+        python3 "prom_helper.py" -g "installation"
+      args:
+        executable: /bin/bash
+      changed_when: false
 
-  - name: Find all json files
-    ansible.builtin.find:
-      paths: "{{destination_path}}"
-      patterns: '*.json'
-      file_type: file
-    register: json_files
+    - name: Find all json files
+      ansible.builtin.find:
+        paths: "{{ destination_path }}"
+        patterns: '*.json'
+        file_type: file
+      register: json_files
 
-  - name: Fetch json files
-    ansible.builtin.fetch:
-      src: "{{ item.path }}"
-      dest: "{{ playbook_dir }}/../roles/prometheus/files/"
-      flat: yes
-    with_items: "{{ json_files.files }}"
+    - name: Fetch json files
+      ansible.builtin.fetch:
+        src: "{{ item.path }}"
+        dest: "{{ playbook_dir }}/../roles/prometheus/files/"
+        flat: true
+      with_items: "{{ json_files.files }}"
 
-  - name: Fetch relabel file
-    ansible.builtin.fetch:
-      src: "{{destination_path}}/prometheus_node_metric_relabel_configs.yaml"
-      dest: "{{ playbook_dir }}/../../../../"
-      flat: yes
+    - name: Fetch relabel file
+      ansible.builtin.fetch:
+        src: "{{ destination_path }}/prometheus_node_metric_relabel_configs.yaml"
+        dest: "{{ playbook_dir }}/../../../../"
+        flat: true

@@ -1,6 +1,6 @@
 ---
 
-- name: irac-exporter-dashboard make sure grafana configuration directories exist
+- name: IDrac-exporter-dashboard make sure grafana configuration directories exist
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -10,7 +10,7 @@
     - "/etc/grafana/provisioning/dashboards/idrac-exporter-dashboard"
     - "/etc/grafana/provisioning/notifiers"
 
-- name: iDrac-exporter-dashboard Copy up resource files
+- name: IDrac-exporter-dashboard Copy up resource files
   ansible.builtin.copy:
     src: "{{ role_path }}/files/dashboards/idrac-exporter/{{ item }}"
     dest: "/etc/grafana/provisioning/dashboards/idrac-exporter-dashboard/{{ item }}"
@@ -18,7 +18,7 @@
   with_items:
     - idrac-exporter.json
 
-- name: iDrac-exporter-dashboard Write dashboards provisioning config file
+- name: IDrac-exporter-dashboard Write dashboards provisioning config file
   ansible.builtin.template:
     src: dashboards-idrac-exporter-dashboard.yml.j2
     dest: /etc/grafana/provisioning/dashboards/idrac-exporter-dashboard.yml

@@ -5,12 +5,13 @@
     state: directory
     mode: "0700"
     recurse: true
-    path: "{{prometheus_snmp_config_dir}}"
+    path: "{{ prometheus_snmp_config_dir }}"
 
-- name: Copy snmp configuration file to {{snmp_config_dir}}
+- name: Copy snmp configuration file to {{ snmp_config_dir }}
   ansible.builtin.copy:
     src: ../roles/prometheus/files/snmp_config.yml
-    dest: "{{prometheus_snmp_config_dir}}/snmp.yml"
+    dest: "{{ prometheus_snmp_config_dir }}/snmp.yml"
+    mode: 0744
 
 
 - name: Pull snmp image {{ snmp_server_docker_tags }}
@@ -36,5 +37,5 @@
     ports:
       - "9116:9116"
     volumes:
-      - "{{prometheus_snmp_config_dir}}:/etc/snmp_exporter/"
+      - "{{ prometheus_snmp_config_dir }}:/etc/snmp_exporter/"
       - "/etc/hosts:/etc/hosts:ro"

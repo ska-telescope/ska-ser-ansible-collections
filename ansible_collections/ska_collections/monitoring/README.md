@@ -44,6 +44,19 @@ Playbooks can be found in the [playbooks/](./playbooks) folder in the following 
 | [deploy_thanos.yml](./playbooks/deploy_thanos.yml) | Deploys [Thanos](https://thanos.io/) |
 
 
+### Generate Prometheus Targets
+
+Firstly before deploying the prometheus service you need to generate the target configuration so it can get all the instances that are producing metrics (node-exporter, docker-exporter, cadvisor...). For this you need to run the following playbook:
+
+```
+ansible-playbook <playbooks-folder-path>/relabel_configs.yml \
+	-i <inventory_file> \
+	--extra-vars "target_hosts=<target-hosts>"
+```
+
+This will use the Env Variables ***DATACENTRE*** and ***ENVIRONMENT*** to fetch the inventory from there so it can loop over those machines and check which ones are producing metrics. This will populate the files in the [files folder](./monitoring/roles/prometheus/files/). 
+This playbook will against the machine passed to target_hosts where it will install poetry if not there already and create a virtual environment.
+
 In order to run these playbooks, it's needed to specify the Ansible Inventory location and the respective group/hosts ***target_hosts*** variable.
 
 Run **deploy_monitoring** playbook as an example:
