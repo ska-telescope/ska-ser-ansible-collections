@@ -16,6 +16,7 @@ Tested with the current Ansible 6.5.x releases.
 | [monitoring.node_exporter](./roles/node_exporter) | Installs the [prometheus node exporter](https://github.com/prometheus/node_exporter) |
 | [monitoring.prometheus](./roles/prometheus) | Installs [Prometheus](https://prometheus.io/) |
 | [monitoring.thanos](./roles/thanos) | Installs [Thanos](https://thanos.io/) components |
+| [monitoring.ironic_exporter](./roles/ironic_exporter) | Deploys [ironic_exporter](https://gitlab.com/piersharding/openstack-exporter.git) 
 
 
 ## Installation
@@ -42,7 +43,22 @@ Playbooks can be found in the [playbooks/](./playbooks) folder in the following 
 | [deploy_node_exporter.yml](./playbooks/deploy_node_exporter.yml) | Deploys [prometheus node exporter](https://github.com/prometheus/node_exporter) |
 | [deploy_prometheus.yml](./playbooks/deploy_prometheus.yml) | Deploys [Prometheus](https://prometheus.io/) |
 | [deploy_thanos.yml](./playbooks/deploy_thanos.yml) | Deploys [Thanos](https://thanos.io/) |
+| [deploy_ironic_exporter.yml](./playbooks/deploy_ironic_exporter.yml) | Deploys [ironic_exporter](https://gitlab.com/piersharding/openstack-exporter.git) |
+| [generate_targets.yml](./playbooks/generate_targets.yml) | Generates Prometheus targets |
 
+
+### Generate Prometheus Targets
+
+Firstly before deploying the prometheus service you need to generate the target configuration so it can get all the instances that are producing metrics (node-exporter, docker-exporter, cadvisor...). For this you need to run the following playbook:
+
+```
+ansible-playbook <playbooks-folder-path>/generate_targets.yml \
+	-i <inventory_file> \
+	--extra-vars "target_hosts=<target-hosts>"
+```
+
+This will use the Env Variables ***DATACENTRE*** and ***ENVIRONMENT*** to fetch the inventory from there so it can loop over those machines and check which ones are producing metrics. This will populate the files in the [files folder](./monitoring/roles/prometheus/files/). 
+This playbook will against the machine passed to target_hosts where it will install poetry if not there already and create a virtual environment.
 
 In order to run these playbooks, it's needed to specify the Ansible Inventory location and the respective group/hosts ***target_hosts*** variable.
 

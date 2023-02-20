@@ -22,6 +22,9 @@
 - name: Task grafana_openstack_exporter
   ansible.builtin.include_tasks: grafana_openstack_exporter.yml
 
+- name: Task grafana_idrac_exporter
+  ansible.builtin.include_tasks: grafana_idrac_exporter.yml
+
 - name: Task grafana_alerts
   ansible.builtin.include_tasks: grafana_alerts.yml
 

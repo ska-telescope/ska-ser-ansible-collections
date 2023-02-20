@@ -40,6 +40,7 @@
     command:
       - "--config.file=/etc/alertmanager/alertmanager.yml"
       - "--web.external-url={{ prometheus_alertmanager_url | default('http://' + ansible_default_ipv4.address + ':9093') }}"
+      - "--cluster.advertise-address={{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] + ':9093' }}"
     state: started
     user: root
     restart: true
