@@ -1,8 +1,8 @@
 #!/usr/bin/env ansible-playbook
 ---
 
-# Destroy mettalb and coredns
-- name: Destroy Metallb
+# Destroy coredns
+- name: Destroy ExternalDNS"
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
@@ -10,10 +10,6 @@
   gather_facts: true
 
   tasks:
-    - name: Destroy Metallb
-      ansible.builtin.import_role:
-        name: metallb
-        tasks_from: destroy
 
     - name: Destroy externaldns
       ansible.builtin.import_role:

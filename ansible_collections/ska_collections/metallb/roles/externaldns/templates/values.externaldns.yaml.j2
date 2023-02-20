@@ -117,13 +117,13 @@ servers:
       - name: ready
       # Required to query kubernetes API for data
       - name: kubernetes
-        parameters: cluster.local in-addr.arpa ip6.arpa
+        parameters: {{ externaldns_cluster_domain }} in-addr.arpa ip6.arpa
         configBlock: |-
           pods insecure
           fallthrough in-addr.arpa ip6.arpa
           ttl 30
       - name: k8s_external
-        parameters: svc.cluster.local
+        parameters: svc.{{ externaldns_cluster_domain }}
       # Serves a /metrics endpoint on :9153, required for serviceMonitor
     #  - name: prometheus
     #    parameters: 0.0.0.0:9153

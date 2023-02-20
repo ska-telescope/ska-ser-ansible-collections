@@ -5,9 +5,3 @@
     state: absent
     name: "metallb"
     release_namespace: metallb
-
-- name: Delete cordns Helm release
-  kubernetes.core.helm:
-    state: absent
-    name: "extdns"
-    release_namespace: extdns
