@@ -14,7 +14,7 @@
 
   roles:
     - ska_collections.k8s.metallb
-    - ska_collections.metallb.exernaldns
+    - ska_collections.metallb.externaldns
   environment:
     KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
 
