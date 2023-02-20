@@ -87,6 +87,15 @@ ifneq (,$(findstring rookio,$(TAGS)))
 	-vv
 endif
 
+ifneq (,$(findstring metrics,$(TAGS)))
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/metrics.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=kubernetes-controlplane" \
+	--limit "kubernetes-controlplane" \
+	--tags "$(TAGS)" \
+	-vv
+endif
+
 k8s-byoh-reset:  ## Reset workload hosts
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \

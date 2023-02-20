@@ -1,0 +1,12 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: "Apply the k8s metrics to cluster"
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  roles:
+    - metrics
+  tags:
+    - metrics
+
