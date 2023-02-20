@@ -9,7 +9,7 @@ ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
 
-TAGS ?= all,metallb,ingress,rookio,standardprovisioner,metallb ## Ansible tags to run in post deployment processing
+TAGS ?= all,metallb,ping,ingress,rookio,standardprovisioner,metallb ## Ansible tags to run in post deployment processing
 
 .DEFAULT_GOAL := help
 
@@ -60,6 +60,15 @@ endif
 #	# --extra-vars 'ingress_nginx_version: 1.3.1 ingress_lb_suffix: "{{ capi_cluster }}"'
 ifneq (,$(findstring ingress,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/ingress.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=kubernetes-controlplane" \
+	--limit "kubernetes-controlplane" \
+	--tags "$(TAGS)" \
+	-vv
+endif
+
+ifneq (,$(findstring ping,$(TAGS)))
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/ping.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=kubernetes-controlplane" \
 	--limit "kubernetes-controlplane" \
