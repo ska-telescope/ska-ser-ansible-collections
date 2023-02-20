@@ -33,4 +33,4 @@ grafana_azuread_client_id: "{{ _ | mandatory('`grafana_azuread_client_id` defini
 
 # secrets
 
-grafana_mid_eda_datasource_password: "{{ _ | mandatory('`grafana_mid_eda_datasource_password` definition is mandatory') }}"
+grafana_mid_eda_datasource_password:
