@@ -3,4 +3,5 @@
 - name: Install ping-service to default namespace
   kubernetes.core.k8s:
     state: present
+    namespace: default
     template: 'ping-service.yaml.j2'
