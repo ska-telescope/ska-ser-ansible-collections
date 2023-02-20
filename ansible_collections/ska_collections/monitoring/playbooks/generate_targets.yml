@@ -55,6 +55,7 @@
     - name: Run python script
       ansible.builtin.shell: |
         cd {{ destination_path }};
+        poetry install;
         source $(poetry env info --path)/bin/activate;
         python3 "prom_helper.py" -g "installation"
       args:

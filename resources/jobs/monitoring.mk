@@ -118,8 +118,8 @@ ironic-exporter: check_hosts ## Install Prometheus ironic exporter - pass INVENT
 	-e 'ansible_python_interpreter=/usr/bin/python3' \
 	--limit $(NODES)
 
-update-targets: check_hosts ## Update json file for prometheus targets definition
-	@ansible-playbook $(PLAYBOOKS_DIR)/relabel_configs.yml \
+generate-targets: check_hosts ## Update json file for prometheus targets definition
+	@ansible-playbook $(PLAYBOOKS_DIR)/generate_targets.yml \
 	-i $(INVENTORY) \
 	-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \

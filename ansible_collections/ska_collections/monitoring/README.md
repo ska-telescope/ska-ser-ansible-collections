@@ -44,7 +44,7 @@ Playbooks can be found in the [playbooks/](./playbooks) folder in the following 
 | [deploy_prometheus.yml](./playbooks/deploy_prometheus.yml) | Deploys [Prometheus](https://prometheus.io/) |
 | [deploy_thanos.yml](./playbooks/deploy_thanos.yml) | Deploys [Thanos](https://thanos.io/) |
 | [deploy_ironic_exporter.yml](./playbooks/deploy_ironic_exporter.yml) | Deploys [ironic_exporter](https://gitlab.com/piersharding/openstack-exporter.git) |
-| [relabel_configs.yml](./playbooks/relabel_configs.yml) | Generates Prometheus targets |
+| [generate_targets.yml](./playbooks/generate_targets.yml) | Generates Prometheus targets |
 
 
 ### Generate Prometheus Targets
@@ -52,7 +52,7 @@ Playbooks can be found in the [playbooks/](./playbooks) folder in the following 
 Firstly before deploying the prometheus service you need to generate the target configuration so it can get all the instances that are producing metrics (node-exporter, docker-exporter, cadvisor...). For this you need to run the following playbook:
 
 ```
-ansible-playbook <playbooks-folder-path>/relabel_configs.yml \
+ansible-playbook <playbooks-folder-path>/generate_targets.yml \
 	-i <inventory_file> \
 	--extra-vars "target_hosts=<target-hosts>"
 ```
