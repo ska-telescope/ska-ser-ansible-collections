@@ -16,6 +16,7 @@ Tested with the current Ansible 6.5.x releases.
 | [monitoring.node_exporter](./roles/node_exporter) | Installs the [prometheus node exporter](https://github.com/prometheus/node_exporter) |
 | [monitoring.prometheus](./roles/prometheus) | Installs [Prometheus](https://prometheus.io/) |
 | [monitoring.thanos](./roles/thanos) | Installs [Thanos](https://thanos.io/) components |
+| [monitoring.ironic_exporter](./roles/ironic_exporter) | Deploys [ironic_exporter](https://gitlab.com/piersharding/openstack-exporter.git) 
 
 
 ## Installation
@@ -42,6 +43,8 @@ Playbooks can be found in the [playbooks/](./playbooks) folder in the following 
 | [deploy_node_exporter.yml](./playbooks/deploy_node_exporter.yml) | Deploys [prometheus node exporter](https://github.com/prometheus/node_exporter) |
 | [deploy_prometheus.yml](./playbooks/deploy_prometheus.yml) | Deploys [Prometheus](https://prometheus.io/) |
 | [deploy_thanos.yml](./playbooks/deploy_thanos.yml) | Deploys [Thanos](https://thanos.io/) |
+| [deploy_ironic_exporter.yml](./playbooks/deploy_ironic_exporter.yml) | Deploys [ironic_exporter](https://gitlab.com/piersharding/openstack-exporter.git) |
+| [relabel_configs.yml](./playbooks/relabel_configs.yml) | Generates Prometheus targets |
 
 
 ### Generate Prometheus Targets
