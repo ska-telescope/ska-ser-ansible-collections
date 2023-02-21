@@ -1,16 +1,5 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: Show debug info
-  hosts: "{{ target_hosts }}"
-  vars:
-    target_hosts: localhost
-  become: true
-  tasks:
-    - name: "Show stack nodes info"
-      ansible.builtin.debug:
-        var: hostvars[inventory_hostname]
-      when: debug
-
 - name: List existing elasticsearch api keys
   hosts: "{{ (groups[target_hosts + '-loadbalancer'][0]
         if ((groups[target_hosts + '-loadbalancer'] | default([])) | length) > 0

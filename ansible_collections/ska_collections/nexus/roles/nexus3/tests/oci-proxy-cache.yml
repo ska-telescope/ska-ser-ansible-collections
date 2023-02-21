@@ -9,7 +9,6 @@
     url: "{{ nexus_oci_proxy_cache_api_base_url }}/status"
     method: GET
     force: true
-    return_content: true
     status_code: [200]
   register: health_info
   until: "'OK' in health_info.msg"
@@ -26,7 +25,7 @@
 
 - name: Pulling OCI image using docker
   block:
-    - name: "Check if test package exists: {{ nexus_oci_test_image }}:{{ nexus_oci_test_image_tag }}"
+    - name: "Check if test package exists: {{ nexus_oci_test_image_name }}:{{ nexus_oci_test_image_tag }}"
       ansible.builtin.uri:
         url: "{{ nexus_oci_test_package_search_url }}"
         method: GET
@@ -42,18 +41,18 @@
         return_content: true
         status_code: [204]
         url_username: admin
-        url_password: "{{ nexus_vault_admin_password }}"
+        url_password: "{{ nexus_admin_password }}"
         force_basic_auth: true
       with_items: "{{ package_info.json['items'] }}"
       loop_control:
         label: "{{ item.id }} => {{ item.name }}"
     - name: Remove image from the local registry
       community.general.docker_image:
-        name: "{{ nexus_oci_test_image }}:{{ nexus_oci_test_image_tag }}"
+        name: "{{ nexus_oci_test_image }}"
         state: absent
-    - name: "Pull OCI image: {{ nexus_oci_test_image }}:{{ nexus_oci_test_image_tag }}"
+    - name: "Pull OCI image: {{ nexus_oci_test_image }}"
       community.general.docker_image:
-        name: "{{ nexus_oci_test_image }}:{{ nexus_oci_test_image_tag }}"
+        name: "{{ nexus_oci_test_image }}"
         source: pull
         force_source: true
         state: present

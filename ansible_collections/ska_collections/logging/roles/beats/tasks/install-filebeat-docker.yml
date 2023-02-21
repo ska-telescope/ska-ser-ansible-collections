@@ -1,5 +1,5 @@
 ---
-- name: "Ensure Docker is running"
+- name: Ensure Docker is running
   ansible.builtin.assert:
     that:
       - "docker_detected"

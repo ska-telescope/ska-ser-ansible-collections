@@ -30,11 +30,11 @@
   register: clusterctl_version_check
   ignore_errors: true
 
-- name: "Expected clusterctl version"
+- name: Expected clusterctl version
   ansible.builtin.debug:
     var: clusterctl_version
 
-- name: "Check clusterctl version"
+- name: Check clusterctl version
   ansible.builtin.debug:
     var: clusterctl_version_check.stdout
 

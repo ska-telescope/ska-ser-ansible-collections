@@ -5,9 +5,13 @@ SECRETS_ROOT_VAR?=secrets
 
 INVENTORY?=$(PLAYBOOKS_ROOT_DIR)
 JOBS_DIR=resources/jobs
+ANSIBLE_COLLECTIONS ?= ./ansible_collections/ska_collections/
 ANSIBLE_COLLECTIONS_PATHS ?=
 PLAYBOOKS_ROOT_DIR ?=
-ANSIBLE_LINT_PARAMETERS=--exclude ansible_collections/ska_collections/monitoring/roles/prometheus/files --skip-list "yaml[line-length]"
+ANSIBLE_LINT_PARAMETERS=--exclude ./ansible_collections/ska_collections/monitoring/roles/prometheus/files \
+	--exclude ./ansible_collections/ansible-thoteam.nexus3-oss \
+	--exclude ./ansible_collections/stackhpc \
+	--skip-list "yaml[line-length]"
 PLAYBOOKS_HOSTS ?=
 ANSIBLE_CONFIG ?=
 ANSIBLE_SSH_ARGS ?=

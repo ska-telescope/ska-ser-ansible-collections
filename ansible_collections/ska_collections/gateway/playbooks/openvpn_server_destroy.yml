@@ -1,6 +1,19 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: Destroy openvpn Server
+- name: Check destroy playbook execution
+  hosts: localhost
+  vars_prompt:
+    - name: ireallymeanit
+      prompt: This will destroy the OpenVPN server along with all the data. Confirm? [yes,no]
+      private: false
+  tasks:
+    - name: Abort playbook
+      ansible.builtin.fail:
+        msg: >
+          "Exiting destroy playbook. To really do it, say 'yes' on the prompt"
+      when: ireallymeanit != 'yes'
+
+- name: Destroy OpenVPN Server
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost

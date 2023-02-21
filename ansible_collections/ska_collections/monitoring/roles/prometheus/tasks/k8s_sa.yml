@@ -52,6 +52,16 @@
   ansible.builtin.command: "kubectl --kubeconfig=/etc/kubernetes/admin.conf create sa prometheus -n kube-system"
   when: sa_account.rc != 0
 
+- name: Copy up token configuration file
+  ansible.builtin.copy:
+    src: "prometheus_token.yml"
+    dest: "/tmp/prometheus_token.yml"
+    mode: 0644
+
+- name: Create secret for prometheus sa
+  ansible.builtin.command: "kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f /tmp/prometheus_token.yml"
+  changed_when: false
+
 - name: Copy up configuration file
   ansible.builtin.copy:
     src: "prometheus_rlb.yml"
@@ -79,7 +89,7 @@
 - name: Get prom_secret # noqa risky-shell-pipe no-changed-when
   ansible.builtin.shell: |
     kubectl --kubeconfig=/etc/kubernetes/admin.conf get secrets -n kube-system --output=json \
-    | jq -r '.items[].metadata | select(.name|startswith("prometheus-token-")).name'
+    | jq -r '.items[].metadata | select(.name|startswith("prometheus-token")).name'
   register: prom_secret
 
 - name: Save token in destination file # noqa no-changed-when risky-shell-pipe

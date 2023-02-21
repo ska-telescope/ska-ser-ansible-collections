@@ -1,0 +1,41 @@
+---
+
+- name: Ensure directories exists
+  ansible.builtin.file:
+    state: directory
+    mode: "0700"
+    recurse: true
+    path: "{{ prometheus_snmp_config_dir }}"
+
+- name: Copy snmp configuration file to {{ snmp_config_dir }}
+  ansible.builtin.copy:
+    src: ../roles/prometheus/files/snmp_config.yml
+    dest: "{{ prometheus_snmp_config_dir }}/snmp.yml"
+    mode: 0744
+
+
+- name: Pull snmp image {{ snmp_server_docker_tags }}
+  community.docker.docker_image:
+    name: prom/snmp-exporter
+    tag: "{{ prometheus_snmp_server_docker_tags }}"
+    source: pull
+
+- name: Stop prometheus container
+  community.docker.docker_container:
+    name: snmp_exporter
+    stop_timeout: 180
+    state: absent
+
+- name: Start snmp container
+  community.docker.docker_container:
+    name: snmp_exporter
+    image: "prom/snmp-exporter:{{ prometheus_snmp_server_docker_tags }}"
+    state: started
+    user: root
+    restart: true
+    restart_policy: always
+    ports:
+      - "9116:9116"
+    volumes:
+      - "{{ prometheus_snmp_config_dir }}:/etc/snmp_exporter/"
+      - "/etc/hosts:/etc/hosts:ro"

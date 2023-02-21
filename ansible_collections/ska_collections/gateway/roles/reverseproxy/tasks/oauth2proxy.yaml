@@ -8,7 +8,7 @@
     source: pull
     name: "{{ reverseproxy_redis_image }}"
 
-- name: Run redis container  # noqa no-handler
+- name: Run redis container
   community.general.docker_container:
     name: "{{ reverseproxy_redis_name }}"
     image: "{{ reverseproxy_redis_image }}"
@@ -33,7 +33,7 @@
     source: pull
     name: "{{ reverseproxy_oauth2proxy_image }}"
 
-- name: Run oauth2proxy container  # noqa no-handler
+- name: Run oauth2proxy container
   community.general.docker_container:
     name: "{{ reverseproxy_oauth2proxy_name }}"
     image: "{{ reverseproxy_oauth2proxy_image }}"

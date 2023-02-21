@@ -16,7 +16,6 @@ vars:
 	@echo "\033[36mDNS:\033[0m"
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
-	@echo "ANSIBLE_EXTRA_VARS=$(ANSIBLE_EXTRA_VARS)"
 
 install: check_hosts ## Install dns server
 	ansible-playbook $(PLAYBOOKS_DIR)/dns_server.yml \

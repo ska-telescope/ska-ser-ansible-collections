@@ -1,5 +1,5 @@
 ---
-- name: "Ensure Podman is running"
+- name: Ensure Podman is running
   ansible.builtin.assert:
     that:
       - "podman_detected"

@@ -84,7 +84,7 @@
     force_kill: false
   when: not reverseproxy_oauth2proxy_enabled
 
-- name: "Run Nginx reverse proxy" # noqa no-handler
+- name: "Run Nginx reverse proxy"
   community.general.docker_container:
     name: "{{ reverseproxy_nginx_name }}"
     image: "{{ reverseproxy_nginx_image }}"
