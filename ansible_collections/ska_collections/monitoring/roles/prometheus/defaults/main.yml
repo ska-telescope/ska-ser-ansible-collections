@@ -8,6 +8,7 @@ prometheus_server_memory: 16384M
 prometheus_server_swapfile_path: /swapfile
 prometheus_server_swapfile_size: 1000
 prometheus_server_swapfile_fallocate: true
+prometheus_openstack_exporter_addr: ""
 
 certificates_dir: /etc/pki/tls/private
 
