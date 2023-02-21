@@ -92,7 +92,6 @@ ac-install-dependencies:  ## Install dependent ansible collections and roles
 	-r requirements.yml -p ./ansible_collections
 
 ac-clean-namespaces:
-	cat resources/scripts/clean-namespaces.sh;
 	resources/scripts/clean-namespaces.sh $(CI_CLEAN_NS_REGEX)
 
 JOBLIST := $(shell find $(JOBS_DIR) -iname '*.mk' -exec basename {} .mk ';')
