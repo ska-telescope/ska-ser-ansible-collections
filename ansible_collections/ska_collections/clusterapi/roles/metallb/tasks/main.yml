@@ -47,7 +47,7 @@
             "path": "/spec/template/spec/containers/0/args/-",
             "value": "--lb-class=metallb"}
           ]
-        kubectl_kubeconfig: /etc/kubernetes/admin.conf
+        kubectl_kubeconfig: "{{ capi_kubeconfig }}"
 
     - name: Apply patch to metallb speaker daemonset
       ska_collections.clusterapi.kubectl_patch:
@@ -60,7 +60,7 @@
             "path": "/spec/template/spec/containers/0/args/-",
             "value": "--lb-class=metallb"}
           ]
-        kubectl_kubeconfig: /etc/kubernetes/admin.conf
+        kubectl_kubeconfig: "{{ capi_kubeconfig }}"
 
 - name: Check metallb speaker Daemonset is running
   ska_collections.clusterapi.wait_for_daemonset:
@@ -69,7 +69,7 @@
     initpause: 30
     wait: 15
     retries: 25
-    kubectl_kubeconfig: /etc/kubernetes/admin.conf
+    kubectl_kubeconfig: "{{ capi_kubeconfig }}"
 
 - name: Apply metallb config
   kubernetes.core.k8s:

@@ -1,6 +1,8 @@
 .DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
+PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/nexus/playbooks
+TESTS_DIR ?= ./ansible_collections/ska_collections/nexus/tests
 
 NEXUS_DEFAULT_ADMIN_PASSWORD ?=
 NEXUS_VAULT_ADMIN_PASSWORD ?= 'whatwhat'
@@ -43,7 +45,7 @@ vars:  ## List Variables
 
 install: check_hosts apply-patch # apply-patch  ## Deploy Nexus
 	ANSIBLE_FILTER_PLUGINS=./ansible_collections/ansible-thoteam.nexus3-oss/filter_plugins \
-	ansible-playbook ./ansible_collections/ska_collections/nexus/playbooks/deploy.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/deploy.yml \
 	-i $(INVENTORY) \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	--extra-vars " \
@@ -72,6 +74,21 @@ apply-patch:  ## apply patch to upstream nexus3-oss
 	touch ./ansible_collections/ansible-thoteam.nexus3-oss/.patched; \
 	fi
 
+test-apt-proxy-cache:  ## Test apt proxy and caching behavior
+	ansible-playbook $(TESTS_DIR)/apt-proxy-cache.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars " \
+		nexus_vault_admin_password=$(NEXUS_VAULT_ADMIN_PASSWORD) \
+		target_hosts=$(PLAYBOOKS_HOSTS) \
+	"
+
+test-oci-proxy-cache:  ## Test oci proxy and caching behavior
+	ansible-playbook $(TESTS_DIR)/oci-proxy-cache.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars " \
+		nexus_vault_admin_password=$(NEXUS_VAULT_ADMIN_PASSWORD) \
+		target_hosts=$(PLAYBOOKS_HOSTS) \
+	"
 help: ## Show Help
 	@echo "Nexus targets - make playbooks nexus <target>:"
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

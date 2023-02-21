@@ -19,7 +19,10 @@ class FilterModule(object):
         integrate by adding FQ filter eg:
         {{ x | ska_collections.clusterapi.cephmons }}
         """
+        # OLD FORMAT:!!!
         # "[v2:192.168.99.48:3300,v1:192.168.99.48:6789],[v2:192.168.99.197:3300,v1:192.168.99.197:6789],[v2:192.168.99.200:3300,v1:192.168.99.200:6789]"
+        # NEW  FORMAT !!!
+        # mon_host = [v2:10.165.4.17:3300/0,v1:10.165.4.17:6789/0] [v2:10.165.4.18:3300/0,v1:10.165.4.18:6789/0] [v2:10.165.4.19:3300/0,v1:10.165.4.19:6789/0] # noqa: 501
         # split and return nested array of dicts of ep version of dicts of the endpoints  # noqa: E501
         # "capo_ceph_conf_global_mon_host": [
         #     {
@@ -41,8 +44,8 @@ class FilterModule(object):
         # tel black to ignore this as it does not wrap correctly
         # fmt: off
         mons = [
-            x.replace("[", "").replace("]", "").split(",")
-            for x in mons.split("],")
+            x.replace("[", "").replace("]", "").replace("/0", "").split(",")
+            for x in mons.split("] ")
         ]
         # fmt: on
         monitors = []

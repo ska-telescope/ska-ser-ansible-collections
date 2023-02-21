@@ -3,7 +3,7 @@
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)/installation
-PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/dns/playbooks
+PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/gateway/playbooks
 
 -include $(BASE_PATH)/PrivateRules.mak
 

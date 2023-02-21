@@ -52,13 +52,13 @@
 - name: Generate kustomized template
   ansible.builtin.shell: |
     cd {{ playbook_dir }}/../../../../resources/clusterapi/;
-    kubectl kustomize ./kustomize/overlay/{{ capi_kustomize_overlay }}/ > /tmp/{{ capi_cluster }}-template.yaml
+    kubectl kustomize ./kustomize/overlay/{{ capi_kustomize_overlay }}/ > /tmp/{{ capi_cluster }}-cluster-template.yaml
   changed_when: false
   delegate_to: localhost
 
 - name: Load CAPO Cluster Template
   ansible.builtin.slurp:
-    src: "/tmp/{{ capi_cluster }}-template.yaml"
+    src: "/tmp/{{ capi_cluster }}-cluster-template.yaml"
   register: slurped_cluster_template
   delegate_to: localhost
 
@@ -68,6 +68,13 @@
     dest: "{{ clusterapi_config_dir }}/{{ capi_cluster }}-cluster-template.yaml"
     mode: 0644
   become: true
+
+- name: Output cluster template file to local  # noqa: template-instead-of-copy
+  ansible.builtin.copy:
+    content: "{{ slurped_cluster_template.content | b64decode }}"
+    dest: "{{ playbook_dir }}/../../../../resources/clusterapi/templates/{{ capi_cluster }}-cluster-template.yaml"
+    mode: 0644
+  delegate_to: localhost
 
 - name: Create temporary template directory
   ansible.builtin.tempfile:

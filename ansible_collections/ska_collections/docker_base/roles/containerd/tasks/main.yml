@@ -109,6 +109,12 @@
 - name: Debian containerd install
   when: ansible_os_family == "Debian"
   block:
+    - name: Ensure that the apt cache is updated
+      ansible.builtin.apt:
+        update_cache: true
+        update_cache_retries: 30
+        update_cache_retry_max_delay: 30
+
     - name: Install packages required for containerd
       ansible.builtin.apt:
         name: "{{ containerd_deb_dependencies }}"
@@ -129,9 +135,11 @@
         group: root
         mode: 0644
 
-    - name: Update apt cache
+    - name: Ensure that the apt cache is updated
       ansible.builtin.apt:
         update_cache: true
+        update_cache_retries: 30
+        update_cache_retry_max_delay: 30
 
     - name: Install containerd.io
       ansible.builtin.apt:

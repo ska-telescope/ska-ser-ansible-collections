@@ -3,12 +3,20 @@ debug: false
 
 # docker_hub_mirror: "http://192.168.99.204:9082"  # default to STFC Nexus Cache
 
-docker_hub_mirror: "https://dockerhub.stfc.ac.uk"  # default to STFC Cache
-central_nexus_mirror: "http://192.168.99.204:9082"  # default to STFC Nexus Cache
-gitlab_nexus_mirror: "http://192.168.99.204:9082"  # default to STFC Nexus Cache
-nexus_hosted_cache_url: "http://192.168.99.204:9080" # default to STFC Nexus Cache (docker-internal)
-nexus_hosted_cache: "192.168.99.204:9080"
+docker_hub_mirror: "http://10.165.4.6:9082"  # Mid ITF Cache
+central_nexus_mirror: "http://10.165.4.6:9084"  # Mid ITF Nexus Cache
+gitlab_nexus_mirror: "http://10.165.4.6:9085"  # Mid ITF Nexus Cache
+nexus_hosted_cache_url: "http://10.165.4.6:9080" # Mid ITF Nexus Cache (docker-internal)
+nexus_hosted_cache: "10.165.4.6:9080"
 
 crictl_version: v1.24.2
 
 debian_arch: "{{ {'x86_64': 'amd64', 'aarch64': 'arm64'}[ansible_architecture] | default(ansible_architecture) }}"
+
+containerd_deb_dependencies:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - software-properties-common
+  - gnupg-agent
+  - python3-pip

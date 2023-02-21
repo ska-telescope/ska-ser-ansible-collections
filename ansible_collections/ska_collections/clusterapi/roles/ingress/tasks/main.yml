@@ -46,7 +46,7 @@
             "path": "/spec/template/spec/containers/0/args/-",
             "value": "--ingress-class=nginx"}
           ]
-        kubectl_kubeconfig: /etc/kubernetes/admin.conf
+        kubectl_kubeconfig: "{{ capi_kubeconfig }}"
 
 # - name: Apply patch to ingress controller deployment
 #   ansible.builtin.command: |
@@ -65,7 +65,7 @@
               {"ingressclass.kubernetes.io/is-default-class": "true"}
             }
           }
-        kubectl_kubeconfig: /etc/kubernetes/admin.conf
+        kubectl_kubeconfig: "{{ capi_kubeconfig }}"
 
 # - name: Apply patch to ingress class
 #   ansible.builtin.command: |
@@ -85,7 +85,7 @@
           ]
         }
       }
-    kubectl_kubeconfig: /etc/kubernetes/admin.conf
+    kubectl_kubeconfig: "{{ capi_kubeconfig }}"
 
 - name: Apply Ingress ACLs
   kubernetes.core.k8s:

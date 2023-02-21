@@ -7,6 +7,12 @@
     os_arch: "{{ ansible_facts.architecture | lower }}"
     k9s_arch: "{{ ansible_facts.architecture | lower }}"
 
+- name: Install Ansible dependency on pip3
+  ansible.builtin.pip:
+    executable: pip3
+    name: ansible
+  become: true
+
 - name: Install kubernetes dependency on pip3
   ansible.builtin.pip:
     executable: pip3

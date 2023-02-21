@@ -22,6 +22,18 @@
   until: apt_res is success
   when: ansible_os_family == "Debian"
 
+- name: "Install {{ nexus_common_ntp_service }}"
+  ansible.builtin.apt:
+    name: "{{ nexus_common_ntp_service }}"
+    update_cache: true
+    install_recommends: false
+    state: present
+  register: apt_res
+  retries: 30
+  delay: 30
+  until: apt_res is success
+  when: ansible_os_family == "Debian"
+
 - name: "Enable service {{ nexus_common_ntp_service }}"
   ansible.builtin.service:
     name: "{{ nexus_common_ntp_service }}"

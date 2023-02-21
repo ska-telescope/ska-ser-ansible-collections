@@ -14,3 +14,13 @@ spec:
       dns:
         imageRepository: docker.io/coredns
         imageTag: "1.9.3"
+      apiServer:
+        certSANs:
+        - localhost
+        - 127.0.0.1
+        - 0.0.0.0
+        - host.docker.internal
+        - za-itf-k8s.skao.int
+        - za-itf-k8s-master01.za-itf.skao.int
+        - za-itf-k8s-master02.za-itf.skao.int
+        - za-itf-k8s-master03.za-itf.skao.int
