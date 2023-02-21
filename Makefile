@@ -91,9 +91,6 @@ ac-install-dependencies:  ## Install dependent ansible collections and roles
 	ansible-galaxy role install \
 	-r requirements.yml -p ./ansible_collections
 
-# ac-clean-namespaces:
-# 	CI_CLEAN_NS_REGEX=$(CI_CLEAN_NS_REGEX) \
-# 	resources/scripts/clean-namespaces.sh $(CI_CLEAN_NS_REGEX)
 ac-clean-namespaces:
 	cat resources/scripts/clean-namespaces.sh;
 	resources/scripts/clean-namespaces.sh $(CI_CLEAN_NS_REGEX)
