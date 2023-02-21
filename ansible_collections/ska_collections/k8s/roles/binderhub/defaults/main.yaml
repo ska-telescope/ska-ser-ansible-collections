@@ -1,5 +1,6 @@
 binderhub_namespace: binderhub
-binderhub_helm_chart_version: "0.2.0-n966.h248f390"
+# binderhub_helm_chart_version: "0.2.0-n966.h248f390"
+binderhub_helm_chart_version: "1.0.0-0.dev.git.3018.he00ec49"
 binderhub_image:
 binderhub_callback_url: https://{{ k8s_external_dns_entry }}/{{ binderhub_namespace }}/oauth_callback
 binderhub_oci_registry_host: artefact.skao.int

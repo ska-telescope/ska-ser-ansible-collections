@@ -9,7 +9,7 @@ ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
 
-TAGS ?= all,metallb,ping,ingress,rookio,standardprovisioner,metallb ## Ansible tags to run in post deployment processing
+TAGS ?= all,metallb,ping,ingress,rookio,standardprovisioner,metallb,metrics,binderhub ## Ansible tags to run in post deployment processing
 
 .DEFAULT_GOAL := help
 
@@ -89,6 +89,15 @@ endif
 
 ifneq (,$(findstring metrics,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/metrics.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=kubernetes-controlplane" \
+	--limit "kubernetes-controlplane" \
+	--tags "$(TAGS)" \
+	-vv
+endif
+
+ifneq (,$(findstring binderhub,$(TAGS)))
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/binderhub.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=kubernetes-controlplane" \
 	--limit "kubernetes-controlplane" \

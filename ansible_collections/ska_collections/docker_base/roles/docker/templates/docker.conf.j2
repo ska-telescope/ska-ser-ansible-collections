@@ -16,6 +16,9 @@ Type=notify
 ExecStart=
 ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock \
            --storage-driver=overlay2 \
+{% for reg in docker_insecure_registries %}
+           --insecure-registry={{ reg }} \
+{% endfor %}
            --label nodetype={{ host_grouping }}
 ExecReload=/bin/kill -s HUP $MAINPID
 TimeoutSec=0

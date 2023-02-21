@@ -1,7 +1,21 @@
 ---
-
 - name: "Install Binderhub"
-  hosts: "{{ target_hosts }}"
-  become: true
+  hosts: "{{ groups[target_hosts][0] }}"
+  vars:
+    target_hosts: localhost
+    k8s_kubeconfig: "/etc/kubernetes/admin.conf"
+
+  pre_tasks:
+    - name: Check k8s_kubeconfig
+      ansible.builtin.debug:
+        var: k8s_kubeconfig
+
   roles:
-    - role: binderhub
+    - ska_collections.k8s.binderhub
+
+  environment:
+    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
+
+  tags:
+    - binderhub
+
