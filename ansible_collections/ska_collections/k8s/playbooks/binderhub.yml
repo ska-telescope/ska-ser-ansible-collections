@@ -1,0 +1,7 @@
+---
+
+- name: "Install Binderhub"
+  hosts: "{{ target_hosts }}"
+  become: true
+  roles:
+    - role: binderhub
