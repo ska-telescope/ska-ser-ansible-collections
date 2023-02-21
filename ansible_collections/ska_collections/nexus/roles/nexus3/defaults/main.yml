@@ -638,24 +638,25 @@ nexus_repos_go_proxy:
     remote_url: 'https://golang.org/pkg/'
 
 # Tests variables
-nexus_apt_proxy_cache: "{{ hostvars[inventory_hostname].ip }}"
-nexus_oci_proxy_cache: "{{ hostvars[inventory_hostname].ip }}"
-
+nexus_apt_proxy_cache: "http://{{ hostvars[inventory_hostname].ip }}"
 nexus_apt_proxy_cache_api_base_url: "{{ nexus_apt_proxy_cache }}:{{ nexus_default_port }}/service/rest/v1"
 nexus_apt_test_package: "python3-doc"
 nexus_apt_test_repository: "ceph-clouds-ubuntu-{{ ansible_distribution_release }}-proxy"
 nexus_apt_test_package_search_url: "{{ nexus_apt_proxy_cache_api_base_url }}/search?\
 repository={{ nexus_apt_test_repository }}&format=apt&name={{ nexus_apt_test_package }}"
 nexus_apt_test_repository_url: "{{ nexus_apt_proxy_cache }}:{{ nexus_default_port }}/repository/{{ nexus_apt_test_repository }}"
-nexus_apt_test_update_sources: true
+nexus_apt_test_self: "{{ (hostvars[inventory_hostname].ip in nexus_oci_proxy_cache) | bool }}"
+nexus_apt_test_update_sources: "{{ nexus_apt_test_self }}"
 
+nexus_oci_proxy_cache: "http://{{ hostvars[inventory_hostname].ip }}"
 nexus_oci_proxy_cache_api_base_url: "{{ nexus_oci_proxy_cache }}:{{ nexus_default_port }}/service/rest/v1"
 nexus_oci_proxy_cache_engine: "docker"
 nexus_oci_proxy_cache_insecure: true
-nexus_oci_test_image: "python"
+nexus_oci_test_image_name: "python"
 nexus_oci_test_image_tag: "3-alpine"
 nexus_oci_test_repository: "docker-proxy"
 nexus_oci_test_package_search_url: "{{ nexus_oci_proxy_cache_api_base_url }}/search?\
-repository={{ nexus_oci_test_repository }}&format=docker&name=library/{{ nexus_oci_test_image }}&version={{ nexus_oci_test_image_tag }}"
-nexus_oci_test_self: "{{ (hostvars[inventory_hostname].ip == nexus_oci_proxy_cache) | bool }}"
-nexus_oci_test_repository_url: "{{ nexus_oci_test_self | ternary('127.0.0.1', nexus_oci_proxy_cache) }}:{{ nexus_docker_group_port }}"
+repository={{ nexus_oci_test_repository }}&format=docker&name=library/{{ nexus_oci_test_image_name }}&version={{ nexus_oci_test_image_tag }}"
+nexus_oci_test_self: "{{ (hostvars[inventory_hostname].ip in nexus_oci_proxy_cache) | bool }}"
+nexus_oci_test_self_url: "127.0.0.1:{{ nexus_docker_group_port }}/"
+nexus_oci_test_image: "{{ nexus_oci_test_self | ternary(nexus_oci_test_self_url, '') }}{{ nexus_oci_test_image_name }}:{{ nexus_oci_test_image_tag }}"
