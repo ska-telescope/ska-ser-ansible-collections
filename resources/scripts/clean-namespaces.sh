@@ -19,7 +19,8 @@ fi
 # done
 
 # Now ask nicelly so that all namespaces starting with the argument are deleted (if they don't delete correclty, next run of this script will get rid of them)
-NAMESPACES=$(kubectl get namespaces --field-selector status.phase=Active -o json | jq -r '.items[] | select(.metadata.name | test("'$1'")).metadata.name')
+# NAMESPACES=$(kubectl get namespaces --field-selector status.phase=Active -o json | jq --arg regex "$1" -r '.items[] | select(.metadata.name | test("'$regex'")).metadata.name')
+NAMESPACES=$(kubectl get namespaces --field-selector status.phase=Active -o json | jq --arg regex "$1" -r '.items[] | select(.metadata.name | test($regex)).metadata.name')
 
 echo "Terminating all $1* namespaces."
 for NS in $NAMESPACES
