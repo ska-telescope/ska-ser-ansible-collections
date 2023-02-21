@@ -6,21 +6,21 @@
   retries: 5
   until: apt_res is success
 
-- name: "Install cephadm"
+- name: Install cephadm
   ansible.builtin.include_role:
     name: stackhpc.cephadm.cephadm
 
-- name: "Run post cephadm bootstrap configs"
+- name: Run post cephadm bootstrap configs
   ansible.builtin.include_role:
     name: stackhpc.cephadm.commands
   vars:
     cephadm_commands: "{{ cephadm_post_bootstrap_commands }}"
 
-- name: "Install ceph pools"
+- name: Install ceph pools
   ansible.builtin.include_role:
     name: stackhpc.cephadm.pools
 
-- name: "Run cephadm commands"
+- name: Run cephadm commands
   ansible.builtin.include_role:
     name: stackhpc.cephadm.commands
   vars:

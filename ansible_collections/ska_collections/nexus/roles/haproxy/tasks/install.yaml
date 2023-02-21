@@ -1,0 +1,40 @@
+- name: Create haproxy config directory
+  ansible.builtin.file:
+    path: /etc/haproxy_config
+    state: directory
+    mode: 0755
+
+- name: Create haproxy config
+  ansible.builtin.template:
+    src: haproxyConfig.j2
+    dest: /etc/haproxy_config/haproxy.cfg
+    mode: 0644
+  register: haproxy_config
+
+- name: "Docker pull image for {{ nexus_haproxy_name }}"
+  community.docker.docker_image:
+    source: pull
+    name: "{{ nexus_haproxy_container_image }}"
+  register: haproxy_image
+
+- name: "Get container info of {{ nexus_haproxy_name }}"
+  community.docker.docker_container_info:
+    name: "{{ nexus_haproxy_name }}"
+  register: haproxy_info
+
+- name: "Run container {{ nexus_haproxy_name }}"
+  community.docker.docker_container:
+    name: "{{ nexus_haproxy_name }}"
+    image: "{{ nexus_haproxy_container_image }}"
+    command: -f /usr/local/etc/haproxy/haproxy.cfg
+    recreate: "{{ haproxy_config.changed or haproxy_image.changed or not haproxy_info.exists or not haproxy_info.container.State.Running }}"
+    restart_policy: always
+    state: started
+    network_mode: host
+    exposed_ports:
+      - "{{ nexus_haproxy_port }}"
+    labels: "{{ nexus_haproxy_container_labels }}"
+    log_driver: "json-file"
+    log_options: "{{ nexus_haproxy_container_log_options }}"
+    volumes:
+      - /etc/haproxy_config/:/usr/local/etc/haproxy/

@@ -42,22 +42,22 @@
   ansible.builtin.debug:
     var: capi_ceph_external_admin_secret
 
-- name: "Show capo_ceph_conf_global_mon_host"
+- name: Show capo_ceph_conf_global_mon_host
   ansible.builtin.debug:
     var: capo_ceph_conf_global_mon_host
 
-- name: "Show capo_ceph_conf_global_mons_data"
+- name: Show capo_ceph_conf_global_mons_data
   ansible.builtin.debug:
     var: capo_ceph_conf_global_mons_data
 
-- name: "Show capo_ceph_conf_global_monitors"
+- name: Show capo_ceph_conf_global_monitors
   ansible.builtin.debug:
     var: capo_ceph_conf_global_monitors
 
-- name: "Show capo_ceph_key"
+- name: Show capo_ceph_key
   ansible.builtin.debug:
     var: capo_ceph_key
 
-- name: "Show capo_ceph_conf_global_fsid"
+- name: Show capo_ceph_conf_global_fsid
   ansible.builtin.debug:
     var: capo_ceph_conf_global_fsid

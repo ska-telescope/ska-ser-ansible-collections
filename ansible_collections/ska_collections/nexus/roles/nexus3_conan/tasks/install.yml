@@ -1,0 +1,56 @@
+---
+- name: Get path to default settings
+  ansible.builtin.set_fact:
+    nexus_default_settings_file: "{{ nexus_installation_dir }}/nexus-latest/etc/nexus-default.properties"
+
+- name: Activate the Conan plugin
+  ansible.builtin.lineinfile:
+    path: "{{ nexus_default_settings_file }}"
+    regexp: "^nexus.conan.hosted.enabled=.*"
+    line: "nexus.conan.hosted.enabled=true"
+  notify:
+    - nexus-service-restart
+    - wait-for-nexus
+    - wait-for-nexus-port
+
+- name: Create conan search directory
+  ansible.builtin.file:
+    path: /etc/conan_search_config
+    state: directory
+    mode: 0644
+
+- name: Create conan search config
+  ansible.builtin.template:
+    src: fastapi-plugins.conf.yaml.j2
+    dest: /etc/conan_search_config/fastapi-plugins.conf.yaml
+    mode: 0644
+  register: conan_search_config
+
+- name: "Docker pull image for {{ nexus_conan_search_container_image }}"
+  community.docker.docker_image:
+    source: pull
+    name: "{{ nexus_conan_search_container_image }}"
+  register: conan_search_image
+
+- name: "Get container info of {{ nexus_conan_search_name }}"
+  community.docker.docker_container_info:
+    name: "{{ nexus_conan_search_name }}"
+  register: conan_search_info
+
+- name: "Run container {{ nexus_conan_search_name }}"
+  community.docker.docker_container:
+    name: "{{ nexus_conan_search_name }}"
+    image: "{{ nexus_conan_search_container_image }}"
+    recreate: "{{ conan_search_config.changed or conan_search_image.changed or not conan_search_info.exists or not conan_search_info.container.State.Running }}"
+    restart_policy: always
+    state: started
+    network_mode: host
+    exposed_ports:
+      - "{{ nexus_conan_search_proxy_port }}"
+    labels: "{{ nexus_conan_search_container_labels }}"
+    log_driver: "json-file"
+    log_options: "{{ nexus_conan_search_container_log_options }}"
+    volumes:
+      - /etc/conan_search_config:/etc/ncs_config
+    command: "uvicorn app.main:app --proxy-headers --host 0.0.0.0 --port {{ nexus_conan_search_proxy_port }}"
+    env: "{{ nexus_conan_search_defaults | combine(nexus_conan_search_env_variables) }}"

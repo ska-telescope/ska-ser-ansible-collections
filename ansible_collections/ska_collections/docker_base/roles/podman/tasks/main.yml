@@ -66,7 +66,7 @@
         dest: "/etc/containers/registries.conf.d/mirror.conf"
         mode: "0644"
 
-    - name: "Check if /etc/containers/storage.conf exists"
+    - name: Check if /etc/containers/storage.conf exists
       ansible.builtin.stat:
         path: "/etc/containers/storage.conf"
       register: result_storage

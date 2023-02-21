@@ -6,5 +6,5 @@
   tasks:
     - name: Test Nexus OCI Proxy-Cache
       ansible.builtin.include_role:
-        name: ska_collections.nexus.common
+        name: ska_collections.nexus.nexus3
         tasks_from: ../tests/oci-proxy-cache

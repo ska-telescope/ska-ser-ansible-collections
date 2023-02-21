@@ -65,7 +65,7 @@
       ansible.builtin.wait_for:
         timeout: 5
 
-    - name: "Get current API Server"
+    - name: Get current API Server
       ansible.builtin.shell: "kubectl config view -ojsonpath='{.clusters[0].cluster.server}'"
       register: apiserver_var
       changed_when: false
@@ -76,7 +76,7 @@
       ansible.builtin.debug:
         var: apiserver_var
 
-    - name: "Get current CA Cert"
+    - name: Get current CA Cert
       ansible.builtin.shell: "kubectl config view --flatten -ojsonpath='{.clusters[0].cluster.certificate-authority-data}'"
       register: cacert_var
       changed_when: false

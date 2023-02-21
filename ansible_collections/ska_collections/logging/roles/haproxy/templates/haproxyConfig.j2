@@ -25,7 +25,7 @@ frontend stats
   stats enable
   stats hide-version
   stats realm Haproxy\ Statistics
-  stats uri {{ elastic_haproxy_stats_endpoint }}
+  stats uri /haproxy_stats
   stats auth {{ elastic_haproxy_stats_user }}:{{ elastic_haproxy_stats_password }}
   stats refresh 10s
   stats admin if LOCALHOST

@@ -36,7 +36,7 @@
     return_content: true
     status_code: [204]
     url_username: admin
-    url_password: "{{ nexus_vault_admin_password }}"
+    url_password: "{{ nexus_admin_password }}"
     force_basic_auth: true
   with_items: "{{ package_info.json['items'] }}"
   loop_control:
@@ -67,6 +67,9 @@
         repo: "deb {{ nexus_apt_test_repository_url }}/ {{ ansible_distribution_release }}-updates main restricted"
         state: present
         filename: test-apt
+        update_cache: false
+    - name: Update APT sources
+      ansible.builtin.apt:
         update_cache: true
   when: nexus_apt_test_update_sources
 
@@ -82,7 +85,7 @@
         update_cache: true
         clean: true
 
-- name: Reverte APT Sources
+- name: Revert APT Sources
   block:
     - name: Restore the backed up sources
       ansible.builtin.copy:

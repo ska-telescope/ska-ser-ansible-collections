@@ -1,12 +1,12 @@
 ---
-- name: Remove vpn client
+- name: Remove OpenVPN client
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
   become: true
   gather_facts: true
   tasks:
-    - name: Remove vpn client
+    - name: Remove OpenVPN client
       ansible.builtin.import_role:
         name: openvpn
         tasks_from: remove_client

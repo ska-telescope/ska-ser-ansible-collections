@@ -11,7 +11,6 @@ elastic_haproxy_log_options:
 
 elastic_haproxy_stats_port: 9090
 elastic_haproxy_stats_user: "stats"
-elastic_haproxy_stats_endpoint: "/haproxy_stats"
 
 # Vaulted variables
 

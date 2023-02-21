@@ -10,7 +10,6 @@ OPENVPN_CLIENT ?=
 OPENVPN_CLIENT_EMAIL ?=
 KEYSERVER ?= keyserver.ubuntu.com
 
-
 -include $(BASE_PATH)/PrivateRules.mak
 
 check_hosts:

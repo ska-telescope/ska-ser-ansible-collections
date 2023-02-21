@@ -1,5 +1,5 @@
 ---
-- name: "List elasticsearch api keys"
+- name: List elasticsearch api keys
   ansible.builtin.uri:
     url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}/_security/api_key?pretty"
     method: GET
@@ -16,14 +16,14 @@
   retries: 3
   timeout: 60
 
-- name: "Set issued_api_keys"
+- name: Set issued_api_keys
   ansible.builtin.set_fact:
     valid_api_keys: []
     issued_api_keys: "{{ apikeys_list.content | from_json | json_query('api_keys') |
     selectattr('metadata.issuer', 'defined') |
     selectattr('metadata.issuer', 'equalto', elasticsearch_api_key_issuer) }}"
 
-- name: "Get api keys"
+- name: Get api keys
   ansible.builtin.set_fact:
     valid_api_keys: "{{ valid_api_keys | combine({item.id: item.name}) }}"
   with_items: "{{ issued_api_keys }}"
