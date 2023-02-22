@@ -10,5 +10,5 @@ NAMESPACES=$(kubectl get namespaces --field-selector status.phase=Active -o json
 echo "Terminating all namespaces with regex='$1' and age older than $2 seconds."
 for NS in $NAMESPACES
 do
-        kubectl delete namespace $NS --dry-run=client
+        kubectl delete namespace $NS
 done
