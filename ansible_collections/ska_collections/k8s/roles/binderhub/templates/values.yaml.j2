@@ -29,16 +29,24 @@ config:
   BinderHub:
     use_registry: true
     image_prefix: "{{ binderhub_oci_registry_host }}/binderhub/ska-jupy-"
+{% if binderhub_singleuser %}
     auth_enabled: false
-    hub_url: "http://{{ k8s_external_dns_entry }}/{{ binderhub_namespace }}/jupyterhub/"
-    hub_url_local: "http://proxy-public/{{ binderhub_namespace }}/jupyterhub/"
+{% else %}
+    auth_enabled: true
+{% endif %}
+    hub_url: "{{ binderhub_transport }}://{{ k8s_external_dns_entry }}/{{ binderhub_namespace }}/jupyterhub/"
+    hub_url_local: "{{ binderhub_transport }}://proxy-public/{{ binderhub_namespace }}/jupyterhub/"
     base_url: "/{{ binderhub_namespace }}/"
   DockerRegistry:
     token_url: "{{ binderhub_oci_registry_host_full_url }}/v2/token?service="
 ingress:
   enabled: true
   https:
+{% if binderhub_transport == 'http' %}
     enabled: false
+{% else %}
+    enabled: true
+{% endif %}
   hosts: []
   ingressClassName:
   pathSuffix: "{{ binderhub_namespace }}/(.*)"
@@ -68,10 +76,30 @@ jupyterhub:
         storageClassName: nfss1
 
     config:
+{% if binderhub_singleuser %}
       JupyterHub:
         authenticator_class: nullauthenticator.NullAuthenticator
+{% endif %}
       BinderSpawner:
+{% if binderhub_singleuser %}
         auth_enabled: false
+{% else %}
+        auth_enabled: true
+
+      AzureAdOAuthenticator:
+        client_id: "{{ azuread_client_id }}"
+        client_secret: "{{ azuread_client_secret }}"
+        oauth_callback_url: "{{ jupyterhub_callback_url }}"
+        tenant_id: "{{ azuread_tenant_id }}"
+      JupyterHub:
+        authenticator_class: azuread
+    services:
+      binder:
+        oauth_no_confirm: true
+        oauth_redirect_uri: "{{ binderhub_callback_url }}"
+        oauth_client_id: "{{ azuread_client_id }}"
+        admin: true
+{% endif %}
 
     loadRoles:
       binder:
@@ -83,6 +111,9 @@ jupyterhub:
           - "admin:users"
 
     extraConfig:
+      hub_extra: |
+        c.JupyterHub.redirect_to_server = False
+
       0-binderspawnermixin: |
         """
         Helpers for creating BinderSpawners
@@ -199,7 +230,6 @@ jupyterhub:
         cpu: 200m     # 200m = 0.2 CPU
         memory: 256Mi # 256Mi = 0.25 GB mem
         ephemeral-storage: 1Gi
-
 
   singleuser:
     # start notebook server with lab ui as default
