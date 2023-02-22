@@ -387,7 +387,7 @@
     path: "/etc/kubernetes/admin.conf"
     state: absent
   become: true
-  when: "{{ inventory_hostname in groups['kubernetes-workers'] }}"
+  when: "inventory_hostname in groups['kubernetes-workers']"
 
 - name: Setup kubectl config for admin
   ansible.builtin.copy:
@@ -395,4 +395,4 @@
     dest: "/etc/kubernetes/admin.conf"
     mode: "0600"
   become: true
-  when: "{{ inventory_hostname in groups['kubernetes-workers'] }}"
+  when: "inventory_hostname in groups['kubernetes-workers']"
