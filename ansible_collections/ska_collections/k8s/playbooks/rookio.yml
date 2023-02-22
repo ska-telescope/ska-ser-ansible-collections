@@ -1,6 +1,5 @@
 #!/usr/bin/env ansible-playbook
 ---
-
 - name: "Apply the k8s rookio role to nodes"
   hosts: "{{ target_hosts }}"
   vars:

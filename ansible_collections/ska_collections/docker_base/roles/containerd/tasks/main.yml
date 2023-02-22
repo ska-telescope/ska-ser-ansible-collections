@@ -265,6 +265,7 @@
     line: >-
       45 */4     * * *   root    crictl rmi --prune
   become: true
+  when: containerd_add_volume_prune_cron
   notify:
     - Restart cron
 

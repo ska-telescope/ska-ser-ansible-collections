@@ -1,0 +1,9 @@
+---
+
+- name: Deploy_ironic_exporter
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  roles:
+    - ironic_exporter

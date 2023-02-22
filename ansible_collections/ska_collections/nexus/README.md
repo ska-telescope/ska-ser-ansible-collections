@@ -58,17 +58,14 @@ ansible-playbook <playbooks-folder-path>/deploy.yml \
 
 | Name | Ansible variable | ENV variable | Obs |
 | ---- | ----------- | ------------ | ----- |
-| Nexus Vault Admin Password | nexus_vault_admin_password | NEXUS_VAULT_ADMIN_PASSWORD | |
-| Nexus Vault Gitlab User Password | nexus_vault_user_password_gitlab | NEXUS_VAULT_USER_PASSWORD_GITLAB | |
-| Nexus Vault Email Server Password | nexus_vault_email_server_password | NEXUS_VAULT_EMAIL_SERVER_PASSWORD | |
-| Nexus Vault Quarantiner Password | nexus_vault_user_password_quarantiner | NEXUS_VAULT_USER_PASSWORD_QUARANTINER | |
-| Nexus Vault LDAP Password | nexus_vault_ldap_conn_passwd | NEXUS_VAULT_LDAP_CONN_PASSWD | |
-| Nexus Vault Webhook Key | nexus_webhook_secret_key | NEXUS_WEBHOOK_SECRET_KEY | |
-| Nexus Apt Internal Key | nexus_apt_bionic_internal_key | NEXUS_APT_BIONIC_INTERNAL_KEY | |
-| Nexus Apt Internal Key Passphrase | nexus_apt_bionic_internal_key_passphrase | NEXUS_APT_BIONIC_INTERNAL_KEY_PASSPHRASE | |
-| Nexus Quarantine Key | nexus_apt_bionic_quarentine_key | NEXUS_APT_BIONIC_QUARENTINE_KEY | |
-| Nexus Quarantine Key Passphrase | nexus_apt_bionic_quarentine_key_passphrase | NEXUS_APT_BIONIC_QUARENTINE_KEY_PASSPHRASE | |
-
+| Nexus Admin Password | nexus_admin_password | NEXUS_ADMIN_PASSWORD | |
+| Nexus Gitlab User Password | nexus_gitlab_password | NEXUS_GITLAB_PASSWORD | |
+| Nexus Publisher User Password | nexus_publisher_password | NEXUS_PUBLISHER_PASSWORD | |
+| Nexus Quarantiner Password | nexus_quarantiner_password | NEXUS_QUARANTINER_PASSWORD | |
+| Nexus Webhook Key | nexus_webhook_secret_key | NEXUS_WEBHOOK_SECRET_KEY | |
+| Nexus Email Server Password | nexus_email_server_password | NEXUS_EMAIL_SERVER_PASSWORD | |
+| Nexus SKAO LDAP Password | nexus_skao_ad_ldap_password | NEXUS_SKAO_AD_LDAP_PASSWORD | |
+| Nexus HAProxy Stats Password | nexus_haproxy_stats_password | NEXUS_HAPROXY_STATS_PASSWORD | |
 
 ## How to Contribute
 

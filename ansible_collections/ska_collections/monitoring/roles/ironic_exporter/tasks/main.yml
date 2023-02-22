@@ -1,0 +1,46 @@
+---
+- name: "Clone Ironic exporter {{ ironic_exporter_version }}"
+  ansible.builtin.git:
+    repo: https://gitlab.com/piersharding/openstack-exporter.git
+    dest: /home/ubuntu/exporter
+    version: "{{ ironic_exporter_version }}"
+    force: true
+
+- name: Build Ironic Exporter Image
+  community.docker.docker_image:
+    build:
+      path: /home/ubuntu/exporter
+    name: ironic_exporter
+    tag: "{{ ironic_exporter_version }}"
+    source: build
+
+- name: Start Ironic Exporter container
+  community.docker.docker_container:
+    name: ironic_exporter
+    image: "ironic_exporter:{{ ironic_exporter_version }}"
+    state: started
+    entrypoint:
+      - "/bin/openstack-exporter"
+      - "--log.level='debug'"
+      - "--disable-service.network"
+      - "--disable-service.compute"
+      - "--disable-service.image"
+      - "--disable-service.volume"
+      - "--disable-service.identity"
+      - "--disable-service.object-store"
+      - "--disable-service.load-balancer"
+      - "--disable-service.container-infra"
+      - "--disable-service.dns"
+      - "--disable-service.gnocchi"
+      - "--disable-service.database"
+      - "--disable-service.orchestration"
+      - "--disable-service.placement"
+      - "--disable-service.baremetal"
+      - "--os-client-config /home/ubuntu/.config/openstack/clouds.yaml bifrost-exporter"
+    restart: true
+    restart_policy: always
+    ports:
+      - "9180:9180"
+    volumes:
+      - "{{ ironic_clouds_file }}:/home/ubuntu/.config/openstack/"
+      - "/etc/hosts:/etc/hosts:ro"

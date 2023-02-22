@@ -1,11 +1,10 @@
 #!/usr/bin/env ansible-playbook
 ---
-
 # This is a metallb dependency in the STFC tenants
 # It needs to disable the openstack security Port
 # https://confluence.skatelescope.org/display/SE/Investigate+Metallb
 # If your target enviroment don't need this, don't run this playbook.
-- name: "Openstack Disable Security Port"
+- name: Openstack Disable Security Port
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost

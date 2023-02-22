@@ -1,58 +1,29 @@
 ---
-# stats user account
-nexus_haproxy_user: stats
-nexus_haproxy_passwd: nexusHA
+nexus_haproxy_stats_user: stats
+nexus_haproxy_stats_password: "{{ _ | mandatory('`nexus_haproxy_stats_password` definition is mandatory') }}"
 
-nexus_haproxy_stats_port: "9000"
-nexus_haproxy_port: "8081"
-nexus_haproxy_quarantine_proxy_port: "8082"
-nexus_haproxy_http_port: "8881"
-nexus_haproxy_docker_group_port: "9082"
-nexus_haproxy_gitlab_proxy_port: "9085"
-nexus_haproxy_api_port: "9080"
-nexus_haproxy_conan_search_proxy_port: "5000"
-nexus_haproxy_quarantine_api_proxy_port: "9083"
-nexus_haproxy_api_backend: "back-nexus-api-backend"
-nexus_haproxy_container_image: haproxy:2.4
-nexus_haproxy_conan_search_container_image: artefact.skao.int/ska-cicd-nexus-conan-search:0.1.3
-# go directly local instead of out through the AWS ELB to https://artefact.skao.int
-nexus_haproxy_conan_search_url: "http://localhost:{{ nexus_haproxy_port }}"
+nexus_haproxy_stats_port: 9000
+nexus_haproxy_port: 8081
+nexus_haproxy_quarantine_port: 8082
+nexus_haproxy_docker_api_port: "{{ nexus_docker_group_port }}"
+nexus_default_port: 8881
+nexus_docker_hosted_port: 9080
+nexus_docker_proxy_port: 9081
+nexus_docker_group_port: 9082
+nexus_docker_quarantine_port: 9083
+nexus_central_proxy_port: 9084
+nexus_gitlab_proxy_port: 9085
+nexus_conan_search_proxy_port: 5000
+
 nexus_haproxy_name: haproxy
-nexus_haproxy_conan_search_name: nexus-conan-search
+nexus_haproxy_container_image: haproxy:2.4
 nexus_haproxy_container_log_options:
   max-size: "10m"
   max-file: "3"
   labels: "org.ska.app.group"
-
-# labelling on container runtime
 nexus_haproxy_container_labels:
   org.ska.app.group: frontend
 
-nexus_haproxy_conan_search_env_variables: {} # meant to be overrided
-nexus_haproxy_conan_search_defaults:
-  NEXUS_URL: "{{ nexus_haproxy_conan_search_url }}"
-  NEXUS_REPOSITORY: "conan-internal"
-  GITLAB_API_REQUESTER: ""
-  GITLAB_API_PRIVATE_TOKEN: ""
-  SLACK_BOT_TOKEN: ""
-  SLACK_SIGNING_SECRET: ""
-  SLACK_CLIENT_SECRET: ""
-  JIRA_USERNAME: ""
-  JIRA_URL: ""
-  JIRA_PASSWORD: ""
-  GITLAB_TOKEN: ""
-  GITLAB_HEADER: "X-Gitlab-Token"
-  UNLEASH_API_URL: ""
-  UNLEASH_INSTANCE_ID: ""
-  UNLEASH_ENVIRONMENT: ""
-  RTD_TOKEN: "mandatory"
-  GOOGLE_API_KEY: ""
-  GOOGLE_SPREADSHEET_ID: ""
-  NEXUS_HMAC_SIGNATURE_SECRET: ""
-  OPENID_SECRET: ""
-  GITLAB_CLIENT_ID: ""
-  GITLAB_CLIENT_SECRET: ""
-  KEEP_ALIVE: "50"
-  LOG_LEVEL: "INFO"
-  MAX_WORKERS: "10"
-  JSON_CONFIG_PATH: "/etc/ncs_config/fastapi-plugins.conf.yaml"
+# Shared
+
+nexus_installation_dir: '/var/lib/nexus/nexus'

@@ -1,7 +1,18 @@
 #!/usr/bin/env ansible-playbook
 ---
+- name: Check destroy playbook execution
+  hosts: localhost
+  vars_prompt:
+    - name: ireallymeanit
+      prompt: This will destroy Metallb along with all the data. Confirm? [yes,no]
+      private: false
+  tasks:
+    - name: Abort playbook
+      ansible.builtin.fail:
+        msg: >
+          "Exiting destroy playbook. To really do it, say 'yes' on the prompt"
+      when: ireallymeanit != 'yes'
 
-# Destroy mettalb and coredns
 - name: Destroy Metallb
   hosts: "{{ target_hosts }}"
   vars:

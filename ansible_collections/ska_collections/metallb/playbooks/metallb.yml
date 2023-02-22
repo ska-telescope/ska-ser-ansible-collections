@@ -1,8 +1,6 @@
 #!/usr/bin/env ansible-playbook
 ---
-
-# Installs mettalb and coredns
-- name: "Install Metallb"
+- name: Install Metallb
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost

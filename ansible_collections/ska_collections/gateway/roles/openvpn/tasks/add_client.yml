@@ -46,7 +46,7 @@
   register: myoutput
   changed_when: myoutput.rc != 0
 
-- name: "Fetch openvpn client file"
+- name: Fetch openvpn client file
   ansible.builtin.fetch:
     src: /tmp/openvpn-clients/{{ openvpn_client }}.ovpn.gpg
     dest: /tmp/openvpn-clients/

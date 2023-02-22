@@ -1,0 +1,30 @@
+# We want to call nexus3-oss role at ansible-thoteam.nexus3-oss and the role specifies a multitude of default
+# variables, at ansible-thoteam.nexus3-oss/defaults/main.yml.
+# Redefining a variable declared in a role does not supersede the role default variables, unless it is manually
+# specified in the 'vars' field.
+# To streamline this process, we run through all variables that we define named "nexus_.*" (which obey ansible
+# variable precedence), and inject them as facts. Doing so, allows us to override the value of a default variable
+# in the included role.
+# Also, to allow us to compose variables from variables that exist in included role's defaults but we don't override
+# in our role's defaults, we call a dummy bootstrap task with 'public: true' to export those variables first.
+
+- name: Install Nexus
+  ansible.builtin.include_role:
+    name: nexus3-oss
+    tasks_from: bootstrap
+    public: true
+
+- name: Gather nexus3-oss override variables
+  ansible.builtin.set_fact:
+    nexus_var_overrides: "{{ vars | dict2items | selectattr('key', 'match', 'nexus_.*') | items2dict }}"
+
+- name: Inject nexus3-oss override variables as facts to supersede role variables
+  ansible.builtin.set_fact:
+    "{{ item }}": "{{ lookup('ansible.builtin.vars', item) }}"
+  with_items: "{{ nexus_var_overrides }}"
+
+- name: Install Nexus
+  vars:
+    ldap_connections: "{{ nexus_ldap_connections }}"
+  ansible.builtin.include_role:
+    name: nexus3-oss

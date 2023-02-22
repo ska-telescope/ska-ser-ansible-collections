@@ -24,7 +24,7 @@
   ansible.builtin.set_fact:
     byoh_template_version_latest: "{{ byoh_template_check.stdout }}"
 
-- name: "Show the latest BYOH template version"
+- name: Show the latest BYOH template version
   ansible.builtin.debug:
     var: byoh_template_version_latest
 

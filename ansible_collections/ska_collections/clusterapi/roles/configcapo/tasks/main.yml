@@ -34,7 +34,7 @@
   ansible.builtin.set_fact:
     capo_template_version_latest: "{{ capo_template_check.stdout }}"
 
-- name: "Show the latest CAPO template version"
+- name: Show the latest CAPO template version
   ansible.builtin.debug:
     var: capo_template_version_latest
 

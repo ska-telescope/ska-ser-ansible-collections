@@ -1,7 +1,6 @@
 #!/usr/bin/env ansible-playbook
 ---
-
-- name: "Apply the cleanbyohost role to controlplane and worker nodes"
+- name: Apply the cleanbyohost role to controlplane and worker nodes
   hosts: "{{ target_hosts }}"
   become: true
   vars:
