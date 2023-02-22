@@ -1,3 +1,4 @@
+
 {% if binderhub_image is not none %}
 image:
   name: "{{ binderhub_image.name }}"
@@ -235,6 +236,7 @@ jupyterhub:
         pvcNameTemplate: claim-{userid}-{servername}
         volumeNameTemplate: vol-{userid}-{servername}
       capacity: 2Gi
+      homeMountPath: /home/jovyan/data
 
   prePuller:
     hook:
