@@ -25,6 +25,7 @@
     {{ openvpn_dir }}/mkclient.sh {{ openvpn_client }} &&
     {{ openvpn_dir }}/mkconfig.sh {{ openvpn_client }}
   when: not client_crt_exists.stat.exists or not client_crt_info.valid_at.next_day
+  changed_when: false
 
 - name: Creates directory
   ansible.builtin.file:

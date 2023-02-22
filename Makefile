@@ -11,7 +11,7 @@ PLAYBOOKS_ROOT_DIR ?=
 ANSIBLE_LINT_PARAMETERS=--exclude ./ansible_collections/ska_collections/monitoring/roles/prometheus/files \
 	--exclude ./ansible_collections/ansible-thoteam.nexus3-oss \
 	--exclude ./ansible_collections/stackhpc \
-	--skip-list "yaml[line-length]"
+	--skip-list "yaml[line-length],galaxy[no-changelog]"
 PLAYBOOKS_HOSTS ?=
 ANSIBLE_CONFIG ?=
 ANSIBLE_SSH_ARGS ?=

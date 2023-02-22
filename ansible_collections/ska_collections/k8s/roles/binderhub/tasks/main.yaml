@@ -5,7 +5,7 @@
 - name: Deploy binderhub chart with values
   block:
     - name: Template binderhub values yaml
-      template:
+      ansible.builtin.template:
         src: values.yaml.j2
         dest: "/tmp/binderhub.values.yaml"
         mode: "0644"

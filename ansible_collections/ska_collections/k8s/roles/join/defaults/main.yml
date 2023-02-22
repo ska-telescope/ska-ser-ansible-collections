@@ -12,7 +12,7 @@ oidc_issuer_url: "https://gitlab.com"
 oidc_client_id: "xxxx"
 oidc_username_claim: "sub"
 
-k8s_dns_servers: [ 10.164.0.11 ]
+k8s_dns_servers: [10.164.0.11]
 
 k8s_version: 1.25.5
 

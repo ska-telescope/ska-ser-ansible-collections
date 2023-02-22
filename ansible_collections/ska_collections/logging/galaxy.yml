@@ -9,7 +9,7 @@ namespace: ska_collections
 name: logging
 
 # The version of the collection. Must be compatible with semantic versioning
-version: 0.0.1
+version: 1.0.1
 
 # The path to the Markdown (.md) readme file. This path is relative to the root of the collection
 readme: README.md
@@ -35,13 +35,12 @@ license_file: 'https://httpd.apache.org/docs/2.4/license.html'
 
 # A list of tags you want to associate with the collection for indexing/searching. A tag name has the same character
 # requirements as 'namespace' and 'name'
-tags: ['roles', 'core']
+tags: ['tools', 'core']
 
 # Collections that this collection requires to be installed for it to be usable. The key of the dict is the
 # collection label 'namespace.name'. The value is a version range
 # L(specifiers,https://python-semanticversion.readthedocs.io/en/latest/#requirement-specification). Multiple version
 # range specifiers can be set and are separated by ','
-# dependencies: ska_cicd.stack_cluster
 
 # The URL of the originating SCM repository
 repository: https://gitlab.com/ska-telescope/sdi/ska-cicd-ansible-collections

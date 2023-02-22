@@ -3,11 +3,11 @@
 - name: Load cloud config
   ansible.builtin.include_vars:
     file: "{{ capo_cloud_config }}"
-    name: "capo_ostack_cloud_yaml"
+    name: capo_ostack_cloud_yaml
 
 - name: Set selected cloud
   ansible.builtin.set_fact:
-    capo_selected_cloud: "{{ capo_ostack_cloud_yaml['clouds'][capo_cloud] }}"
+    capo_selected_cloud: "{{ capo_ostack_cloud_yaml['clouds'][capo_cloud] }}"  # noqa: jinja[invalid]
     base64_capo_ostack_cloud_yaml: "{{ capo_ostack_cloud_yaml | to_yaml | b64encode }}"
 
 - name: Set selected cloud

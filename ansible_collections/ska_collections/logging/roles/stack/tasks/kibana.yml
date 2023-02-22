@@ -193,7 +193,7 @@
     headers:
       kbn-xsrf: true
   vars:
-    kibana_dataviews_names: "{{ kibana_dataviews.json | json_query('data_view[*].name') }}"
+    kibana_dataviews_names: "{{ kibana_dataviews.json | json_query('data_view[*].name') }}"  # noqa: jinja[invalid]
   when: 'kibana_default_dataview_name not in kibana_dataviews_names'
   register: kibana_dataview_create
 
@@ -217,5 +217,5 @@
   environment:
     SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
   vars:
-    kibana_dataviews_names: "{{ kibana_dataviews.json | json_query('data_view[*].name') }}"
+    kibana_dataviews_names: "{{ kibana_dataviews.json | json_query('data_view[*].name') }}"  # noqa: jinja[invalid]
   when: 'not (kibana_dataview_create.skipped | default(false))'

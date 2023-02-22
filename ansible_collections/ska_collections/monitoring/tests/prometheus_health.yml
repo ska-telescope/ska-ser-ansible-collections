@@ -2,8 +2,9 @@
   become: true
   block:
     - name: Inspect Prometheus container
-      command: "docker inspect prometheus"
+      ansible.builtin.command: "docker inspect prometheus"
       register: output
+      changed_when: false
     - name: Check Prometheus container running
       ansible.builtin.assert:
         that:

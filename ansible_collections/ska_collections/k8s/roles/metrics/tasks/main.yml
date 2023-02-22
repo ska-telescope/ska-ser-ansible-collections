@@ -1,6 +1,6 @@
 ---
 - name: Check if "Cluster is active" is enabled.
-  command: kubectl --kubeconfig=/etc/kubernetes/admin.conf version
+  ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf version
   changed_when: false
   register: kubectl_version
   ignore_errors: true
@@ -9,20 +9,23 @@
   when: inventory_hostname == groups['kubernetes-controlplane'][0]
 
 - name: "Show kubectl_version"
-  debug: var=kubectl_version
+  ansible.builtin.debug:
+    var: kubectl_version
   when: debug|bool
 
 - name: Check if "kube-state-metrics is active"
-  command: kubectl --kubeconfig=/etc/kubernetes/admin.conf get deployment kube-state-metrics --namespace kube-system
+  ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf get deployment kube-state-metrics --namespace kube-system
   changed_when: false
   register: kubectl_metrics
   ignore_errors: true
   when: "inventory_hostname == groups['kubernetes-controlplane'][0]"
 
 - name: Activate kube-state-metrics
+  when: "inventory_hostname == groups['kubernetes-controlplane'][0]
+    and kubectl_metrics.rc and kube_state_metrics"
   block:
     - name: Init kube-state-metrics.
-      command: kubectl --kubeconfig=/etc/kubernetes/admin.conf \
+      ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf \
         delete -f https://raw.githubusercontent.com/kubernetes/kube-state-metrics/master/examples/standard/cluster-role-binding.yaml \
         -f https://raw.githubusercontent.com/kubernetes/kube-state-metrics/master/examples/standard/cluster-role.yaml \
         -f https://raw.githubusercontent.com/kubernetes/kube-state-metrics/master/examples/standard/deployment.yaml \
@@ -32,7 +35,7 @@
       changed_when: kube_state_metrics_result.stdout_lines|map('split')|map(attribute="1")|unique|list != ["unchanged"]
 
     - name: NodePort configuration for kube-state-metrics
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: /tmp/kube-state-metrics-nodeport.yaml
         create: true
         block: |
@@ -61,9 +64,6 @@
         mode: "0644"
 
     - name: Init kube-state-metrics.
-      command: kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f /tmp/kube-state-metrics-nodeport.yaml
+      ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f /tmp/kube-state-metrics-nodeport.yaml
       register: nodeport_output
       changed_when: nodeport_output.stdout_lines|map('split')|map(attribute="1")|unique|list != ["unchanged"]
-
-  when: "inventory_hostname == groups['kubernetes-controlplane'][0]
-    and kubectl_metrics.rc and kube_state_metrics"

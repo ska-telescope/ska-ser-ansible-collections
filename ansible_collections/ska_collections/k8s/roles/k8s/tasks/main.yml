@@ -1,19 +1,19 @@
 ---
 
-- name: remove .novalocal from /etc/hostname
-  replace:
+- name: Remove .novalocal from /etc/hostname
+  ansible.builtin.replace:
     path: /etc/hostname
     regexp: '.novalocal'
     replace: ""
 
 - name: Delete hostname set and update from cloud-init
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/cloud/cloud.cfg
     regexp: "hostname"
     state: absent
 
-- name: remove cloud-init - Ubuntu
-  apt:
+- name: Remove cloud-init - Ubuntu
+  ansible.builtin.apt:
     name: 'cloud-init'
     state: absent
   when: ansible_distribution == 'Ubuntu'
@@ -152,7 +152,7 @@
 
 # https://stackoverflow.com/questions/36517472/is-it-possible-to-add-swap-space-on-kubernetes-nodes
 - name: Enable swap - disable error
-  lineinfile:
+  ansible.builtin.lineinfile:
     line: 'KUBELET_EXTRA_ARGS="--fail-swap-on=false"'
     path: /etc/default/kubelet
     create: true
@@ -161,4 +161,4 @@
     mode: 0644
 
 - name: Flush those handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers

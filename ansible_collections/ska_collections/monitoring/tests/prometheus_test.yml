@@ -4,9 +4,12 @@
   vars:
     target_hosts: localhost
   tasks:
-    - include: prometheus_health.yml
-    - include: grafana_health.yml
-    - include: alertmanager_health.yml
+    - name: Prometheus_health
+      ansible.builtin.include_tasks: prometheus_health.yml
+    - name: Grafana_health
+      ansible.builtin.include_tasks: grafana_health.yml
+    - name: Alertmanager_health
+      ansible.builtin.include_tasks: alertmanager_health.yml
     # skip the thanos sidecar for now
     # untill we have an S3 storage
     # - include: thanos_sidecar_health.yml

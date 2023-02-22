@@ -2,8 +2,9 @@
   become: true
   block:
     - name: Inspect Thanos Query Frontend container
-      command: "docker inspect thanos_query_frontend"
+      ansible.builtin.command: "docker inspect thanos_query_frontend"
       register: output
+      changed_when: false
     - name: Check Thanos Query Frontend container running
       ansible.builtin.assert:
         that:
