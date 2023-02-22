@@ -17,25 +17,33 @@
     mode: 0644
   register: default_config
 
+- name: Setup gitlab runner configuration for registration
+  ansible.builtin.copy:
+    src: "{{ gitlab_runner_configuration_dir }}/default-config.toml"
+    dest: "{{ gitlab_runner_configuration_dir }}/config.toml"
+    remote_src: true
+    mode: 0644
+  when: not config.stat.exists
+
 - name: Set default configuration checksum
   ansible.builtin.set_fact:
     default_config_checksum: "{{ default_config.checksum }}"
     current_config_checksum: "{{ (config.stat | default({})).checksum | default('') }}"
 
-- name: Create gitlab runner template configuration
-  ansible.builtin.template:
-    src: config.template.toml.j2
-    dest: "{{ gitlab_runner_configuration_dir }}/config.template.toml"
-    mode: 0644
-  register: config_template
-
 - name: Register runner # noqa no-handler
-  when: not config.stat.exists or config_template.changed or default_config_checksum == config.stat.checksum or gitlab_runner_reregister
+  when: not config.stat.exists or default_config.changed or default_config_checksum == config.stat.checksum or gitlab_runner_reregister
   block:
     - name: Unregister existing runner(s)
       ansible.builtin.import_tasks: unregister.yml
       vars:
         gitlab_runner_unregister_all: true
+
+    - name: Set pre-registration configuration to the default one
+      ansible.builtin.copy:
+        src: "{{ gitlab_runner_configuration_dir }}/default-config.toml"
+        dest: "{{ gitlab_runner_configuration_dir }}/config.toml"
+        remote_src: true
+        mode: 0644
 
     - name: Register runner
       community.general.docker_container:
@@ -45,16 +53,17 @@
         command:
           - register
           - --non-interactive
-          - --config "/etc/gitlab-runner/default-config.toml"
-          - --template-config "/etc/gitlab-runner/config.template.toml"
+          - --config "/etc/gitlab-runner/config.toml"
           - --url "https://gitlab.com/"
           - --registration-token "{{ gitlab_runner_registration_token }}"
-          - --tag-list "{{ gitlab_runner_name }}"
-          - --name "{{ gitlab_runner_name }}"
           - --executor docker
+          - --name="{{ gitlab_runner_name }}"
+          - --run-untagged="{{ gitlab_runner_run_untagged | to_json }}"
+          - --docker-privileged="{{ gitlab_runner_docker_privileged | to_json }}"
+          - --docker-image={{ gitlab_runner_base_image }}
+          - --tag-list "{{ gitlab_runner_tags }}"
           - --maintenance-note ""
-          - --run-untagged="{{ gitlab_runner_run_untagged }}"
-          - --locked="{{ gitlab_runner_locked }}"
+          - --locked="{{ gitlab_runner_locked | to_json }}"
           - --access-level="not_protected"
         state: started
         ulimits:
@@ -66,22 +75,19 @@
         volumes:
           - "{{ gitlab_runner_configuration_dir }}:/etc/gitlab-runner"
 
-    - name: Create gitlab runner configuration with registration
-      ansible.builtin.copy:
-        src: "{{ gitlab_runner_configuration_dir }}/default-config.toml"
-        dest: "{{ gitlab_runner_configuration_dir }}/config.toml"
-        remote_src: true
-        mode: 0644
+    - name: "Wait for the termination of {{ gitlab_runner_name }}"
+      ansible.builtin.command: docker wait {{ gitlab_runner_name }}-register
+      changed_when: true
 
 - name: Check generated gitlab runner configuration
   ansible.builtin.stat:
     path: "{{ gitlab_runner_configuration_dir }}/config.toml"
-  register: config
+  register: post_registration_config
 
-- name: Validate generated configuration post registration
+- name: Validate generated configuration post-registration
   ansible.builtin.assert:
     that:
-      - default_config_checksum != config.stat.checksum
+      - default_config_checksum != post_registration_config.stat.checksum
     fail_msg: "Failed generating {{ gitlab_runner_name }} configuration"
     success_msg: "Generated {{ gitlab_runner_name }} configuration"
 
@@ -94,7 +100,7 @@
       - run
       - --config "/etc/gitlab-runner/config.toml"
     state: started
-    recreate: "{{ config.stat.checksum != current_config_checksum or gitlab_runner_recreate }} "
+    recreate: "{{ post_registration_config.stat.checksum != current_config_checksum or gitlab_runner_recreate }} "
     ulimits:
       - "memlock:-1:-1"
       - "nofile:65536:65536"

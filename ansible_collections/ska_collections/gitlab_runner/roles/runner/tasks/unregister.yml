@@ -21,7 +21,7 @@
         command:
           - unregister
           - --config "/etc/gitlab-runner/config.toml"
-          - "{{ gitlab_runner_unregister_all | ternary('--name ' + gitlab_runner_name, '--all-runners') }}"
+          - "{{ gitlab_runner_unregister_all | ternary('--all-runners', '--name ' + gitlab_runner_name) }}"
         state: started
         ulimits:
           - "memlock:-1:-1"
@@ -45,4 +45,3 @@
   ansible.builtin.file:
     path: "{{ gitlab_runner_configuration_dir }}/config.toml"
     state: absent
-  when: not unregister.failed and unregister.container != None and unregister.container.State.ExitCode == 0
