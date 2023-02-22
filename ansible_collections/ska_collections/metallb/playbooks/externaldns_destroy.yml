@@ -1,0 +1,17 @@
+#!/usr/bin/env ansible-playbook
+---
+
+# Destroy coredns
+- name: Destroy ExternalDNS"
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  gather_facts: true
+
+  tasks:
+
+    - name: Destroy externaldns
+      ansible.builtin.import_role:
+        name: externaldns
+        tasks_from: destroy

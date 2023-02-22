@@ -1,0 +1,164 @@
+---
+
+- name: Remove .novalocal from /etc/hostname
+  ansible.builtin.replace:
+    path: /etc/hostname
+    regexp: '.novalocal'
+    replace: ""
+
+- name: Delete hostname set and update from cloud-init
+  ansible.builtin.lineinfile:
+    dest: /etc/cloud/cloud.cfg
+    regexp: "hostname"
+    state: absent
+
+- name: Remove cloud-init - Ubuntu
+  ansible.builtin.apt:
+    name: 'cloud-init'
+    state: absent
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Ensure that the apt cache is updated
+  ansible.builtin.apt:
+    update_cache: true
+  register: apt_res
+  retries: 5
+  until: apt_res is success
+
+- name: Install BYOH dependent packages
+  ansible.builtin.apt:
+    name: ['conntrack', 'socat', 'ebtables', 'ethtool', 'cgroupfs-mount', 'cgroup-tools']
+    force: true
+    state: present
+  register: apt_res
+  retries: 15
+  until: apt_res is success
+
+# Only attempt this for x86, as it can break some rpi4
+- name: Install BYOH CEPH dependent packages
+  ansible.builtin.apt:
+    name: 'linux-image-extra-virtual'
+    force: true
+    state: present
+  when: ansible_architecture == 'x86_64'
+
+- name: Install BYOH CEPH dependent packages
+  ansible.builtin.apt:
+    name: 'ceph-common'
+    force: true
+    state: present
+
+- name: Set the host grouping
+  ansible.builtin.set_fact:
+    host_grouping: "{% if inventory_hostname in groups['kubernetes-controlplane'] %}controlplane{% else %}worker{% endif %}"
+
+- name: Check if firewalld service exists
+  ansible.builtin.stat:
+    path: /usr/lib/systemd/system/firewalld.service
+  register: service_status
+
+- name: Stopping and Disabling the firewalld
+  ansible.builtin.service:
+    name: firewalld
+    state: stopped
+    enabled: false
+  when: service_status.stat.exists
+
+- name: "Check if exists: {{ k8s_key_file_gpg }}"
+  ansible.builtin.stat:
+    path: "{{ k8s_key_file_gpg }}"
+  register: k8s_key_result
+
+- name: Add k8s project apt key
+  ansible.builtin.get_url:
+    url: "{{ k8s_deb_repo_key_url }}"
+    dest: "{{ k8s_key_file }}"
+    mode: '0644'
+    force: true
+  when: not k8s_key_result.stat.exists
+
+- name: "Armour the key {{ k8s_key_file }}"
+  ansible.builtin.command: "gpg --dearmour -o {{ k8s_key_file_gpg }} {{ k8s_key_file }}"
+  args:
+    creates: "{{ k8s_key_file_gpg }}"
+  changed_when: false
+  when: not k8s_key_result.stat.exists
+
+- name: "Remove {{ k8s_key_file }}"
+  ansible.builtin.file:
+    path: "{{ k8s_key_file }}"
+    state: absent
+
+- name: Add k8s apt source
+  ansible.builtin.lineinfile:
+    line: "{{ k8s_deb_repo_url }}"
+    regexp: 'deb '
+    path: /etc/apt/sources.list.d/kubernetes.list
+    create: true
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Update apt cache - again
+  ansible.builtin.apt:
+    update_cache: true
+  register: apt_res
+  retries: 15
+  until: apt_res is success
+
+- name: Install k8s dependent packages
+  ansible.builtin.apt:
+    name: ['conntrack', 'ipvsadm']
+    force: true
+    state: present
+  register: apt_res
+  retries: 15
+  until: apt_res is success
+
+- name: Install kubeadm and friends
+  ansible.builtin.apt:
+    name: ["kubectl={{ kube_version }}", "kubeadm={{ kube_version }}", "kubelet={{ kube_version }}"]
+    force: true
+    state: present
+  notify:
+    - Restart kubelet
+
+- name: Pin kube* versions
+  ansible.builtin.dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  with_items:
+    - "kubectl"
+    - "kubeadm"
+    - "kubelet"
+
+- name: Ensure /etc/NetworkManager/conf.d exists
+  ansible.builtin.file:
+    path: /etc/NetworkManager/conf.d
+    state: directory
+    mode: 0755
+
+- name: Calico config for NetworkManager
+  ansible.builtin.blockinfile:
+    path: /etc/NetworkManager/conf.d/calico.conf
+    mode: 644
+    create: true
+    block: |
+      [keyfile]
+      unmanaged-devices=interface-name:cali*;interface-name:tunl*;interface-name:vxlan.calico
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers
+
+# https://stackoverflow.com/questions/36517472/is-it-possible-to-add-swap-space-on-kubernetes-nodes
+- name: Enable swap - disable error
+  ansible.builtin.lineinfile:
+    line: 'KUBELET_EXTRA_ARGS="--fail-swap-on=false"'
+    path: /etc/default/kubelet
+    create: true
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers

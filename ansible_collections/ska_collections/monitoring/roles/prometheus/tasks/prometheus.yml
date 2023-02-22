@@ -197,10 +197,12 @@
 - name: Initialize swap file
   ansible.builtin.command: mkswap {{ prometheus_server_swapfile_path }}
   when: not is_swapfile.stat.exists
+  changed_when: false
 
 - name: Enable swap file
   ansible.builtin.command: swapon {{ prometheus_server_swapfile_path }}
   when: not is_swapfile.stat.exists
+  changed_when: false
 
 - name: Manage swap file in /etc/fstab
   ansible.posix.mount:

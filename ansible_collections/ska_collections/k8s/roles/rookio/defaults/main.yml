@@ -1,0 +1,38 @@
+---
+debug: false
+
+rook_version: release-1.10
+rook_namespace: rook-ceph
+k8s_kubeconfig: /etc/kubernetes/admin.conf
+rook_ceph_image: quay.io/ceph/ceph:v17.2.5
+
+kube_namespace: "default"
+# namespace: "{{ rook_namespace }}"
+rook_external_fsid: ""
+rook_external_admin_secret: ""
+rook_external_admin_user_name: "client.admin"
+rook_external_admin_key: ""
+rook_external_ceph_mon_data: ""
+rook_external_ceph_monitors: ""
+rook_rbd_pool_name: "volumes"
+rook_rgw_pool_prefix: "default"
+rook_csi_rbd_node_secret_name: "csi-rbd-node"
+rook_csi_rbd_provisioner_secret_name: "csi-rbd-provisioner"
+rook_csi_cephfs_node_secret_name: "csi-cephfs-node"
+rook_csi_cephfs_provisioner_secret_name: "csi-cephfs-provisioner"
+rook_csi_rbd_node_secret: ""
+rook_csi_rbd_provisioner_secret: ""
+rook_csi_cephfs_node_secret: ""
+rook_csi_cephfs_provisioner_secret: ""
+
+capi_ceph_conf_ini_file: "{{ inventory_dir }}/../../../../ceph/ceph.conf"
+capi_ceph_conf_key_ring: "{{ inventory_dir }}/../../../../ceph/ceph.client.admin.keyring"
+
+# capi_ceph_namespace: rook-ceph
+# capi_ceph_rbd_pool_name: volumes
+# capi_ceph_rgw_pool_prefix: default
+# capi_ceph_csi_rbd_node_secret_name: csi-rbd-node
+# capi_ceph_csi_rbd_provisioner_secret_name: csi-rbd-provisioner
+# capi_ceph_csi_cephfs_node_secret_name: csi-cephfs-node
+# capi_ceph_csi_cephfs_provisioner_secret_name: csi-cephfs-provisioner
+# capi_rook_version: release-1.10

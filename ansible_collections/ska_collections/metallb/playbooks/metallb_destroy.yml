@@ -25,3 +25,8 @@
       ansible.builtin.import_role:
         name: metallb
         tasks_from: destroy
+
+    - name: Destroy externaldns
+      ansible.builtin.import_role:
+        name: externaldns
+        tasks_from: destroy

@@ -2,8 +2,9 @@
 - name: Alertmanager health check
   block:
     - name: Inspect Alertmanager container
-      command: "docker inspect alertmanager"
+      ansible.builtin.command: "docker inspect alertmanager"
       register: output
+      changed_when: false
     - name: Check Alertmanager container running
       ansible.builtin.assert:
         that:

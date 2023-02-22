@@ -42,3 +42,5 @@ docker_registry_mirrors: []
 docker_default_address_pools:
   - base: "172.21.0.0/16"
     size: 24
+
+docker_insecure_registries: []
