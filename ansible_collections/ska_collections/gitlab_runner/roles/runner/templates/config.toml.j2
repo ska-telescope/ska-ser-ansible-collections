@@ -1,4 +1,14 @@
-concurrent = 10
+concurrent = 20
 check_interval = 3
 log_level = "info"
 listen_address = '0.0.0.0:{{ gitlab_runner_metrics_port }}'
+
+[[runners]]
+  name = "{{ gitlab_runner_name }}"
+  [runners.docker]
+    {% if gitlab_runner_docker_socket %}
+    host = "unix:///var/run/docker.sock"
+    {%- endif -%}
+    volumes = ["/certs/client"]
+    [runners.docker.sysctls]
+      "net.ipv4.ip_forward" = "1"

@@ -129,6 +129,11 @@
         path: "/var/lib/etcd"
         state: absent
 
+    - name: Remove /var/lib/k8s/etcd
+      ansible.builtin.file:
+        path: "/var/lib/k8s/etcd"
+        state: absent
+
     - name: Remove /etc/systemd/system/kubelet.service.d
       ansible.builtin.file:
         path: "/etc/systemd/system/kubelet.service.d"

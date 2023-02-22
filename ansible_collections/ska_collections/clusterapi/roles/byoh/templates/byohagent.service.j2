@@ -12,8 +12,8 @@ Restart=always
 RestartSec=3
 EnvironmentFile=/etc/default/byohagent
 User=root
-ExecStart={{ byoh_remote_agent_file }} --bootstrap-kubeconfig {{ byoh_remote_kubeconfig_file }} --label role={{ host_grouping }} --skip-installation --v=9
-# ExecStart={{ byoh_remote_agent_file }} --bootstrap-kubeconfig {{ byoh_remote_kubeconfig_file }} --label role={{ host_grouping }} --v=9
+ExecStart={{ byoh_remote_agent_file }} --namespace {{ byoh_kube_namespace }} --bootstrap-kubeconfig {{ byoh_remote_kubeconfig_file }} --label role={{ host_grouping }} --skip-installation --v=9
+# ExecStart={{ byoh_remote_agent_file }} --namespace {{ byoh_kube_namespace }} --bootstrap-kubeconfig {{ byoh_remote_kubeconfig_file }} --label role={{ host_grouping }} --v=9
 #Restart=always
 #RemainAfterExit=true
 

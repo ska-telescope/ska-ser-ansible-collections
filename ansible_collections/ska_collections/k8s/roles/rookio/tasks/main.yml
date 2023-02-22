@@ -1,0 +1,245 @@
+---
+
+- name: Stash etc/ceph vars to avoid overwriting by createworkload vars
+  ansible.builtin.set_fact:
+    local_ceph_conf_ini_file: "{{ capi_ceph_conf_ini_file }}"
+    local_ceph_conf_key_ring: "{{ capi_ceph_conf_key_ring }}"
+  tags: [always]
+
+- name: Swap rook_* vars to capi_*
+  ansible.builtin.set_fact:
+    capi_rook_version: "{{ in_rook_version }}"
+    capi_ceph_namespace: "{{ in_rook_namespace }}"
+    capi_kube_namespace: "{{ kube_namespace }}"
+    capo_ceph_conf_global_fsid: "{{ in_rook_external_fsid }}"
+    capi_ceph_external_admin_secret: "{{ in_rook_external_admin_secret }}"
+    capi_ceph_external_admin_key: "{{ in_rook_external_admin_key }}"
+    capo_ceph_conf_global_mons_data: "{{ in_rook_external_ceph_mon_data }}"
+    capo_ceph_conf_global_monitors: "{{ in_rook_external_ceph_monitors }}"
+    capi_ceph_rbd_pool_name: "{{ in_rook_rbd_pool_name }}"
+    capi_ceph_rgw_pool_prefix: "{{ in_rook_rgw_pool_prefix }}"
+    capi_ceph_csi_rbd_node_secret_name: "{{ in_rook_csi_rbd_node_secret_name }}"
+    capi_ceph_csi_rbd_provisioner_secret_name: "{{ in_rook_csi_rbd_provisioner_secret_name }}"
+    capi_ceph_csi_cephfs_node_secret_name: "{{ in_rook_csi_cephfs_node_secret_name }}"
+    capi_ceph_csi_cephfs_provisioner_secret_name: "{{ in_rook_csi_cephfs_provisioner_secret_name }}"
+    capi_ceph_csi_rbd_node_secret: "{{ in_rook_csi_rbd_node_secret }}"
+    capi_ceph_csi_rbd_provisioner_secret: "{{ in_rook_csi_rbd_provisioner_secret }}"
+    capi_ceph_csi_cephfs_node_secret: "{{ in_rook_csi_cephfs_node_secret }}"
+    capi_ceph_csi_cephfs_provisioner_secret: "{{ in_rook_csi_cephfs_provisioner_secret }}"
+  tags: [always]
+
+- name: Load Ceph config
+  when: (capi_ceph_conf_ini_file|length) > 0 and
+        (capi_ceph_conf_key_ring|length) > 0
+  tags: [always]
+  block:
+
+    - name: Reset etc/ceph vars
+      ansible.builtin.set_fact:
+        capi_ceph_conf_ini_file: "{{ local_ceph_conf_ini_file }}"
+        capi_ceph_conf_key_ring: "{{ local_ceph_conf_key_ring }}"
+
+    - name: Check capi_ceph_conf_ini_file
+      ansible.builtin.debug:
+        var: capi_ceph_conf_ini_file
+
+    - name: Check capi_ceph_conf_key_ring
+      ansible.builtin.debug:
+        var: capi_ceph_conf_key_ring
+
+    - name: Include ceph config tasks
+      ansible.builtin.include_tasks: "ceph_config.yml"
+
+    # # now set all the vars
+    # - name: Get Ceph conf global section
+    #   ansible.builtin.set_fact:
+    #     rook_external_fsid: capo_ceph_conf_global_fsid
+    #     rook_external_ceph_mon_data: capo_ceph_conf_global_mons_data
+    #     rook_external_ceph_monitors: capo_ceph_conf_global_monitors
+    #     rook_external_admin_secret: capo_ceph_key
+    #     rook_external_admin_key: capo_ceph_key
+    #     rook_csi_rbd_node_secret: capo_ceph_key
+    #     rook_csi_rbd_provisioner_secret: capo_ceph_key
+    #     rook_csi_cephfs_node_secret: capo_ceph_key
+    #     rook_csi_cephfs_provisioner_secret: capo_ceph_key
+
+- name: Setup environment
+  ansible.builtin.set_fact:
+    capi_cluster_environment:
+      KUBE_NAMESPACE: "{{ capi_kube_namespace }}"
+      ROOK_NAMESPACE: "{{ capi_ceph_namespace }}"
+      ROOK_EXTERNAL_FSID: "{{ capo_ceph_conf_global_fsid }}"
+      ROOK_EXTERNAL_ADMIN_SECRET: "{{ capi_ceph_external_admin_secret }}"
+      ROOK_EXTERNAL_ADMIN_KEY: "{{ capi_ceph_external_admin_key }}"
+      ROOK_EXTERNAL_CEPH_MON_DATA: "{{ capo_ceph_conf_global_mons_data }}"
+      ROOK_EXTERNAL_CEPH_MONITORS: "{{ capo_ceph_conf_global_monitors }}"
+      RBD_POOL_NAME: "{{ capi_ceph_rbd_pool_name }}"
+      RGW_POOL_PREFIX: "{{ capi_ceph_rgw_pool_prefix }}"
+      CSI_RBD_NODE_SECRET_NAME: "{{ capi_ceph_csi_rbd_node_secret_name }}"
+      CSI_RBD_PROVISIONER_SECRET_NAME: "{{ capi_ceph_csi_rbd_provisioner_secret_name }}"
+      CSI_CEPHFS_NODE_SECRET_NAME: "{{ capi_ceph_csi_cephfs_node_secret_name }}"
+      CSI_CEPHFS_PROVISIONER_SECRET_NAME: "{{ capi_ceph_csi_cephfs_provisioner_secret_name }}"
+      CSI_RBD_NODE_SECRET: "{{ capi_ceph_csi_rbd_node_secret }}"
+      CSI_RBD_PROVISIONER_SECRET: "{{ capi_ceph_csi_rbd_provisioner_secret }}"
+      CSI_CEPHFS_NODE_SECRET: "{{ capi_ceph_csi_cephfs_node_secret }}"
+      CSI_CEPHFS_PROVISIONER_SECRET: "{{ capi_ceph_csi_cephfs_provisioner_secret }}"
+      # K8S_VERSION: "{{ capi_k8s_version }}"
+      ROOK_VERSION: "{{ capi_rook_version }}"
+      KUBECONFIG: "{{ k8s_kubeconfig }}"
+      NAMESPACE: "{{ capi_ceph_namespace }}"
+      ROOK_EXTERNAL_ADMIN_USER_NAME: "{{ rook_external_admin_user_name }}"
+
+- name: Check capi_cluster_environment
+  ansible.builtin.debug:
+    var: capi_cluster_environment
+
+- name: Check Rook is running
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: rook-ceph-operator
+    namespace: "{{ capi_ceph_namespace }}"
+  register: rook_operator_check
+
+- name: Start Rook
+  # CAPO is not started
+  when: "not rook_operator_check.resources"
+  block:
+
+    - name: Download Rook IO manifests
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/rook/rook/{{ capi_rook_version }}/deploy/examples/{{ item }}"
+        dest: "/tmp/{{ item }}"
+        mode: '0664'
+      with_items:
+        - "crds.yaml"
+        - "common.yaml"
+        - "operator.yaml"
+
+    - name: Apply Rook IO manifests
+      kubernetes.core.k8s:
+        state: present
+        apply: true
+        src: "/tmp/{{ item }}"
+      with_items:
+        - "crds.yaml"
+        - "common.yaml"
+        - "operator.yaml"
+
+- name: Wait for deploy/rook-ceph-operator
+  kubernetes.core.k8s_info:
+    kind: Deployment
+    api_version: apps/v1
+    name: rook-ceph-operator
+    namespace: "{{ capi_ceph_namespace }}"
+    wait: true
+    wait_sleep: 10
+    wait_timeout: 300
+    wait_condition:
+      type: Available
+
+- name: Download Rook import external cluster script
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/rook/rook/{{ capi_rook_version }}/deploy/examples/import-external-cluster.sh"
+    dest: "/tmp/import-external-cluster.sh"
+    mode: '0664'
+
+- name: Check Rook Config Secret exists
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: rook-ceph-mon
+    namespace: "{{ capi_ceph_namespace }}"
+  register: rook_secret_check
+
+# - name: Create secrets, configmaps
+#   when: "not rook_secret_check.resources"
+#   block:
+
+
+# - name: Setup rook env vars
+#   ansible.builtin.set_fact:
+#     capi_cluster_environment:
+      # ROOK_VERSION: "{{ rook_version }}"
+      # KUBECONFIG: "{{ k8s_kubeconfig }}"
+      # NAMESPACE: "{{ capi_ceph_namespace }}"
+      # KUBE_NAMESPACE: "{{ kube_namespace }}"
+      # ROOK_NAMESPACE: "{{ capi_ceph_namespace }}"
+      # ROOK_EXTERNAL_FSID: "{{ rook_external_fsid }}"
+      # ROOK_EXTERNAL_ADMIN_SECRET: "{{ rook_external_admin_secret }}"
+      # ROOK_EXTERNAL_ADMIN_KEY: "{{ rook_external_admin_key }}"
+      # ROOK_EXTERNAL_CEPH_MON_DATA: "{{ rook_external_ceph_mon_data }}"
+      # ROOK_EXTERNAL_CEPH_MONITORS: "{{ rook_external_ceph_monitors }}"
+      # RBD_POOL_NAME: "{{ rook_rbd_pool_name }}"
+      # RGW_POOL_PREFIX: "{{ rook_rgw_pool_prefix }}"
+      # CSI_RBD_NODE_SECRET_NAME: "{{ rook_csi_rbd_node_secret_name }}"
+      # CSI_RBD_PROVISIONER_SECRET_NAME: "{{ rook_csi_rbd_provisioner_secret_name }}"
+      # CSI_CEPHFS_NODE_SECRET_NAME: "{{ rook_csi_cephfs_node_secret_name }}"
+      # CSI_CEPHFS_PROVISIONER_SECRET_NAME: "{{ rook_csi_cephfs_provisioner_secret_name }}"
+      # CSI_RBD_NODE_SECRET: "{{ rook_csi_rbd_node_secret }}"
+      # CSI_RBD_PROVISIONER_SECRET: "{{ rook_csi_rbd_provisioner_secret }}"
+      # CSI_CEPHFS_NODE_SECRET: "{{ rook_csi_cephfs_node_secret }}"
+      # CSI_CEPHFS_PROVISIONER_SECRET: "{{ rook_csi_cephfs_provisioner_secret }}"
+
+# - name: Print environment to pass to import-external-cluster.sh
+#   ansible.builtin.debug:
+#     var: capi_cluster_environment
+
+- name: Run import-external-cluster.sh to create Secrets, ConfigMaps and StorageClasses
+  ansible.builtin.command: /usr/bin/bash /tmp/import-external-cluster.sh
+  environment: "{{ capi_cluster_environment }}"
+  changed_when: true # TODO make this accurate
+  failed_when: false
+  # ignore_errors: true
+
+- name: Fix Rook secrets script
+  ansible.builtin.template:
+    src: rookio-fix-secrets.sh.j2
+    dest: "/tmp/rookio-fix-secrets.sh"
+    mode: "0744"
+
+- name: Fix Rook secrets
+  ansible.builtin.command: /usr/bin/bash /tmp/rookio-fix-secrets.sh
+  environment: "{{ capi_cluster_environment }}"
+  # environment:
+  #   KUBECONFIG: "{{ k8s_kubeconfig }}"
+  #   ROOK_EXTERNAL_ADMIN_USER_NAME: "{{ rook_external_admin_user_name }}"
+  #   ROOK_EXTERNAL_ADMIN_SECRET: "{{ rook_external_admin_secret }}"
+  #   ROOK_EXTERNAL_CEPH_MONITORS: "{{ rook_external_ceph_monitors }}"
+  changed_when: true # TODO make this accurate
+  failed_when: false
+  # ignore_errors: true
+
+- name: Check CephCluster exist
+  kubernetes.core.k8s_info:
+    api_version: ceph.rook.io/v1
+    kind: CephCluster
+    name: "{{ capi_ceph_namespace }}"
+    namespace: "{{ capi_ceph_namespace }}"
+  register: cephcluster_check
+
+- name: Install CephCluster
+  when: "not cephcluster_check.resources"
+  block:
+    - name: Deploy CephCluster
+      kubernetes.core.k8s:
+        state: present
+        template: 'cephcluster.yaml.j2'
+
+- name: Check Storage Classes exist
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: StorageClass
+    name: nfss1
+  register: nfss1_sc_check
+
+- name: Install Ceph Storage Classes
+  when: "not nfss1_sc_check.resources"
+  block:
+    - name: Deploy Ceph StorageClasses
+      kubernetes.core.k8s:
+        state: present
+        template: 'ceph-storageclasses.yaml.j2'
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers

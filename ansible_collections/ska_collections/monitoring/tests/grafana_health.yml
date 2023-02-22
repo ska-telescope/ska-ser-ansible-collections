@@ -2,8 +2,9 @@
 - name: Grafana health check
   block:
     - name: Inspect Grafana container
-      command: "docker inspect grafana"
+      ansible.builtin.command: "docker inspect grafana"
       register: output
+      changed_when: false
     - name: Check Grafana container running
       ansible.builtin.assert:
         that:

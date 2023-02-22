@@ -5,44 +5,44 @@ resources:
 patchesStrategicMerge:
 - cluster-snippet.yaml
 - control-plane-snippet-config.yaml
-- bootstrap-kubeadmconfigtemplate-files.yaml
-- bootstrap-snippet-config.yaml
+# - bootstrap-kubeadmconfigtemplate-files.yaml
+# - bootstrap-snippet-config.yaml
 - machine-deployment-snippet.yaml
 - worker-machine-template.yaml
 - control-plane-machine-template.yaml
-patches:
+# patches:
 ## start of pre
-  - patch:
-    path: control-plane-files-snippet-tools.yaml
-    target:
-      group: controlplane.cluster.x-k8s.io
-      version: v1beta1
-      kind: KubeadmControlPlane
+  # - patch:
+  #   path: control-plane-files-snippet-tools.yaml
+  #   target:
+  #     group: controlplane.cluster.x-k8s.io
+  #     version: v1beta1
+  #     kind: KubeadmControlPlane
 
-  - patch:
-    path: bootstrap-files-snippet-tools.yaml
-    target:
-      group: bootstrap.cluster.x-k8s.io
-      version: v1beta1
-      kind: KubeadmConfigTemplate
-  - patch:
-    path: bootstrap-files-snippet-config.yaml
-    target:
-      group: bootstrap.cluster.x-k8s.io
-      version: v1beta1
-      kind: KubeadmConfigTemplate
-  - patch:
-    path: control-plane-files-snippet-kubeadm-pre.yaml
-    target:
-      group: controlplane.cluster.x-k8s.io
-      version: v1beta1
-      kind: KubeadmControlPlane
+  # - patch:
+  #   path: bootstrap-files-snippet-tools.yaml
+  #   target:
+  #     group: bootstrap.cluster.x-k8s.io
+  #     version: v1beta1
+  #     kind: KubeadmConfigTemplate
+  # - patch:
+  #   path: bootstrap-files-snippet-config.yaml
+  #   target:
+  #     group: bootstrap.cluster.x-k8s.io
+  #     version: v1beta1
+  #     kind: KubeadmConfigTemplate
+  # - patch:
+  #   path: control-plane-files-snippet-kubeadm-pre.yaml
+  #   target:
+  #     group: controlplane.cluster.x-k8s.io
+  #     version: v1beta1
+  #     kind: KubeadmControlPlane
 ## end of pre
 ## start of post
-  - patch:
-    path: control-plane-files-snippet-kubeadm-post.yaml
-    target:
-      group: controlplane.cluster.x-k8s.io
-      version: v1beta1
-      kind: KubeadmControlPlane
+  # - patch:
+  #   path: control-plane-files-snippet-kubeadm-post.yaml
+  #   target:
+  #     group: controlplane.cluster.x-k8s.io
+  #     version: v1beta1
+  #     kind: KubeadmControlPlane
 ## end of post

@@ -1,0 +1,398 @@
+---
+
+- name: Get the username running the deploy
+  become: false
+  ansible.builtin.command: whoami
+  delegate_to: localhost
+  register: username_on_the_host
+  changed_when: false
+
+- name: Username
+  ansible.builtin.debug:
+    var: username_on_the_host.stdout_lines[0]
+
+- name: Check if the nvidia driver is installed
+  ansible.builtin.command: nvidia-smi --query
+  changed_when: false
+  register: nvidia_driver_check
+  ignore_errors: true
+
+- name: Nvidia check
+  ansible.builtin.debug:
+    var: nvidia_driver_check.rc
+  when: debug|bool
+
+- name: Groups
+  ansible.builtin.debug:
+    var: groups
+
+- name: Set the host grouping
+  ansible.builtin.set_fact:
+    host_grouping: "{% if inventory_hostname in groups['kubernetes-controlplane'] %}master{% else %}worker{% endif %}"
+    current_hostname: "{{ hostvars[inventory_hostname].ansible_hostname }}"
+    nvidia_driver_exists: "{{ nvidia_driver_check.rc == 0 }}"
+
+- name: Debug vars
+  ansible.builtin.debug:
+    var: "{{ item }}"
+  with_items:
+    - host_grouping
+    - cluster_api_address
+    - cluster_hostname
+    - current_hostname
+  when: debug|bool
+
+- name: Check nvidia-driver installed when Nvidia support requested
+  ansible.builtin.fail:
+    msg: The Nvidia driver has not been found (nvidia-smi --query) - aborting.
+  when: activate_nvidia|bool and not ignore_nvidia_fail|bool and not nvidia_driver_exists|bool
+    and inventory_hostname in groups['kubernetes-workers']
+
+- name: "Show cluster_api_address"
+  ansible.builtin.debug:
+    var: cluster_api_address
+  # when: debug|bool
+
+- name: "Show cluster_hostname"
+  ansible.builtin.debug:
+    var: cluster_hostname
+  # when: debug|bool
+
+- name: "Show current_hostname"
+  ansible.builtin.debug:
+    var: current_hostname
+  # when: debug|bool
+
+- name: Check if "Cluster is active" is enabled.
+  ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf version
+  changed_when: false
+  register: kubectl_version
+  ignore_errors: true
+  delegate_to: "{{ groups['kubernetes-controlplane'][0] }}"
+  delegate_facts: true
+  when: inventory_hostname == groups['kubernetes-controlplane'][0]
+
+- name: "Show kubectl_version"
+  ansible.builtin.debug:
+    var: kubectl_version
+  when: debug|bool
+
+- name: Ensure the /etc/kubernetes/kubeadm directory exists
+  ansible.builtin.file:
+    path: /etc/kubernetes/kubeadm
+    state: directory
+    mode: "0755"
+  when: inventory_hostname in groups['kubernetes-workers']
+    or inventory_hostname in groups['kubernetes-controlplane']
+
+- name: Kubeadm config
+  ansible.builtin.template:
+    src: kubeadm-init-config.yaml.j2
+    dest: "/etc/kubernetes/kubeadm/kubeadm-init-config.yaml"
+    mode: "0644"
+  when: inventory_hostname == groups['kubernetes-controlplane'][0]
+
+- name: Ensure the /etc/kubernetes/manifests directory exists on first master
+  ansible.builtin.file:
+    path: /etc/kubernetes/manifests
+    state: directory
+    mode: "0755"
+  when: inventory_hostname == groups['kubernetes-controlplane'][0]
+
+- name: Kube-vip manifest
+  ansible.builtin.template:
+    src: kube-vip-manifest.yaml.j2
+    dest: "/etc/kubernetes/manifests/kube-vip.yaml"
+    mode: "0644"
+  when: "inventory_hostname in groups['kubernetes-controlplane']"
+
+- name: Init Cluster on the first master.
+  ansible.builtin.command: /usr/bin/kubeadm init
+    --config /etc/kubernetes/kubeadm/kubeadm-init-config.yaml
+    --ignore-preflight-errors=Swap,NumCPU
+    --upload-certs --v=5
+  when: "inventory_hostname == groups['kubernetes-controlplane'][0]
+    and kubectl_version.stdout.find('Server Version:') == -1"
+  changed_when: false
+
+- name: Wait for API Server to come up
+  ansible.builtin.wait_for:
+    host: "{{ cluster_api_address }}"
+    port: 6443
+    delay: 10
+  when: inventory_hostname == groups['kubernetes-controlplane'][0]
+
+- name: Check if "Networking is active"
+  ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf get deployment calico-kube-controllers --namespace kube-system
+  changed_when: false
+  register: kubectl_calico
+  ignore_errors: true
+  delegate_to: "{{ groups['kubernetes-controlplane'][0] }}"
+  delegate_facts: true
+
+- name: Init Cluster networking with Calico on the first master.
+  ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf
+         apply -f https://raw.githubusercontent.com/projectcalico/calico/v{{ calico_version }}/manifests/calico.yaml
+  when: "inventory_hostname == groups['kubernetes-controlplane'][0] and kubectl_calico.rc"
+  changed_when: false
+
+# # This builds a list of interface names to pass to Calico as
+# # IP_AUTODETECTION_METHOD=interface=<names>. Could break if the correct
+# # interface on one node and the incorrect interface on another share a name.
+# # The autodetection method "kubernetes-internal-ip" was introduced to make
+# # this easier, but doesn't work for us - worth investigating.
+# # https://projectcalico.docs.tigera.io/reference/node/configuration#kubernetes-internal-ip
+# # https://github.com/projectcalico/node/pull/1242y
+# - name: gather all nodes' default ipv4 interface names
+#   set_fact:
+#     calico_interface_list: "{{ groups['cluster'] | map('extract', hostvars, ['ansible_default_ipv4', 'interface']) | unique | join(',') }}"
+
+# - name: calico_interface_list
+#   debug: var=calico_interface_list
+
+# https://docs.projectcalico.org/reference/node/configuration
+- name: Set calico-node environment variables
+  ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf -n kube-system set env daemonset/calico-node {{ item }}
+  with_items:
+    - "CALICO_IPV4POOL_CIDR={{ pod_network_cidr }}"
+    - "CALICO_IPV4POOL_IPIP={{ pod_network_ipip_mode }}"
+    - "IP_AUTODETECTION_METHOD={{ k8s_interface }}"
+  delegate_to: "{{ groups['kubernetes-controlplane'][0] }}"
+  run_once: true
+  register: calico_env_result
+  changed_when: calico_env_result.stdout == "daemonset.apps/calico-node env updated"
+
+- name: Install kubernetes python package
+  ansible.builtin.pip:
+    name: kubernetes==22.6.0
+  when: "inventory_hostname == groups['kubernetes-controlplane'][0]"
+
+- name: Wait for Networking to come up
+  ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf -n kube-system rollout status daemonset/calico-node --timeout 5m
+  changed_when: false
+  when: "inventory_hostname == groups['kubernetes-controlplane'][0]"
+
+# the corresponding env vars above are only used when creating the default pool
+- name: Reconfigure Calico's default IP pool
+  kubernetes.core.k8s:
+    kubeconfig: /etc/kubernetes/admin.conf
+    state: patched
+    kind: IPPool
+    name: default-ipv4-ippool
+    definition:
+      spec:
+        cidr: "{{ pod_network_cidr }}"
+        ipipMode: "{{ pod_network_ipip_mode }}"
+  when: "inventory_hostname == groups['kubernetes-controlplane'][0]"
+
+  # kubeadm join 192.168.0.200:6443 --token 9vr73a.a8uxyaju799qwdjv
+  # --discovery-token-ca-cert-hash sha256:7c2e69131a36ae2a042a339b33381c6d0d43887e2de83720eff5359e26aec866
+  # --control-plane --certificate-key f8902e114ef118304e561c3ecd4d0b543adc226b7a07f675f56564185ffe0c07
+
+- name: Create join token
+  ansible.builtin.shell: "set -o pipefail && kubeadm --kubeconfig=/etc/kubernetes/admin.conf token create --print-join-command 2>/dev/null | tail -1"
+  args:
+    executable: /bin/bash
+  register: kubeadm_join_token
+  delegate_to: "{{ groups['kubernetes-controlplane'][0] }}"
+  changed_when: true
+  run_once: true
+
+- name: Set token, endpoint, and cahash
+  ansible.builtin.set_fact:
+    join_token: "{{ kubeadm_join_token.stdout_lines[0].split()[4] }}"
+    join_endpoint: "{{ kubeadm_join_token.stdout_lines[0].split()[2] }}"
+    join_cahash: "{{ kubeadm_join_token.stdout_lines[0].split()[6] }}"
+
+- name: "Show join_token"
+  ansible.builtin.debug:
+    var: join_token
+  when: debug|bool
+
+- name: "Show current_hostname"
+  ansible.builtin.debug:
+    var: current_hostname
+  when: debug|bool
+
+# generate with 'kubeadm certs certificate-key'
+- name: Set certificateKey
+  ansible.builtin.command: "kubeadm init phase upload-certs --upload-certs --certificate-key {{ k8s_certificate_key }}"
+  when: "inventory_hostname == groups['kubernetes-controlplane'][0]"
+  changed_when: false
+
+- name: Kubeadm join config
+  ansible.builtin.template:
+    src: kubeadm-join-config.yaml.j2
+    dest: "/etc/kubernetes/kubeadm/kubeadm-join-config.yaml"
+    mode: "0644"
+  when: inventory_hostname in groups['kubernetes-workers']
+    or inventory_hostname in groups['kubernetes-controlplane']
+
+- name: Check already joined
+  ansible.builtin.shell: "set -o pipefail && kubectl --kubeconfig=/etc/kubernetes/admin.conf get nodes | grep {{ current_hostname }}"
+  args:
+    executable: /bin/bash
+  changed_when: false
+  register: kubectl_joined
+  ignore_errors: true
+  when: "inventory_hostname in groups['kubernetes-controlplane']"
+
+- name: "Show kubectl_joined"
+  ansible.builtin.debug:
+    var: kubectl_joined
+  when: debug|bool
+
+- name: Init remaining masters
+  ansible.builtin.command: "kubeadm join {{ join_endpoint }}
+         --config=/etc/kubernetes/kubeadm/kubeadm-join-config.yaml
+         --ignore-preflight-errors=Swap,IsDockerSystemdCheck"
+  when: "inventory_hostname in groups['kubernetes-controlplane']
+         and not inventory_hostname == groups['kubernetes-controlplane'][0]
+         and (kubectl_joined.stdout_lines | list | count == 0)"
+  changed_when: false
+
+- name: Check joining
+  ansible.builtin.shell: "set -o pipefail && kubectl --kubeconfig=/etc/kubernetes/admin.conf get nodes | grep {{ current_hostname }}"
+  args:
+    executable: /bin/bash
+  changed_when: false
+  register: kubectl_joined
+  delegate_to: "{{ groups['kubernetes-controlplane'][0] }}"
+  when: "inventory_hostname in groups['kubernetes-controlplane']"
+
+- name: "Show kubectl_joined"
+  ansible.builtin.debug:
+    var: kubectl_joined
+  when: debug|bool
+
+- name: Wait for master nodes to join
+  ansible.builtin.shell: "set -o pipefail && kubectl --kubeconfig=/etc/kubernetes/admin.conf get nodes  | grep {{ current_hostname }}"
+  args:
+    executable: /bin/bash
+  changed_when: false
+  register: node_check
+  until: node_check is success
+  retries: 10
+  delay: 30
+  delegate_to: "{{ groups['kubernetes-controlplane'][0] }}"
+  when: "inventory_hostname in groups['kubernetes-controlplane']"
+
+- name: Wait for calico to settle on masters
+  ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf -n kube-system rollout status daemonset/calico-node --timeout 5m
+  changed_when: false
+  delegate_to: "{{ groups['kubernetes-controlplane'][0] }}"
+  run_once: true
+
+- name: Check workers already joined
+  ansible.builtin.shell: "set -o pipefail && kubectl --kubeconfig=/etc/kubernetes/admin.conf get nodes | grep {{ current_hostname }}"
+  args:
+    executable: /bin/bash
+  changed_when: false
+  register: kubectl_joined
+  delegate_to: "{{ groups['kubernetes-controlplane'][0] }}"
+  ignore_errors: true
+  when: "inventory_hostname in groups['kubernetes-workers']"
+
+- name: "Show kubectl_joined"
+  ansible.builtin.debug:
+    var: kubectl_joined
+  when: "debug|bool
+    and inventory_hostname in groups['kubernetes-workers']"
+
+- name: Init workers
+  ansible.builtin.command: "kubeadm join {{ join_endpoint }}
+         --config=/etc/kubernetes/kubeadm/kubeadm-join-config.yaml
+         --ignore-preflight-errors=Swap,IsDockerSystemdCheck"
+  when: "inventory_hostname in groups['kubernetes-workers']
+         and (kubectl_joined.stdout_lines | list | count == 0)"
+  changed_when: false
+
+- name: Ensure the /etc/kubernetes/manifests directory exists
+  ansible.builtin.file:
+    path: /etc/kubernetes/manifests
+    state: directory
+    mode: "0755"
+  when: "inventory_hostname in groups['kubernetes-workers']"
+
+- name: Check workers joining
+  ansible.builtin.shell: "set -o pipefail && kubectl --kubeconfig=/etc/kubernetes/admin.conf get nodes | grep {{ current_hostname }}"
+  args:
+    executable: /bin/bash
+  changed_when: false
+  register: kubectl_joined
+  delegate_to: "{{ groups['kubernetes-controlplane'][0] }}"
+  when: "inventory_hostname in groups['kubernetes-workers']"
+
+- name: Wait for worker nodes to join
+  ansible.builtin.shell: "set -o pipefail && kubectl --kubeconfig=/etc/kubernetes/admin.conf get nodes  | grep {{ current_hostname }}"
+  args:
+    executable: /bin/bash
+  changed_when: false
+  register: node_check
+  until: node_check is success
+  retries: 10
+  delay: 30
+  delegate_to: "{{ groups['kubernetes-controlplane'][0] }}"
+  when: "inventory_hostname in groups['kubernetes-workers']"
+
+- name: Wait for calico to settle
+  ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf -n kube-system rollout status daemonset/calico-node --timeout 5m
+  changed_when: false
+  delegate_to: "{{ groups['kubernetes-controlplane'][0] }}"
+  run_once: true
+
+- name: Make admin.conf copyable
+  ansible.builtin.file:
+    path: "/etc/kubernetes/admin.conf"
+    mode: "0644"
+  delegate_to: "{{ groups['kubernetes-controlplane'][0] }}"
+  run_once: true
+
+- name: Retrieve kubectl config
+  ansible.builtin.fetch:
+    src: "/etc/kubernetes/admin.conf"
+    dest: "/tmp/admin.conf"
+    flat: true
+  delegate_to: "{{ groups['kubernetes-controlplane'][0] }}"
+  run_once: true
+
+- name: Ensure the ~/.kube directory exists on all nodes
+  ansible.builtin.file:
+    path: "~/.kube"
+    state: directory
+    mode: "0700"
+
+- name: Setup kubectl config
+  ansible.builtin.copy:
+    src: /tmp/admin.conf
+    dest: "~/.kube/config"
+    mode: "0600"
+
+- name: Ensure the ~/.kube directory exists on all nodes
+  ansible.builtin.file:
+    path: "~/.kube"
+    state: directory
+    mode: "0700"
+  become: false
+
+- name: Setup kubectl config
+  ansible.builtin.copy:
+    src: /tmp/admin.conf
+    dest: "~/.kube/config"
+    mode: "0600"
+  become: false
+
+- name: Remove old kubectl config for admin
+  ansible.builtin.file:
+    path: "/etc/kubernetes/admin.conf"
+    state: absent
+  become: true
+  when: "inventory_hostname in groups['kubernetes-workers']"
+
+- name: Setup kubectl config for admin
+  ansible.builtin.copy:
+    src: /tmp/admin.conf
+    dest: "/etc/kubernetes/admin.conf"
+    mode: "0600"
+  become: true
+  when: "inventory_hostname in groups['kubernetes-workers']"

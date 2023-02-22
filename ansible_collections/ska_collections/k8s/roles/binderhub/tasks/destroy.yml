@@ -1,0 +1,6 @@
+---
+- name: Delete Binderhub Helm release
+  kubernetes.core.helm:
+    state: absent
+    name: "binderhub"
+    release_namespace: "{{ binderhub_namespace }}"

@@ -82,56 +82,26 @@ clusterapi-workload-kubeconfig: clusterapi-check-cluster-type  ## Post deploymen
 
 clusterapi-post-deployment: clusterapi-check-cluster-type  ## Post deployment for workload cluster
 
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/standardprovisioner.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/calico.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "target_hosts=management-cluster" \
 	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
 	--limit "management-cluster" \
 	--tags "$(CLUSTERAPI_TAGS)" \
 	-vv
 
-    #   echo "Controlplane initialise: cloud provider config"
-    #   echo "$OPENSTACK_CLOUD_PROVIDER_CONF_B64" | base64 -d > /etc/kubernetes/cloud.conf
-	#   cloud_provider_config: /etc/kubernetes/cloud.conf
+#     #   echo "Controlplane initialise: cloud provider config"
+#     #   echo "$OPENSTACK_CLOUD_PROVIDER_CONF_B64" | base64 -d > /etc/kubernetes/cloud.conf
+# 	#   cloud_provider_config: /etc/kubernetes/cloud.conf
 
 ifneq (,$(findstring cloudprovider,$(CLUSTERAPI_TAGS)))
     # cloudprovider is a target - avoid undefined ansible vars issue with tags
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/cloud-provider.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "target_hosts=management-cluster" \
 	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
 	--extra-vars "ingress_nginx_version=${NGINX_VERSION}" \
 	--extra-vars "ingress_lb_suffix=${CLUSTER_NAME}" \
-	--limit "management-cluster" \
-	--tags "$(CLUSTERAPI_TAGS)" \
-	-vv
-endif
-
-	# --extra-vars 'metallb_version=0.13.7 metallb_namespace=metallb-system metallb_addresses="10.100.10.1-10.100.253.254"'
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/metallb.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
-	--limit "management-cluster" \
-	--tags "$(CLUSTERAPI_TAGS)" \
-	-vv
-
-	# --extra-vars 'ingress_nginx_version: 1.3.1 ingress_lb_suffix: "{{ capi_cluster }}"'
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/ingress.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
-	--limit "management-cluster" \
-	--tags "$(CLUSTERAPI_TAGS)" \
-	-vv
-
-	# ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_ceph_conf_ini_file=<path to>/ceph.conf capi_ceph_conf_key_ring=<path to>/ceph.client.admin.keyring'
-ifneq (,$(findstring rookio,$(CLUSTERAPI_TAGS)))
-    # rookio is a target - avoid undefined ansible vars issue with tags
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/rookio.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
 	--limit "management-cluster" \
 	--tags "$(CLUSTERAPI_TAGS)" \
 	-vv

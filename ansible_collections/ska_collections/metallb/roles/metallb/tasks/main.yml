@@ -25,17 +25,3 @@
       ansible.builtin.file:
         path: "/tmp/metallb.values.yaml"
         state: absent
-
-- name: Add CoreDNS chart repo
-  kubernetes.core.helm_repository:
-    name: coredns
-    repo_url: "https://coredns.github.io/helm"
-
-- name: Deploy CoreDNS chart with values loaded from template
-  kubernetes.core.helm:
-    name: extdns
-    chart_ref: coredns/coredns
-    chart_version: "{{ coredns_chart_version }}"
-    release_namespace: extdns
-    create_namespace: true
-    values: "{{ lookup('file', '{{ role_path }}/values/external-coredns.yaml') | from_yaml }}"

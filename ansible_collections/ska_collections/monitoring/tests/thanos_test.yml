@@ -1,9 +1,13 @@
 - name: Thanos main test playbook
   hosts: "{{ target_hosts }}"
   become: true
+  vars:
+    target_hosts: localhost
   tasks:
-    - include: thanos_query_frontend_health.yml
-    - include: thanos_query_health.yml
+    - name: Thanos_query_frontend_health
+      ansible.builtin.include_tasks: thanos_query_frontend_health.yml
+    - name: Thanos_query_health
+      ansible.builtin.include_tasks: thanos_query_health.yml
     # skip the thanos sidecar for now
     # untill we have an S3 storage
     # - include: thanos_compactor_health.yml

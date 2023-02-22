@@ -1,0 +1,101 @@
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: JoinConfiguration
+caCertPath: /etc/kubernetes/pki/ca.crt
+discovery:
+  bootstrapToken:
+    apiServerEndpoint: {{ join_endpoint }}
+    token: {{ join_token }}
+    caCertHashes:
+    - "{{ join_cahash }}"
+    unsafeSkipCAVerification: true
+  timeout: 5m0s
+{% if inventory_hostname in groups['kubernetes-controlplane'] %}
+controlPlane:
+  localAPIEndpoint:
+    advertiseAddress: {{ ansible_default_ipv4.address }}
+    bindPort: 6443
+  certificateKey: {{ k8s_certificate_key }}
+{% endif %}
+nodeRegistration:
+  criSocket: {% if activate_containerd %}unix:///run/containerd/containerd.sock{% else %}/var/run/dockershim.sock{% endif %}
+
+  name: {{ ansible_hostname }}
+  imagePullPolicy: IfNotPresent
+{% if inventory_hostname in groups['kubernetes-workers'] %}
+{% if activate_nvidia and nvidia_driver_exists %}
+  taints:
+    - effect: NoExecute
+      key: nvidia.com/gpu
+      value: "true"
+{% elif inventory_hostname in groups['kubernetes-controlplane'] %}
+  # Prevent kubeadm from adding a control plane taint, because this node is also a worker
+  # taints: []
+  taints:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/control-plane
+{% endif %}
+{% endif %}
+#  kubeletExtraArgs:
+#    resolv-conf: /run/systemd/resolve/resolv.conf
+#    network-plugin: cni
+#    cgroup-driver: "cgroupfs"
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+controlPlaneEndpoint: {{ cluster_api_address }}:6443
+kubernetesVersion: v{{ k8s_version }}
+networking:
+  dnsDomain: cluster.local
+  podSubnet: "{{ pod_network_cidr }}"
+  serviceSubnet: 10.96.0.0/12
+apiServer:
+  timeoutForControlPlane: 4m0s
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+controllerManager: {}
+dns: {}
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+imageRepository: registry.k8s.io
+scheduler: {}
+---
+# https://kubernetes.io/docs/reference/config-api/kubelet-config.v1beta1/
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+maxPods: 250
+kubeAPIQPS: 10  # default 5
+kubeAPIBurst: 20 # default 10
+failSwapOn: false
+resolvConf: /run/systemd/resolve/resolv.conf
+clusterDNS:
+- "10.96.0.10"
+{% for item in k8s_dns_servers %}
+- "{{ item }}"
+{% endfor %}
+- "8.8.8.8"
+imageGCHighThresholdPercent: 85
+imageGCLowThresholdPercent: 80
+evictionHard:
+  nodefs.available: "10%"
+  nodefs.inodesFree: "5%"
+  imagefs.available: "10%"
+  imagefs.inodesFree: "5%"
+  memory.available: "100Mi"
+evictionMinimumReclaim:
+  nodefs.available: "500Mi"
+  imagefs.available: "1Gi"
+  memory.available: "0Mi"
+systemReserved:
+  cpu: "100m"
+  memory: "128M"
+  ephemeral-storage: "2Gi"
+kubeReserved:
+  cpu: "100m"
+  memory: "128M"
+  ephemeral-storage: "2Gi"
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+metricsBindAddress: "0.0.0.0"

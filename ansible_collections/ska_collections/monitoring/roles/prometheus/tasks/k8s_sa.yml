@@ -51,6 +51,7 @@
 - name: Create prometheus sa account
   ansible.builtin.command: "kubectl --kubeconfig=/etc/kubernetes/admin.conf create sa prometheus -n kube-system"
   when: sa_account.rc != 0
+  changed_when: false
 
 - name: Copy up token configuration file
   ansible.builtin.copy:

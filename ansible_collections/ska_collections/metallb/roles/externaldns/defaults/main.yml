@@ -1,0 +1,2 @@
+externaldns_coredns_chart_version: "1.19.0"
+externaldns_cluster_domain: cluster.local

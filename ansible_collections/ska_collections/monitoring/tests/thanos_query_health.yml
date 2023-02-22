@@ -1,8 +1,9 @@
 - name: Thanos Query health check
   block:
     - name: Inspect Thanos Query container
-      command: "docker inspect thanos_query"
+      ansible.builtin.command: "docker inspect thanos_query"
       register: output
+      changed_when: false
     - name: Check Thanos Query container running
       ansible.builtin.assert:
         that:

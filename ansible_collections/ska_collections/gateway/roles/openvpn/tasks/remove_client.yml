@@ -16,3 +16,4 @@
   ansible.builtin.shell: |
     {{ openvpn_dir }}/revoke.sh {{ openvpn_client }}
   when: client_crt_exists.stat.exists
+  changed_when: false
