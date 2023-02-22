@@ -28,4 +28,3 @@ cluster_api_address: "10.10.0.10"
 cluster_hostname: a.b.c
 cluster_domain: a.b.c
 cluster_vip_interfaces: ens3
-

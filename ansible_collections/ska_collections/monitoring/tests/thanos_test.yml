@@ -1,6 +1,8 @@
 - name: Thanos main test playbook
   hosts: "{{ target_hosts }}"
   become: true
+  vars:
+    target_hosts: localhost
   tasks:
     - include: thanos_query_frontend_health.yml
     - include: thanos_query_health.yml

@@ -1,5 +1,4 @@
 ---
-
 - name: Check if "Cluster is active" is enabled.
   command: kubectl --kubeconfig=/etc/kubernetes/admin.conf version
   changed_when: false
@@ -68,9 +67,3 @@
 
   when: "inventory_hostname == groups['kubernetes-controlplane'][0]
     and kubectl_metrics.rc and kube_state_metrics"
-
-
-    
-
-    
-

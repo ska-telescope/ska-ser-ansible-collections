@@ -1,6 +1,8 @@
 - name: Prometheus main test playbook
   hosts: "{{ target_hosts }}"
   become: true
+  vars:
+    target_hosts: localhost
   tasks:
     - include: prometheus_health.yml
     - include: grafana_health.yml
