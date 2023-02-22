@@ -381,3 +381,18 @@
     dest: "~/.kube/config"
     mode: "0600"
   become: false
+
+- name: Remove old kubectl config for admin
+  ansible.builtin.file:
+    path: "/etc/kubernetes/admin.conf"
+    state: absent
+  become: true
+  when: "{{ inventory_hostname in groups['kubernetes-workers'] }}"
+
+- name: Setup kubectl config for admin
+  ansible.builtin.copy:
+    src: /tmp/admin.conf
+    dest: "/etc/kubernetes/admin.conf"
+    mode: "0600"
+  become: true
+  when: "{{ inventory_hostname in groups['kubernetes-workers'] }}"
