@@ -28,6 +28,8 @@ prometheus_k8s_api_server: "https://{{ prometheus_k8s_api_server_addr }}:{{ prom
 prometheus_k8s_client_certificate: "/etc/prometheus/ca.crt"
 prometheus_k8s_bearer_token: "/etc/prometheus/bearer.token"
 
+prometheus_openstack_exporter_addr: ""
+
 prometheus_server_config_dir: /etc/prometheus
 prometheus_data_dir: /var/lib/prometheus
 
