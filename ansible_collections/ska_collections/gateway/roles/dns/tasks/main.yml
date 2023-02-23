@@ -15,7 +15,7 @@
   ansible.builtin.lineinfile:
     dest: /etc/hosts
     regexp: ".*{{ hostvars[item].inventory_hostname }}.*"
-    line: "{{ hostvars[item].ip }} {{ hostvars[item].inventory_hostname }}.{{ dns_addvertise_domain }} {{ hostvars[item].inventory_hostname }}"
+    line: "{{ hostvars[item].ip if hostvars[item].ip is defined else '#'}} {{ hostvars[item].inventory_hostname }}.{{ dns_addvertise_domain }} {{ hostvars[item].inventory_hostname }}"
     state: present
   with_items: '{{ groups["all"] }}'
   when: not item == "localhost"

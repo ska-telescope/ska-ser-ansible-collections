@@ -22,6 +22,8 @@ address=/{{ server.name }}/{{ server.address }}
 {% endfor %}
 {% for server in groups["all"] %}
 {% if not server == "localhost" %}
+{% if hostvars[server].ip is defined %}
 address=/{{ hostvars[server].inventory_hostname }}.{{ dns_addvertise_domain }}/{{ hostvars[server].ip }}
+{% endif %}
 {% endif %}
 {% endfor %}
