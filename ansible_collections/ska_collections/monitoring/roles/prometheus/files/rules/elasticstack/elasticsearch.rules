@@ -23,3 +23,19 @@ groups:
     annotations:
       description: The heap usage is over 90% for 15m
       summary: ElasticSearch node {{$labels.node}} heap usage is high
+  - alert: ElasticsearchClusterDOWN
+    expr: '(avg(elasticsearch_cluster_health_status{color="green",cluster=~"$cluster"}) + avg(elasticsearch_cluster_health_status{color="yellow",cluster=~"$cluster"}) * 2 + avg(elasticsearch_cluster_health_status{color="red",cluster=~"$cluster"}) * 3) == 3'
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      message: "{% raw %}The Elasticsearch cluster appears to be DOWN {% endraw %}"
+      summary: "{% raw %}The Elasticsearch cluster appears to be DOWN {% endraw %}"
+  - alert: ElasticsearchClusterWARNING
+    expr: '(avg(elasticsearch_cluster_health_status{color="green",cluster=~"$cluster"}) + avg(elasticsearch_cluster_health_status{color="yellow",cluster=~"$cluster"}) * 2 + avg(elasticsearch_cluster_health_status{color="red",cluster=~"$cluster"}) * 3) == 2'
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      message: "{% raw %}The Elasticsearch cluster is going to be DOWN soon if actions are not taken{% endraw %}"
+      summary: "{% raw %}The Elasticsearch cluster is going to be DOWN soon if actions are not taken{% endraw %}"
