@@ -7,7 +7,7 @@
 
 - name: Download Ingress Controller manifests
   ansible.builtin.get_url:
-    url: "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v{{ ingress_nginx_version }}/deploy/static/provider/baremetal/deploy.yaml"
+    url: "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v{{ k8s_ingress_nginx_version }}/deploy/static/provider/baremetal/deploy.yaml"
     dest: "/tmp/ingress.yaml"
     mode: '0664'
 
@@ -73,19 +73,19 @@
 #     -p='{"metadata": {"annotations": {"ingressclass.kubernetes.io/is-default-class": "true"}}}'
 #   changed_when: false
 
-- name: Apply patch to ingress controller service
-  ska_collections.k8s.kubectl_patch:
-    name: service/ingress-nginx-controller
-    kubectl_namespace: ingress-nginx
-    patch: >-
-      {"spec":
-        {"ports":
-          [{"port": 80, "nodePort": 30080},
-           {"port": 443, "nodePort": 30443}
-          ]
-        }
-      }
-    kubectl_kubeconfig: "{{ k8s_kubeconfig }}"
+    - name: Apply patch to ingress controller service
+      ska_collections.k8s.kubectl_patch:
+        name: service/ingress-nginx-controller
+        kubectl_namespace: ingress-nginx
+        patch: >-
+          {"spec":
+            {"ports":
+              [{"port": 80, "nodePort": 30080},
+              {"port": 443, "nodePort": 30443}
+              ]
+            }
+          }
+        kubectl_kubeconfig: "{{ k8s_kubeconfig }}"
 
 - name: Apply Ingress ACLs
   kubernetes.core.k8s:
