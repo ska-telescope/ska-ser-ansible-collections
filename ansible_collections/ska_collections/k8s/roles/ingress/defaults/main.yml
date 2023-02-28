@@ -1,5 +1,5 @@
 ---
 debug: false
 
-ingress_nginx_version: 1.6.4
-ingress_lb_suffix: "test"
+k8s_ingress_nginx_version: 1.6.4
+k8s_ingress_lb_suffix: "test"

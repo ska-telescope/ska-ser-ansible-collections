@@ -17,9 +17,9 @@ spec:
     - name: vip_leaderelection
       value: "true"
     - name: vip_address
-      value: {{ cluster_api_address }}
+      value: {{ k8s_cluster_api_address }}
     - name: vip_interface
-      value: {{ cluster_vip_interfaces }}
+      value: {{ k8s_cluster_vip_interfaces }}
     - name: vip_leaseduration
       value: "15"
     - name: vip_renewdeadline

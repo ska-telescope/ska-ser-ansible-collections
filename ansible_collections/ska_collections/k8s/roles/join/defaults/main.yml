@@ -1,30 +1,31 @@
 ---
 debug: false
 
-activate_containerd: true
-activate_nvidia: false
+k8s_activate_containerd: true
+k8s_activate_nvidia: false
+k8s_ignore_nvidia_fail: false
 
-k8s_interface: ens.*,eth.*
-pod_network_cidr: 10.10.0.0/16
-pod_network_ipip_mode: Never
+k8s_interface: interface=ens.*,eth.*
+k8s_pod_network_cidr: 10.10.0.0/16
+k8s_pod_network_ipip_mode: Never
 
-oidc_issuer_url: "https://gitlab.com"
-oidc_client_id: "xxxx"
-oidc_username_claim: "sub"
+k8s_oidc_issuer_url: "https://gitlab.com"
+k8s_oidc_client_id: "xxxx"
+k8s_oidc_username_claim: "sub"
 
 k8s_dns_servers: [10.164.0.11]
 
 k8s_version: 1.25.5
 
-calico_version: 3.24.5
+k8s_calico_version: 3.24.5
 
-# create with 'kubeadm alpha certs certificate-key'
+# create with 'kubeadm certs certificate-key'
 k8s_certificate_key: Xx64
 
 k8s_dns_entry:
 k8s_external_dns_entry:
 
-cluster_api_address: "10.10.0.10"
-cluster_hostname: a.b.c
-cluster_domain: a.b.c
-cluster_vip_interfaces: ens3
+k8s_cluster_api_address: "10.10.0.10"
+k8s_cluster_hostname: a.b.c
+k8s_cluster_domain: a.b.c
+k8s_cluster_vip_interfaces: ens3
