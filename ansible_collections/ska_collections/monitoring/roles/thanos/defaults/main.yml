@@ -12,7 +12,7 @@ thanos_query_endpoints:
   - 192.168.99.153:10901
   - 192.168.99.31:19090
 
-thanos_docker_tags: 'v0.28.0'
+thanos_docker_tags: 'v0.30.2'
 
 thanos_swift_server_auth_url: "https://openstack.stfc.ac.uk:5000/v3"
 thanos_swift_server_username: "pharding"
