@@ -3,6 +3,18 @@ name: {{ inventory_hostname }}
 # input configuration
 filebeat:
   inputs:
+    - type: log
+      paths:
+        - '/var/log/syslog'
+        - '/var/log/*.log'
+      processors:
+      - add_fields:
+          target: ''
+          fields:
+            ska.datacentre: {{ ska_datacentre }}
+            ska.environment: {{ ska_environment }}
+            ska.service: {{ ska_service | default(logging_service_default) }}
+            ska.application: syslog
     - type: journald
       id: everything
       paths: []
