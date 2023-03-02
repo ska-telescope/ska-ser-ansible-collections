@@ -39,12 +39,13 @@ logging_filebeat_volumes:
   - "{{ certificates_dir }}/{{ logging_filebeat_certificate_name }}.crt:/etc/{{ logging_filebeat_certificate_name }}.crt:ro"
   - "{{ certificates_dir }}/{{ logging_filebeat_certificate_name }}.key:/etc/{{ logging_filebeat_certificate_name }}.key:ro"
   # machine info
+  - "/run/systemd:/run/systemd:ro"
   - "/etc/hostname:/etc/hostname:ro"
   - "/etc/machine-id:/etc/machine-id:ro"
   # generic logs
   - "/var/log:/var/log:ro"
   # journal
-  - "/var/log/journal:/var/log/journal:ro"
+  # - "/var/log/journal:/var/log/journal:ro"  # Already included above
 
 logging_filebeat_kubernetes_enabled: auto
 logging_filebeat_kubernetes_volumes:
