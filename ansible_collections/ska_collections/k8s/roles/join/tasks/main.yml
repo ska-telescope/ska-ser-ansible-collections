@@ -37,31 +37,16 @@
     var: "{{ item }}"
   with_items:
     - host_grouping
-    - cluster_api_address
-    - cluster_hostname
+    - k8s_cluster_api_address
+    - k8s_cluster_hostname
     - current_hostname
   when: debug|bool
 
 - name: Check nvidia-driver installed when Nvidia support requested
   ansible.builtin.fail:
     msg: The Nvidia driver has not been found (nvidia-smi --query) - aborting.
-  when: activate_nvidia|bool and not ignore_nvidia_fail|bool and not nvidia_driver_exists|bool
+  when: k8s_activate_nvidia|bool and not k8s_ignore_nvidia_fail|bool and not nvidia_driver_exists|bool
     and inventory_hostname in groups['kubernetes-workers']
-
-- name: "Show cluster_api_address"
-  ansible.builtin.debug:
-    var: cluster_api_address
-  # when: debug|bool
-
-- name: "Show cluster_hostname"
-  ansible.builtin.debug:
-    var: cluster_hostname
-  # when: debug|bool
-
-- name: "Show current_hostname"
-  ansible.builtin.debug:
-    var: current_hostname
-  # when: debug|bool
 
 - name: Check if "Cluster is active" is enabled.
   ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf version
@@ -117,7 +102,7 @@
 
 - name: Wait for API Server to come up
   ansible.builtin.wait_for:
-    host: "{{ cluster_api_address }}"
+    host: "{{ k8s_cluster_api_address }}"
     port: 6443
     delay: 10
   when: inventory_hostname == groups['kubernetes-controlplane'][0]
@@ -132,7 +117,7 @@
 
 - name: Init Cluster networking with Calico on the first master.
   ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf
-         apply -f https://raw.githubusercontent.com/projectcalico/calico/v{{ calico_version }}/manifests/calico.yaml
+         apply -f https://raw.githubusercontent.com/projectcalico/calico/v{{ k8s_calico_version }}/manifests/calico.yaml
   when: "inventory_hostname == groups['kubernetes-controlplane'][0] and kubectl_calico.rc"
   changed_when: false
 
@@ -154,8 +139,8 @@
 - name: Set calico-node environment variables
   ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf -n kube-system set env daemonset/calico-node {{ item }}
   with_items:
-    - "CALICO_IPV4POOL_CIDR={{ pod_network_cidr }}"
-    - "CALICO_IPV4POOL_IPIP={{ pod_network_ipip_mode }}"
+    - "CALICO_IPV4POOL_CIDR={{ k8s_pod_network_cidr }}"
+    - "CALICO_IPV4POOL_IPIP={{ k8s_pod_network_ipip_mode }}"
     - "IP_AUTODETECTION_METHOD={{ k8s_interface }}"
   delegate_to: "{{ groups['kubernetes-controlplane'][0] }}"
   run_once: true
@@ -181,8 +166,8 @@
     name: default-ipv4-ippool
     definition:
       spec:
-        cidr: "{{ pod_network_cidr }}"
-        ipipMode: "{{ pod_network_ipip_mode }}"
+        cidr: "{{ k8s_pod_network_cidr }}"
+        ipipMode: "{{ k8s_pod_network_ipip_mode }}"
   when: "inventory_hostname == groups['kubernetes-controlplane'][0]"
 
   # kubeadm join 192.168.0.200:6443 --token 9vr73a.a8uxyaju799qwdjv

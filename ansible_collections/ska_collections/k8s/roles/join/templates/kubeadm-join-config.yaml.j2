@@ -18,12 +18,12 @@ controlPlane:
   certificateKey: {{ k8s_certificate_key }}
 {% endif %}
 nodeRegistration:
-  criSocket: {% if activate_containerd %}unix:///run/containerd/containerd.sock{% else %}/var/run/dockershim.sock{% endif %}
+  criSocket: {% if k8s_activate_containerd %}unix:///run/containerd/containerd.sock{% else %}/var/run/dockershim.sock{% endif %}
 
   name: {{ ansible_hostname }}
   imagePullPolicy: IfNotPresent
 {% if inventory_hostname in groups['kubernetes-workers'] %}
-{% if activate_nvidia and nvidia_driver_exists %}
+{% if k8s_activate_nvidia and nvidia_driver_exists %}
   taints:
     - effect: NoExecute
       key: nvidia.com/gpu
@@ -43,11 +43,11 @@ nodeRegistration:
 ---
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: ClusterConfiguration
-controlPlaneEndpoint: {{ cluster_api_address }}:6443
+controlPlaneEndpoint: {{ k8s_cluster_api_address }}:6443
 kubernetesVersion: v{{ k8s_version }}
 networking:
   dnsDomain: cluster.local
-  podSubnet: "{{ pod_network_cidr }}"
+  podSubnet: "{{ k8s_pod_network_cidr }}"
   serviceSubnet: 10.96.0.0/12
 apiServer:
   timeoutForControlPlane: 4m0s

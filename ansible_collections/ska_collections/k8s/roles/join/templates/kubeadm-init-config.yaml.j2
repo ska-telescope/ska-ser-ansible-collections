@@ -12,7 +12,7 @@ bootstrapTokens:
       - signing
       - authentication
 nodeRegistration:
-  criSocket: {% if activate_containerd %}unix:///run/containerd/containerd.sock{% else %}/var/run/dockershim.sock{% endif %}
+  criSocket: {% if k8s_activate_containerd %}unix:///run/containerd/containerd.sock{% else %}/var/run/dockershim.sock{% endif %}
 
   imagePullPolicy: IfNotPresent
   name: {{ ansible_hostname }}
@@ -35,8 +35,8 @@ kubernetesVersion: v{{ k8s_version }}
 apiServer:
   certSANs:
   - 127.0.0.1
-  - {{ cluster_api_address }}
-  - {{ cluster_hostname }}
+  - {{ k8s_cluster_api_address }}
+  - {{ k8s_cluster_hostname }}
 {% if k8s_dns_entry|bool %}
   - {{ k8s_dns_entry }}
 {% endif %}
@@ -45,14 +45,14 @@ apiServer:
 {% endif %}
 {% for item in groups['kubernetes-controlplane'] %}
   - {{ hostvars[item].k8s_internal_ip|default(hostvars[item].ansible_host) }}
-  - {{ hostvars[item].k8s_internal_ip|default(hostvars[item].ansible_host) }}.{{ cluster_domain }}
+  - {{ hostvars[item].k8s_internal_ip|default(hostvars[item].ansible_host) }}.{{ k8s_cluster_domain }}
   - {{ hostvars[item].ansible_default_ipv4.address }}
 {% endfor %}
   extraArgs:
     authorization-mode: Node,RBAC
-    oidc-issuer-url: {{ oidc_issuer_url }}
-    oidc-username-claim: {{ oidc_username_claim }}
-    oidc-client-id: {{ oidc_client_id }}
+    oidc-issuer-url: {{ k8s_oidc_issuer_url }}
+    oidc-username-claim: {{ k8s_oidc_username_claim }}
+    oidc-client-id: {{ k8s_oidc_client_id }}
     service-account-issuer: "https://kubernetes.default.svc.{{ k8s_cluster_domain }}"
     service-account-signing-key-file: "/etc/kubernetes/pki/sa.key"
     service-account-key-file: "/etc/kubernetes/pki/sa.pub"
@@ -66,7 +66,7 @@ apiServer:
 #    enable-admission-plugins: "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota"
 clusterName: kubernetes
 certificatesDir: /etc/kubernetes/pki
-controlPlaneEndpoint: {{ cluster_api_address }}:6443
+controlPlaneEndpoint: {{ k8s_cluster_api_address }}:6443
 # https://dbafromthecold.com/2020/04/08/adjusting-pod-eviction-time-in-kubernetes/
 controllerManager:
   extraArgs:
@@ -77,7 +77,7 @@ etcd:
     dataDir: /var/lib/k8s/etcd
 networking:
   dnsDomain: {{ k8s_cluster_domain }}
-  podSubnet: "{{ pod_network_cidr }}"
+  podSubnet: "{{ k8s_pod_network_cidr }}"
   serviceSubnet: 10.96.0.0/12
 scheduler: {}
 ---
