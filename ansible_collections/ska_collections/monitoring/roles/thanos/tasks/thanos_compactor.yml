@@ -62,9 +62,9 @@
       - "--http.config={{ thanos_config_dir }}/thanos_compactor.yaml"
       - "--wait"
       - "--wait-interval=60m"
-      - "--retention.resolution-raw={{thanos_retention_resolution_raw}}"
-      - "--retention.resolution-5m={{thanos_retention_resolution_5m}}"
-      - "--retention.resolution-1h={{thanos_retention_resolution_1h}}"
+      - "--retention.resolution-raw={{ thanos_retention_resolution_raw }}"
+      - "--retention.resolution-5m={{ thanos_retention_resolution_5m }}"
+      - "--retention.resolution-1h={{ thanos_retention_resolution_1h }}"
       - "--delete-delay=0"
     user: root
     restart: true
