@@ -14,7 +14,7 @@
     tag: "{{ thanos_docker_tags }}"
     source: pull
 
-- name: Stop thanos container
+- name: Stop thanos_sidecar container
   community.docker.docker_container:
     name: thanos_sidecar
     stop_timeout: 180
@@ -30,17 +30,17 @@
     certificate_dns_alt_name: "{{ thanos_alt_name }}"
     certificate_recreate: true
 
-- name: Generate thanos swift configuration
+- name: Generate thanos storage configuration
   become: true
   ansible.builtin.template:
-    src: "swift.yml.j2"
-    dest: "{{ thanos_config_dir }}/swift.yml"
+    src: "thanos_storage_config.yml.j2"
+    dest: "{{ thanos_config_dir }}/thanos_storage_config.yml"
     force: true
     owner: "{{ monitoring_localuser }}"
     group: "{{ monitoring_localgroup }}"
     mode: 0644
 
-- name: Start thanos container
+- name: Start thanos_sidecar container
   community.docker.docker_container:
     name: thanos_sidecar
     image: "thanosio/thanos:{{ thanos_docker_tags }}"
@@ -54,7 +54,7 @@
       - "--grpc-server-tls-key={{ certificates_dir }}/thanos_sidecar.key"
       - "--grpc-server-tls-client-ca={{ certificates_dir }}/ca-certificate.crt"
       - "--prometheus.http-client-file=/etc/thanos/thanos_sidecar.yaml"
-      - "--objstore.config-file={{ thanos_config_dir }}/swift.yml"
+      - "--objstore.config-file={{ thanos_config_dir }}/thanos_storage_config.yml"
     user: root
     restart: true
     restart_policy: always
