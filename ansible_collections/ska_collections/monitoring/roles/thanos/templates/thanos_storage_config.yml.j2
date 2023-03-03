@@ -1,0 +1,7 @@
+type: S3
+config:
+  access_key: "{{ thanos_s3_store_access_key }}" 
+  secret_key: "{{ thanos_s3_store_secret_key }}" 
+  endpoint: "s3.us-east-1.amazonaws.com"
+  region: "eu-west-2"
+  bucket: "skao-bkp-prometheus-metrics"

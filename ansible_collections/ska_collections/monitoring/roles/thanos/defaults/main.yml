@@ -14,9 +14,9 @@ thanos_query_endpoints:
 
 thanos_docker_tags: 'v0.30.2'
 
-thanos_swift_server_auth_url: "https://openstack.stfc.ac.uk:5000/v3"
-thanos_swift_server_username: "pharding"
-thanos_swift_server_password: "{{ _ | mandatory('`thanos_swift_server_password` definition is mandatory') }}"
+thanos_s3_server_auth_url: "https://s3.eu-west-2.amazonaws.com/skao-bkp-prometheus-metrics"
+thanos_s3_store_access_key: "{{ _ | mandatory('`THANOS_S3_STORE_ACCESS_KEY` definition is mandatory') }}"
+thanos_s3_store_secret_key: "{{ _ | mandatory('`THANOS_S3_STORE_SECRET_KEY` definition is mandatory') }}"
 
 thanos_retention_resolution_raw: "14d"
 thanos_retention_resolution_5m: "14d"

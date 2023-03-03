@@ -66,14 +66,14 @@ lint: ## Lint playbooks
 
 prometheus: check_hosts ## Install Prometheus Server
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_prometheus.yml \
-		-i $(INVENTORY) \
-		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "kubeconfig='$(KUBECONFIG)'" \
 		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
-		-e "thanos_swift_server_password='$(THANOS_OS_PASSWORD)'" $(PROMETHEUS_EXTRAVARS) \
+		-e "thanos_s3_store_access_key=$(THANOS_S3_STORE_ACCESS_KEY)" \
+		-e "thanos_s3_store_secret_key=$(THANOS_S3_STORE_SECRET_KEY)" \
 		-e "prometheus_gitlab_ci_pipelines_exporter_token=$(GITLAB_TOKEN)" \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
-		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
+		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" $(PROMETHEUS_EXTRAVARS) \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
 grafana: check_hosts ## Install Grafana Server
@@ -95,10 +95,10 @@ alertmanager: check_hosts ## Install Prometheus Server
 
 thanos: check_hosts ## Install Thanos query and query front-end
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_thanos.yml \
-		-i $(INVENTORY) \
-		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 		-e "ca_cert_password=$(CA_CERT_PASSWORD)" \
-		-e "thanos_swift_server_password='$(THANOS_OS_PASSWORD)'" \
+		-e "thanos_s3_store_access_key=$(THANOS_S3_STORE_ACCESS_KEY)" \
+		-e "thanos_s3_store_secret_key=$(THANOS_S3_STORE_SECRET_KEY)" \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
@@ -125,6 +125,10 @@ generate-targets: check_hosts ## Update json file for prometheus targets definit
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	-e 'ansible_python_interpreter=/usr/bin/python3' \
 	--limit $(NODES)
+
+update_targets: ## Direct python call for updating prometheus targets json files
+	@python3 ansible_collections/ska_collections/monitoring/roles/prometheus/files/helper/prom_helper.py -g "$(BASE_PATH)/datacentres/$(DATACENTRE)/$(ENVIRONMENT)/installation"; \
+	mv *.json ansible_collections/ska_collections/monitoring/roles/prometheus/files/ 2>/dev/null || true
 
 test-prometheus: check_hosts ## Test elastic cluster
 	@ansible-playbook $(TESTS_DIR)/prometheus_test.yml \
