@@ -1,26 +1,18 @@
 ---
-# load shared vars with clusterapi
-- name: Include vars
-  ansible.builtin.include_vars:
-    file: "{{ item }}"
-  with_items:
-    - ../clusterapi/defaults/main.yml
-    - ../configcapo/defaults/main.yml
-  tags: [always]
 
 - name: Load cloud config
   ansible.builtin.slurp:
-    src: "{{ clusterapi_config_dir }}/cloud-provider.ini"
-  register: base64_cloud_provider_config_ini
+    src: "{{ k8s_cloudprovider_config_ini }}"
+  register: base64_cloudprovider_config_ini
   become: true
 
 - name: "Show base64_cloud_config"
   ansible.builtin.debug:
-    var: base64_cloud_provider_config_ini
+    var: base64_cloudprovider_config_ini
 
 - name: Decode Clusterapi cloud config and store as fact
   ansible.builtin.set_fact:
-    cloud_provider_config_ini: "{{ base64_cloud_provider_config_ini.content | b64decode }}"
+    k8s_cloudprovider_config_ini: "{{ base64_cloudprovider_config_ini.content | b64decode }}"
 
 - name: Check Cloud Config Secret exist
   kubernetes.core.k8s_info:
@@ -28,10 +20,10 @@
     kind: Secret
     name: cloud-config
     namespace: kube-system
-  register: cloud_provider_secret_check
+  register: k8s_cloudprovider_secret_check
 
 - name: Install Cloud Provider Cloud Config Secret
-  when: "not cloud_provider_secret_check.resources"
+  when: "not k8s_cloudprovider_secret_check.resources"
   block:
     - name: Create Cloud Config Secret
       kubernetes.core.k8s:
@@ -43,7 +35,7 @@
             name: cloud-config
             namespace: kube-system
           data:
-            cloud.conf: "{{ cloud_provider_config_ini }}"
+            cloud.conf: "{{ k8s_cloudprovider_config_ini }}"
 
 - name: Tidy up Cloud Provider manifests
   ansible.builtin.file:
@@ -98,17 +90,17 @@
     api_version: v1
     kind: StorageClass
     name: cinder-block
-  register: cloud_provider_sc_check
+  register: k8s_cloudprovider_sc_check
 
 - name: Install Cloud Provider Storage Classes
-  when: "not cloud_provider_sc_check.resources"
+  when: "not k8s_cloudprovider_sc_check.resources"
   block:
     - name: Apply Cloud Provider storage classes
       kubernetes.core.k8s:
         state: present
         apply: true
         definition: "{{ item }}"
-      with_items: "{{ cloud_provider_storage_classes }}"
+      with_items: "{{ k8s_cloudprovider_storage_classes }}"
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers

@@ -12,7 +12,7 @@
         var: capi_kubeconfig
 
   roles:
-    - ska_collections.clusterapi.cloudprovider
+    - ska_collections.k8s.cloudprovider
   environment:
     KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=capi_kubeconfig) | mandatory }}"
 

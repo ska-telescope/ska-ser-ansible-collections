@@ -114,6 +114,15 @@ ifneq (,$(findstring binderhub,$(TAGS)))
 	-vv
 endif
 
+ifneq (,$(findstring cloudprovider,$(TAGS)))
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/cloudprovider.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=kubernetes-controlplane" \
+	--limit "kubernetes-controlplane" \
+	--tags "$(TAGS)" \
+	-vv
+endif
+
 k8s-velero-backups:  ## Configure Velero backups on Kubernetes
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/velero_backups.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \

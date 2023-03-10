@@ -1,9 +1,10 @@
 ---
 debug: false
 
-cloud_provider_config: /etc/kubernetes/cloud.conf
+k8s_cloudprovider_config: /etc/kubernetes/cloud.conf
+k8s_cloudprovider_config_ini: /etc/clusterapi/cloud-provider.ini
 
-cloud_provider_storage_classes:
+k8s_cloudprovider_storage_classes:
   - apiVersion: storage.k8s.io/v1
     kind: StorageClass
     metadata:
