@@ -86,10 +86,6 @@
 # capo-cluster-template: kustomize/base/cluster-template.orig.yaml capo-vars ## generate the cluster manifest template
 # 	kubectl kustomize ./kustomize/overlay/$(KUSTOMIZE_OVERLAY)/ > $(THIS_BASE)/$(CAPO_CLUSTER)-template.yaml
 
-# capo-cluster-manifest: rook-vars capo-cluster-template  ## configure and create capo cluster manifest
-# 	@# wget https://github.com/vmware-tanzu/cluster-api-provider-bringyourownhost/releases/download/v0.2.0/cluster-template.yaml
-# 	@# --infrastructure byoh
-
 - name: Setup environment
   ansible.builtin.set_fact:
     capi_cluster_environment:

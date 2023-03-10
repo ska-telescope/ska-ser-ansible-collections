@@ -5,7 +5,6 @@ This directory contains the `ska_collections.clusterapi` Ansible Collection. The
 It is a collection of helpers that facilitate the deployment of Kubernetes clusters using:
 
 * cluster api provider openstack - https://github.com/kubernetes-sigs/cluster-api-provider-openstack
-* clusterapi provider BYOH - https://github.com/vmware-tanzu/cluster-api-provider-bringyourownhost
 
 
 ## OpenStack
@@ -15,15 +14,9 @@ Enables full integration with the OpenStack platform, where the provider:
 * uses Octavia for the load balancer frontend to etcd and apiserver
 * uses Nova to generate workload cluster nodes based on specified flavours
 
-
-## BYOH
-
-Enables deployment of Kubernetes clusters on existing baremetal and/or VMs
-
-
 ## How it works
 
-Clusterapi is an operator that works on the same princples as any other custom resource declarative interface.  The operator is deployed in a management cluster along with the desired infrastructure providers (OpenStack, and BYOH) that provide the driver interface for communicating with the specific infrastructure context.  See the clusterapi book for details https://cluster-api.sigs.k8s.io/user/concepts.html .
+Clusterapi is an operator that works on the same princples as any other custom resource declarative interface.  The operator is deployed in a management cluster along with the desired infrastructure providers (OpenStack) that provide the driver interface for communicating with the specific infrastructure context.  See the clusterapi book for details https://cluster-api.sigs.k8s.io/user/concepts.html .
 
 The user defines a collection of manifests that describe the machine and cluster layout for the desired workload cluster.  The manifest is then applied to the management cluster which then orchestrates the creation of the workload cluster by communicating with the infrastructure provider, and driving the `kubeadm` configuration manager (https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/).  These manifests are templated by the `clusterctl generate cluster` command.
 
@@ -93,56 +86,6 @@ $ make playbooks clusterapi clusterapi PLAYBOOKS_HOSTS=management-cluster
 
 
 ### OpenStack - Create VM Image
-
-### BYOH - prepare hosts
-
-For testing purposes, VMs can be created in OpenStack to simulate baremetal (BYOH) hosts.  An example of this is available under stfc-techops/staging.  Set `PrivateRules.mak` vars as follows:
-```
-DATACENTRE = stfc-techops
-ENVIRONMENT = staging
-SERVICE = byohosts
-```
-
-Then build the 7 VMs (byohosts-i00 to byohosts-i06) with:
-```
-$ make orch init
-$ make orch plan
-$ make orch apply
-$ make orch generate-inventory
-# mv the installation/inventory.yml file to installation/byohosts.yml
-#
-# may need to fix port names where terraform has not set them:
-#for i in `openstack port list --network SKA-TechOps-ClusterAPI1 --long | grep ACTIVE | grep compute:ceph | awk '{print $2}'`; do openstack port set $i --name $i; done
-#
-# disable port security
-$ make playbooks clusterapi clusterapi-byoh-port-security
-```
-
-Edit `datacentres/stfc-techops/staging/installation/byohosts` to set the clusterapi IP address correctly:
-```
-[capi]
-clusterapi ansible_host=192.168.99.227 ansible_user=ubuntu
-```
-
-Now prepare the hosts:
-```
-$ make playbooks clusterapi clusterapi-byoh PLAYBOOKS_HOSTS=workload-cluster
-```
-
-
-### Generate and Apply Manifests
-
-The cluster manifests are generated remotely on the management-cluster.  These are not applied by default so can be reviewed prior to deployment.
-
-Generate manifests:
-```
-$ make playbooks clusterapi clusterapi-createworkload PLAYBOOKS_HOSTS=management-cluster \
-  CLUSTERAPI_CLUSTER_TYPE=byoh CLUSTERAPI_CLUSTER=test-byoh
-#  review manifests in /tmp/test-byoh-cluster-manifest.yaml
-# Now apply:
-$ make playbooks clusterapi clusterapi-createworkload PLAYBOOKS_HOSTS=management-cluster \
-  CLUSTERAPI_CLUSTER_TYPE=byoh CLUSTERAPI_CLUSTER=test-byoh CLUSTERAPI_APPLY=true
-```
 
 
 ### Using the OpeStack Infrastructure Provider

@@ -7,12 +7,13 @@ endif
 
 clusterapi-check-cluster-type:
 ifndef CLUSTERAPI_CLUSTER_TYPE
-	$(error CLUSTERAPI_CLUSTER_TYPE is undefined - MUST be 'capo' or 'byoh')
+	$(error CLUSTERAPI_CLUSTER_TYPE is undefined - MUST be 'capo')
 endif
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
 
+CLUSTERAPI_CLUSTER_TYPE ?= capo
 CLUSTERAPI_APPLY ?= false ## Apply workload cluster: true or false - default: false
 CLUSTERAPI_AC_BRANCH ?= main ## Ansible Collections branch to apply to workload cluster
 CLUSTERAPI_CLUSTER ?= test ## Name of workload cluster to create
@@ -107,52 +108,11 @@ ifneq (,$(findstring cloudprovider,$(CLUSTERAPI_TAGS)))
 	-vv
 endif
 
-clusterapi-byoh-reset:  ## Reset workload hosts
-	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/reset-byoh.yml \
-	-i $(INVENTORY) --limit workload-cluster $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=workload-cluster" -v
-
-clusterapi-byoh-init:  ## Initialise byoh workload hosts
-	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/init-hosts.yml \
-	-i $(INVENTORY) --limit workload-cluster $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=workload-cluster" -v
-
-clusterapi-byoh-engine:  ## Deploy byoh container engine on workload hosts
-	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
-	ansible-playbook $(PLAYBOOKS_DIR)/docker_base/playbooks/containers.yml \
-	-i $(INVENTORY) --limit workload-cluster $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=workload-cluster" -v
-
-clusterapi-byoh-agent:  ## Deploy byoh agent and tokens to workload hosts
-	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/byoh.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=workload-cluster" -v
-
-clusterapi-byoh:  ## Prepare byoh nodes
-	make clusterapi-byoh-init
-	make clusterapi-byoh-engine
-	make clusterapi-byoh-agent
-
 clusterapi-destroy-management:  ## Destroy Minikube management cluster
 	ansible-playbook $(PLAYBOOKS_DIR)/minikube/playbooks/minikube.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--limit "management-cluster" --tags "destroy"
-
-clusterapi-byoh-port-security:  ## Unset port security on byohosts
-	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
-	OS_CLOUD=skatechops \
-	ansible-playbook $(PLAYBOOKS_DIR)/metallb/playbooks/metallb_openstack.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=localhost" -v
 
 clusterapi-imagebuilder:  ## Build and upload OS Image Builder Kubernetes image
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/imagebuilder.yml \

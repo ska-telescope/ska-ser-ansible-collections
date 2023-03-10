@@ -1,7 +1,0 @@
-- op: add
-  path: /spec/kubeadmConfigSpec/postKubeadmCommands/-
-  target:
-    kind: KubeadmControlPlane
-    name: ${CLUSTER_NAME}-control-plane
-  value: 
-    'echo "postKubeadmCommands: end $(date)" >>/tmp/capo-config.log'
