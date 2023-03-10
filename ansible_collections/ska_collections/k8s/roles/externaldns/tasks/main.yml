@@ -18,7 +18,7 @@
         name: extdns
         chart_ref: coredns/coredns
         chart_version: "{{ externaldns_coredns_chart_version }}"
-        release_namespace: extdns
+        release_namespace: "{{ externaldns_namespace }}"
         create_namespace: true
         values_files:
           - "/tmp/externaldns.values.yaml"

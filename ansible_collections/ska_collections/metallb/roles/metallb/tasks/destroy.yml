@@ -1,7 +1,0 @@
----
-
-- name: Delete metallb Helm release
-  kubernetes.core.helm:
-    state: absent
-    name: "metallb"
-    release_namespace: metallb

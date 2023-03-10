@@ -27,7 +27,7 @@
   register: metallb_check
 
 - name: Start metallb
-  # Calico is not started
+  # Metallb is not started
   when: "not metallb_check.resources"
   block:
     - name: Apply metallb manifests
@@ -45,7 +45,7 @@
           [
             {"op": "add",
             "path": "/spec/template/spec/containers/0/args/-",
-            "value": "--lb-class=metallb"}
+            "value": "--lb-class={{ metallb_class }}"}
           ]
         kubectl_kubeconfig: "{{ k8s_kubeconfig }}"
       when: metallb_set_class
@@ -59,7 +59,7 @@
           [
             {"op": "add",
             "path": "/spec/template/spec/containers/0/args/-",
-            "value": "--lb-class=metallb"}
+            "value": "--lb-class={{ metallb_class }}"}
           ]
         kubectl_kubeconfig: "{{ k8s_kubeconfig }}"
       when: metallb_set_class
