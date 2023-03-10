@@ -2,12 +2,17 @@
 debug: false
 
 minikube_exe_dir: /usr/local/bin
-minikube_version: v1.28.0
-kubernetes_version: v1.25.3
+# https://github.com/kubernetes/minikube/releases
+minikube_version: v1.29.0
+# https://kubernetes.io/releases/
+minikube_kubernetes_version: v1.26.2
 # Memory in MB
 minikube_memory: 6144
 minikube_cpus: 4
-helm_version: v3.10.2
-k9s_version: v0.26.7
+# https://github.com/helm/helm/releases
+minikube_helm_version: v3.11.2
+# https://github.com/derailed/k9s/releases
+minikube_k9s_version: v0.27.3
 ## yq tool version to install https://github.com/mikefarah/yq/releases
-yq_version: 4.30.5
+minikube_yq_version: 4.30.8
+

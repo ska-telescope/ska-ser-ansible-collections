@@ -1,0 +1,168 @@
+---
+
+- name: Calculate version vars
+  ansible.builtin.set_fact:
+    os_name: "{{ ansible_system | lower }}"
+    os_binary: "{% if ansible_facts.architecture == 'x86_64' %}amd64{% else %}unknown{% endif %}"
+    os_arch: "{{ ansible_facts.architecture | lower }}"
+    k9s_arch: "{{ ansible_facts.architecture | lower }}"
+
+# load shared vars with setup
+- name: Include vars
+  ansible.builtin.include_vars:
+    file: ../setup/defaults/main.yml
+  tags: [always]
+
+- name: Load cloud config
+  ansible.builtin.include_vars:
+    file: "{{ k8s_velero_cloud_config }}"
+    name: "velero_ostack_cloud_yaml"
+
+- name: Set selected cloud
+  ansible.builtin.set_fact:
+    k8s_velero_selected_cloud: "{{ k8s_velero_ostack_cloud_yaml['clouds'][velero_cloud] }}"
+
+- name: Check if velero exists
+  ansible.builtin.stat:
+    path: "{{ k8s_velero_exe_dir }}/velero"
+  register: stat_velero
+
+- name: Check if the velero version is installed
+  ansible.builtin.command: "{{ k8s_velero_exe_dir }}/velero version --client-only"
+  changed_when: false
+  register: k8s_velero_version_check
+  ignore_errors: true
+
+- name: Velero install
+  when: "not stat_velero.stat.exists or
+    k8s_velero_version_check.stdout.find(velero_version) == -1"
+  block:
+    - name: Set k8s_velero_archive fact
+      ansible.builtin.set_fact:
+        k8s_velero_archive: "velero-{{ k8s_velero_version }}-{{ os_name }}-{{ os_binary }}.tar.gz"
+
+    - name: Download velero
+      ansible.builtin.get_url:
+        url: "https://github.com/vmware-tanzu/velero/releases/download/{{ k8s_velero_version }}/{{ k8s_velero_archive }}"
+        dest: "/tmp/{{ k8s_velero_archive }}"
+        mode: "0755"
+        tmp_dest: "/tmp/"
+
+    - name: Unpack velero
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ k8s_velero_archive }}"
+        include: "velero-{{ k8s_velero_version }}-{{ os_name }}-{{ os_binary }}/velero"
+        remote_src: true
+        dest: "{{ k8s_velero_exe_dir }}/"
+        mode: "0755"
+        extra_opts:
+          - "--strip-components=1"
+      become: true
+
+    - name: Tidy up velero download
+      ansible.builtin.file:
+        path: "/tmp/{{ k8s_velero_archive }}"
+        state: absent
+
+- name: Check Velero is running
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: velero
+    namespace: velero
+  register: k8s_velero_controller_check
+
+# https://github.com/Lirt/velero-plugin-for-openstack
+- name: Start Velero
+  # Velero is not started
+  when: "not k8s_velero_controller_check.resources"
+  block:
+
+    - name: Start up Velero
+      ansible.builtin.command: |
+        {{ k8s_velero_exe_dir }}/velero install \
+          --provider "community.openstack.org/openstack" \
+                  --plugins {{ k8s_velero_ostack_plugin_version }} \
+                  --bucket {{ k8s_velero_bucket }} --no-secret
+
+      changed_when: false
+      register: k8s_velero_check
+
+    - name: Wait for deploy/velero
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        api_version: apps/v1
+        name: velero
+        namespace: velero
+        wait: true
+        wait_sleep: 10
+        wait_timeout: 300
+        wait_condition:
+          type: Available
+
+- name: Check Velero BackUpStorageLocation
+  kubernetes.core.k8s_info:
+    kind: BackupStorageLocation
+    api_version: velero.io/v1
+    name: default
+    namespace: velero
+  register: k8s_velero_backuplocation_check
+
+# - name: Set Velero backup config
+#   ska_collections.clusterapi.kubectl_set_env:
+#     name: "deployment/velero"
+#     kubectl_namespace: "velero"
+#     envvars:
+#       OS_REGION_NAME: "{{ k8s_velero_selected_cloud.region_name }}"
+#       OS_INTERFACE: "{{ k8s_velero_selected_cloud.interface }}"
+#       OS_AUTH_URL: "{{ k8s_velero_selected_cloud.auth.auth_url }}"
+#       OS_USERNAME: "{{ k8s_velero_selected_cloud.auth.username }}"
+#       OS_PROJECT_ID: "{{ k8s_velero_selected_cloud.auth.project_id }}"
+#       OS_USER_DOMAIN_NAME: "{{ k8s_velero_selected_cloud.auth.user_domain_name }}"
+#       OS_PROJECT_NAME: "{{ k8s_velero_selected_cloud.auth.project_name }}"
+#       OS_PASSWORD: "{{ k8s_velero_selected_cloud.auth.password }}"
+#       OS_IDENTITY_API_VERSION: "{{ k8s_velero_selected_cloud.identity_api_version }}"
+#   # Velero backup is not configured correctly
+#   when: "not k8s_velero_backuplocation_check.resources or
+#          k8s_velero_backuplocation_check.resources[0].status.phase != 'Available'"
+
+- name: Set Velero backup config
+  ansible.builtin.command: |
+    kubectl -n velero set env deployment/velero \
+    OS_REGION_NAME="{{ k8s_velero_selected_cloud.region_name }}" \
+    OS_INTERFACE="{{ k8s_velero_selected_cloud.interface }}" \
+    OS_AUTH_URL="{{ k8s_velero_selected_cloud.auth.auth_url }}" \
+    OS_USERNAME="{{ k8s_velero_selected_cloud.auth.username }}" \
+    OS_PROJECT_ID="{{ k8s_velero_selected_cloud.auth.project_id }}" \
+    OS_USER_DOMAIN_NAME="{{ k8s_velero_selected_cloud.auth.user_domain_name }}" \
+    OS_PROJECT_NAME="{{ k8s_velero_selected_cloud.auth.project_name }}" \
+    OS_PASSWORD="{{ k8s_velero_selected_cloud.auth.password }}" \
+    OS_IDENTITY_API_VERSION="{{ k8s_velero_selected_cloud.identity_api_version }}"
+  changed_when: false
+  register: k8s_velero_check
+  # Velero backup is not configured correctly
+  when: "not k8s_velero_backuplocation_check.resources or
+         k8s_velero_backuplocation_check.resources[0].status.phase != 'Available'"
+
+- name: Check backup schedule
+  ansible.builtin.command: |
+    velero schedule describe {{ k8s_velero_schedule_name }}
+  changed_when: false
+  register: k8s_velero_schedule_check
+  ignore_errors: true
+
+- name: Set Velero backup schedule
+  ansible.builtin.command: |
+    velero schedule create {{ k8s_velero_schedule_name }} \
+     --schedule="{{ k8s_velero_schedule_time }}" \
+     --include-cluster-resources=true \
+     --snapshot-volumes=false \
+     --storage-location default \
+     --ttl {{ k8s_velero_schedule_ttl }}
+  changed_when: false
+  register: k8s_velero_check
+  # Velero backup has not been scheduled
+  when: "not k8s_velero_schedule_check.rc == 0"
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers

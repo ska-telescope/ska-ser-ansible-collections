@@ -1,8 +1,18 @@
 ---
 debug: false
 
+minikube_mount: true
 minikube_mount_from: /srv
 minikube_mount_to: /srv
 
 minikube_haproxy_name: haproxy
 minikube_haproxy_image: "haproxy:2.6"
+minikube_driver: docker
+minikube_runtime: docker
+
+minikube_addons:
+  - logviewer
+  - metrics-server
+  - ingress
+  - metallb
+  - csi-hostpath-driver

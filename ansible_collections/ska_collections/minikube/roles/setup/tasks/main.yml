@@ -76,17 +76,17 @@
     path: "{{ minikube_exe_dir }}/kubectl"
     state: absent
   when: "not stat_kubectl.stat.exists or
-    kubectl_version_check.stdout.find(kubernetes_version) == -1"
+    kubectl_version_check.stdout.find(minikube_kubernetes_version) == -1"
   tags: [kubectl]
   become: true
 
 - name: Kubectl install
   ansible.builtin.get_url:
-    url: "https://dl.k8s.io/release/{{ kubernetes_version }}/bin/{{ os_name }}/{{ os_binary }}/kubectl"
+    url: "https://dl.k8s.io/release/{{ minikube_kubernetes_version }}/bin/{{ os_name }}/{{ os_binary }}/kubectl"
     dest: "{{ minikube_exe_dir }}/kubectl"
     mode: "0755"
   when: "not stat_kubectl.stat.exists or
-    kubectl_version_check.stdout.find(kubernetes_version) == -1"
+    kubectl_version_check.stdout.find(minikube_kubernetes_version) == -1"
   tags: [kubectl]
   become: true
 
@@ -105,12 +105,12 @@
 
 - name: Helm install
   when: "not stat_helm.stat.exists or
-    helm_version_check.stdout.find(helm_version) == -1"
+    helm_version_check.stdout.find(minikube_helm_version) == -1"
   tags: [helm]
   block:
     - name: Set helm_archive fact
       ansible.builtin.set_fact:
-        helm_archive: "helm-{{ helm_version }}-{{ os_name }}-{{ os_binary }}.tar.gz"
+        helm_archive: "helm-{{ minikube_helm_version }}-{{ os_name }}-{{ os_binary }}.tar.gz"
 
     - name: Download helm
       ansible.builtin.get_url:
@@ -150,7 +150,7 @@
 
 - name: K9s install
   when: "not stat_k9s.stat.exists or
-    k9s_version_check.stdout.find(k9s_version) == -1"
+    k9s_version_check.stdout.find(minikube_k9s_version) == -1"
   tags: [k9s]
   block:
     - name: Set k9s_archive fact
@@ -159,7 +159,7 @@
 
     - name: Download k9s
       ansible.builtin.get_url:
-        url: "https://github.com/derailed/k9s/releases/download/{{ k9s_version }}/{{ k9s_archive }}"
+        url: "https://github.com/derailed/k9s/releases/download/{{ minikube_k9s_version }}/{{ k9s_archive }}"
         dest: "/tmp/{{ k9s_archive }}"
         mode: "0755"
         tmp_dest: "/tmp/"
@@ -191,23 +191,22 @@
   ignore_errors: true
   tags: [yq]
 
-
 - name: Tidy up Yq
   ansible.builtin.file:
     path: "{{ minikube_exe_dir }}/yq"
     state: absent
   when: "not stat_yq.stat.exists or
-    yq_version_check.stdout.find(yq_version) == -1"
+    yq_version_check.stdout.find(minikube_yq_version) == -1"
   become: true
   tags: [yq]
 
 - name: Yq install
   ansible.builtin.get_url:
-    url: "https://github.com/mikefarah/yq/releases/download/v{{ yq_version }}/yq_{{ os_name }}_{{ os_binary }}"
+    url: "https://github.com/mikefarah/yq/releases/download/v{{ minikube_yq_version }}/yq_{{ os_name }}_{{ os_binary }}"
     dest: "{{ minikube_exe_dir }}/yq"
     mode: "0755"
   when: "not stat_yq.stat.exists or
-    yq_version_check.stdout.find(yq_version) == -1"
+    yq_version_check.stdout.find(minikube_yq_version) == -1"
   become: true
   tags: [yq]
 

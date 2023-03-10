@@ -56,9 +56,10 @@ Tested with the current Ansible 6.5.x releases.
 | Name | Description | Version | OS Requirements | Dependencies |
 | ---- | ----------- | ------- | --- | ---|
 | [Metallb](./roles/metallb) | Install and configure metallb | - | Ubuntu 18+ (LTS) | -
+| [velero](./roles/velero) | Install Velero backup manager | 1.9.2 | Ubuntu 18+ (LTS) | |
 
 ## Notes
-We have 2 playbooks: 
+We have 2 playbooks:
  - One is to disable openstack security port. (use only if needed, see description in the playbook ./playbooks/metallb_openstack)
  - The other is to install metallb via helm chart. The helm chart used is this: https://github.com/bitnami/charts/tree/main/bitnami/metallb
 

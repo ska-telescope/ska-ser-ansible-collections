@@ -90,7 +90,7 @@ spec:
   hostNetwork: true
   containers:
   - name: storage-provisioner
-    image: gcr.io/k8s-minikube/storage-provisioner:v5
+    image: registry.gcr.io/k8s-minikube/storage-provisioner:v5
     command: ["/storage-provisioner"]
     imagePullPolicy: IfNotPresent
     volumeMounts:
@@ -99,7 +99,7 @@ spec:
   volumes:
   - name: tmp
     hostPath:
-      path: /tmp
+      path: {{ standardprovisioner_hostpath_dir }}
       type: Directory
 ---
 kind: StorageClass

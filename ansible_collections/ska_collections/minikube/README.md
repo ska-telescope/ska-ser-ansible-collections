@@ -11,7 +11,6 @@ Tested with the current Ansible 6.5.x releases.
 | ---- | ----------- | ------- | --- | ---|
 | [minikube.minikube](./roles/minikube) | deploying an instance of minikube and haproxy | Kubernetes: 1.25.2 <br> HA: 2.6 | Ubuntu 18+ (LTS) | |
 | [minikube.setup](./roles/setup) | Installing Minikube dependencies and useful tools - minikube, kubectl, helm, yq and k9s| Minikube: 1.28.0 <br> Kubernetes: 1.25.3 <br> Helm: 3.10.2 <br> K9s: 0.26.6 <br> yq: 4.27.3 | Ubuntu 18+ (LTS) | |
-| [minikube.velero](./roles/velero) | Install Velero backup manager | 1.9.2 | Ubuntu 18+ (LTS) | |
 
 ## Installation
 
