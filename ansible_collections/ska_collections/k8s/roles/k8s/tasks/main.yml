@@ -117,7 +117,7 @@
 
 - name: Install kubeadm and friends
   ansible.builtin.apt:
-    name: ["kubectl={{ kube_version }}", "kubeadm={{ kube_version }}", "kubelet={{ kube_version }}"]
+    name: ["kubectl={{ k8s_kube_version }}", "kubeadm={{ k8s_kube_version }}", "kubelet={{ k8s_kube_version }}"]
     force: true
     state: present
   notify:

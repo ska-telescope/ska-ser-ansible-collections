@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: ping-service
 spec:
-  replicas: {{ replicas }}
+  replicas: {{ k8s_ping_replicas }}
   selector:
     matchLabels:
       app: ping-service
@@ -14,7 +14,7 @@ spec:
         app: ping-service
     spec:
       containers:
-      - image: gcr.io/google_containers/echoserver:{{ echoserver_version }}
+      - image: gcr.io/google_containers/echoserver:{{ k8s_ping_echoserver_version }}
         imagePullPolicy: IfNotPresent
         name: echoserver
         ports:
@@ -47,5 +47,5 @@ spec:
         backend:
           service:
             name: ping-service
-            port: 
+            port:
               number: 80

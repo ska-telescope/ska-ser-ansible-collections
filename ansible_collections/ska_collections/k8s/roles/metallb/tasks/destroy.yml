@@ -2,7 +2,7 @@
 
 - name: Delete a metallb namespace and deployment
   kubernetes.core.k8s:
-    name: "{{ metallb_namespace }}"
+    name: "{{ k8s_metallb_namespace }}"
     api_version: v1
     kind: Namespace
     state: absent

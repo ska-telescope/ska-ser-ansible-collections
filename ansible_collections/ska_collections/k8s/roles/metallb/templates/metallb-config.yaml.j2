@@ -5,17 +5,17 @@ apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
   name: default
-  namespace: {{ metallb_namespace }}
+  namespace: {{ k8s_metallb_namespace }}
 spec:
   addresses:
-  - {{ metallb_addresses }}
+  - {{ k8s_metallb_addresses }}
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
 metadata:
   creationTimestamp: null
   name: l2advertisement1
-  namespace: {{ metallb_namespace }}
+  namespace: {{ k8s_metallb_namespace }}
 spec:
   ipAddressPools:
   - default
@@ -25,11 +25,11 @@ kind: ConfigMap
 metadata:
   annotations:
   name: config
-  namespace: {{ metallb_namespace }}
+  namespace: {{ k8s_metallb_namespace }}
 data:
   config: |
     address-pools:
     - name: default
       protocol: layer2
       addresses:
-      - {{ metallb_addresses }}
+      - {{ k8s_metallb_addresses }}

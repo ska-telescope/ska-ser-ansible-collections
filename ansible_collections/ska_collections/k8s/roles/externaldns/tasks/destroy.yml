@@ -4,4 +4,4 @@
   kubernetes.core.helm:
     state: absent
     name: "extdns"
-    release_namespace: "{{ externaldns_namespace }}"
+    release_namespace: "{{ k8s_externaldns_namespace }}"

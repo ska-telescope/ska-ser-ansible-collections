@@ -22,7 +22,7 @@
 
 - name: Activate kube-state-metrics
   when: "inventory_hostname == groups['kubernetes-controlplane'][0]
-    and kubectl_metrics.rc and kube_state_metrics"
+    and kubectl_metrics.rc and k8s_state_metrics"
   tags: kube-state-metrics
   block:
     # The following two tasks can be removed once all deployments are managed by Helm
@@ -44,7 +44,7 @@
         atomic: true
         chart_repo_url: https://prometheus-community.github.io/helm-charts
         chart_ref: kube-state-metrics
-        chart_version: "{{ kube_state_metrics_chart_version }}"
+        chart_version: "{{ k8s_state_metrics_chart_version }}"
         name: kube-state-metrics
         namespace: kube-system
         values:

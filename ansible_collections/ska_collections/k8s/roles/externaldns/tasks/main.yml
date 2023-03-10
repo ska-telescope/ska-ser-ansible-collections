@@ -17,8 +17,8 @@
       kubernetes.core.helm:
         name: extdns
         chart_ref: coredns/coredns
-        chart_version: "{{ externaldns_coredns_chart_version }}"
-        release_namespace: "{{ externaldns_namespace }}"
+        chart_version: "{{ k8s_externaldns_coredns_chart_version }}"
+        release_namespace: "{{ k8s_externaldns_namespace }}"
         create_namespace: true
         values_files:
           - "/tmp/externaldns.values.yaml"

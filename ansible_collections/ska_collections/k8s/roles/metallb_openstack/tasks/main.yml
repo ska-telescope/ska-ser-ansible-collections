@@ -18,7 +18,7 @@
 - name: Get Kubernetes network on Openstack
   openstack.cloud.subnets_info:
     filters:
-      cidr: "{{ metallb_openstack_network_cidr }}"
+      cidr: "{{ k8s_metallb_openstack_network_cidr }}"
   register: result
 
 - name: Get Openstack Ports for the previous network

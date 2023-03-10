@@ -13,7 +13,7 @@
       kubernetes.core.helm:
         name: binderhub
         chart_ref: jupyterhub/binderhub
-        chart_version: "{{ binderhub_helm_chart_version }}"
+        chart_version: "{{ k8s_binderhub_helm_chart_version }}"
         release_namespace: "{{ binderhub_namespace }}"
         create_namespace: true
         values_files:

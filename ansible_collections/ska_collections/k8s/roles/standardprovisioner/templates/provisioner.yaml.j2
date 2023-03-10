@@ -99,7 +99,7 @@ spec:
   volumes:
   - name: tmp
     hostPath:
-      path: {{ standardprovisioner_hostpath_dir }}
+      path: {{ k8s_standardprovisioner_hostpath_dir }}
       type: Directory
 ---
 kind: StorageClass

@@ -4,7 +4,7 @@
 
 image:
   repository: coredns/coredns
-  tag: "{{ externaldns_coredns_tag }}"
+  tag: "{{ k8s_externaldns_coredns_tag }}"
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
   ## Secrets must be manually created in the namespace.
@@ -117,13 +117,13 @@ servers:
       - name: ready
       # Required to query kubernetes API for data
       - name: kubernetes
-        parameters: {{ externaldns_cluster_domain }} in-addr.arpa ip6.arpa
+        parameters: {{ k8s_externaldns_cluster_domain }} in-addr.arpa ip6.arpa
         configBlock: |-
           pods insecure
           fallthrough in-addr.arpa ip6.arpa
           ttl 30
       - name: k8s_external
-        parameters: svc.{{ externaldns_cluster_domain }}
+        parameters: svc.{{ k8s_externaldns_cluster_domain }}
       # Serves a /metrics endpoint on :9153, required for serviceMonitor
     #  - name: prometheus
     #    parameters: 0.0.0.0:9153
@@ -272,7 +272,7 @@ autoscaler:
 
   image:
     repository: k8s.gcr.io/cluster-proportional-autoscaler
-    tag: "{{ externaldns_autoscaler_tag }}"
+    tag: "{{ k8s_externaldns_autoscaler_tag }}"
     pullPolicy: IfNotPresent
     ## Optionally specify an array of imagePullSecrets.
     ## Secrets must be manually created in the namespace.
