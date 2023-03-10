@@ -15,4 +15,3 @@ minikube_helm_version: v3.11.2
 minikube_k9s_version: v0.27.3
 ## yq tool version to install https://github.com/mikefarah/yq/releases
 minikube_yq_version: 4.30.8
-
