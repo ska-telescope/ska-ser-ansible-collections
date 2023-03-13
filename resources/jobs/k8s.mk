@@ -113,25 +113,25 @@ ifneq (,$(findstring metrics,$(TAGS)))
 	-vv
 endif
 
-# #	# ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_ceph_conf_ini_file=<path to>/ceph.conf capi_ceph_conf_key_ring=<path to>/ceph.client.admin.keyring'
-# ifneq (,$(findstring rookio,$(TAGS)))
-#     # rookio is a target - avoid undefined ansible vars issue with tags
-# 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/rookio.yml \
-# 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-# 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-# 	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-# 	--tags "$(TAGS)" \
-# 	-vv
-# endif
+#	# ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_ceph_conf_ini_file=<path to>/ceph.conf capi_ceph_conf_key_ring=<path to>/ceph.client.admin.keyring'
+ifneq (,$(findstring rookio,$(TAGS)))
+    # rookio is a target - avoid undefined ansible vars issue with tags
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/rookio.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
+	--tags "$(TAGS)" \
+	-vv
+endif
 
-# ifneq (,$(findstring binderhub,$(TAGS)))
-# 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/binderhub.yml \
-# 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-# 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-# 	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-# 	--tags "$(TAGS)" \
-# 	-vv
-# endif
+ifneq (,$(findstring binderhub,$(TAGS)))
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/binderhub.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
+	--tags "$(TAGS)" \
+	-vv
+endif
 
 
 k8s-velero-backups:  ## Configure Velero backups on Kubernetes

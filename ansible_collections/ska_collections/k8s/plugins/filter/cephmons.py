@@ -43,9 +43,12 @@ class FilterModule(object):
         # ]
         # tel black to ignore this as it does not wrap correctly
         # fmt: off
+        spliter = "] "
+        if "],[" in mons:
+            spliter = "],"
         mons = [
             x.replace("[", "").replace("]", "").replace("/0", "").split(",")
-            for x in mons.split("] ")
+            for x in mons.split(spliter)
         ]
         # fmt: on
         monitors = []
