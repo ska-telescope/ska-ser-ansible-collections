@@ -9,7 +9,7 @@ ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
 
-TAGS ?= all,metallb,externaldns,ping,ingress,rookio,standardprovisioner,metallb,metrics,binderhub ## Ansible tags to run in post deployment processing
+TAGS ?= all,metallb,cloudprovider,externaldns,ping,ingress,rookio,standardprovisioner,metallb,metrics,binderhub ## Ansible tags to run in post deployment processing
 
 .DEFAULT_GOAL := help
 
@@ -114,14 +114,22 @@ ifneq (,$(findstring binderhub,$(TAGS)))
 	-vv
 endif
 
+#     #   echo "Controlplane initialise: cloud provider config"
+#     #   echo "$OPENSTACK_CLOUD_PROVIDER_CONF_B64" | base64 -d > /etc/kubernetes/cloud.conf
+# 	#   cloud_provider_config: /etc/kubernetes/cloud.conf
+
 ifneq (,$(findstring cloudprovider,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/cloudprovider.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=kubernetes-controlplane" \
+	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
+	--extra-vars "ingress_nginx_version=${NGINX_VERSION}" \
+	--extra-vars "ingress_lb_suffix=${CLUSTER_NAME}" \
 	--limit "kubernetes-controlplane" \
 	--tags "$(TAGS)" \
 	-vv
 endif
+
 
 k8s-velero-backups:  ## Configure Velero backups on Kubernetes
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/velero_backups.yml \

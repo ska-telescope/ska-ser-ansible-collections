@@ -91,23 +91,6 @@ clusterapi-post-deployment: clusterapi-check-cluster-type  ## Post deployment fo
 	--tags "$(CLUSTERAPI_TAGS)" \
 	-vv
 
-#     #   echo "Controlplane initialise: cloud provider config"
-#     #   echo "$OPENSTACK_CLOUD_PROVIDER_CONF_B64" | base64 -d > /etc/kubernetes/cloud.conf
-# 	#   cloud_provider_config: /etc/kubernetes/cloud.conf
-
-ifneq (,$(findstring cloudprovider,$(CLUSTERAPI_TAGS)))
-    # cloudprovider is a target - avoid undefined ansible vars issue with tags
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/cloud-provider.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=management-cluster" \
-	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
-	--extra-vars "ingress_nginx_version=${NGINX_VERSION}" \
-	--extra-vars "ingress_lb_suffix=${CLUSTER_NAME}" \
-	--limit "management-cluster" \
-	--tags "$(CLUSTERAPI_TAGS)" \
-	-vv
-endif
-
 clusterapi-destroy-management:  ## Destroy Minikube management cluster
 	ansible-playbook $(PLAYBOOKS_DIR)/minikube/playbooks/minikube.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
