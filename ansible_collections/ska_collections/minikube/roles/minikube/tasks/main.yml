@@ -126,11 +126,13 @@
       community.docker.docker_image:
         name: "{{ minikube_haproxy_image }}"
         source: pull
+      become: true
 
     - name: "Stop container {{ minikube_haproxy_name }}"
       community.docker.docker_container:
         name: "{{ minikube_haproxy_name }}"
         state: absent
+      become: true
 
     - name: Start haproxy container
       community.docker.docker_container:
@@ -151,6 +153,7 @@
           - "6443:6443"
         volumes:
           - "/etc/haproxy/haproxy-minikube.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro"
+      become: true
 
 
 - name: Destroy Minikube Instance
@@ -164,6 +167,7 @@
       community.docker.docker_container:
         name: "{{ minikube_haproxy_name }}"
         state: absent
+      become: true
 
     - name: Teardown Minikube
       ansible.builtin.shell: |
