@@ -4,22 +4,22 @@ clusterapi-check-hosts:
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
-
-clusterapi-check-cluster-type:
-ifndef CLUSTERAPI_CLUSTER_TYPE
-	$(error CLUSTERAPI_CLUSTER_TYPE is undefined - MUST be 'capo')
-endif
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
 
-CLUSTERAPI_CLUSTER_TYPE ?= capo
-CLUSTERAPI_APPLY ?= false ## Apply workload cluster: true or false - default: false
-CLUSTERAPI_AC_BRANCH ?= main ## Ansible Collections branch to apply to workload cluster
-CLUSTERAPI_CLUSTER ?= test ## Name of workload cluster to create
-CLUSTERAPI_TAGS ?= all ## Ansible tags to run in post deployment processing
+CAPI_CLUSTER_TYPE ?= capo
+CAPI_APPLY ?= false ## Apply workload cluster: true or false - default: false
+CAPI_AC_BRANCH ?= main ## Ansible Collections branch to apply to workload cluster
+CAPI_CLUSTER ?= capo-test ## Name of workload cluster to create
+CAPI_TAGS ?= all ## Ansible tags to run in post deployment processing
 
 .DEFAULT_GOAL := clusterapi
+
+clusterapi-check-cluster-type:
+ifndef CAPI_CLUSTER_TYPE
+	$(error CAPI_CLUSTER_TYPE is undefined - MUST be 'capo')
+endif
 
 vars:
 	@echo "\033[36mclusterapi:\033[0m"
@@ -28,9 +28,9 @@ vars:
 	@echo "ANSIBLE_PLAYBOOK_ARGUMENTS=$(ANSIBLE_PLAYBOOK_ARGUMENTS)"
 	@echo "ANSIBLE_EXTRA_VARS=$(ANSIBLE_EXTRA_VARS)"
 	@echo "ANSIBLE_SSH_ARGS=$(ANSIBLE_SSH_ARGS)"
-	@echo "CLUSTERAPI_CLUSTER=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)"
-	@echo "CLUSTERAPI_APPLY=$(CLUSTERAPI_APPLY)"
-	@echo "CLUSTERAPI_AC_BRANCH=$(CLUSTERAPI_AC_BRANCH)"
+	@echo "CAPI_CLUSTER=$(CAPI_CLUSTER)"
+	@echo "CAPI_APPLY=$(CAPI_APPLY)"
+	@echo "CAPI_AC_BRANCH=$(CAPI_AC_BRANCH)"
 
 clusterapi-install-base: clusterapi-check-hosts  ## Install base for management server
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
@@ -61,24 +61,24 @@ clusterapi-build-management-server:  # Complete steps for building clusterapi ma
 	make clusterapi clusterapi-management
 	make clusterapi clusterapi
 
-CLUSTERAPI_DNS_SERVERS?=
+CAPI_DNS_SERVERS?=
 clusterapi-createworkload: clusterapi-check-cluster-type  ## Template workload manifest and deploy
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/createworkload.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=management-cluster" \
-	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
-	--extra-vars "capi_kustomize_overlay=$(CLUSTERAPI_CLUSTER_TYPE)" \
-	--extra-vars '{"cluster_apply": $(CLUSTERAPI_APPLY)}' \
-	--extra-vars 'capi_collections_branch=$(CLUSTERAPI_AC_BRANCH)' \
+	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
+	--extra-vars "capi_kustomize_overlay=$(CAPI_CLUSTER_TYPE)" \
+	--extra-vars '{"cluster_apply": $(CAPI_APPLY)}' \
+	--extra-vars 'capi_collections_branch=$(CAPI_AC_BRANCH)' \
 	--limit "management-cluster" -vv
 
 clusterapi-workload-kubeconfig: clusterapi-check-cluster-type  ## Post deployment get workload kubeconfig
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/get-kubeconfig.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
+	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
 	--limit "management-cluster" -vv
 
 clusterapi-post-deployment: clusterapi-check-cluster-type  ## Post deployment for workload cluster
@@ -86,9 +86,9 @@ clusterapi-post-deployment: clusterapi-check-cluster-type  ## Post deployment fo
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/calico.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=management-cluster" \
-	--extra-vars "capi_cluster=$(CLUSTERAPI_CLUSTER_TYPE)-$(CLUSTERAPI_CLUSTER)" \
+	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
 	--limit "management-cluster" \
-	--tags "$(CLUSTERAPI_TAGS)" \
+	--tags "$(CAPI_TAGS)" \
 	-vv
 
 clusterapi-destroy-management:  ## Destroy Minikube management cluster

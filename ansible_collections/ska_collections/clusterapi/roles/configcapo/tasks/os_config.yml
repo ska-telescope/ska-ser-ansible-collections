@@ -2,31 +2,41 @@
 
 - name: Load cloud config
   ansible.builtin.include_vars:
-    file: "{{ capo_cloud_config }}"
-    name: capo_ostack_cloud_yaml
+    file: "{{ capi_capo_cloud_config }}"
+    name: capi_capo_ostack_cloud_yaml
+
+# - name: Slurp cloud config
+#   ansible.builtin.slurp:
+#     src: "{{ capi_capo_cloud_config }}"
+#   register: capi_base64_capi_capo_ostack_cloud_yaml
+#   delegate_to: localhost
 
 - name: Set selected cloud
   ansible.builtin.set_fact:
-    capo_selected_cloud: "{{ capo_ostack_cloud_yaml['clouds'][capo_cloud] }}"  # noqa: jinja[invalid]
-    base64_capo_ostack_cloud_yaml: "{{ capo_ostack_cloud_yaml | to_yaml | b64encode }}"
+    capi_capo_selected_cloud: "{{ capi_capo_ostack_cloud_yaml['clouds'][capi_capo_cloud] }}"  # noqa: jinja[invalid]
+    capi_base64_capo_ostack_cloud_yaml: "{{ capi_capo_ostack_cloud_yaml | to_nice_yaml(indent=2) | b64encode }}"
 
 - name: Set selected cloud
   ansible.builtin.set_fact:
-    capo_auth_url: "{{ capo_selected_cloud.auth.auth_url }}"
-    capo_auth_type: "{{ capo_selected_cloud.auth_type }}"
-    capo_auth_username: "{{ capo_selected_cloud.auth.username | default('') }}"
-    capo_auth_password: "{{ capo_selected_cloud.auth.password | default('') }}"
-    capo_auth_project_id: "{{ capo_selected_cloud.auth.project_id | default('') }}"
-    capo_auth_project_name: "{{ capo_selected_cloud.auth.project_name | default('') }}"
-    capo_auth_user_domain_name: "{{ capo_selected_cloud.auth.user_domain_name | default('') }}"
-    capo_auth_application_credential_name: "{{ capo_selected_cloud.auth.application_credential_name | default('') }}"
-    capo_auth_application_credential_id: "{{ capo_selected_cloud.auth.application_credential_id | default('') }}"
-    capo_auth_application_credential_secret: "{{ capo_selected_cloud.auth.application_credential_secret | default('') }}"
-    capo_auth_domain_id: "{{ capo_selected_cloud.auth.domain_id | default('') }}"
-    capo_region_name: "{{ capo_selected_cloud.region_name }}"
-    capo_cacert: "{{ capo_selected_cloud.cacert | default('\n') }}"
-    openstack_cloud_cacert_b64: "{{ capo_selected_cloud.cacert | default('\n') | b64encode }}"
+    capi_capo_auth_url: "{{ capi_capo_selected_cloud.auth.auth_url }}"
+    capi_capo_auth_type: "{{ capi_capo_selected_cloud.auth_type | default('') }}"
+    capi_capo_auth_username: "{{ capi_capo_selected_cloud.auth.username | default('') }}"
+    capi_capo_auth_password: "{{ capi_capo_selected_cloud.auth.password | default('') }}"
+    capi_capo_auth_project_id: "{{ capi_capo_selected_cloud.auth.project_id | default('') }}"
+    capi_capo_auth_project_name: "{{ capi_capo_selected_cloud.auth.project_name | default('') }}"
+    capi_capo_auth_user_domain_name: "{{ capi_capo_selected_cloud.auth.user_domain_name | default('') }}"
+    capi_capo_auth_application_credential_name: "{{ capi_capo_selected_cloud.auth.application_credential_name | default('') }}"
+    capi_capo_auth_application_credential_id: "{{ capi_capo_selected_cloud.auth.application_credential_id | default('') }}"
+    capi_capo_auth_application_credential_secret: "{{ capi_capo_selected_cloud.auth.application_credential_secret | default('') }}"
+    capi_capo_auth_domain_id: "{{ capi_capo_selected_cloud.auth.domain_id | default('') }}"
+    capi_capo_region_name: "{{ capi_capo_selected_cloud.region_name }}"
+    capi_capo_cacert: "{{ capi_capo_selected_cloud.cacert | default('\n') }}"
+    capi_openstack_cloud_cacert_b64: "{{ capi_capo_selected_cloud.cacert | default('\n') | b64encode }}"
 
-- name: Show openstack_cloud_cacert_b64
+- name: Show capi_base64_capo_ostack_cloud_yaml
   ansible.builtin.debug:
-    var: openstack_cloud_cacert_b64
+    var: capi_base64_capo_ostack_cloud_yaml
+
+- name: Show capi_openstack_cloud_cacert_b64
+  ansible.builtin.debug:
+    var: capi_openstack_cloud_cacert_b64

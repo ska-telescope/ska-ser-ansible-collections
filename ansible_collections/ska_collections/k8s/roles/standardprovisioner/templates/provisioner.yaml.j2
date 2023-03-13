@@ -90,7 +90,7 @@ spec:
   hostNetwork: true
   containers:
   - name: storage-provisioner
-    image: registry.gcr.io/k8s-minikube/storage-provisioner:v5
+    image: gcr.io/k8s-minikube/storage-provisioner:v5
     command: ["/storage-provisioner"]
     imagePullPolicy: IfNotPresent
     volumeMounts:

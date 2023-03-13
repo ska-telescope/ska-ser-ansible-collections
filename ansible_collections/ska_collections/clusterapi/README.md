@@ -53,8 +53,8 @@ ETC_CEPH = $(THIS_BASE)/../ska-cicd-deployment-on-stfc-cloud/clusterapi/ceph
 Note that the default OS_CLOUD used for Velero backups, and any other OpenStack integrations is 'skatechops'.  This must exist in the `~/.config/openstack/clouds.yaml` file for the current shell user executing Ansible.
 See also Ansible variables:
 
-* `capo_openstack_cloud`
-* `capo_cloud` and `capo_cloud_config`
+* `capi_openstack_cloud`
+* `capi_cloud` and `capi_cloud_config`
 * `velero_cloud` and `velero_cloud_config`
 
 And the `kustomize` template references for OpenStack - eg:
@@ -98,7 +98,7 @@ $ make playbooks clusterapi clusterapi-imagebuilder PLAYBOOKS_HOSTS=management-c
 Generate and apply the manifests using capo:
 ```
 $ make playbooks clusterapi clusterapi-createworkload PLAYBOOKS_HOSTS=management-cluster \
-  CLUSTERAPI_CLUSTER_TYPE=capo CLUSTERAPI_CLUSTER=test-capo CLUSTERAPI_APPLY=true
+  CAPI_CLUSTER_TYPE=capo CAPI_CLUSTER=test-capo CAPI_APPLY=true
 ```
 
 # Testing

@@ -11,11 +11,11 @@
     capi_rook_version: "{{ in_rook_version }}"
     capi_ceph_namespace: "{{ in_rook_namespace }}"
     capi_kube_namespace: "{{ kube_namespace }}"
-    capo_ceph_conf_global_fsid: "{{ in_rook_external_fsid }}"
+    capi_capo_ceph_conf_global_fsid: "{{ in_rook_external_fsid }}"
     capi_ceph_external_admin_secret: "{{ in_rook_external_admin_secret }}"
     capi_ceph_external_admin_key: "{{ in_rook_external_admin_key }}"
-    capo_ceph_conf_global_mons_data: "{{ in_rook_external_ceph_mon_data }}"
-    capo_ceph_conf_global_monitors: "{{ in_rook_external_ceph_monitors }}"
+    capi_capo_ceph_conf_global_mons_data: "{{ in_rook_external_ceph_mon_data }}"
+    capi_capo_ceph_conf_global_monitors: "{{ in_rook_external_ceph_monitors }}"
     capi_ceph_rbd_pool_name: "{{ in_rook_rbd_pool_name }}"
     capi_ceph_rgw_pool_prefix: "{{ in_rook_rgw_pool_prefix }}"
     capi_ceph_csi_rbd_node_secret_name: "{{ in_rook_csi_rbd_node_secret_name }}"
@@ -53,26 +53,26 @@
     # # now set all the vars
     # - name: Get Ceph conf global section
     #   ansible.builtin.set_fact:
-    #     rook_external_fsid: capo_ceph_conf_global_fsid
-    #     rook_external_ceph_mon_data: capo_ceph_conf_global_mons_data
-    #     rook_external_ceph_monitors: capo_ceph_conf_global_monitors
-    #     rook_external_admin_secret: capo_ceph_key
-    #     rook_external_admin_key: capo_ceph_key
-    #     rook_csi_rbd_node_secret: capo_ceph_key
-    #     rook_csi_rbd_provisioner_secret: capo_ceph_key
-    #     rook_csi_cephfs_node_secret: capo_ceph_key
-    #     rook_csi_cephfs_provisioner_secret: capo_ceph_key
+    #     rook_external_fsid: capi_capo_ceph_conf_global_fsid
+    #     rook_external_ceph_mon_data: capi_capo_ceph_conf_global_mons_data
+    #     rook_external_ceph_monitors: capi_capo_ceph_conf_global_monitors
+    #     rook_external_admin_secret: capi_capo_ceph_key
+    #     rook_external_admin_key: capi_capo_ceph_key
+    #     rook_csi_rbd_node_secret: capi_capo_ceph_key
+    #     rook_csi_rbd_provisioner_secret: capi_capo_ceph_key
+    #     rook_csi_cephfs_node_secret: capi_capo_ceph_key
+    #     rook_csi_cephfs_provisioner_secret: capi_capo_ceph_key
 
 - name: Setup environment
   ansible.builtin.set_fact:
     capi_cluster_environment:
       KUBE_NAMESPACE: "{{ capi_kube_namespace }}"
       ROOK_NAMESPACE: "{{ capi_ceph_namespace }}"
-      ROOK_EXTERNAL_FSID: "{{ capo_ceph_conf_global_fsid }}"
+      ROOK_EXTERNAL_FSID: "{{ capi_capo_ceph_conf_global_fsid }}"
       ROOK_EXTERNAL_ADMIN_SECRET: "{{ capi_ceph_external_admin_secret }}"
       ROOK_EXTERNAL_ADMIN_KEY: "{{ capi_ceph_external_admin_key }}"
-      ROOK_EXTERNAL_CEPH_MON_DATA: "{{ capo_ceph_conf_global_mons_data }}"
-      ROOK_EXTERNAL_CEPH_MONITORS: "{{ capo_ceph_conf_global_monitors }}"
+      ROOK_EXTERNAL_CEPH_MON_DATA: "{{ capi_capo_ceph_conf_global_mons_data }}"
+      ROOK_EXTERNAL_CEPH_MONITORS: "{{ capi_capo_ceph_conf_global_monitors }}"
       RBD_POOL_NAME: "{{ capi_ceph_rbd_pool_name }}"
       RGW_POOL_PREFIX: "{{ capi_ceph_rgw_pool_prefix }}"
       CSI_RBD_NODE_SECRET_NAME: "{{ capi_ceph_csi_rbd_node_secret_name }}"

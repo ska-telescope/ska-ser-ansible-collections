@@ -4,17 +4,17 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-    capi_kubeconfig: "/etc/clusterapi/{{ capi_cluster }}-kubeconfig"
+    k8s_kubeconfig: "/etc/clusterapi/{{ capi_cluster }}-kubeconfig"
 
   pre_tasks:
-    - name: Check capi_kubeconfig
+    - name: Check k8s_kubeconfig
       ansible.builtin.debug:
-        var: capi_kubeconfig
+        var: k8s_kubeconfig
 
   roles:
     - ska_collections.k8s.cloudprovider
   environment:
-    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=capi_kubeconfig) | mandatory }}"
+    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
 
   tags:
     - cloudprovider

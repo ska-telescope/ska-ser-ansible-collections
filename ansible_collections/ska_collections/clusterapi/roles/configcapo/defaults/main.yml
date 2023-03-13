@@ -1,10 +1,10 @@
 ---
 debug: false
 
-capo_cloud: skatechops
-capo_cloud_config: ~/.config/openstack/clouds.yaml
+capi_capo_cloud: skatechops
+capi_capo_cloud_config: ~/.config/openstack/clouds.yaml
 
-clusterapi_config_dir: /etc/clusterapi
-capo_template_version: v0.6.4
-capo_template_name: cluster-template-capo.orig.yaml
-capo_ostack_cloud_yaml: {}
+capi_config_dir: /etc/clusterapi
+capi_capo_template_version: v0.6.4
+capi_capo_template_name: cluster-template-capo.orig.yaml
+capi_capo_ostack_cloud_yaml: {}

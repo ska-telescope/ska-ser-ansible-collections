@@ -6,13 +6,17 @@
   register: base64_cloudprovider_config_ini
   become: true
 
-- name: "Show base64_cloud_config"
+- name: "Show base64_cloudprovider_config_ini"
   ansible.builtin.debug:
     var: base64_cloudprovider_config_ini
 
 - name: Decode Clusterapi cloud config and store as fact
   ansible.builtin.set_fact:
     k8s_cloudprovider_config_ini: "{{ base64_cloudprovider_config_ini.content | b64decode }}"
+
+- name: "Show k8s_cloudprovider_config_ini"
+  ansible.builtin.debug:
+    var: k8s_cloudprovider_config_ini
 
 - name: Check Cloud Config Secret exist
   kubernetes.core.k8s_info:
@@ -35,7 +39,7 @@
             name: cloud-config
             namespace: kube-system
           data:
-            cloud.conf: "{{ k8s_cloudprovider_config_ini }}"
+            cloud.conf: "{{ base64_cloudprovider_config_ini.content }}"
 
 - name: Tidy up Cloud Provider manifests
   ansible.builtin.file:
