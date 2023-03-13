@@ -11,9 +11,6 @@
 - name: Include the OS Config
   ansible.builtin.include_tasks: "{{ role_path }}/../configcapo/tasks/os_config.yml"
 
-# - name: Include the Ceph Config
-#   ansible.builtin.include_tasks: ceph_config.yml
-
 # https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/openstack-cloud-controller-manager/using-openstack-cloud-controller-manager.md#global
 
 - name: Load Clusterapi cloud config
@@ -91,7 +88,6 @@
     capi_cluster_environment:
       COLLECTIONS_BRANCH: "{{ capi_collections_branch }}"
       KUBE_NAMESPACE: "{{ capi_kube_namespace }}"
-      # ROOK_NAMESPACE: "{{ capi_ceph_namespace }}"
       OPENSTACK_FAILURE_DOMAIN: "{{ capi_capo_openstack_failure_domain }}"
       OPENSTACK_IMAGE_NAME: "{{ capi_capo_openstack_image_name }}"
       OPENSTACK_CLOUD: "{{ capi_capo_openstack_cloud }}"
@@ -105,29 +101,9 @@
       OPENSTACK_CLOUD_CACERT_B64: "{{ capi_openstack_cloud_cacert_b64 }}"
       OPENSTACK_CLOUD_PROVIDER_CONF_B64: "{{ capi_base64_cloud_config }}"
       CLUSTER_API_OPENSTACK_INSTANCE_CREATE_TIMEOUT: "{{ capi_capo_openstack_instance_create_timeout }}"
-      # NAMESPACE: "{{ capi_ceph_namespace }}"
-      # ROOK_EXTERNAL_FSID: "{{ capi_capo_ceph_conf_global_fsid }}"
-      # ROOK_EXTERNAL_ADMIN_SECRET: "{{ capi_capo_ceph_key }}"
-      # ROOK_EXTERNAL_ADMIN_KEY: "{{ capi_capo_ceph_key }}"
-      # ROOK_EXTERNAL_CEPH_MON_DATA: "{{ capi_capo_ceph_conf_global_mons_data }}"
-      # ROOK_EXTERNAL_CEPH_MONITORS: "{{ capi_capo_ceph_conf_global_monitors }}"
-      # RBD_POOL_NAME: "{{ capi_ceph_rbd_pool_name }}"
-      # RGW_POOL_PREFIX: "{{ capi_ceph_rgw_pool_prefix }}"
-      # CSI_RBD_NODE_SECRET_NAME: "{{ capi_ceph_csi_rbd_node_secret_name }}"
-      # CSI_RBD_PROVISIONER_SECRET_NAME: "{{ capi_ceph_csi_rbd_provisioner_secret_name }}"
-      # CSI_CEPHFS_NODE_SECRET_NAME: "{{ capi_ceph_csi_cephfs_node_secret_name }}"
-      # CSI_CEPHFS_PROVISIONER_SECRET_NAME: "{{ capi_ceph_csi_cephfs_provisioner_secret_name }}"
-      # CSI_RBD_NODE_SECRET: "{{ capi_capo_ceph_key }}"
-      # CSI_RBD_PROVISIONER_SECRET: "{{ capi_capo_ceph_key }}"
-      # CSI_CEPHFS_NODE_SECRET: "{{ capi_capo_ceph_key }}"
-      # CSI_CEPHFS_PROVISIONER_SECRET: "{{ capi_capo_ceph_key }}"
       BUNDLE_LOOKUP_TAG: "{{ capi_k8s_version }}"
       K8S_VERSION: "{{ capi_k8s_version }}"
       CALICO_VERSION: "{{ capi_calico_version }}"
-      # NGINX_VERSION: "{{ capi_nginx_version }}"
-      # METALLB_VERSION: "{{ capi_metallb_version }}"
-      # METALLB_NAMESPACE: "{{ capi_metallb_namespace }}"
-      # ROOK_VERSION: "{{ capi_rook_version }}"
       NETWORK_NAME: "{{ capi_capo_os_network_name }}"
       SUBNET_NAME: "{{ capi_capo_os_subnet_name }}"
       CIDR_BLOCK: "{{ capi_cidr_block }}"

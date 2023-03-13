@@ -16,8 +16,8 @@
 apiVersion: ceph.rook.io/v1
 kind: CephCluster
 metadata:
-  name: {{ rook_namespace }}
-  namespace: {{ rook_namespace }} # namespace:cluster
+  name: {{ k8s_rook_namespace }}
+  namespace: {{ k8s_rook_namespace }} # namespace:cluster
 spec:
   external:
     enable: true
@@ -31,6 +31,6 @@ spec:
   dataDirHostPath: /var/lib/rook
   # providing an image is optional, do this if you want to create other CRs (rgw, mds, nfs)
   cephVersion:
-    image: {{ rook_ceph_image }} # Should match external cluster version
+    image: {{ k8s_rook_ceph_image }} # Should match external cluster version
 
 
