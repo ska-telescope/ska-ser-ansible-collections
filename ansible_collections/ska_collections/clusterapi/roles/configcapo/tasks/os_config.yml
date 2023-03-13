@@ -13,11 +13,12 @@
 - name: Set selected cloud
   ansible.builtin.set_fact:
     capo_auth_url: "{{ capo_selected_cloud.auth.auth_url }}"
-    capo_auth_username: "{{ capo_selected_cloud.auth.username }}"
-    capo_auth_password: "{{ capo_selected_cloud.auth.password }}"
-    capo_auth_project_id: "{{ capo_selected_cloud.auth.project_id }}"
-    capo_auth_project_name: "{{ capo_selected_cloud.auth.project_name }}"
-    capo_auth_user_domain_name: "{{ capo_selected_cloud.auth.user_domain_name }}"
+    capo_auth_type: "{{ capo_selected_cloud.auth_type }}"
+    capo_auth_username: "{{ capo_selected_cloud.auth.username | default('') }}"
+    capo_auth_password: "{{ capo_selected_cloud.auth.password | default('') }}"
+    capo_auth_project_id: "{{ capo_selected_cloud.auth.project_id | default('') }}"
+    capo_auth_project_name: "{{ capo_selected_cloud.auth.project_name | default('') }}"
+    capo_auth_user_domain_name: "{{ capo_selected_cloud.auth.user_domain_name | default('') }}"
     capo_auth_application_credential_name: "{{ capo_selected_cloud.auth.application_credential_name | default('') }}"
     capo_auth_application_credential_id: "{{ capo_selected_cloud.auth.application_credential_id | default('') }}"
     capo_auth_application_credential_secret: "{{ capo_selected_cloud.auth.application_credential_secret | default('') }}"
