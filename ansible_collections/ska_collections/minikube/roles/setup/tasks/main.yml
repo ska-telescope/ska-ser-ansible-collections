@@ -155,7 +155,7 @@
   block:
     - name: Set k9s_archive fact
       ansible.builtin.set_fact:
-        k9s_archive: "k9s_{{ os_name }}_{{ k9s_arch }}.tar.gz"
+        k9s_archive: "k9s_{{ os_name }}_{{ os_binary }}.tar.gz"
 
     - name: Download k9s
       ansible.builtin.get_url:

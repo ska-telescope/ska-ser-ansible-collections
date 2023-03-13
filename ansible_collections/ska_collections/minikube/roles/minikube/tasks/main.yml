@@ -97,6 +97,17 @@
     - build
   block:
 
+    - name: Get minikube IP
+      ansible.builtin.command: "{{ minikube_exe_dir }}/minikube ip"
+      changed_when: false
+      register: minikube_ip_check
+
+    - name: Extract IP
+      ansible.builtin.set_fact:
+        minikube_ip: "{{ minikube_ip_check.stdout | regex_search(regexp, '\\1') | first }}"
+      vars:
+        regexp: '([0-9\.]+)'
+
     - name: Make sure haproxy directory exists
       ansible.builtin.file:
         path: "/etc/haproxy"
