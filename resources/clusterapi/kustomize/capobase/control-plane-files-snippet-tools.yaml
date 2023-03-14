@@ -50,6 +50,7 @@
         --limit 127.0.0.1 \
          --become \
          --extra-vars "capi_cluster=${CLUSTER_NAME}" \
+         --extra-vars "ansible_user=ubuntu" \
          --extra-vars "capi_kubeconfig=/etc/kubernetes/admin.conf" \
          --extra-vars "docker_hub_mirror=http://${OCI_MIRROR_IP}:9082" \
          --extra-vars "central_nexus_mirror=http://${OCI_MIRROR_IP}:9084" \
