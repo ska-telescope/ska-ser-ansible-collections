@@ -59,6 +59,7 @@
          --extra-vars "{\"docker_registry_mirrors\": [\"http://${OCI_MIRROR_IP}:9082\"]}" \
          --extra-vars "{\"docker_insecure_registries\": [\"http://${OCI_MIRROR_IP}:9080\"]}" \
          --extra-vars "{\"podman_registry_mirrors\": [\"http://${OCI_MIRROR_IP}:9082\"]}" \
+         --extra-vars "docker_allow_version_change=true" \
         $THIS_BASE/ansible_collections/ska_collections/clusterapi/playbooks/\$1 \
          --inventory /usr/src/ska-ser-ansible-collections/ansible_hosts \$${@:2}
       EOF
