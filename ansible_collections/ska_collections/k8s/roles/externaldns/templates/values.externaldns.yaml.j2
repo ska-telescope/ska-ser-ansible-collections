@@ -73,7 +73,8 @@ service:
   # The name of the Service
   # If not set, a name is generated using the fullname template
   name: ""
-  annotations: {}
+  annotations:
+    service.beta.kubernetes.io/openstack-internal-load-balancer: "true"
 
 serviceAccount:
   create: true

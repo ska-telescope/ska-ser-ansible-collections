@@ -2,3 +2,4 @@
 k8s_state_metrics: true
 k8s_state_metrics_enable: "{{ k8s_state_metrics | default(true) }}"  # adapt legacy var name
 k8s_state_metrics_chart_version: "4.11.0"
+k8s_metrics_server_chart_version: "3.8.4"

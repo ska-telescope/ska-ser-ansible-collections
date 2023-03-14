@@ -70,7 +70,7 @@ jupyterhub:
     redirectToServer: false
     baseUrl: "/{{ k8s_binderhub_namespace }}/jupyterhub"
     allowNamedServers: true
-    namedServerLimitPerUser: {{ jupyterhub_named_server_limit_per_user }}
+    namedServerLimitPerUser: {{ k8s_binderhub_jupyterhub_named_server_limit_per_user }}
     db:
       pvc:
         storageClassName: nfss1
@@ -87,17 +87,17 @@ jupyterhub:
         auth_enabled: true
 
       AzureAdOAuthenticator:
-        client_id: "{{ azuread_client_id }}"
-        client_secret: "{{ azuread_client_secret }}"
-        oauth_callback_url: "{{ jupyterhub_callback_url }}"
-        tenant_id: "{{ azuread_tenant_id }}"
+        client_id: "{{ k8s_binderhub_azuread_client_id }}"
+        client_secret: "{{ k8s_binderhub_azuread_client_secret }}"
+        oauth_callback_url: "{{ k8s_binderhub_jupyterhub_callback_url }}"
+        tenant_id: "{{ k8s_binderhub_azuread_tenant_id }}"
       JupyterHub:
         authenticator_class: azuread
     services:
       binder:
         oauth_no_confirm: true
         oauth_redirect_uri: "{{ k8s_binderhub_callback_url }}"
-        oauth_client_id: "{{ azuread_client_id }}"
+        oauth_client_id: "{{ k8s_binderhub_azuread_client_id }}"
         admin: true
 {% endif %}
 

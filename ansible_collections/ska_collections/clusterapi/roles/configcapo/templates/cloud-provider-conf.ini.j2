@@ -34,3 +34,7 @@ application-credential-secret="{{ capi_capo_auth_application_credential_secret }
 # yet to figure this out: pxh
 # ca-file="/etc/certs/cacert"
 {% endif %}
+
+# https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/openstack-cloud-controller-manager/expose-applications-using-loadbalancer-type-service.md
+[LoadBalancer]
+internal-lb=true

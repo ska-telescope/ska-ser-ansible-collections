@@ -1,6 +1,5 @@
 ---
 
-
 - name: Load containerd kernel drivers
   community.general.modprobe:
     name: "{{ item }}"

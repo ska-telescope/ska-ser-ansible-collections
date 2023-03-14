@@ -79,113 +79,113 @@
   ansible.builtin.debug:
     var: k8s_capi_cluster_environment
 
-# - name: Check Rook is running
-#   kubernetes.core.k8s_info:
-#     api_version: apps/v1
-#     kind: Deployment
-#     name: rook-ceph-operator
-#     namespace: "{{ k8s_capi_ceph_namespace }}"
-#   register: rook_operator_check
+- name: Check Rook is running
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: rook-ceph-operator
+    namespace: "{{ k8s_capi_ceph_namespace }}"
+  register: rook_operator_check
 
-# - name: Start Rook
-#   # CAPO is not started
-#   when: "not rook_operator_check.resources"
-#   block:
+- name: Start Rook
+  # CAPO is not started
+  when: "not rook_operator_check.resources"
+  block:
 
-#     - name: Download Rook IO manifests
-#       ansible.builtin.get_url:
-#         url: "https://raw.githubusercontent.com/rook/rook/{{ k8s_capi_rook_version }}/deploy/examples/{{ item }}"
-#         dest: "/tmp/{{ item }}"
-#         mode: '0664'
-#       with_items:
-#         - "crds.yaml"
-#         - "common.yaml"
-#         - "operator.yaml"
+    - name: Download Rook IO manifests
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/rook/rook/{{ k8s_capi_rook_version }}/deploy/examples/{{ item }}"
+        dest: "/tmp/{{ item }}"
+        mode: '0664'
+      with_items:
+        - "crds.yaml"
+        - "common.yaml"
+        - "operator.yaml"
 
-#     - name: Apply Rook IO manifests
-#       kubernetes.core.k8s:
-#         state: present
-#         apply: true
-#         src: "/tmp/{{ item }}"
-#       with_items:
-#         - "crds.yaml"
-#         - "common.yaml"
-#         - "operator.yaml"
+    - name: Apply Rook IO manifests
+      kubernetes.core.k8s:
+        state: present
+        apply: true
+        src: "/tmp/{{ item }}"
+      with_items:
+        - "crds.yaml"
+        - "common.yaml"
+        - "operator.yaml"
 
-# - name: Wait for deploy/rook-ceph-operator
-#   kubernetes.core.k8s_info:
-#     kind: Deployment
-#     api_version: apps/v1
-#     name: rook-ceph-operator
-#     namespace: "{{ k8s_capi_ceph_namespace }}"
-#     wait: true
-#     wait_sleep: 10
-#     wait_timeout: 300
-#     wait_condition:
-#       type: Available
+- name: Wait for deploy/rook-ceph-operator
+  kubernetes.core.k8s_info:
+    kind: Deployment
+    api_version: apps/v1
+    name: rook-ceph-operator
+    namespace: "{{ k8s_capi_ceph_namespace }}"
+    wait: true
+    wait_sleep: 10
+    wait_timeout: 300
+    wait_condition:
+      type: Available
 
-# - name: Download Rook import external cluster script
-#   ansible.builtin.get_url:
-#     url: "https://raw.githubusercontent.com/rook/rook/{{ k8s_capi_rook_version }}/deploy/examples/import-external-cluster.sh"
-#     dest: "/tmp/import-external-cluster.sh"
-#     mode: '0664'
+- name: Download Rook import external cluster script
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/rook/rook/{{ k8s_capi_rook_version }}/deploy/examples/import-external-cluster.sh"
+    dest: "/tmp/import-external-cluster.sh"
+    mode: '0664'
 
-# - name: Check Rook Config Secret exists
-#   kubernetes.core.k8s_info:
-#     api_version: v1
-#     kind: Secret
-#     name: rook-ceph-mon
-#     namespace: "{{ k8s_capi_ceph_namespace }}"
-#   register: rook_secret_check
+- name: Check Rook Config Secret exists
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: rook-ceph-mon
+    namespace: "{{ k8s_capi_ceph_namespace }}"
+  register: rook_secret_check
 
-# - name: Run import-external-cluster.sh to create Secrets, ConfigMaps and StorageClasses
-#   ansible.builtin.command: /usr/bin/bash /tmp/import-external-cluster.sh
-#   environment: "{{ k8s_capi_cluster_environment }}"
-#   changed_when: true # TODO make this accurate
-#   failed_when: false
+- name: Run import-external-cluster.sh to create Secrets, ConfigMaps and StorageClasses
+  ansible.builtin.command: /usr/bin/bash /tmp/import-external-cluster.sh
+  environment: "{{ k8s_capi_cluster_environment }}"
+  changed_when: true # TODO make this accurate
+  failed_when: false
 
-# - name: Fix Rook secrets script
-#   ansible.builtin.template:
-#     src: rookio-fix-secrets.sh.j2
-#     dest: "/tmp/rookio-fix-secrets.sh"
-#     mode: "0744"
+- name: Fix Rook secrets script
+  ansible.builtin.template:
+    src: rookio-fix-secrets.sh.j2
+    dest: "/tmp/rookio-fix-secrets.sh"
+    mode: "0744"
 
-# - name: Fix Rook secrets
-#   ansible.builtin.command: /usr/bin/bash /tmp/rookio-fix-secrets.sh
-#   environment: "{{ k8s_capi_cluster_environment }}"
-#   changed_when: true # TODO make this accurate
-#   failed_when: false
+- name: Fix Rook secrets
+  ansible.builtin.command: /usr/bin/bash /tmp/rookio-fix-secrets.sh
+  environment: "{{ k8s_capi_cluster_environment }}"
+  changed_when: true # TODO make this accurate
+  failed_when: false
 
-# - name: Check CephCluster exist
-#   kubernetes.core.k8s_info:
-#     api_version: ceph.rook.io/v1
-#     kind: CephCluster
-#     name: "{{ k8s_capi_ceph_namespace }}"
-#     namespace: "{{ k8s_capi_ceph_namespace }}"
-#   register: cephcluster_check
+- name: Check CephCluster exist
+  kubernetes.core.k8s_info:
+    api_version: ceph.rook.io/v1
+    kind: CephCluster
+    name: "{{ k8s_capi_ceph_namespace }}"
+    namespace: "{{ k8s_capi_ceph_namespace }}"
+  register: cephcluster_check
 
-# - name: Install CephCluster
-#   when: "not cephcluster_check.resources"
-#   block:
-#     - name: Deploy CephCluster
-#       kubernetes.core.k8s:
-#         state: present
-#         template: 'cephcluster.yaml.j2'
+- name: Install CephCluster
+  when: "not cephcluster_check.resources"
+  block:
+    - name: Deploy CephCluster
+      kubernetes.core.k8s:
+        state: present
+        template: 'cephcluster.yaml.j2'
 
-# - name: Check Storage Classes exist
-#   kubernetes.core.k8s_info:
-#     api_version: v1
-#     kind: StorageClass
-#     name: nfss1
-#   register: nfss1_sc_check
+- name: Check Storage Classes exist
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: StorageClass
+    name: nfss1
+  register: nfss1_sc_check
 
-# - name: Install Ceph Storage Classes
-#   when: "not nfss1_sc_check.resources"
-#   block:
-#     - name: Deploy Ceph StorageClasses
-#       kubernetes.core.k8s:
-#         state: present
-#         template: 'ceph-storageclasses.yaml.j2'
+- name: Install Ceph Storage Classes
+  when: "not nfss1_sc_check.resources"
+  block:
+    - name: Deploy Ceph StorageClasses
+      kubernetes.core.k8s:
+        state: present
+        template: 'ceph-storageclasses.yaml.j2'
 
-# - name: Flush those handlers
-#   ansible.builtin.meta: flush_handlers
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers

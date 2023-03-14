@@ -14,7 +14,7 @@
         name: binderhub
         chart_ref: jupyterhub/binderhub
         chart_version: "{{ k8s_binderhub_helm_chart_version }}"
-        release_namespace: "{{ binderhub_namespace }}"
+        release_namespace: "{{ k8s_binderhub_namespace }}"
         create_namespace: true
         values_files:
           - "/tmp/binderhub.values.yaml"

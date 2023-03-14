@@ -24,7 +24,7 @@ install: check_hosts ## Install Binderhub server
 	ansible-playbook $(PLAYBOOKS_DIR)/binderhub.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars binderhub_oci_registry_password=$(BINDERHUB_OCI_REGISTRY_PASSWORD) \
+	--extra-vars k8s_binderhub_oci_registry_password=$(BINDERHUB_OCI_REGISTRY_PASSWORD) \
 	--extra-vars azuread_client_id=$(AZUREAD_CLIENT_ID) \
 	--extra-vars azuread_client_secret=$(AZUREAD_CLIENT_SECRET) \
 	--extra-vars azuread_tenant_id=$(AZUREAD_TENANT_ID)
