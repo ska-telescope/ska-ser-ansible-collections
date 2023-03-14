@@ -41,9 +41,9 @@ k8s-manual-deployment: ## Manual K8s deployment based on kubeadm
 
 k8s-post-deployment:  ## Post deployment for workload cluster
 
-#     #   echo "Controlplane initialise: cloud provider config"
-#     #   echo "$OPENSTACK_CLOUD_PROVIDER_CONF_B64" | base64 -d > /etc/kubernetes/cloud.conf
-# 	#   cloud_provider_config: /etc/kubernetes/cloud.conf
+#   echo "Controlplane initialise: cloud provider config"
+#   echo "$OPENSTACK_CLOUD_PROVIDER_CONF_B64" | base64 -d > /etc/kubernetes/cloud.conf
+#   cloud_provider_config: /etc/kubernetes/cloud.conf
 
 ifneq (,$(findstring cloudprovider,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/cloudprovider.yml \

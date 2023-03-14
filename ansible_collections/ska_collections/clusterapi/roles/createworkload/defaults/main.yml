@@ -5,24 +5,14 @@ debug: false
 # capi_ceph_conf_key_ring: "{{ inventory_dir }}/../../../../ceph/ceph.client.admin.keyring"
 
 capi_collections_branch: main
+capi_oci_mirror_ip: 192.168.99.204
 capi_kustomize_overlay: capo
 capi_cluster: test-cluster
 capi_kube_namespace: default
 # https://github.com/kubernetes-sigs/cluster-api/releases
-capi_k8s_version: v1.25.5
+capi_k8s_version: v1.25.7
 capi_controlplane_count: 1
 capi_worker_count: 2
-# capi_ceph_namespace: rook-ceph
-# capi_ceph_rbd_pool_name: volumes
-# capi_ceph_rgw_pool_prefix: default
-# capi_ceph_csi_rbd_node_secret_name: csi-rbd-node
-# capi_ceph_csi_rbd_provisioner_secret_name: csi-rbd-provisioner
-# capi_ceph_csi_cephfs_node_secret_name: csi-cephfs-node
-# capi_ceph_csi_cephfs_provisioner_secret_name: csi-cephfs-provisioner
-# capi_nginx_version: 1.3.1
-# capi_metallb_version: 0.13.7
-# capi_metallb_namespace: metallb-system
-# capi_rook_version: release-1.10
 capi_cidr_block: 10.10.0.0/16
 capi_calico_version: 3.24.5
 capi_calico_ip_autodetection_method: interface=ens.*,eth.*

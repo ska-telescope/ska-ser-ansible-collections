@@ -87,6 +87,7 @@
   ansible.builtin.set_fact:
     capi_cluster_environment:
       COLLECTIONS_BRANCH: "{{ capi_collections_branch }}"
+      OCI_MIRROR_IP: "{{ capi_oci_mirror_ip }}"
       KUBE_NAMESPACE: "{{ capi_kube_namespace }}"
       OPENSTACK_FAILURE_DOMAIN: "{{ capi_capo_openstack_failure_domain }}"
       OPENSTACK_IMAGE_NAME: "{{ capi_capo_openstack_image_name }}"

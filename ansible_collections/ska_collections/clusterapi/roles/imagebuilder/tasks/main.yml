@@ -24,16 +24,16 @@
     executable: pip3
     state: present
 
-- name: "Gather information about: {{ ib_os_image_name }}"
+- name: "Gather information about: {{ capi_ib_os_image_name }}"
   openstack.cloud.image_info:
-    cloud: "{{ capo_selected_cloud }}"
-    image: "{{ ib_os_image_name }}"
+    cloud: "{{ capi_capo_selected_cloud }}"
+    image: "{{ capi_ib_os_image_name }}"
   register: check_os_image
 
 - name: Abort playbook on OS image existing
   ansible.builtin.fail:
     msg: >
-      "OS image already exists: {{ ib_os_image_name }}"
+      "OS image already exists: {{ capi_ib_os_image_name }}"
   when: check_os_image.openstack_images
 
 - name: Ensure that the apt cache is updated
@@ -46,21 +46,21 @@
 
 - name: Install packages required for image-builder
   ansible.builtin.apt:
-    name: "{{ ib_deb_dependencies }}"
+    name: "{{ capi_ib_deb_dependencies }}"
     state: present
   become: true
 
 - name: Clone image-builder
   ansible.builtin.git:
-    repo: "{{ ib_git_repo }}"
-    dest: "{{ ib_repo_dest }}"
+    repo: "{{ capi_ib_git_repo }}"
+    dest: "{{ capi_ib_repo_dest }}"
     single_branch: true
-    version: "{{ ib_branch }}"
+    version: "{{ capi_ib_branch }}"
   become: true
 
 - name: Install image-builder deps-qemu
   community.general.make:
-    chdir: "{{ ib_repo_dest }}/images/capi"
+    chdir: "{{ capi_ib_repo_dest }}/images/capi"
     target: deps-qemu
     params:
       SETUPTOOLS_USE_DISTUTILS: stdlib
@@ -69,25 +69,25 @@
 - name: Packer custom config
   ansible.builtin.template:
     src: custom.json.j2
-    dest: "{{ ib_repo_dest }}/images/capi/custom.json"
+    dest: "{{ capi_ib_repo_dest }}/images/capi/custom.json"
     mode: "0644"
   become: true
 
-- name: "Remove capo image with same name: {{ ib_os_image_name }}"
+- name: "Remove capo image with same name: {{ capi_ib_os_image_name }}"
   openstack.cloud.image:
-    cloud: "{{ capo_selected_cloud }}"
-    name: "{{ ib_os_image_name }}"
+    cloud: "{{ capi_capo_selected_cloud }}"
+    name: "{{ capi_ib_os_image_name }}"
     state: absent
 
 - name: Recursively remove image directory
   ansible.builtin.file:
-    path: "{{ ib_repo_dest }}/images/capi/output/{{ ib_os_image_name }}"
+    path: "{{ capi_ib_repo_dest }}/images/capi/output/{{ capi_ib_os_image_name }}"
     state: absent
   become: true
 
 - name: Build capo image
   community.general.make:
-    chdir: "{{ ib_repo_dest }}/images/capi"
+    chdir: "{{ capi_ib_repo_dest }}/images/capi"
     target: build-qemu-ubuntu-2004
     params:
       PACKER_VAR_FILES: custom.json
@@ -97,15 +97,15 @@
     ANSIBLE_SSH_ARGS: " -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedKeyTypes=+ssh-rsa"
 
 # Upload image for capo
-- name: "Upload capo image: {{ ib_os_image_name }}"
+- name: "Upload capo image: {{ capi_ib_os_image_name }}"
   openstack.cloud.image:
-    cloud: "{{ capo_selected_cloud }}"
-    name: "{{ ib_os_image_name }}"
+    cloud: "{{ capi_capo_selected_cloud }}"
+    name: "{{ capi_ib_os_image_name }}"
     container_format: bare
     disk_format: qcow2
     is_public: false
     state: present
-    filename: "{{ ib_repo_dest }}/images/capi/output/{{ ib_os_image_name }}/{{ ib_os_image_name }}"
+    filename: "{{ capi_ib_repo_dest }}/images/capi/output/{{ capi_ib_os_image_name }}/{{ capi_ib_os_image_name }}"
     # kernel: cirros-vmlinuz
     # ramdisk: cirros-initrd
     tags:

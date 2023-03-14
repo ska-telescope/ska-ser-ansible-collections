@@ -162,14 +162,3 @@ parameters:
   #mounter: rbd-nbd
   allowVolumeExpansion: "true"
   reclaimPolicy: "Delete"
-
----
-apiVersion: ceph.rook.io/v1
-kind: CephBlockPool
-metadata:
-  name: volumes
-  namespace: {{ k8s_rook_namespace }}
-spec:
-  failureDomain: host
-  replicated:
-    size: 1

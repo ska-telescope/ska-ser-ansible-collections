@@ -42,7 +42,8 @@
       export PLAYBOOKS_HOSTS=clusterapi
       export ANSIBLE_COLLECTIONS_PATHS="$THIS_BASE:$HOME/.ansible/collections:/usr/share/ansible/collections"
       export KUBECONFIG="/etc/kubernetes/admin.conf"
-      ANSIBLE_CONFIG="$THIS_BASE/datacentres/production/installation/ansible.cfg"
+      export OCI_MIRROR_IP=${OCI_MIRROR_IP}
+      export ANSIBLE_CONFIG="$THIS_BASE/datacentres/production/installation/ansible.cfg"
       ansible-playbook \
         --connection=local \
         --inventory 127.0.0.1, \
@@ -50,6 +51,14 @@
          --become \
          --extra-vars "capi_cluster=${CLUSTER_NAME}" \
          --extra-vars "capi_kubeconfig=/etc/kubernetes/admin.conf" \
+         --extra-vars "docker_hub_mirror=http://${OCI_MIRROR_IP}:9082" \
+         --extra-vars "central_nexus_mirror=http://${OCI_MIRROR_IP}:9084" \
+         --extra-vars "gitlab_nexus_mirror=http://${OCI_MIRROR_IP}:9085" \
+         --extra-vars "nexus_hosted_cache=${OCI_MIRROR_IP}:9080" \
+         --extra-vars "nexus_hosted_cache_url=http://${OCI_MIRROR_IP}:9080" \
+         --extra-vars "{\"docker_registry_mirrors\": [\"http://${OCI_MIRROR_IP}:9082\"]}" \
+         --extra-vars "{\"docker_insecure_registries\": [\"http://${OCI_MIRROR_IP}:9080\"]}" \
+         --extra-vars "{\"podman_registry_mirrors\": [\"http://${OCI_MIRROR_IP}:9082\"]}" \
         $THIS_BASE/ansible_collections/ska_collections/clusterapi/playbooks/\$1 \
          --inventory /usr/src/ska-ser-ansible-collections/ansible_hosts \$${@:2}
       EOF
