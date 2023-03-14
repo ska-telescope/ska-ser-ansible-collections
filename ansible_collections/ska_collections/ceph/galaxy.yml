@@ -42,7 +42,7 @@ tags: ['tools', 'core']
 # L(specifiers,https://python-semanticversion.readthedocs.io/en/latest/#requirement-specification). Multiple version
 # range specifiers can be set and are separated by ','
 dependencies:
-  stackhpc.cephadm: "1.10.0"
+  stackhpc.cephadm: "1.13.0"
 
 # The URL of the originating SCM repository
 repository: https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections
