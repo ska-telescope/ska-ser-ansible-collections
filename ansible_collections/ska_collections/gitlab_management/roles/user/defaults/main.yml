@@ -1,0 +1,6 @@
+---
+gitlab_api_url: "https://gitlab.com/api/v4"
+gitlab_user_to_manage:
+gitlab_access_token:
+gitlab_skao_group_id: 3180705
+gitlab_skao_developers_group_id: 6051706
