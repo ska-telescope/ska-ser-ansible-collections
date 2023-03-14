@@ -2,18 +2,18 @@
 
 - name: Load cloud config
   ansible.builtin.include_vars:
-    file: "{{ capi_capo_cloud_config }}"
+    file: "{{ capi_capo_openstack_cloud_config }}"
     name: capi_capo_ostack_cloud_yaml
 
 # - name: Slurp cloud config
 #   ansible.builtin.slurp:
-#     src: "{{ capi_capo_cloud_config }}"
+#     src: "{{ capi_capo_openstack_cloud_config }}"
 #   register: capi_base64_capi_capo_ostack_cloud_yaml
 #   delegate_to: localhost
 
 - name: Set selected cloud
   ansible.builtin.set_fact:
-    capi_capo_selected_cloud: "{{ capi_capo_ostack_cloud_yaml['clouds'][capi_capo_cloud] }}"  # noqa: jinja[invalid]
+    capi_capo_selected_cloud: "{{ capi_capo_ostack_cloud_yaml['clouds'][capi_capo_openstack_cloud] }}"  # noqa: jinja[invalid]
     capi_base64_capo_ostack_cloud_yaml: "{{ capi_capo_ostack_cloud_yaml | to_nice_yaml(indent=2) | b64encode }}"
 
 - name: Set selected cloud
