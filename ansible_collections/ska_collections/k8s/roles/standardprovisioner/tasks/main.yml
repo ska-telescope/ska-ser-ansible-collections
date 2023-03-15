@@ -14,22 +14,19 @@
   when: not check_kubeconfig.stat.exists
   any_errors_fatal: true
 
-- name: Check Standard Storage Provisioner is running
+- name: Apply Standard Storage Provisioner (hostpath)
+  kubernetes.core.k8s:
+    state: present
+    template: 'provisioner.yaml.j2'
+
+- name: Wait till the storage-provisioner is created
   kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     name: storage-provisioner
     namespace: kube-system
-  register: ssp_check
-
-- name: Start Standard Storage Provisioner
-  # Calico is not started
-  when: "not ssp_check.resources"
-  block:
-    - name: Apply Standard Storage Provisioner (hostpath)
-      kubernetes.core.k8s:
-        state: present
-        template: 'provisioner.yaml.j2'
+    wait: yes
+    wait_timeout: 120
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers
