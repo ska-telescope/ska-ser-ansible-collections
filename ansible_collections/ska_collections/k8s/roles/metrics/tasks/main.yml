@@ -34,5 +34,4 @@
         wait: yes
         name: kube-state-metrics
         namespace: kube-system
-        wait_sleep: 10
-        wait_timeout: 360
+        wait_timeout: 120
