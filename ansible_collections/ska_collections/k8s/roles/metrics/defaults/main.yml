@@ -1,1 +1,2 @@
 kube_state_metrics: true
+kube_state_metrics_chart_version: "5.0.0"
