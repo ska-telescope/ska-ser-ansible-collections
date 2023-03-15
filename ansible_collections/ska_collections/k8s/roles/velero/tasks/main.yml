@@ -109,7 +109,7 @@
   register: k8s_velero_backuplocation_check
 
 # - name: Set Velero backup config
-#   ska_collections.clusterapi.kubectl_set_env:
+#   ska_collections.k8s.kubectl_set_env:
 #     name: "deployment/velero"
 #     kubectl_namespace: "velero"
 #     envvars:

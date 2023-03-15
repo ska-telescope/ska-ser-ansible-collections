@@ -8,9 +8,10 @@
     - ../configcapo/defaults/main.yml
   tags: [always]
 
-- name: Include the OS Config
-  ansible.builtin.include_tasks: "{{ role_path }}/../configcapo/tasks/os_config.yml"
-  tags: [always]
+- name: Clusterapi OS cloud config
+  ansible.builtin.import_role:
+    name: ska_collections.clusterapi.createworkload
+    tasks_from: os_config
 
 - name: Install ansible with pip3
   ansible.builtin.pip:

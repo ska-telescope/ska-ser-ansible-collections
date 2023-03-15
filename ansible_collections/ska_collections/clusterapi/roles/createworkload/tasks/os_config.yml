@@ -5,12 +5,6 @@
     file: "{{ capi_capo_openstack_cloud_config }}"
     name: capi_capo_ostack_cloud_yaml
 
-# - name: Slurp cloud config
-#   ansible.builtin.slurp:
-#     src: "{{ capi_capo_openstack_cloud_config }}"
-#   register: capi_base64_capi_capo_ostack_cloud_yaml
-#   delegate_to: localhost
-
 - name: Set selected cloud
   ansible.builtin.set_fact:
     capi_capo_selected_cloud: "{{ capi_capo_ostack_cloud_yaml['clouds'][capi_capo_openstack_cloud] }}"  # noqa: jinja[invalid]
@@ -33,6 +27,10 @@
     capi_capo_cacert: "{{ capi_capo_selected_cloud.cacert | default('\n') }}"
     capi_openstack_cloud_cacert_b64: "{{ capi_capo_selected_cloud.cacert | default('\n') | b64encode }}"
 
+- name: Show capi_capo_selected_cloud
+  ansible.builtin.debug:
+    var: capi_capo_selected_cloud
+
 - name: Show capi_base64_capo_ostack_cloud_yaml
   ansible.builtin.debug:
     var: capi_base64_capo_ostack_cloud_yaml
@@ -40,3 +38,29 @@
 - name: Show capi_openstack_cloud_cacert_b64
   ansible.builtin.debug:
     var: capi_openstack_cloud_cacert_b64
+
+- name: Set clusterapi config dir
+  ansible.builtin.file:
+    path: "{{ capi_config_dir }}"
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: Clusterapi OS cloud config
+  ansible.builtin.template:
+    src: cloud-provider-conf.ini.j2
+    dest: "{{ capi_config_dir }}/cloud-provider.ini"
+    mode: "0600"
+  become: true
+
+- name: Load Clusterapi cloud config
+  ansible.builtin.slurp:
+    src: "{{ capi_config_dir }}/cloud-provider.ini"
+  register: slurped_cloud_config
+  become: true
+
+- name: Delete cloud config file
+  ansible.builtin.file:
+    path: "{{ capi_config_dir }}/cloud-provider.ini"
+    state: absent
+  become: true

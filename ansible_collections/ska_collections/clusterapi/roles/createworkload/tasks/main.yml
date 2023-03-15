@@ -5,19 +5,12 @@
     file: "{{ item }}"
   with_items:
     - ../clusterapi/defaults/main.yml
-    - ../configcapo/defaults/main.yml
   tags: [always]
-
-- name: Include the OS Config
-  ansible.builtin.include_tasks: "{{ role_path }}/../configcapo/tasks/os_config.yml"
 
 # https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/openstack-cloud-controller-manager/using-openstack-cloud-controller-manager.md#global
 
-- name: Load Clusterapi cloud config
-  ansible.builtin.slurp:
-    src: "{{ capi_config_dir }}/cloud-provider.ini"
-  register: slurped_cloud_config
-  become: true
+- name: Include the OS Config
+  ansible.builtin.include_tasks: os_config.yml
 
 - name: Encode Clusterapi cloud config and store as fact
   ansible.builtin.set_fact:

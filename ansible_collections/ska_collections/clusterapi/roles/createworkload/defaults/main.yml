@@ -1,8 +1,14 @@
 ---
 debug: false
 
-# capi_ceph_conf_ini_file: "{{ inventory_dir }}/../../../../ceph/ceph.conf"
-# capi_ceph_conf_key_ring: "{{ inventory_dir }}/../../../../ceph/ceph.client.admin.keyring"
+capi_capo_template_version: v0.7.1
+capi_capo_template_name: cluster-template-capo.orig.yaml
+capi_capo_ostack_cloud_yaml: {}
+
+capi_capo_openstack_cloud: skatechops
+capi_capo_openstack_cloud_config: ~/.config/openstack/clouds.yaml
+
+capi_config_dir: /etc/clusterapi
 
 capi_collections_branch: main
 capi_oci_mirror_ip: 192.168.99.204
@@ -21,7 +27,6 @@ capi_helm_version: v3.11.2
 
 capi_capo_openstack_failure_domain: ceph
 capi_capo_openstack_image_name: "ubuntu-2004-kube-{{ capi_k8s_version }}"
-capi_capo_openstack_cloud: skatechops
 capi_capo_openstack_instance_create_timeout: 15
 capi_capo_controlplane_machine_flavour: l3.micro
 capi_capo_openstack_dns_servers: 192.168.99.194

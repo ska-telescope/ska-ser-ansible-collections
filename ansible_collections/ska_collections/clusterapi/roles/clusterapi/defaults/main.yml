@@ -2,4 +2,4 @@
 debug: false
 
 capi_clusterctl_exe_dir: /usr/local/bin
-capi_clusterctl_version: v1.3.3
+capi_clusterctl_version: v1.3.5

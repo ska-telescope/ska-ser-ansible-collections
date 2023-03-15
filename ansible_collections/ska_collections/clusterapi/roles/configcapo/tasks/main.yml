@@ -4,23 +4,6 @@
     file: ../clusterapi/defaults/main.yml
   tags: [always]
 
-- name: Include the OS Config
-  ansible.builtin.include_tasks: os_config.yml
-
-- name: Set clusterapi config dir
-  ansible.builtin.file:
-    path: "{{ capi_config_dir }}"
-    state: directory
-    mode: "0755"
-  become: true
-
-- name: Clusterapi OS cloud config
-  ansible.builtin.template:
-    src: cloud-provider-conf.ini.j2
-    dest: "{{ capi_config_dir }}/cloud-provider.ini"
-    mode: "0600"
-  become: true
-
 - name: Get current CAPO template verion  # noqa: command-instead-of-module
   ansible.builtin.shell: |
     set -o pipefail && \

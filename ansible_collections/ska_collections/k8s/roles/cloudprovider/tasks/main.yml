@@ -1,18 +1,17 @@
 ---
 
-- name: Load cloud config
-  ansible.builtin.slurp:
-    src: "{{ k8s_cloudprovider_config_ini }}"
-  register: base64_cloudprovider_config_ini
-  become: true
+- name: Clusterapi OS cloud config
+  ansible.builtin.import_role:
+    name: ska_collections.clusterapi.createworkload
+    tasks_from: os_config
 
-- name: "Show base64_cloudprovider_config_ini"
+- name: "Show slurped_cloud_config"
   ansible.builtin.debug:
-    var: base64_cloudprovider_config_ini
+    var: slurped_cloud_config
 
 - name: Decode Clusterapi cloud config and store as fact
   ansible.builtin.set_fact:
-    k8s_cloudprovider_config_ini: "{{ base64_cloudprovider_config_ini.content | b64decode }}"
+    k8s_cloudprovider_config_ini: "{{ slurped_cloud_config.content | b64decode }}"
 
 - name: "Show k8s_cloudprovider_config_ini"
   ansible.builtin.debug:
