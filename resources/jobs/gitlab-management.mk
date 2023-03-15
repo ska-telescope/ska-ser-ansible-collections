@@ -7,14 +7,22 @@ PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/gitlab_management/playboo
 
 -include $(BASE_PATH)/PrivateRules.mak
 
-add_gitlab_user: ## Add user to SKAO default groups
+check_input_args:
+ifndef GITLAB_USER_TO_MANAGE
+	$(error GITLAB_USER_TO_MANAGE is undefined)
+endif
+ifndef GITLAB_ACCESS_TOKEN
+	$(error GITLAB_ACCESS_TOKEN is undefined)
+endif
+
+add_gitlab_user: check_input_args ## Add user to SKAO default groups
 	ansible-playbook $(PLAYBOOKS_DIR)/add_user.yml \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--extra-vars "gitlab_user_to_manage=$(GITLAB_USER_TO_MANAGE)" \
 	--extra-vars "gitlab_access_token=$(GITLAB_ACCESS_TOKEN)"
 
-remove_gitlab_user: ## Add user to SKAO default groups
+remove_gitlab_user: check_input_args ## Add user to SKAO default groups
 	ansible-playbook $(PLAYBOOKS_DIR)/remove_user.yml \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
