@@ -17,6 +17,14 @@ ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
 
+check_inputs:
+ifndef OPENVPN_CLIENT
+	$(error OPENVPN_CLIENT is undefined)
+endif
+ifndef OPENVPN_CLIENT_EMAIL
+	$(error OPENVPN_CLIENT_EMAIL is undefined)
+endif
+
 vars:
 	@echo "\033[36mopenvpn:\033[0m"
 	@echo "INVENTORY=$(INVENTORY)"
@@ -32,13 +40,13 @@ destroy: check_hosts ## Destroy openvpn server
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-add-client: check_hosts ## Destroy openvpn server
+add-client: check_hosts check_inputs ## Destroy openvpn server
 	ansible-playbook $(PLAYBOOKS_DIR)/openvpn_add_client.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" --extra-vars "openvpn_client=$(OPENVPN_CLIENT)" \
 	--extra-vars "openvpn_client_email=$(OPENVPN_CLIENT_EMAIL)"
 
-delete-client: check_hosts ## Destroy openvpn server
+delete-client: check_hosts check_inputs ## Destroy openvpn server
 	ansible-playbook $(PLAYBOOKS_DIR)/openvpn_remove_client.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" --extra-vars "openvpn_client=$(OPENVPN_CLIENT)" \

@@ -53,7 +53,6 @@
     tasks_from: sign-cert
   vars:
     certificate_name: "prometheus"
-    certificate_key_name: "prometheus"
     certificate_dns_alt_name: "{{ prometheus_alt_name }}"
     certificate_recreate: true
 

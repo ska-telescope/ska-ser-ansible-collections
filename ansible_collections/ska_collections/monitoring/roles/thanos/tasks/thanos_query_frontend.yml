@@ -16,7 +16,6 @@
     tasks_from: sign-cert
   vars:
     certificate_name: "thanos_query_frontend"
-    certificate_key_name: "thanos_query_frontend"
     certificate_dns_alt_name: "{{ thanos_alt_name }}"
     certificate_recreate: true
 
