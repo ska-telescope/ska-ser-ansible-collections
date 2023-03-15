@@ -38,7 +38,7 @@
             name: cloud-config
             namespace: kube-system
           data:
-            cloud.conf: "{{ base64_cloudprovider_config_ini.content }}"
+            cloud.conf: "{{ slurped_cloud_config.content }}"
 
 - name: Tidy up Cloud Provider manifests
   ansible.builtin.file:
