@@ -27,3 +27,12 @@
           selfMonitor:
             enabled: true
             telemetryNodePort: 32081
+
+    - name: Wait till the kube-state-metrics is created
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        wait: yes
+        name: kube-state-metrics
+        namespace: kube-system
+        wait_sleep: 10
+        wait_timeout: 360
