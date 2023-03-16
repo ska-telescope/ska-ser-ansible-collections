@@ -80,6 +80,13 @@ clusterapi-workload-kubeconfig: clusterapi-check-cluster-type  ## Post deploymen
 	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
 	--limit "management-cluster" -vv
 
+clusterapi-workload-inventory: clusterapi-check-cluster-type  ## Post deployment get workload inventory
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/get-inventory.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
+	--limit "management-cluster" -vv
+
 clusterapi-post-deployment: clusterapi-check-cluster-type  ## Post deployment for workload cluster
 
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/calico.yml \

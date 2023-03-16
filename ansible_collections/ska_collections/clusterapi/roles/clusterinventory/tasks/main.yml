@@ -1,0 +1,70 @@
+---
+# load shared vars with clusterapi
+- name: Include vars
+  ansible.builtin.include_vars:
+    file: "{{ item }}"
+  with_items:
+    - ../clusterapi/defaults/main.yml
+    - ../configcapo/defaults/main.yml
+  tags: [always]
+
+# - name: Check Workload Cluster is running
+#   ska_collections.clusterapi.wait_for_cluster:
+#     name: "{{ capi_cluster }}"
+#     kubectl_namespace: "{{ capi_kube_namespace }}"
+#     initpause: 3
+#     wait: 30
+#     retries: 30
+#     kubectl_kubeconfig: "/home/ubuntu/.kube/config"
+
+
+- name: Get Machine details from management cluster
+  kubernetes.core.k8s_info:
+    kind: Machine
+    api_version: cluster.x-k8s.io/v1beta1
+    label_selectors:
+      - "cluster.x-k8s.io/cluster-name = {{ capi_cluster }}"
+  register: workload_machines
+
+- name: Workload cluster inventory
+  ansible.builtin.debug:
+    var: workload_machines
+
+- name: "Remove workload inventory copy {{ capi_config_dir }}/{{ capi_cluster }}-inventory"  # noqa: name[template]
+  ansible.builtin.file:
+    path: "{{ capi_config_dir }}/{{ capi_cluster }}-inventory"
+    state: absent
+  become: true
+
+- name: Write clusterapi inventory
+  ansible.builtin.template:
+    src: inventory.j2
+    dest: "{{ capi_config_dir }}/{{ capi_cluster }}-inventory"
+    mode: "0600"
+  become: true
+
+- name: Slurp CAPO Cluster instance manifest
+  ansible.builtin.slurp:
+    src: "{{ capi_config_dir }}/{{ capi_cluster }}-inventory"
+  register: slurped_inventory
+  become: true
+
+- name: Unpack CAPO Cluster manifest
+  ansible.builtin.set_fact:
+    capi_cluster_inventory: "{{ slurped_inventory.content | b64decode }}"
+
+- name: "Remove workload local inventory copy ./{{ capi_cluster }}-inventory"  # noqa: name[template]
+  ansible.builtin.file:
+    path: "{{ playbook_dir }}/../../../../../{{ capi_cluster }}-inventory"
+    state: absent
+  delegate_to: localhost
+
+- name: Output workload local inventory copy  # noqa: template-instead-of-copy
+  ansible.builtin.copy:
+    content: "{{ capi_cluster_inventory }}"
+    dest: "{{ playbook_dir }}/../../../../../{{ capi_cluster }}-inventory"
+    mode: 0644
+  delegate_to: localhost
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers
