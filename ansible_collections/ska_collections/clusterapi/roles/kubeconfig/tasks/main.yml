@@ -8,6 +8,15 @@
     - ../configcapo/defaults/main.yml
   tags: [always]
 
+- name: Check Workload Cluster is running
+  ska_collections.clusterapi.wait_for_cluster:
+    name: "{{ capi_cluster }}"
+    kubectl_namespace: "{{ capi_kube_namespace }}"
+    initpause: 30
+    wait: 30
+    retries: 30
+    kubectl_kubeconfig: "/home/ubuntu/.kube/config"
+
 - name: Save cluster kubeconfig credentials # noqa no-changed-when risky-shell-pipe
   ansible.builtin.shell: |
     kubectl get secret/{{ capi_cluster }}-kubeconfig -o json | \
