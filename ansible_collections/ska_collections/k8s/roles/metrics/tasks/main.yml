@@ -1,37 +1,25 @@
 ---
-- name: Check Rook is running
-  kubernetes.core.k8s_info:
-    api_version: apps/v1
-    kind: Deployment
+
+- name: Install kube-state-metrics Helm chart
+  kubernetes.core.helm:
+    atomic: true
+    chart_repo_url: https://prometheus-community.github.io/helm-charts
+    chart_ref: kube-state-metrics
+    chart_version: "{{ kube_state_metrics_chart_version }}"
     name: kube-state-metrics
-    namespace: "kube-system"
-  register: kubectl_metrics
-  when: "inventory_hostname == groups['kubernetes-controlplane'][0]"
+    namespace: kube-system
+    values:
+      service:
+        type: NodePort
+        nodePort: 32080
+      selfMonitor:
+        enabled: true
+        telemetryNodePort: 32081
 
-- name: Activate kube-state-metrics
-  when: "inventory_hostname == groups['kubernetes-controlplane'][0]
-    and kubectl_metrics.rc and kube_state_metrics"
-  block:
-    - name: Install kube-state-metrics Helm chart
-      kubernetes.core.helm:
-        atomic: true
-        chart_repo_url: https://prometheus-community.github.io/helm-charts
-        chart_ref: kube-state-metrics
-        chart_version: "{{ kube_state_metrics_chart_version }}"
-        name: kube-state-metrics
-        namespace: kube-system
-        values:
-          service:
-            type: NodePort
-            nodePort: 32080
-          selfMonitor:
-            enabled: true
-            telemetryNodePort: 32081
-
-    - name: Wait till the kube-state-metrics is created
-      kubernetes.core.k8s_info:
-        kind: Deployment
-        wait: true
-        name: kube-state-metrics
-        namespace: kube-system
-        wait_timeout: 120
+- name: Wait till the kube-state-metrics is created
+  kubernetes.core.k8s_info:
+    kind: Deployment
+    wait: true
+    name: kube-state-metrics
+    namespace: kube-system
+    wait_timeout: 120
