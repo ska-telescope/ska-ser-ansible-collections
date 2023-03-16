@@ -8,11 +8,14 @@
     path: "{{ prometheus_snmp_config_dir }}"
 
 - name: Copy snmp configuration file to {{ snmp_config_dir }}
-  ansible.builtin.copy:
-    src: ../roles/prometheus/files/snmp_config.yml
+  become: true
+  ansible.builtin.template:
+    src: "snmp_config.yml.j2"
     dest: "{{ prometheus_snmp_config_dir }}/snmp.yml"
+    force: true
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
     mode: 0744
-
 
 - name: Pull snmp image {{ snmp_server_docker_tags }}
   community.docker.docker_image:

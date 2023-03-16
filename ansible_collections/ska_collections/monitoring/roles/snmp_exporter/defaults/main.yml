@@ -1,0 +1,9 @@
+---
+monitoring_localuser: ubuntu
+monitoring_localgroup: ubuntu
+
+prometheus_snmp_config_dir: /etc/snmp
+prometheus_snmp_server_docker_tags: v0.21.0
+
+prometheus_snmp_dell_idrac_auth_community: "{{ _ | mandatory('`prometheus_snmp_dell_idrac_auth_community` definition is mandatory') }}"
+prometheus_snmp_riello_ups_auth_community: "{{ _ | mandatory('`prometheus_snmp_riello_ups_auth_community` definition is mandatory') }}"
