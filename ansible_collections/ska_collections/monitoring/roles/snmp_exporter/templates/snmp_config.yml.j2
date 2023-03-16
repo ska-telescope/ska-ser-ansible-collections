@@ -3059,13 +3059,13 @@ dell_idrac:
   retries: 3
   timeout: 60s
   auth:
-    community: {{ prometheus_snmp_dell_idrac_auth_community }}
+    community: {{ snmp_dell_idrac_auth_community }}
 riello_ups:
   max_repetitions: 10
   retries: 3
   timeout: 60s
   auth:
-    community: {{ prometheus_snmp_riello_ups_auth_community }}
+    community: {{ snmp_riello_ups_auth_community }}
   walk:
   - 1.3.6.1.4.1.5491.10.1.1   # rupsIdent
   - 1.3.6.1.4.1.5491.10.1.2   # rupsBattery
