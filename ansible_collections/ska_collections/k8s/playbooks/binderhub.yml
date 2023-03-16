@@ -7,7 +7,7 @@
 
   pre_tasks:
     - name: Set facts for KUBECONFIG
-      set_fact:
+      ansible.builtin.set_fact:
         "k8s_kubeconfig": "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf') | mandatory }}"
 
     - name: Check k8s_kubeconfig
