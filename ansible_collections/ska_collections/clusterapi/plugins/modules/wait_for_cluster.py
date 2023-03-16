@@ -392,9 +392,11 @@ def main():
     desired = 0
     mready = 0
     wready = 0
-    tries = 0
     try:
         while tries <= int(module.params["retries"]):
+            desired = 0
+            mready = 0
+            wready = 0
             machines = get_machines(connector, module.params["name"])
             for m in machines:
                 desired += 1

@@ -6,28 +6,6 @@
     local_ceph_conf_key_ring: "{{ k8s_capi_ceph_conf_key_ring }}"
   tags: [always]
 
-- name: Swap rook_* vars to capi_*
-  ansible.builtin.set_fact:
-    k8s_capi_rook_version: "{{ in_rook_version }}"
-    k8s_capi_ceph_namespace: "{{ in_rook_namespace }}"
-    k8s_capi_kube_namespace: "{{ kube_namespace }}"
-    k8s_capi_capo_ceph_conf_global_fsid: "{{ in_rook_external_fsid }}"
-    k8s_capi_ceph_external_admin_secret: "{{ in_rook_external_admin_secret }}"
-    k8s_capi_ceph_external_admin_key: "{{ in_rook_external_admin_key }}"
-    k8s_capi_capo_ceph_conf_global_mons_data: "{{ in_rook_external_ceph_mon_data }}"
-    k8s_capi_capo_ceph_conf_global_monitors: "{{ in_rook_external_ceph_monitors }}"
-    k8s_capi_ceph_rbd_pool_name: "{{ in_rook_rbd_pool_name }}"
-    k8s_capi_ceph_rgw_pool_prefix: "{{ in_rook_rgw_pool_prefix }}"
-    k8s_capi_ceph_csi_rbd_node_secret_name: "{{ in_rook_csi_rbd_node_secret_name }}"
-    k8s_capi_ceph_csi_rbd_provisioner_secret_name: "{{ in_rook_csi_rbd_provisioner_secret_name }}"
-    k8s_capi_ceph_csi_cephfs_node_secret_name: "{{ in_rook_csi_cephfs_node_secret_name }}"
-    k8s_capi_ceph_csi_cephfs_provisioner_secret_name: "{{ in_rook_csi_cephfs_provisioner_secret_name }}"
-    k8s_capi_ceph_csi_rbd_node_secret: "{{ in_rook_csi_rbd_node_secret }}"
-    k8s_capi_ceph_csi_rbd_provisioner_secret: "{{ in_rook_csi_rbd_provisioner_secret }}"
-    k8s_capi_ceph_csi_cephfs_node_secret: "{{ in_rook_csi_cephfs_node_secret }}"
-    k8s_capi_ceph_csi_cephfs_provisioner_secret: "{{ in_rook_csi_cephfs_provisioner_secret }}"
-  tags: [always]
-
 - name: Load Ceph config
   when: (capi_ceph_conf_ini_file|length) > 0 and
         (capi_ceph_conf_key_ring|length) > 0
@@ -53,26 +31,26 @@
 - name: Setup environment
   ansible.builtin.set_fact:
     k8s_capi_cluster_environment:
-      KUBE_NAMESPACE: "{{ k8s_capi_kube_namespace }}"
-      ROOK_NAMESPACE: "{{ k8s_capi_ceph_namespace }}"
+      KUBE_NAMESPACE: "{{ k8s_kube_namespace }}"
+      ROOK_NAMESPACE: "{{ k8s_rook_namespace }}"
       ROOK_EXTERNAL_FSID: "{{ k8s_capi_capo_ceph_conf_global_fsid }}"
       ROOK_EXTERNAL_ADMIN_SECRET: "{{ k8s_capi_ceph_external_admin_secret }}"
       ROOK_EXTERNAL_ADMIN_KEY: "{{ k8s_capi_ceph_external_admin_key }}"
       ROOK_EXTERNAL_CEPH_MON_DATA: "{{ k8s_capi_capo_ceph_conf_global_mons_data }}"
       ROOK_EXTERNAL_CEPH_MONITORS: "{{ k8s_capi_capo_ceph_conf_global_monitors }}"
-      RBD_POOL_NAME: "{{ k8s_capi_ceph_rbd_pool_name }}"
-      RGW_POOL_PREFIX: "{{ k8s_capi_ceph_rgw_pool_prefix }}"
-      CSI_RBD_NODE_SECRET_NAME: "{{ k8s_capi_ceph_csi_rbd_node_secret_name }}"
-      CSI_RBD_PROVISIONER_SECRET_NAME: "{{ k8s_capi_ceph_csi_rbd_provisioner_secret_name }}"
-      CSI_CEPHFS_NODE_SECRET_NAME: "{{ k8s_capi_ceph_csi_cephfs_node_secret_name }}"
-      CSI_CEPHFS_PROVISIONER_SECRET_NAME: "{{ k8s_capi_ceph_csi_cephfs_provisioner_secret_name }}"
+      RBD_POOL_NAME: "{{ k8s_rook_rbd_pool_name }}"
+      RGW_POOL_PREFIX: "{{ k8s_rook_rgw_pool_prefix }}"
+      CSI_RBD_NODE_SECRET_NAME: "{{ k8s_rook_csi_rbd_node_secret_name }}"
+      CSI_RBD_PROVISIONER_SECRET_NAME: "{{ k8s_rook_csi_rbd_provisioner_secret_name }}"
+      CSI_CEPHFS_NODE_SECRET_NAME: "{{ k8s_rook_csi_cephfs_node_secret_name }}"
+      CSI_CEPHFS_PROVISIONER_SECRET_NAME: "{{ k8s_rook_csi_cephfs_provisioner_secret_name }}"
       CSI_RBD_NODE_SECRET: "{{ k8s_capi_ceph_csi_rbd_node_secret }}"
       CSI_RBD_PROVISIONER_SECRET: "{{ k8s_capi_ceph_csi_rbd_provisioner_secret }}"
       CSI_CEPHFS_NODE_SECRET: "{{ k8s_capi_ceph_csi_cephfs_node_secret }}"
       CSI_CEPHFS_PROVISIONER_SECRET: "{{ k8s_capi_ceph_csi_cephfs_provisioner_secret }}"
-      ROOK_VERSION: "{{ k8s_capi_rook_version }}"
+      ROOK_VERSION: "{{ k8s_rook_version }}"
       KUBECONFIG: "{{ k8s_kubeconfig }}"
-      NAMESPACE: "{{ k8s_capi_ceph_namespace }}"
+      NAMESPACE: "{{ k8s_rook_namespace }}"
       ROOK_EXTERNAL_ADMIN_USER_NAME: "{{ k8s_rook_external_admin_user_name }}"
 
 - name: Check k8s_capi_cluster_environment
@@ -84,7 +62,7 @@
     api_version: apps/v1
     kind: Deployment
     name: rook-ceph-operator
-    namespace: "{{ k8s_capi_ceph_namespace }}"
+    namespace: "{{ k8s_rook_namespace }}"
   register: rook_operator_check
 
 - name: Start Rook
@@ -94,7 +72,7 @@
 
     - name: Download Rook IO manifests
       ansible.builtin.get_url:
-        url: "https://raw.githubusercontent.com/rook/rook/{{ k8s_capi_rook_version }}/deploy/examples/{{ item }}"
+        url: "https://raw.githubusercontent.com/rook/rook/{{ k8s_rook_version }}/deploy/examples/{{ item }}"
         dest: "/tmp/{{ item }}"
         mode: '0664'
       with_items:
@@ -117,7 +95,7 @@
     kind: Deployment
     api_version: apps/v1
     name: rook-ceph-operator
-    namespace: "{{ k8s_capi_ceph_namespace }}"
+    namespace: "{{ k8s_rook_namespace }}"
     wait: true
     wait_sleep: 10
     wait_timeout: 300
@@ -126,7 +104,7 @@
 
 - name: Download Rook import external cluster script
   ansible.builtin.get_url:
-    url: "https://raw.githubusercontent.com/rook/rook/{{ k8s_capi_rook_version }}/deploy/examples/import-external-cluster.sh"
+    url: "https://raw.githubusercontent.com/rook/rook/{{ k8s_rook_version }}/deploy/examples/import-external-cluster.sh"
     dest: "/tmp/import-external-cluster.sh"
     mode: '0664'
 
@@ -135,7 +113,7 @@
     api_version: v1
     kind: Secret
     name: rook-ceph-mon
-    namespace: "{{ k8s_capi_ceph_namespace }}"
+    namespace: "{{ k8s_rook_namespace }}"
   register: rook_secret_check
 
 - name: Run import-external-cluster.sh to create Secrets, ConfigMaps and StorageClasses
@@ -160,8 +138,8 @@
   kubernetes.core.k8s_info:
     api_version: ceph.rook.io/v1
     kind: CephCluster
-    name: "{{ k8s_capi_ceph_namespace }}"
-    namespace: "{{ k8s_capi_ceph_namespace }}"
+    name: "{{ k8s_rook_namespace }}"
+    namespace: "{{ k8s_rook_namespace }}"
   register: cephcluster_check
 
 - name: Install CephCluster

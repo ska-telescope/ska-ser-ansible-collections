@@ -23,6 +23,8 @@
     jq -r .data.value | \
     base64 --decode
   register: workload_kubeconfig
+  environment:
+    KUBECONFIG: "/home/ubuntu/.kube/config"
 
 - name: Fail if Workload KUBECONFIG Secret is NOT found
   ansible.builtin.fail:

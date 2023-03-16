@@ -56,12 +56,11 @@ clusterapi: clusterapi-check-hosts  ## Install clusterapi component
 	--extra-vars "target_hosts=management-cluster" \
 	--limit "management-cluster"
 
-clusterapi-build-management-server:  # Complete steps for building clusterapi management server
+clusterapi-build-management-server:  ## Complete steps for building clusterapi management server
 	make clusterapi clusterapi-install-base
 	make clusterapi clusterapi-management
 	make clusterapi clusterapi
 
-CAPI_DNS_SERVERS?=
 clusterapi-createworkload: clusterapi-check-cluster-type  ## Template workload manifest and deploy
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
