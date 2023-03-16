@@ -31,8 +31,8 @@ k8s-manual-deployment: ## Manual K8s deployment based on kubeadm
 
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/k8s.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=workload-cluster" \
-	--limit "workload-cluster" \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--limit "$(PLAYBOOKS_HOSTS)" \
 	--tags "$(TAGS)" \
 	-vv
 
@@ -41,8 +41,8 @@ k8s-post-deployment:  ## Post deployment for workload cluster
 ifneq (,$(findstring standardprovisioner,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/standardprovisioner.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=kubernetes-controlplane" \
-	--limit "kubernetes-controlplane" \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--limit "$(PLAYBOOKS_HOSTS)" \
 	--tags "$(TAGS)" \
 	-vv
 endif
@@ -51,8 +51,8 @@ endif
 ifneq (,$(findstring metallb,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/metallb.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=kubernetes-controlplane" \
-	--limit "kubernetes-controlplane" \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--limit "$(PLAYBOOKS_HOSTS)" \
 	--tags "$(TAGS)" \
 	-vv
 endif
@@ -61,8 +61,8 @@ endif
 ifneq (,$(findstring ingress,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/ingress.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=kubernetes-controlplane" \
-	--limit "kubernetes-controlplane" \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--limit "$(PLAYBOOKS_HOSTS)" \
 	--tags "$(TAGS)" \
 	-vv
 endif
@@ -70,8 +70,8 @@ endif
 ifneq (,$(findstring ping,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/ping.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=kubernetes-controlplane" \
-	--limit "kubernetes-controlplane" \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--limit "$(PLAYBOOKS_HOSTS)" \
 	--tags "$(TAGS)" \
 	-vv
 endif
@@ -81,8 +81,8 @@ ifneq (,$(findstring rookio,$(TAGS)))
     # rookio is a target - avoid undefined ansible vars issue with tags
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/rookio.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=kubernetes-controlplane" \
-	--limit "kubernetes-controlplane" \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--limit "$(PLAYBOOKS_HOSTS)" \
 	--tags "$(TAGS)" \
 	-vv
 endif
@@ -90,8 +90,8 @@ endif
 ifneq (,$(findstring metrics,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/metrics.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=kubernetes-controlplane" \
-	--limit "kubernetes-controlplane" \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--limit "$(PLAYBOOKS_HOSTS)" \
 	--tags "$(TAGS)" \
 	-vv
 endif
@@ -99,8 +99,8 @@ endif
 ifneq (,$(findstring binderhub,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/binderhub.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=kubernetes-controlplane" \
-	--limit "kubernetes-controlplane" \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--limit "$(PLAYBOOKS_HOSTS)" \
 	--tags "$(TAGS)" \
 	-vv
 endif
@@ -109,22 +109,22 @@ k8s-byoh-reset:  ## Reset workload hosts
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/reset-byoh.yml \
-	-i $(INVENTORY) --limit workload-cluster $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=workload-cluster" -v
+	-i $(INVENTORY) --limit $(PLAYBOOKS_HOSTS) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v
 
 k8s-byoh-init:  ## Initialise byoh workload hosts
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/init-hosts.yml \
-	-i $(INVENTORY) --limit workload-cluster $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=workload-cluster" -v
+	-i $(INVENTORY) --limit $(PLAYBOOKS_HOSTS) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v
 
 k8s-byoh-engine:  ## Deploy byoh container engine on workload hosts
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(PLAYBOOKS_DIR)/docker_base/playbooks/containers.yml \
-	-i $(INVENTORY) --limit workload-cluster $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=workload-cluster" -v
+	-i $(INVENTORY) --limit $(PLAYBOOKS_HOSTS) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -v
 
 k8s-byoh:  ## Reset and prepare byoh nodes
 	echo $(shell pwd)

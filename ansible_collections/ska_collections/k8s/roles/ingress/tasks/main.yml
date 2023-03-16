@@ -58,15 +58,15 @@
       }
     kubectl_kubeconfig: "{{ k8s_kubeconfig }}"
 
-# - name: Apply Ingress ACLs
-#   kubernetes.core.k8s:
-#     state: present
-#     template: 'acls.yaml.j2'
+- name: Apply Ingress ACLs
+  kubernetes.core.k8s:
+    state: present
+    template: 'acls.yaml.j2'
 
-# - name: Apply LoadBalancer Service
-#   kubernetes.core.k8s:
-#     state: present
-#     template: 'service.yaml.j2'
+- name: Apply LoadBalancer Service
+  kubernetes.core.k8s:
+    state: present
+    template: 'service.yaml.j2'
 
 - name: Wait till the nginx is created
   kubernetes.core.k8s_info:

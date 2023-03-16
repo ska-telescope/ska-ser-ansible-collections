@@ -27,6 +27,10 @@
     in_rook_csi_cephfs_provisioner_secret: "{{ lookup('ansible.builtin.env', 'CSI_CEPHFS_PROVISIONER_SECRET', default=rook_csi_cephfs_provisioner_secret) | mandatory }}"
 
   pre_tasks:
+    - name: Set facts for KUBECONFIG
+      set_fact:
+        "k8s_kubeconfig": "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf') | mandatory }}"
+
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:
         var: k8s_kubeconfig
