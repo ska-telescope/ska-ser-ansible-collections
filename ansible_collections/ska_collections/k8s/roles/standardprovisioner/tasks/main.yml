@@ -25,7 +25,7 @@
     kind: Pod
     name: storage-provisioner
     namespace: kube-system
-    wait: yes
+    wait: true
     wait_timeout: 120
 
 - name: Flush those handlers
