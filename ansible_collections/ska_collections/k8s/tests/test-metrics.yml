@@ -29,18 +29,18 @@
             template:
               spec:
                 containers:
-                - image: curlimages/curl
-                  name: curl-test
-                  command:
-                  - curl
-                  - kube-state-metrics.kube-system.svc.cluster.local:8080/metrics
+                  - image: curlimages/curl
+                    name: curl-test
+                    command:
+                      - curl
+                      - kube-state-metrics.kube-system.svc.cluster.local:8080/metrics
                 restartPolicy: Never
 
     - name: Wait Until Job Is Done
       kubernetes.core.k8s_info:
         name: curl-job
         kind: Job
-        wait: yes
+        wait: true
         wait_timeout: 10
         wait_condition:
           type: Complete

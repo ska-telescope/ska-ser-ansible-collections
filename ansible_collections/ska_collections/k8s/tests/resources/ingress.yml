@@ -38,12 +38,12 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - http:
-      paths:
-      - path: /banana
-        pathType: Prefix
-        backend:
-          service:
-            name: banana-service
-            port:
-              number: 5678
+    - http:
+        paths:
+          - path: /banana
+            pathType: Prefix
+            backend:
+              service:
+                name: banana-service
+                port:
+                  number: 5678
