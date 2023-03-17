@@ -36,16 +36,20 @@
                   - kube-state-metrics.kube-system.svc.cluster.local:8080/metrics
                 restartPolicy: Never
 
-    - name: Wait till job is completed
+    - name: Wait Until Job Is Done
       kubernetes.core.k8s_info:
-        kind: Job
-        wait: true
         name: curl-job
-        namespace: default
+        kind: Job
+        wait: yes
         wait_timeout: 10
         wait_condition:
           type: Complete
-          status: True
+          status: "True"
+      register: job_status
+
+    - fail:
+        msg: "Metrics not working!"
+      when: job_status.failed == 1
 
     - name: Remove curl-job
       kubernetes.core.k8s:
