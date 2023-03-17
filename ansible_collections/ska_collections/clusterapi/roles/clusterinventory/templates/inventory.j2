@@ -1,0 +1,17 @@
+[{{ capi_cluster }}-masters]
+{% for machine in workload_machines['resources'] %}
+{% if 'cluster.x-k8s.io/control-plane' in machine['metadata']['labels'] %}
+{{ machine['metadata']['name'] }}  ansible_host={{ machine['status']['addresses'] | selectattr("type", "eq", "InternalIP") | map(attribute="address") | list | first }} ansible_user=ubuntu
+{% endif %}
+{% endfor %}
+
+[{{ capi_cluster }}-workers]
+{% for machine in workload_machines['resources'] %}
+{% if not 'cluster.x-k8s.io/control-plane' in machine['metadata']['labels'] %}
+{{ machine['metadata']['name'] }}  ansible_host={{ machine['status']['addresses'] | selectattr("type", "eq", "InternalIP") | map(attribute="address") | list | first }} ansible_user=ubuntu
+{% endif %}
+{% endfor %}
+
+[{{ capi_cluster }}:children]
+{{ capi_cluster }}-masters
+{{ capi_cluster }}-workers

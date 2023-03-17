@@ -1,7 +1,0 @@
----
-
-- name: Delete cordns Helm release
-  kubernetes.core.helm:
-    state: absent
-    name: "extdns"
-    release_namespace: extdns

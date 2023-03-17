@@ -1,2 +1,3 @@
 ---
 debug: false
+k8s_standardprovisioner_hostpath_dir: /tmp

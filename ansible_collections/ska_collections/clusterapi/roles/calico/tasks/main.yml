@@ -30,7 +30,7 @@
         src: "/tmp/calico.yaml"
 
 - name: Set Calico config
-  ska_collections.clusterapi.kubectl_set_env:
+  ska_collections.k8s.kubectl_set_env:
     name: "daemonset/calico-node"
     kubectl_namespace: "kube-system"
     envvars:
@@ -39,13 +39,13 @@
       IP_AUTODETECTION_METHOD: "{{ calico_ip_autodetection_method }}"
 
 - name: Check calico-node Daemonset is running
-  ska_collections.clusterapi.wait_for_daemonset:
+  ska_collections.k8s.wait_for_daemonset:
     name: calico-node
     kubectl_namespace: kube-system
     initpause: 10
     wait: 20
     retries: 15
-    kubectl_kubeconfig: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=capi_kubeconfig) | mandatory }}"
+    kubectl_kubeconfig: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers

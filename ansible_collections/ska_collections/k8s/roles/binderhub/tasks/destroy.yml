@@ -3,4 +3,4 @@
   kubernetes.core.helm:
     state: absent
     name: "binderhub"
-    release_namespace: "{{ binderhub_namespace }}"
+    release_namespace: "{{ k8s_binderhub_namespace }}"

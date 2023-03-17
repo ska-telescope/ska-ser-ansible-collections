@@ -1,6 +1,6 @@
 ---
 
-ib_deb_dependencies:
+capi_ib_deb_dependencies:
   - apt-transport-https
   - ca-certificates
   - curl
@@ -11,11 +11,11 @@ ib_deb_dependencies:
   - qemu-utils
   - qemu-system
 
-ib_git_repo: https://github.com/kubernetes-sigs/image-builder.git
-ib_repo_dest: /usr/src/image-builder
-ib_branch: master
+capi_ib_git_repo: https://github.com/kubernetes-sigs/image-builder.git
+capi_ib_repo_dest: /usr/src/image-builder
+capi_ib_branch: master
 
-ib_kubernetes_version: 1.25.5
-ib_kubernetes_series: 1.25
-ib_ubuntu_version: 2004
-ib_os_image_name: "ubuntu-{{ ib_ubuntu_version }}-kube-v{{ ib_kubernetes_version }}"
+capi_ib_kubernetes_version: 1.25.7
+capi_ib_kubernetes_series: 1.25
+capi_ib_ubuntu_version: 2204
+capi_ib_os_image_name: "ubuntu-{{ capi_ib_ubuntu_version }}-kube-v{{ capi_ib_kubernetes_version }}"

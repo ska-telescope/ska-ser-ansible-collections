@@ -4,23 +4,6 @@
     file: ../clusterapi/defaults/main.yml
   tags: [always]
 
-- name: Include the OS Config
-  ansible.builtin.include_tasks: os_config.yml
-
-- name: Set clusterapi config dir
-  ansible.builtin.file:
-    path: "{{ clusterapi_config_dir }}"
-    state: directory
-    mode: "0755"
-  become: true
-
-- name: Clusterapi OS cloud config
-  ansible.builtin.template:
-    src: cloud-provider-conf.ini.j2
-    dest: "{{ clusterapi_config_dir }}/cloud-provider.ini"
-    mode: "0600"
-  become: true
-
 - name: Get current CAPO template verion  # noqa: command-instead-of-module
   ansible.builtin.shell: |
     set -o pipefail && \
@@ -28,26 +11,33 @@
   args:
     executable: /usr/bin/bash
   changed_when: false
-  register: capo_template_check
+  register: capi_capo_template_check
 
 - name: Current CAPO template verion
   ansible.builtin.set_fact:
-    capo_template_version_latest: "{{ capo_template_check.stdout }}"
+    capi_capo_template_version_latest: "{{ capi_capo_template_check.stdout }}"
 
 - name: Show the latest CAPO template version
   ansible.builtin.debug:
-    var: capo_template_version_latest
+    var: capi_capo_template_version_latest
+
+- name: Set clusterapi config dir
+  ansible.builtin.file:
+    path: "{{ capi_config_dir }}"
+    state: directory
+    mode: "0755"
+  become: true
 
 - name: Tidy up CAPO template
   ansible.builtin.file:
-    path: "{{ clusterapi_config_dir }}/{{ capo_template_name }}"
+    path: "{{ capi_config_dir }}/{{ capi_capo_template_name }}"
     state: absent
   become: true
 
 - name: Download CAPO template
   ansible.builtin.get_url:
-    url: "https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/download/{{ capo_template_version }}/cluster-template.yaml"
-    dest: "{{ clusterapi_config_dir }}/{{ capo_template_name }}"
+    url: "https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/download/{{ capi_capo_template_version }}/cluster-template.yaml"
+    dest: "{{ capi_config_dir }}/{{ capi_capo_template_name }}"
     mode: '0644'
   become: true
 
@@ -57,14 +47,14 @@
 
 - name: Copy clusterapi CAPO template back
   ansible.builtin.slurp:
-    src: "{{ clusterapi_config_dir }}/{{ capo_template_name }}"
+    src: "{{ capi_config_dir }}/{{ capi_capo_template_name }}"
   register: slurped_cluster_template
   become: true
 
 - name: Output cluster template file  # noqa: template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ slurped_cluster_template.content | b64decode }}"
-    dest: "{{ playbook_dir }}/../../../../resources/clusterapi/kustomize/capobase/{{ capo_template_name }}"
+    dest: "{{ playbook_dir }}/../../../../resources/clusterapi/kustomize/capobase/{{ capi_capo_template_name }}"
     mode: 0644
   delegate_to: localhost
 
@@ -82,7 +72,7 @@
   block:
 
     - name: Start up CAPO
-      ansible.builtin.command: "{{ clusterctl_exe_dir }}/clusterctl init --infrastructure openstack"
+      ansible.builtin.command: "{{ capi_clusterctl_exe_dir }}/clusterctl init --infrastructure openstack"
       changed_when: false
       register: clusterctl_capo_check
 

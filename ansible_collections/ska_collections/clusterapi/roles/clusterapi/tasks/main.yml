@@ -21,18 +21,18 @@
 
 - name: Check if clusterctl exists
   ansible.builtin.stat:
-    path: "{{ clusterctl_exe_dir }}/clusterctl"
+    path: "{{ capi_clusterctl_exe_dir }}/clusterctl"
   register: stat_clusterctl
 
 - name: Check if the clusterctl version is installed
-  ansible.builtin.command: "{{ clusterctl_exe_dir }}/clusterctl version -o short"
+  ansible.builtin.command: "{{ capi_clusterctl_exe_dir }}/clusterctl version -o short"
   changed_when: false
   register: clusterctl_version_check
   ignore_errors: true
 
 - name: Expected clusterctl version
   ansible.builtin.debug:
-    var: clusterctl_version
+    var: capi_clusterctl_version
 
 - name: Check clusterctl version
   ansible.builtin.debug:
@@ -40,19 +40,19 @@
 
 - name: Install clusterctl
   when: "not stat_clusterctl.stat.exists or
-    clusterctl_version_check.stdout.find(clusterctl_version) == -1"
+    clusterctl_version_check.stdout.find(capi_clusterctl_version) == -1"
   block:
 
     - name: Tidy up Clusterctl if already exists
       ansible.builtin.file:
-        path: "{{ clusterctl_exe_dir }}/clusterctl"
+        path: "{{ capi_clusterctl_exe_dir }}/clusterctl"
         state: absent
       become: true
 
     - name: Clusterctl install
       ansible.builtin.get_url:
-        url: "https://github.com/kubernetes-sigs/cluster-api/releases/download/{{ clusterctl_version }}/clusterctl-{{ os_name }}-{{ os_binary }}"
-        dest: "{{ clusterctl_exe_dir }}/clusterctl"
+        url: "https://github.com/kubernetes-sigs/cluster-api/releases/download/{{ capi_clusterctl_version }}/clusterctl-{{ os_name }}-{{ os_binary }}"
+        dest: "{{ capi_clusterctl_exe_dir }}/clusterctl"
         mode: "0755"
       become: true
 
