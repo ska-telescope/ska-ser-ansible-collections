@@ -108,6 +108,9 @@ ifneq ($(filter $(JOBLIST),$(firstword $(MAKECMDGOALS))),)
   $(eval $(TARGET_ARGS):;@:)
 endif
 
+gitlab-management:
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/gitlab-management.mk
+
 clusterapi: ac-check-env ## clusterapi targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/clusterapi.mk
 

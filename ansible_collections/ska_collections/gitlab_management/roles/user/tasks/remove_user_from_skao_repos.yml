@@ -1,0 +1,57 @@
+---
+- name: Check if gitlab user exists
+  ansible.builtin.uri:
+    url: "{{ gitlab_api_url }}/users"
+    method: GET
+    force: true
+    return_content: true
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_access_token }}"
+    body_format: "raw"
+    body:
+      username={{ gitlab_user_to_manage }}
+  register: user_check
+
+- name: Check if user is already a member of the SKAO Developers group
+  ansible.builtin.uri:
+    url: "{{ gitlab_api_url }}/groups/{{ gitlab_skao_developers_group_id }}/members/{{ user_check.json[0].id }}"
+    method: GET
+    force: true
+    return_content: true
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_access_token }}"
+    status_code: [200, 404]
+  register: developers_member
+
+- name: Remove user from SKAO Developers group
+  ansible.builtin.uri:
+    url: "{{ gitlab_api_url }}/groups/{{ gitlab_skao_developers_group_id }}/members/{{ user_check.json[0].id }}"
+    method: DELETE
+    force: true
+    return_content: true
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_access_token }}"
+    status_code: 204
+  when: '"OK" in developers_member.msg'
+
+- name: Check if user is a member of the SKAO group
+  ansible.builtin.uri:
+    url: "{{ gitlab_api_url }}/groups/{{ gitlab_skao_group_id }}/members/{{ user_check.json[0].id }}"
+    method: GET
+    force: true
+    return_content: true
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_access_token }}"
+    status_code: [200, 404]
+  register: skao_member
+
+- name: Remove user from SKAO group
+  ansible.builtin.uri:
+    url: "{{ gitlab_api_url }}/groups/{{ gitlab_skao_group_id }}/members/{{ user_check.json[0].id }}"
+    method: DELETE
+    force: true
+    return_content: true
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_access_token }}"
+    status_code: 204
+  when: '"OK" in skao_member.msg'
