@@ -1,13 +1,12 @@
 # Ansible Collection - ska_collections.clusterapi
 
-This directory contains the `ska_collections.clusterapi` Ansible Collection. The collection includes roles and playbooks for `clusterapi` based Kubernetes deployments.
+This directory contains the `ska_collections.clusterapi` Ansible Collection. The collection includes roles and playbooks for `clusterapi` based Kubernetes deployments.  It is expected to work closely with the  `ska_collections.minikube` collection for building a management cluster with Minikube, and the  `ska_collections.k8s` collection for post workload cluster deployment processing and customisation.
 
-It is a collection of helpers that facilitate the deployment of Kubernetes clusters using:
+Overall, this is a collection of helpers that facilitate the deployment of Kubernetes clusters using:
 
 * cluster api provider openstack - https://github.com/kubernetes-sigs/cluster-api-provider-openstack
 
-
-## OpenStack
+## OpenStack Integration
 
 Enables full integration with the OpenStack platform, where the provider:
 
@@ -16,96 +15,133 @@ Enables full integration with the OpenStack platform, where the provider:
 
 ## How it works
 
-Clusterapi is an operator that works on the same princples as any other custom resource declarative interface.  The operator is deployed in a management cluster along with the desired infrastructure providers (OpenStack) that provide the driver interface for communicating with the specific infrastructure context.  See the clusterapi book for details https://cluster-api.sigs.k8s.io/user/concepts.html .
+Clusterapi is an operator that works on the same princples as any other Kubernetes custom resource declarative interface.  The operator is deployed in a management cluster along with the desired infrastructure providers (OpenStack) that provide the driver interface for communicating with the specific infrastructure context.  See the clusterapi book for details https://cluster-api.sigs.k8s.io/user/concepts.html .
 
-The user defines a collection of manifests that describe the machine and cluster layout for the desired workload cluster.  The manifest is then applied to the management cluster which then orchestrates the creation of the workload cluster by communicating with the infrastructure provider, and driving the `kubeadm` configuration manager (https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/).  These manifests are templated by the `clusterctl generate cluster` command.
+The user defines a collection of manifests that describe the machine and cluster layout for the desired workload cluster(s).  The manifest is then applied to the management cluster which then orchestrates the creation of the workload cluster by communicating with the infrastructure provider (OpenStack in this case), and driving the `kubeadm` configuration manager (https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/).  These manifests are templated by the `clusterctl generate cluster` command.
 
+These templates provided by the upstream Infrastructure Provider, are not enough on their own. They need to be modified to include the wide range of configuration changes required in the context of each Infrastructure hosting (storage, networking, compute, security etc.), and the specific configuration of the resultant Kubernetes workload cluster (`kubeadm` configuration https://kubernetes.io/docs/reference/config-api/kubeadm-config.v1beta3/).
 
-The clusterapi manifest specification enables a set of pre and post kubeadm hooks that are applied to both controlplane nodes and worker nodes in the target workload cluster.  These hooks enable customisation of the deployment to be injected into the deployment workflow.  This cannot be achieved by the `clusterctl generate cluster` flow directly, so `kustomize` (https://kustomize.io/) templates have been developed to inject the necessary changes(See: [resources/clusterapi](../../../../resources/clusterapi/kustomize) ).  These templates add in different sets of `ansible-playbook` flows for controlplane and worker nodes for each infrastructure provider, so that the hosts are customised, and the necessary baseline services are installed into the workload cluster eg: containerd mirror configs, ingress controller, rook, metallb, storageclasses etc.
+Additionally, the clusterapi manifest specification enables a set of pre and post kubeadm hooks that are applied to both controlplane nodes and worker nodes in the target workload cluster.  These hooks enable customisation of the deployment to be injected into the deployment workflow.  This cannot be achieved by the `clusterctl generate cluster` flow directly, so `kustomize` (https://kustomize.io/) templates have been developed to inject the necessary changes(See: [resources/clusterapi](../../../../resources/clusterapi/kustomize) ).  These templates add in different sets of `ansible-playbook` flows for controlplane and worker nodes for each infrastructure provider, so that the hosts are customised, and the necessary baseline services are installed into the workload cluster eg: containerd mirror configs, docker, helm tools, Pod Network (Calico) etc.
 
 
 ## Roles and Playbooks
 
-The enclosed roles and playbooks facilitate the creation of the management cluster, VM Images for OpenStack (uses Packer) workload cluster manifests, and workload cluster customisation.
+The enclosed roles and playbooks facilitate the creation of the management cluster, VM Images for OpenStack (uses Packer) workload cluster manifests, extracting `KUBECONFIG` and generating the workload cluster Ansible inventory.
+
+
+### Roles
+
+Each role encompasses a individual component/service/integration to be deployed in a Kubernetes cluster.  In most cases, the only input required is the `KUBECONFIG` file/path for the target cluster to apply the role to.  Note that this is the `KUBECONFIG` on the target inventory host that the Ansible role will be run against.
+
+| Name | Description | Version | K8s Requirements |
+| ---- | ----------- | ------- | --- |
+| [clusterapi.calico](./roles/calico) | Install and configure Calico Pod Network |3.24.5 | 1.25.5+ |
+| [clusterapi.clusterapi](./roles/clusterapi) | Install `clusterctl` | v1.3.5 | 1.25.5+ |
+| [clusterapi.clusterinventory](./roles/clusterinventory) | Extract the workload cluster Ansible inventory | v1.3.5 | 1.25.5+ |
+| [clusterapi.configcapo](./roles/configcapo) | Install the CAPO Infra Provider on the Management Cluster | v0.7.1 | 1.25.5+ |
+| [clusterapi.containerd](./roles/containerd) | Install and configure containerd as required for CAPI | 1.6.6-1 | 1.25.5+ |
+| [clusterapi.createworkload](./roles/createworkload) | Generate template and build manifest for workload cluster | N/A | 1.25.5+ |
+| [clusterapi.imagebuilder](./roles/imagebuilder) | Install image-builder tools and build OS image (Packer) | master | 1.25.5+ |
+| [clusterapi.kubeconfig](./roles/kubeconfig) | Extract the workload cluster `KUBECONFIG` | N/A | 1.25.5+ |
+
+### Playbooks
+
+Playbooks can be found in the [playbooks/](./playbooks) folder in the following files:
+
+| Name | Description |
+| ---- | ----------- |
+| [calico.yml](./playbooks/calico.yml) | Install Calico Pod Network |
+| [clusterapi.yml](./playbooks/clusterapi.yml) | Install and configure `cluserctl` and the CAPO provider on management cluster |
+| [containerd.yml](./playbooks/containerd.yml) | Install and configure containerd |
+| [createworkload.yml](./playbooks/createworkload.yml) | Generate workload cluster manifests and apply |
+| [docker.yml](./playbooks/docker.yml) | Install and configure Docker using `ska_collections.docker_base.docker` |
+| [get-inventory.yml](./playbooks/get-inventory.yml) | Extract workload cluster Ansible inventory |
+| [get-kubeconfig.yml](./playbooks/get-kubeconfig.yml) | Extract workload cluster `KUBECONFIG` |
+| [imagebuilder.yml](./playbooks/imagebuilder.yml) | Build OS images for CAPO deployment |
+| [init-hosts.yml](./playbooks/init-hosts.yml) | Initialise hosts using `ska_collections.instance_common.init` |
+| [install-tools.yml](./playbooks/install-tools.yml) | Install tools such as Helm |
 
 ## Workflow
 
-See the `make` targets in [clusterapi.mk](../../../../resources/jobs/clusterapi.mk) .  These are designed to work in the context of [Infra Machinery](https://gitlab.com/ska-telescope/sdi/ska-ser-infra-machinery).
+See the `make` targets in [clusterapi.mk](../../../resources/jobs/clusterapi.mk) .  These are designed to work in the context of [Infra Machinery](https://gitlab.com/ska-telescope/sdi/ska-ser-infra-machinery).
 
-### Create management cluster
+### Basic Configuration
 
-Establish a single node management cluster based on Minikube:
+Setup `PrivateRules.mak` - the following highlights key variables that are likely to be set.  Please carefully review the `./defaults/main.yml` of each role for further options along with [clusterapi.yml](https://gitlab.com/ska-telescope/sdi/ska-ser-infra-machinery/-/blob/main/datacentres/stfc-techops/production/installation/host_vars/clusterapi.yml).
 
-Setup `PrivateRules.mak`:
 ```
 DATACENTRE = stfc-techops
 ENVIRONMENT = production
 SERVICE = clusterapi
-ANSIBLE_SECRETS_PROVIDER = notlegacy
-ANSIBLE_EXTRA_VARS+= --extra-vars "metallb_openstack_network_cidr=10.100.0.0/16"
-TF_HTTP_USERNAME = <user>
-TF_HTTP_PASSWORD = <password>
-# point to the location of the contents of the /etc/ceph directory
-# related to the target Ceph storage cluster
-ETC_CEPH = $(THIS_BASE)/../ska-cicd-deployment-on-stfc-cloud/clusterapi/ceph
+
+# Always point to the management-cluster group
+PLAYBOOKS_HOSTS = management-cluster
+CAPI_CLUSTER = capo-examples
+
+# Ceph config
+ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_ceph_conf_ini_file=$(THIS_BASE)/clusterapi/ceph/ceph.conf'
+ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_ceph_conf_key_ring=$(THIS_BASE)/clusterapi/ceph/ceph.client.admin.keyring'
+ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_controlplane_count=3 capi_worker_count=3'
+
+# Cloud config
+ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_capo_openstack_cloud_config=$(THIS_BASE)/clouds-clusterapi.yaml'
+ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_capo_openstack_cloud=skatechops'
+
 ```
 
-Note that the default OS_CLOUD used for Velero backups, and any other OpenStack integrations is 'skatechops'.  This must exist in the `~/.config/openstack/clouds.yaml` file for the current shell user executing Ansible.
-See also Ansible variables:
-
-* `capi_openstack_cloud`
-* `capi_cloud` and `capi_cloud_config`
-* `velero_cloud` and `velero_cloud_config`
-
-And the `kustomize` template references for OpenStack - eg:
-```
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha5
-kind: OpenStackCluster
-metadata:
-  name:  ${CLUSTER_NAME}
-spec:
-  cloudName: skatechops
-...
-```
-
-Build the host:
-```
-# define the datacentre/<dc>/<environment>/<service> and
-#  datacentre/<dc>/<environment>/orchestration/<service>
-$ make orch init DATACENTRE=stfc-techops ENVIRONMENT=production SERVICE=clusterapi
-$ make orch plan DATACENTRE=stfc-techops ENVIRONMENT=production SERVICE=clusterapi
-$ make orch apply DATACENTRE=stfc-techops ENVIRONMENT=production SERVICE=clusterapi
-$ make orch generate-inventory DATACENTRE=stfc-techops ENVIRONMENT=production SERVICE=clusterapi
-# mv the installation/inventory.yml file to installation/clusterapi.yml
-```
-
-Deploy Minikube and then install clusterapi and velero backup:
-```
-$ make playbooks clusterapi clusterapi PLAYBOOKS_HOSTS=management-cluster
-```
-
-
-### OpenStack - Create VM Image
-
-
-### Using the OpeStack Infrastructure Provider
+### First - Create VM Image
 
 Make sure the appropriate OS image has been generated for the Kubernetes version being deployed.  This can be generated with:
 ```
 $ make playbooks clusterapi clusterapi-imagebuilder PLAYBOOKS_HOSTS=management-cluster
 ```
+Note: see [imagebuilder/defaults/main.yml](https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections/-/blob/main/ansible_collections/ska_collections/clusterapi/roles/imagebuilder/defaults/main.yml) for the image building configuration options.
 
-Generate and apply the manifests using capo:
+### Create management cluster
+
+Establish a single node management cluster based on Minikube:
+
+Deploy the host, generate the inventory and then provision the management cluster:
 ```
-$ make playbooks clusterapi clusterapi-createworkload PLAYBOOKS_HOSTS=management-cluster \
-  CAPI_CLUSTER_TYPE=capo CAPI_CLUSTER=test-capo CAPI_APPLY=true
+make orch apply PLAYBOOKS_HOSTS=management-cluster TF_AUTO_APPROVE=true
+make orch generate-inventory PLAYBOOKS_HOSTS=management-cluster
+make playbooks clusterapi clusterapi-build-management-server
+```
+
+This will have initialised a VM using Terraform, generated the required inventory, and then:
+* basic provisioning of host level tooling ready for Minikube
+* Minikube and Kubernetes command line tools
+* Built a Minikube single node cluster
+* Installed clusterapi tools, initialised OpenStack Infrastructure Provider and retrieved the CAPO manifest template
+
+Build a workload cluster, and perform post deployment customisations:
+
+```
+make playbooks clusterapi clusterapi-createworkload CAPI_APPLY=true PLAYBOOKS_HOSTS=clusterapi
+make playbooks k8s k8s-get-kubeconfig PLAYBOOKS_HOSTS=clusterapi
+make playbooks k8s k8s-post-deployment
+make playbooks clusterapi clusterapi-workload-inventory
+
+```
+
+This will have:
+* generated the workload cluster manifest and applied it to the management cluster
+* waited for the cluster to have completed deployment and become viable
+* retieved the `KUBECONFIG`
+* generated the Ansible inventory equivalent to the current workload cluster state
+
+The last major step is to apply the post deployment customisations.  These are sourced from the `ska_collections.k8s` collection:
+
+```
+make playbooks k8s k8s-post-deployment
+
 ```
 
 # Testing
 
 ## Tested with Ansible
 
-Tested with the current Ansible 6.4.x releases.
+Tested with the current Ansible 7.2.x releases.
 
 ## Included content
 
@@ -124,7 +160,7 @@ collections:
 - name: ska_collections.clusterapi
 ```
 
-Carefully review the default vars for each role before use: [eg: ./clusterctl/defaults/main.yml](./clusterctl/defaults/main.yml).
+Carefully review the default vars for each role before use: [eg: ./clusterapi/defaults/main.yml](./roles/clusterapi/defaults/main.yml).
 Also see the [playbooks](./playbooks/) for usuage examples.
 
 

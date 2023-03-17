@@ -32,7 +32,7 @@ Each role encompasses a individual component/service/integration to be deployed 
 
 Before using the collection, you need to install the collection with the `ansible-galaxy` CLI:
 
-    ansible-galaxy collection install ska_collections.docker_base
+    ansible-galaxy collection install ska_collections.k8s
 
 You can also include it in a `requirements.yml` file and install it via ansible-galaxy collection install -r requirements.yml` using the format:
 
@@ -43,7 +43,7 @@ collections:
 
 ## Usage
 
-`Make` targets are available for each role/playbook combination in [k8s.mk](..//../../../resources/jobs/k8s.mk).
+`Make` targets are available for each role/playbook combination in [k8s.mk](../../../resources/jobs/k8s.mk).
 
 Installation playbooks for each component can be found in the [playbooks/](./playbooks) folder in the following files:
 
