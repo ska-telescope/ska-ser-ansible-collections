@@ -267,6 +267,10 @@ jupyterhub:
         volumeNameTemplate: vol-{userid}-{servername}
       capacity: 2Gi
       homeMountPath: /home/jovyan/data
+    # Explicitly enable egress traffic to Kubernetes services of type ClusterIP
+    networkPolicy:
+      egressAllowRules:
+        privateIPs: true
 
   prePuller:
     hook:
