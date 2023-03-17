@@ -1,4 +1,4 @@
-- name: Test metrics server
+- name: Test metrics service
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
