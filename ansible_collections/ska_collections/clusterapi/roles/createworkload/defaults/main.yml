@@ -26,7 +26,7 @@ capi_calico_ipv4pool_ipip: Never
 capi_helm_version: v3.11.2
 
 capi_capo_openstack_failure_domain: ceph
-capi_capo_openstack_image_name: "ubuntu-2004-kube-{{ capi_k8s_version }}"
+capi_capo_openstack_image_name: "ubuntu-2204-kube-{{ capi_k8s_version }}"
 capi_capo_openstack_instance_create_timeout: 15
 capi_capo_controlplane_machine_flavour: l3.micro
 capi_capo_openstack_dns_servers: 192.168.99.194

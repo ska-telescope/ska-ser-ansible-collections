@@ -241,6 +241,7 @@ jupyterhub:
         ephemeral-storage: 1Gi
 
   singleuser:
+
     # start notebook server with lab ui as default
     # *if available*
     cmd:
@@ -276,6 +277,12 @@ jupyterhub:
         volumeNameTemplate: vol-{userid}-{servername}
       capacity: 2Gi
       homeMountPath: /home/jovyan/data
+
+  # Explicitly enable egress traffic to Kubernetes services of type ClusterIP
+  # required to make it possible to talk to Tango
+    networkPolicy:
+      egressAllowRules:
+        privateIPs: true
 
   prePuller:
     hook:
