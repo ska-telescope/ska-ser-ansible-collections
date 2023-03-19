@@ -48,9 +48,9 @@
     force: true
     state: present
 
-- name: Set the host grouping
-  ansible.builtin.set_fact:
-    host_grouping: "{% if inventory_hostname in groups['kubernetes-controlplane'] %}controlplane{% else %}worker{% endif %}"
+# - name: Set the host grouping
+#   ansible.builtin.set_fact:
+#     host_grouping: "{% if inventory_hostname in groups['kubernetes-controlplane'] %}controlplane{% else %}worker{% endif %}"
 
 - name: Check if firewalld service exists
   ansible.builtin.stat:
