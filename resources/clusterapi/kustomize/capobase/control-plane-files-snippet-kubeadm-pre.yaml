@@ -25,6 +25,8 @@
 
       /usr/src/ska-ser-ansible-collections/run-play.sh docker.yml -vv
 
+      /usr/src/ska-ser-ansible-collections/run-play.sh k8s-setup.yml -vv
+
       /usr/src/ska-ser-ansible-collections/run-play.sh install-tools.yml --tags helm -vv
 
       echo "preKubeadmCommands: end $(date)"
