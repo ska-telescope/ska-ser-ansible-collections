@@ -12,9 +12,9 @@
   ska_collections.clusterapi.wait_for_cluster:
     name: "{{ capi_cluster }}"
     kubectl_namespace: "{{ capi_kube_namespace }}"
-    initpause: 30
+    initpause: 180
     wait: 30
-    retries: 30
+    retries: 50
     kubectl_kubeconfig: "/home/ubuntu/.kube/config"
 
 - name: Save cluster kubeconfig credentials # noqa no-changed-when risky-shell-pipe
