@@ -35,6 +35,6 @@ capi_capo_openstack_ssh_key_name: ska-techops
 capi_capo_openstack_external_network_id: 5283f642-8bd8-48b6-8608-fa3006ff4539
 capi_capo_os_network_name: SKA-TechOps-ClusterAPI1
 capi_capo_os_subnet_name: SKA-TechOps-ClusterAPI-Net1
-capi_capo_run_kuebelet_install: false
+capi_capo_run_kubelet_install: false
 
 capi_cluster_extra_vars: {}

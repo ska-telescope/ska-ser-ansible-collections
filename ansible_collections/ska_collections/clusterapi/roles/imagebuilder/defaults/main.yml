@@ -19,3 +19,4 @@ capi_ib_kubernetes_version: 1.25.7
 capi_ib_kubernetes_series: 1.25
 capi_ib_ubuntu_version: 2004
 capi_ib_os_image_name: "ubuntu-{{ capi_ib_ubuntu_version }}-kube-v{{ capi_ib_kubernetes_version }}"
+capi_ib_checkout_repo: true

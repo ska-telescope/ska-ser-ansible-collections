@@ -58,6 +58,7 @@
     single_branch: true
     version: "{{ capi_ib_branch }}"
   become: true
+  when: capi_ib_checkout_repo
 
 - name: Install image-builder deps-qemu
   community.general.make:
