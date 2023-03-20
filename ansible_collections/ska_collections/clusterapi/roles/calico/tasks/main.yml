@@ -30,7 +30,7 @@
         src: "/tmp/calico.yaml"
 
 - name: Set Calico config
-  ska_collections.k8s.kubectl_set_env:
+  ska_collections.clusterapi.kubectl_set_env:
     name: "daemonset/calico-node"
     kubectl_namespace: "kube-system"
     envvars:

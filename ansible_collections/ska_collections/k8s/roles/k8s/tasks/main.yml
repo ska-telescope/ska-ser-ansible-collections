@@ -6,18 +6,6 @@
     regexp: '.novalocal'
     replace: ""
 
-- name: Delete hostname set and update from cloud-init
-  ansible.builtin.lineinfile:
-    dest: /etc/cloud/cloud.cfg
-    regexp: "hostname"
-    state: absent
-
-- name: Remove cloud-init - Ubuntu
-  ansible.builtin.apt:
-    name: 'cloud-init'
-    state: absent
-  when: ansible_distribution == 'Ubuntu'
-
 - name: Ensure that the apt cache is updated
   ansible.builtin.apt:
     update_cache: true
@@ -47,10 +35,6 @@
     name: 'ceph-common'
     force: true
     state: present
-
-- name: Set the host grouping
-  ansible.builtin.set_fact:
-    host_grouping: "{% if inventory_hostname in groups['kubernetes-controlplane'] %}controlplane{% else %}worker{% endif %}"
 
 - name: Check if firewalld service exists
   ansible.builtin.stat:

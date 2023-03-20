@@ -51,13 +51,14 @@
     state: present
   become: true
 
-# - name: Clone image-builder
-#   ansible.builtin.git:
-#     repo: "{{ capi_ib_git_repo }}"
-#     dest: "{{ capi_ib_repo_dest }}"
-#     single_branch: true
-#     version: "{{ capi_ib_branch }}"
-#   become: true
+- name: Clone image-builder
+  ansible.builtin.git:
+    repo: "{{ capi_ib_git_repo }}"
+    dest: "{{ capi_ib_repo_dest }}"
+    single_branch: true
+    version: "{{ capi_ib_branch }}"
+  become: true
+  when: capi_ib_checkout_repo
 
 - name: Install image-builder deps-qemu
   community.general.make:
@@ -89,7 +90,7 @@
 - name: Build capo image
   community.general.make:
     chdir: "{{ capi_ib_repo_dest }}/images/capi"
-    target: build-qemu-ubuntu-2204
+    target: "build-qemu-ubuntu-{{ capi_ib_ubuntu_version }}"
     params:
       PACKER_VAR_FILES: custom.json
       ANSIBLE_SSH_ARGS: " -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedKeyTypes=+ssh-rsa"
