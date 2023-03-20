@@ -107,6 +107,7 @@
       HELM_VERSION: "{{ capi_helm_version }}"
       CONTROL_PLANE_COUNT: "{{ capi_controlplane_count }}"
       WORKER_COUNT: "{{ capi_worker_count }}"
+      RUN_KUBELET_INSTALL: "{% if capi_capo_run_kuebelet_install %}yes{% else %}no{% endif %}"
 
 - name: Generate Cluster Instance
   ansible.builtin.shell: |
