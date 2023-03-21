@@ -20,72 +20,20 @@
     - overlay
     - br_netfilter
 
-- name: Set net.bridge.bridge-nf-call-iptables to 1
-  ansible.posix.sysctl:
-    name: net.bridge.bridge-nf-call-iptables
-    value: 1
-    state: present
-    ignoreerrors: true
-
-- name: Set net.bridge.bridge-nf-call-ip6tables to 1
-  ansible.posix.sysctl:
-    name: net.bridge.bridge-nf-call-ip6tables
-    value: 1
-    state: present
-    ignoreerrors: true
-
-- name: Set net.bridge.bridge-nf-call-arptables to 1
-  ansible.posix.sysctl:
-    name: net.bridge.bridge-nf-call-arptables
-    value: 1
-    state: present
-    ignoreerrors: true
-
-- name: Set net.ipv4.ip_forward to 1
-  ansible.posix.sysctl:
-    name: net.ipv4.ip_forward
-    value: 1
-    state: present
-    ignoreerrors: true
-
-- name: Set user.max_inotify_instances to 1048576
-  ansible.posix.sysctl:
-    name: user.max_inotify_instances
-    value: 1048576
-    state: present
-    ignoreerrors: true
-
-- name: Set fs.inotify.max_user_watches to 1048576
-  ansible.posix.sysctl:
-    name: fs.inotify.max_user_watches
-    value: 1048576
-    state: present
-    ignoreerrors: true
-
-- name: Set net.netfilter.nf_conntrack_max to 1000000
-  ansible.posix.sysctl:
-    name: net.netfilter.nf_conntrack_max
-    value: 1000000
-    state: present
-    ignoreerrors: true
-
 - name: Add containerd cri sysctl vars
-  ansible.builtin.lineinfile:
-    line: "{{ item }}"
-    dest: /etc/sysctl.d/99-kubernetes-cri.conf
-    create: true
-    owner: root
-    group: root
-    mode: 0644
-  with_items:
-    - "net.bridge.bridge-nf-call-iptables  = 1"
-    - "net.ipv4.ip_forward                 = 1"
-    - "net.bridge.bridge-nf-call-ip6tables = 1"
-    - "net.bridge.bridge-nf-call-arptables = 1"
-    - "user.max_inotify_instances          = 1048576"
-    - "fs.inotify.max_user_watches         = 1048576"
-    - "net.netfilter.nf_conntrack_max      = 1000000"
-    - "net.ipv4.ip_local_port_range        = 40000 65535"
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/99-kubernetes-cri.conf
+  with_dict:
+    net.bridge.bridge-nf-call-iptables: "1"
+    net.ipv4.ip_forward: "1"
+    net.bridge.bridge-nf-call-ip6tables: "1"
+    net.bridge.bridge-nf-call-arptables: "1"
+    user.max_inotify_instances: "1048576"
+    fs.inotify.max_user_watches: "1048576"
+    net.netfilter.nf_conntrack_max: "1000000"
+    net.ipv4.ip_local_port_range: "40000 65535"
 
 - name: Debian containerd install
   when: ansible_os_family == "Debian"
