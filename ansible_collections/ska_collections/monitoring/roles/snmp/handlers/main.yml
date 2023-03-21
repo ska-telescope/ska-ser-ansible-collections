@@ -1,16 +1,16 @@
 ---
-- name: snmpd-service-restart
+- name: Restart-snmpd-service
   ansible.builtin.service:
     name: "snmpd"
     enabled: true
     state: restarted
 
-- name: snmptrapd-service-restart
+- name: Restart-snmptrapd-service
   ansible.builtin.service:
     name: "snmptrapd"
     enabled: true
     state: restarted
 
-- name: systemd-daemon-reload
+- name: Reload-systemd-daemon
   ansible.builtin.systemd:
     daemon_reload: yes

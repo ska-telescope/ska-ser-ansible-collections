@@ -8,11 +8,11 @@
     path: "{{ snmp_config_dir }}"
 
 - name: Create a symlink to a folder
-  file:
+  ansible.builtin.file:
     src: "{{ snmp_config_dir }}"
     dest: "{{ snmptt_config_dir }}"
     state: link
-    force: yes
+    force: true
 
 - name: Update apt cache
   ansible.builtin.apt:
@@ -114,5 +114,5 @@
     group: root
     mode: 0644
   notify:
-    - systemd-daemon-reload
-    - snmpd-service-restart
+    - Reload-systemd-daemon
+    - Restart-snmpd-service
