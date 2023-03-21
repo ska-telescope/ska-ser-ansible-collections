@@ -65,22 +65,22 @@
     dest: "/usr/share/snmp/mibs/RielloUPS.mib"
     state: absent
 
-- name: Remove {{ snmp_config_dir }}/snmpd.conf file
+- name: Remove snmpd.conf file from {{ snmp_config_dir }}
   ansible.builtin.file:
     dest: "{{ snmp_config_dir }}/snmpd.conf"
     state: absent
 
-- name: Remove {{ snmp_config_dir }}/snmptrapd.conf file
+- name: Remove snmptrapd.conf file from {{ snmp_config_dir }}
   ansible.builtin.file:
     dest: "{{ snmp_config_dir }}/snmptrapd.conf"
     state: absent
 
-- name: Remove {{ snmp_config_dir }}/snmptt.conf file
+- name: Remove snmptt.conf file from {{ snmp_config_dir }}
   ansible.builtin.file:
     dest: "{{ snmp_config_dir }}/snmptt.conf"
     state: absent
 
-- name: Remove {{ snmp_config_dir }}/snmptt.ini file
+- name: Remove snmptt.ini file from {{ snmp_config_dir }}
   ansible.builtin.file:
     dest: "{{ snmp_config_dir }}/snmptt.ini"
     state: absent
