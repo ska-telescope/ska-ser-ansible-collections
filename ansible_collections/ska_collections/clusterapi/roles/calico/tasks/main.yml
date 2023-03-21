@@ -39,7 +39,7 @@
       IP_AUTODETECTION_METHOD: "{{ calico_ip_autodetection_method }}"
 
 - name: Check calico-node Daemonset is running
-  ska_collections.k8s.wait_for_daemonset:
+  ska_collections.clusterapi.wait_for_daemonset:
     name: calico-node
     kubectl_namespace: kube-system
     initpause: 10
