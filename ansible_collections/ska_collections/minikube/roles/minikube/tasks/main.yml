@@ -39,9 +39,9 @@
       ansible.builtin.command: |
         {{ minikube_exe_dir }}/minikube \
         start \
-        --driver=docker \
-        --container-runtime=docker \
-        --kubernetes-version={{ kubernetes_version }} \
+        --driver={{ minikube_driver }} \
+        --container-runtime={{ minikube_runtime }} \
+        --kubernetes-version={{ minikube_kubernetes_version }} \
         --cpus={{ minikube_cpus }} \
         --memory={{ minikube_memory }} \
         --apiserver-port=6443 \
@@ -49,12 +49,13 @@
         --apiserver-names={{ ansible_fqdn }} \
         --apiserver-ips={{ ansible_default_ipv4.address }} \
         --nodes=1 \
-        --addons=logviewer \
-        --addons=metrics-server \
-        --addons=ingress \
-        --addons=metallb \
+        {% for addon in minikube_addons %}
+        --addons={{ addon }}
+        {% endfor %}
+        {% if minikube_mount %}
         --mount \
         --mount-string='{{ minikube_mount_from }}:{{ minikube_mount_to }}'
+        {% endif %}
 
       changed_when: false
       register: minikube_exec_check
@@ -87,6 +88,25 @@
       kubernetes.core.k8s:
         state: present
         template: 'metallb.yaml.j2'
+      when: "'metallb' in minikube_addons"
+
+- name: Add haproxy
+  # Only add the proxy if we are not using the 'none' driver
+  when: "minikube_driver != 'none'"
+  tags:
+    - build
+  block:
+
+    - name: Get minikube IP
+      ansible.builtin.command: "{{ minikube_exe_dir }}/minikube ip"
+      changed_when: false
+      register: minikube_ip_check
+
+    - name: Extract IP
+      ansible.builtin.set_fact:
+        minikube_ip: "{{ minikube_ip_check.stdout | regex_search(regexp, '\\1') | first }}"
+      vars:
+        regexp: '([0-9\.]+)'
 
     - name: Make sure haproxy directory exists
       ansible.builtin.file:
@@ -106,11 +126,13 @@
       community.docker.docker_image:
         name: "{{ minikube_haproxy_image }}"
         source: pull
+      become: true
 
     - name: "Stop container {{ minikube_haproxy_name }}"
       community.docker.docker_container:
         name: "{{ minikube_haproxy_name }}"
         state: absent
+      become: true
 
     - name: Start haproxy container
       community.docker.docker_container:
@@ -131,6 +153,7 @@
           - "6443:6443"
         volumes:
           - "/etc/haproxy/haproxy-minikube.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro"
+      become: true
 
 
 - name: Destroy Minikube Instance
@@ -144,6 +167,7 @@
       community.docker.docker_container:
         name: "{{ minikube_haproxy_name }}"
         state: absent
+      become: true
 
     - name: Teardown Minikube
       ansible.builtin.shell: |

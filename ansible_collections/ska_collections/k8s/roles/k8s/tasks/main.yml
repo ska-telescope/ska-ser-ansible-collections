@@ -6,18 +6,6 @@
     regexp: '.novalocal'
     replace: ""
 
-- name: Delete hostname set and update from cloud-init
-  ansible.builtin.lineinfile:
-    dest: /etc/cloud/cloud.cfg
-    regexp: "hostname"
-    state: absent
-
-- name: Remove cloud-init - Ubuntu
-  ansible.builtin.apt:
-    name: 'cloud-init'
-    state: absent
-  when: ansible_distribution == 'Ubuntu'
-
 - name: Ensure that the apt cache is updated
   ansible.builtin.apt:
     update_cache: true
@@ -25,7 +13,7 @@
   retries: 5
   until: apt_res is success
 
-- name: Install BYOH dependent packages
+- name: Install dependent packages
   ansible.builtin.apt:
     name: ['conntrack', 'socat', 'ebtables', 'ethtool', 'cgroupfs-mount', 'cgroup-tools']
     force: true
@@ -35,22 +23,18 @@
   until: apt_res is success
 
 # Only attempt this for x86, as it can break some rpi4
-- name: Install BYOH CEPH dependent packages
+- name: Install CEPH dependent packages
   ansible.builtin.apt:
     name: 'linux-image-extra-virtual'
     force: true
     state: present
   when: ansible_architecture == 'x86_64'
 
-- name: Install BYOH CEPH dependent packages
+- name: Install CEPH dependent packages
   ansible.builtin.apt:
     name: 'ceph-common'
     force: true
     state: present
-
-- name: Set the host grouping
-  ansible.builtin.set_fact:
-    host_grouping: "{% if inventory_hostname in groups['kubernetes-controlplane'] %}controlplane{% else %}worker{% endif %}"
 
 - name: Check if firewalld service exists
   ansible.builtin.stat:
@@ -117,7 +101,7 @@
 
 - name: Install kubeadm and friends
   ansible.builtin.apt:
-    name: ["kubectl={{ kube_version }}", "kubeadm={{ kube_version }}", "kubelet={{ kube_version }}"]
+    name: ["kubectl={{ k8s_kube_version }}", "kubeadm={{ k8s_kube_version }}", "kubelet={{ k8s_kube_version }}"]
     force: true
     state: present
   notify:

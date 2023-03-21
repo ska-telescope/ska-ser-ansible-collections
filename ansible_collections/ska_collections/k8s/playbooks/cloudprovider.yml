@@ -1,0 +1,20 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Apply the clusterapi cloudprovider config role to nodes
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+    k8s_kubeconfig: "/etc/clusterapi/{{ capi_cluster }}-kubeconfig"
+
+  pre_tasks:
+    - name: Check k8s_kubeconfig
+      ansible.builtin.debug:
+        var: k8s_kubeconfig
+
+  roles:
+    - ska_collections.k8s.cloudprovider
+  environment:
+    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
+
+  tags:
+    - cloudprovider

@@ -24,7 +24,7 @@ class FilterModule(object):
         # NEW  FORMAT !!!
         # mon_host = [v2:10.165.4.17:3300/0,v1:10.165.4.17:6789/0] [v2:10.165.4.18:3300/0,v1:10.165.4.18:6789/0] [v2:10.165.4.19:3300/0,v1:10.165.4.19:6789/0] # noqa: 501
         # split and return nested array of dicts of ep version of dicts of the endpoints  # noqa: E501
-        # "capo_ceph_conf_global_mon_host": [
+        # "capi_capo_ceph_conf_global_mon_host": [
         #     {
         #         "v1": {
         #             "addr": "192.168.99.48",
@@ -43,9 +43,12 @@ class FilterModule(object):
         # ]
         # tel black to ignore this as it does not wrap correctly
         # fmt: off
+        spliter = "] "
+        if "],[" in mons:
+            spliter = "],"
         mons = [
             x.replace("[", "").replace("]", "").replace("/0", "").split(",")
-            for x in mons.split("] ")
+            for x in mons.split(spliter)
         ]
         # fmt: on
         monitors = []

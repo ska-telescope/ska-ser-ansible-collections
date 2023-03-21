@@ -20,3 +20,5 @@ containerd_deb_dependencies:
   - software-properties-common
   - gnupg-agent
   - python3-pip
+
+capi_containerd_version: 1.6.6-1

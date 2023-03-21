@@ -1,0 +1,2 @@
+---
+k8s_metallb_openstack_network_cidr: "10.200.0.0/16"

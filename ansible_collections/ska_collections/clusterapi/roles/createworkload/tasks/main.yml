@@ -5,30 +5,20 @@
     file: "{{ item }}"
   with_items:
     - ../clusterapi/defaults/main.yml
-    - ../configcapo/defaults/main.yml
   tags: [always]
-
-- name: Include the OS Config
-  ansible.builtin.include_tasks: "{{ role_path }}/../configcapo/tasks/os_config.yml"
-
-- name: Include the Ceph Config
-  ansible.builtin.include_tasks: ceph_config.yml
 
 # https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/openstack-cloud-controller-manager/using-openstack-cloud-controller-manager.md#global
 
-- name: Load Clusterapi cloud config
-  ansible.builtin.slurp:
-    src: "{{ clusterapi_config_dir }}/cloud-provider.ini"
-  register: slurped_cloud_config
-  become: true
+- name: Include the OS Config
+  ansible.builtin.include_tasks: os_config.yml
 
 - name: Encode Clusterapi cloud config and store as fact
   ansible.builtin.set_fact:
-    base64_cloud_config: "{{ slurped_cloud_config.content }}"
+    capi_base64_cloud_config: "{{ slurped_cloud_config.content }}"
 
-- name: Show base64_cloud_config
+- name: Show capi_base64_cloud_config
   ansible.builtin.debug:
-    var: base64_cloud_config
+    var: capi_base64_cloud_config
 
 - name: Check if kubectl is installed locally
   block:
@@ -65,7 +55,7 @@
 - name: Output cluster template file to server  # noqa: template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ slurped_cluster_template.content | b64decode }}"
-    dest: "{{ clusterapi_config_dir }}/{{ capi_cluster }}-cluster-template.yaml"
+    dest: "{{ capi_config_dir }}/{{ capi_cluster }}-cluster-template.yaml"
     mode: 0644
   become: true
 
@@ -80,60 +70,36 @@
   ansible.builtin.tempfile:
     state: directory
     suffix: capo-template
-  register: capo_template_dir
+  register: capi_capo_template_dir
 
 
 # capo-cluster-template: kustomize/base/cluster-template.orig.yaml capo-vars ## generate the cluster manifest template
 # 	kubectl kustomize ./kustomize/overlay/$(KUSTOMIZE_OVERLAY)/ > $(THIS_BASE)/$(CAPO_CLUSTER)-template.yaml
 
-# capo-cluster-manifest: rook-vars capo-cluster-template  ## configure and create capo cluster manifest
-# 	@# wget https://github.com/vmware-tanzu/cluster-api-provider-bringyourownhost/releases/download/v0.2.0/cluster-template.yaml
-# 	@# --infrastructure byoh
-
 - name: Setup environment
   ansible.builtin.set_fact:
     capi_cluster_environment:
       COLLECTIONS_BRANCH: "{{ capi_collections_branch }}"
+      OCI_MIRROR_IP: "{{ capi_oci_mirror_ip }}"
       KUBE_NAMESPACE: "{{ capi_kube_namespace }}"
-      ROOK_NAMESPACE: "{{ capi_ceph_namespace }}"
-      OPENSTACK_FAILURE_DOMAIN: "{{ capo_openstack_failure_domain }}"
-      OPENSTACK_IMAGE_NAME: "{{ capo_openstack_image_name }}"
-      OPENSTACK_CLOUD: "{{ capo_openstack_cloud }}"
-      OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR: "{{ capo_controlplane_machine_flavour }}"
-      OPENSTACK_DNS_NAMESERVERS: "{{ capo_openstack_dns_servers }}"
-      OPENSTACK_NODE_MACHINE_FLAVOR: "{{ capo_node_machine_flavour }}"
-      OPENSTACK_SSH_KEY_NAME: "{{ capo_openstack_ssh_key_name }}"
-      CAPO_CLOUD: "{{ capo_openstack_cloud }}"
-      OPENSTACK_EXTERNAL_NETWORK_ID: "{{ capo_openstack_external_network_id }}"
-      OPENSTACK_CLOUD_YAML_B64: "{{ base64_capo_ostack_cloud_yaml }}"
-      OPENSTACK_CLOUD_CACERT_B64: "{{ openstack_cloud_cacert_b64 }}"
-      OPENSTACK_CLOUD_PROVIDER_CONF_B64: "{{ base64_cloud_config }}"
-      CLUSTER_API_OPENSTACK_INSTANCE_CREATE_TIMEOUT: "{{ capo_openstack_instance_create_timeout }}"
-      NAMESPACE: "{{ capi_ceph_namespace }}"
-      ROOK_EXTERNAL_FSID: "{{ capo_ceph_conf_global_fsid }}"
-      ROOK_EXTERNAL_ADMIN_SECRET: "{{ capo_ceph_key }}"
-      ROOK_EXTERNAL_ADMIN_KEY: "{{ capo_ceph_key }}"
-      ROOK_EXTERNAL_CEPH_MON_DATA: "{{ capo_ceph_conf_global_mons_data }}"
-      ROOK_EXTERNAL_CEPH_MONITORS: "{{ capo_ceph_conf_global_monitors }}"
-      RBD_POOL_NAME: "{{ capi_ceph_rbd_pool_name }}"
-      RGW_POOL_PREFIX: "{{ capi_ceph_rgw_pool_prefix }}"
-      CSI_RBD_NODE_SECRET_NAME: "{{ capi_ceph_csi_rbd_node_secret_name }}"
-      CSI_RBD_PROVISIONER_SECRET_NAME: "{{ capi_ceph_csi_rbd_provisioner_secret_name }}"
-      CSI_CEPHFS_NODE_SECRET_NAME: "{{ capi_ceph_csi_cephfs_node_secret_name }}"
-      CSI_CEPHFS_PROVISIONER_SECRET_NAME: "{{ capi_ceph_csi_cephfs_provisioner_secret_name }}"
-      CSI_RBD_NODE_SECRET: "{{ capo_ceph_key }}"
-      CSI_RBD_PROVISIONER_SECRET: "{{ capo_ceph_key }}"
-      CSI_CEPHFS_NODE_SECRET: "{{ capo_ceph_key }}"
-      CSI_CEPHFS_PROVISIONER_SECRET: "{{ capo_ceph_key }}"
+      OPENSTACK_FAILURE_DOMAIN: "{{ capi_capo_openstack_failure_domain }}"
+      OPENSTACK_IMAGE_NAME: "{{ capi_capo_openstack_image_name }}"
+      OPENSTACK_CLOUD: "{{ capi_capo_openstack_cloud }}"
+      OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR: "{{ capi_capo_controlplane_machine_flavour }}"
+      OPENSTACK_DNS_NAMESERVERS: "{{ capi_capo_openstack_dns_servers }}"
+      OPENSTACK_NODE_MACHINE_FLAVOR: "{{ capi_capo_node_machine_flavour }}"
+      OPENSTACK_SSH_KEY_NAME: "{{ capi_capo_openstack_ssh_key_name }}"
+      CAPO_CLOUD: "{{ capi_capo_openstack_cloud }}"
+      OPENSTACK_EXTERNAL_NETWORK_ID: "{{ capi_capo_openstack_external_network_id }}"
+      OPENSTACK_CLOUD_YAML_B64: "{{ capi_base64_capo_ostack_cloud_yaml }}"
+      OPENSTACK_CLOUD_CACERT_B64: "{{ capi_openstack_cloud_cacert_b64 }}"
+      OPENSTACK_CLOUD_PROVIDER_CONF_B64: "{{ capi_base64_cloud_config }}"
+      CLUSTER_API_OPENSTACK_INSTANCE_CREATE_TIMEOUT: "{{ capi_capo_openstack_instance_create_timeout }}"
       BUNDLE_LOOKUP_TAG: "{{ capi_k8s_version }}"
       K8S_VERSION: "{{ capi_k8s_version }}"
       CALICO_VERSION: "{{ capi_calico_version }}"
-      NGINX_VERSION: "{{ capi_nginx_version }}"
-      METALLB_VERSION: "{{ capi_metallb_version }}"
-      METALLB_NAMESPACE: "{{ capi_metallb_namespace }}"
-      ROOK_VERSION: "{{ capi_rook_version }}"
-      NETWORK_NAME: "{{ capo_os_network_name }}"
-      SUBNET_NAME: "{{ capo_os_subnet_name }}"
+      NETWORK_NAME: "{{ capi_capo_os_network_name }}"
+      SUBNET_NAME: "{{ capi_capo_os_subnet_name }}"
       CIDR_BLOCK: "{{ capi_cidr_block }}"
       CALICO_IPV4POOL_CIDR: "{{ capi_cidr_block }}"
       IP_AUTODETECTION_METHOD: "{{ capi_calico_ip_autodetection_method }}"
@@ -141,6 +107,7 @@
       HELM_VERSION: "{{ capi_helm_version }}"
       CONTROL_PLANE_COUNT: "{{ capi_controlplane_count }}"
       WORKER_COUNT: "{{ capi_worker_count }}"
+      RUN_KUBELET_INSTALL: "{% if capi_capo_run_kubelet_install %}yes{% else %}no{% endif %}"
 
 - name: Generate Cluster Instance
   ansible.builtin.shell: |
@@ -149,18 +116,18 @@
       --kubernetes-version {{ capi_k8s_version }} \
       --control-plane-machine-count {{ capi_controlplane_count }} \
       --worker-machine-count {{ capi_worker_count }} \
-      --from {{ clusterapi_config_dir }}/{{ capi_cluster }}-cluster-template.yaml > {{ capo_template_dir.path }}/{{ capi_cluster }}.yaml;
+      --from {{ capi_config_dir }}/{{ capi_cluster }}-cluster-template.yaml > {{ capi_capo_template_dir.path }}/{{ capi_cluster }}.yaml;
   environment: "{{ capi_cluster_environment | combine(capi_cluster_extra_vars) }}"
   changed_when: false
-  register: capo_template_result
+  register: capi_capo_template_result
 
-- name: Show capo_template_result
+- name: Show capi_capo_template_result
   ansible.builtin.debug:
-    var: capo_template_result
+    var: capi_capo_template_result
 
 - name: Slurp CAPO Cluster instance manifest
   ansible.builtin.slurp:
-    src: "{{ capo_template_dir.path }}/{{ capi_cluster }}.yaml"
+    src: "{{ capi_capo_template_dir.path }}/{{ capi_cluster }}.yaml"
   register: slurped_cluster_instance_manifest
 
 - name: Unpack CAPO Cluster manifest
@@ -187,13 +154,13 @@
       kubernetes.core.k8s:
         state: present
         apply: true
-        src: "{{ capo_template_dir.path }}/{{ capi_cluster }}.yaml"
+        src: "{{ capi_capo_template_dir.path }}/{{ capi_cluster }}.yaml"
 
 - name: Remove the temp template directory
   ansible.builtin.file:
-    path: "{{ capo_template_dir.path }}"
+    path: "{{ capi_capo_template_dir.path }}"
     state: absent
-  when: capo_template_dir.path is defined
+  when: capi_capo_template_dir.path is defined
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers

@@ -1,0 +1,13 @@
+---
+debug: false
+
+k8s_velero_version: v1.9.2
+k8s_velero_exe_dir: /usr/local/bin
+k8s_velero_bucket: clusterapi
+k8s_velero_ostack_plugin_version: "lirt/velero-plugin-for-openstack:v0.3.0"
+k8s_velero_cloud: skatechops
+k8s_velero_cloud_config: ~/.config/openstack/clouds.yaml
+
+k8s_velero_schedule_name: every6h
+k8s_velero_schedule_time: "@every 6h"
+k8s_velero_schedule_ttl: "672h" # 30 days

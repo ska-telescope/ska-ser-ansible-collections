@@ -175,7 +175,7 @@ options:
 EXAMPLES = """
 # Set Environment Variables on the resource
 - name: Set Calico config
-  ska_collections.k8s.kubectl_set_env:
+  ska_collections.clusterpi.kubectl_set_env:
     name: "daemonset/calico-node"
     kubectl_namespace: "kube-system"
     envvars:

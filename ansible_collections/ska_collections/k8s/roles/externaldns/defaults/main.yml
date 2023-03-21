@@ -1,0 +1,6 @@
+---
+k8s_externaldns_coredns_chart_version: "1.19.0"
+k8s_externaldns_cluster_domain: cluster.local
+k8s_externaldns_namespace: extdns
+k8s_externaldns_coredns_tag: 1.9.1
+k8s_externaldns_autoscaler_tag: 1.8.5

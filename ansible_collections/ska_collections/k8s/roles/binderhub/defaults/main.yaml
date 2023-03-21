@@ -1,12 +1,12 @@
-binderhub_singleuser: false
-binderhub_namespace: binderhub
-# binderhub_helm_chart_version: "0.2.0-n966.h248f390"
-binderhub_helm_chart_version: "1.0.0-0.dev.git.3018.he00ec49"
-binderhub_image:
-binderhub_transport: https
-binderhub_callback_url: "{{ binderhub_transport }}://{{ k8s_external_dns_entry }}/{{ binderhub_namespace }}/oauth_callback"
-binderhub_oci_registry_host: artefact.skao.int
-binderhub_oci_registry_host_full_url: https://{{ binderhub_oci_registry_host }}
-binderhub_oci_registry_username: publisher
-jupyterhub_callback_url: "{{ binderhub_transport }}://{{ k8s_external_dns_entry }}/{{ binderhub_namespace }}/jupyterhub/hub/oauth_callback"
-jupyterhub_named_server_limit_per_user: 5
+k8s_binderhub_singleuser: false
+k8s_binderhub_namespace: binderhub
+# k8s_binderhub_helm_chart_version: "0.2.0-n966.h248f390"
+k8s_binderhub_helm_chart_version: "1.0.0-0.dev.git.3025.h276be90"
+k8s_binderhub_image:
+k8s_binderhub_transport: https
+k8s_binderhub_callback_url: "{{ k8s_binderhub_transport }}://{{ k8s_external_dns_entry }}/{{ k8s_binderhub_namespace }}/oauth_callback"
+k8s_binderhub_oci_registry_host: artefact.skao.int
+k8s_binderhub_oci_registry_host_full_url: https://{{ k8s_binderhub_oci_registry_host }}
+k8s_binderhub_oci_registry_username: publisher
+k8s_binderhub_jupyterhub_callback_url: "{{ k8s_binderhub_transport }}://{{ k8s_external_dns_entry }}/{{ k8s_binderhub_namespace }}/jupyterhub/hub/oauth_callback"
+k8s_binderhub_jupyterhub_named_server_limit_per_user: 5

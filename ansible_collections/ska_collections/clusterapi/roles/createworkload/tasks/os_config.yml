@@ -1,0 +1,66 @@
+---
+
+- name: Load cloud config
+  ansible.builtin.include_vars:
+    file: "{{ capi_capo_openstack_cloud_config }}"
+    name: capi_capo_ostack_cloud_yaml
+
+- name: Set selected cloud
+  ansible.builtin.set_fact:
+    capi_capo_selected_cloud: "{{ capi_capo_ostack_cloud_yaml['clouds'][capi_capo_openstack_cloud] }}"  # noqa: jinja[invalid]
+    capi_base64_capo_ostack_cloud_yaml: "{{ capi_capo_ostack_cloud_yaml | to_nice_yaml(indent=2) | b64encode }}"
+
+- name: Set selected cloud
+  ansible.builtin.set_fact:
+    capi_capo_auth_url: "{{ capi_capo_selected_cloud.auth.auth_url }}"
+    capi_capo_auth_type: "{{ capi_capo_selected_cloud.auth_type | default('') }}"
+    capi_capo_auth_username: "{{ capi_capo_selected_cloud.auth.username | default('') }}"
+    capi_capo_auth_password: "{{ capi_capo_selected_cloud.auth.password | default('') }}"
+    capi_capo_auth_project_id: "{{ capi_capo_selected_cloud.auth.project_id | default('') }}"
+    capi_capo_auth_project_name: "{{ capi_capo_selected_cloud.auth.project_name | default('') }}"
+    capi_capo_auth_user_domain_name: "{{ capi_capo_selected_cloud.auth.user_domain_name | default('') }}"
+    capi_capo_auth_application_credential_name: "{{ capi_capo_selected_cloud.auth.application_credential_name | default('') }}"
+    capi_capo_auth_application_credential_id: "{{ capi_capo_selected_cloud.auth.application_credential_id | default('') }}"
+    capi_capo_auth_application_credential_secret: "{{ capi_capo_selected_cloud.auth.application_credential_secret | default('') }}"
+    capi_capo_auth_domain_id: "{{ capi_capo_selected_cloud.auth.domain_id | default('') }}"
+    capi_capo_region_name: "{{ capi_capo_selected_cloud.region_name }}"
+    capi_capo_cacert: "{{ capi_capo_selected_cloud.cacert | default('\n') }}"
+    capi_openstack_cloud_cacert_b64: "{{ capi_capo_selected_cloud.cacert | default('\n') | b64encode }}"
+
+- name: Show capi_capo_selected_cloud
+  ansible.builtin.debug:
+    var: capi_capo_selected_cloud
+
+- name: Show capi_base64_capo_ostack_cloud_yaml
+  ansible.builtin.debug:
+    var: capi_base64_capo_ostack_cloud_yaml
+
+- name: Show capi_openstack_cloud_cacert_b64
+  ansible.builtin.debug:
+    var: capi_openstack_cloud_cacert_b64
+
+- name: Set clusterapi config dir
+  ansible.builtin.file:
+    path: "{{ capi_config_dir }}"
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: Clusterapi OS cloud config
+  ansible.builtin.template:
+    src: cloud-provider-conf.ini.j2
+    dest: "{{ capi_config_dir }}/cloud-provider.ini"
+    mode: "0600"
+  become: true
+
+- name: Load Clusterapi cloud config
+  ansible.builtin.slurp:
+    src: "{{ capi_config_dir }}/cloud-provider.ini"
+  register: slurped_cloud_config
+  become: true
+
+- name: Delete cloud config file
+  ansible.builtin.file:
+    path: "{{ capi_config_dir }}/cloud-provider.ini"
+    state: absent
+  become: true

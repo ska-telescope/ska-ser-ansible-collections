@@ -1,9 +1,0 @@
-#!/usr/bin/env ansible-playbook
----
-- name: Install Metallb
-  hosts: "{{ target_hosts }}"
-  vars:
-    target_hosts: localhost
-  become: true
-  roles:
-    - role: metallb

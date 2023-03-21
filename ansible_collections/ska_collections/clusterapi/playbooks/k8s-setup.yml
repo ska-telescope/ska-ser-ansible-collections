@@ -1,0 +1,8 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Apply the k8s.k8s config role to nodes
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  roles:
+    - ska_collections.k8s.k8s

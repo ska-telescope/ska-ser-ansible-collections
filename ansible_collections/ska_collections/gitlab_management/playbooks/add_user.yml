@@ -1,0 +1,12 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Add gitlab user
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: Add new gitlab user
+      ansible.builtin.import_role:
+        name: ska_collections.gitlab_management.user
+        tasks_from: add_user_to_skao_repos

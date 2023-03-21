@@ -1,8 +1,0 @@
----
-debug: false
-
-current_dir: .
-local_agent_file: "{{ current_dir }}/bin/byoh-hostagent-linux-arm64"
-remote_agent_file: /usr/local/bin/byoh-hostagent-linux-arm64
-local_kubeconfig_file: "{{ current_dir }}/management-cluster.conf"
-remote_kubeconfig_file: /etc/k8s-bootstrap-kubeconfig.conf

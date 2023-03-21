@@ -1,2 +1,0 @@
-metallb_chart_version: "2.6.11"
-metallb_address_pools: "10.200.10.1-10.200.253.254"
