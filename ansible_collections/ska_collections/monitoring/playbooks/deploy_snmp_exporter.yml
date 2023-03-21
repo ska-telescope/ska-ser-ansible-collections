@@ -8,5 +8,5 @@
   tasks:
     - name: Deploy snmp_exporter
       ansible.builtin.import_role:
-        name: snmp_exporter
+        name: snmp
         tasks_from: snmp_exporter

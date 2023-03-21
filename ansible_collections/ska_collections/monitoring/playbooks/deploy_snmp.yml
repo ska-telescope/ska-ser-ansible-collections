@@ -9,5 +9,5 @@
   tasks:
     - name: Destroy SNMP services
       ansible.builtin.import_role:
-        name: snmp_exporter
+        name: snmp
         tasks_from: snmp_services_install
