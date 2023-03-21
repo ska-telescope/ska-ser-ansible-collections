@@ -2,16 +2,12 @@
 ---
 
 - name: "Apply the k8s ping role to nodes"
-  hosts: "{{ target_hosts }}"
+  hosts: "{{ groups[target_hosts][0] }}"
   vars:
     target_hosts: localhost
     k8s_kubeconfig: "/etc/kubernetes/admin.conf"
 
   pre_tasks:
-    - name: Set facts for KUBECONFIG
-      ansible.builtin.set_fact:
-        "k8s_kubeconfig": "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf') | mandatory }}"
-
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:
         var: k8s_kubeconfig

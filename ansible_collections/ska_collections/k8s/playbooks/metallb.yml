@@ -8,17 +8,13 @@
     k8s_kubeconfig: "/etc/kubernetes/admin.conf"
 
   pre_tasks:
-    - name: Set facts for KUBECONFIG
-      ansible.builtin.set_fact:
-        "k8s_kubeconfig": "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf') | mandatory }}"
-
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:
         var: k8s_kubeconfig
 
   roles:
     - ska_collections.k8s.metallb
-    - ska_collections.k8s.externaldns
+    - ska_collections.metallb.externaldns
   environment:
     KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
 
