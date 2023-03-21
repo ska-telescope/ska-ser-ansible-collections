@@ -1,12 +1,13 @@
 ---
 
-- name: Deploy snmp_exporter
+- name: Deploy SNMP services
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
   become: true
+  gather_facts: false
   tasks:
-    - name: Deploy snmp_exporter
+    - name: Destroy SNMP services
       ansible.builtin.import_role:
         name: snmp_exporter
-        tasks_from: snmp_exporter
+        tasks_from: snmp_services_install

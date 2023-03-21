@@ -1,0 +1,22 @@
+- name: Check if playbook is already running
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+  - name: Create lockfile
+    file:
+      path: /tmp/ansible-playbook.lock
+      state: touch
+    register: lockfile
+
+  - name: Fail if lockfile exists
+    fail:
+      msg: "Playbook is already running, please wait for it to complete."
+    when: lockfile.stat.exists
+
+
+- name: Remove lockfile
+  file:
+    path: /tmp/ansible-playbook.lock
+    state: absent

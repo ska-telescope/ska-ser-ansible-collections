@@ -87,7 +87,21 @@ snmp_exporter: check_hosts ## Install snmp_exporter
 		-e "snmp_dell_idrac_auth_community=$(SNMP_DELL_IDRAC_AUTH_COMMUNITY)" \
 		-e "snmp_riello_ups_auth_community=$(SNMP_RIELLO_UPS_AUTH_COMMUNITY)" \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
-		-e 'ansible_python_interpreter=/usr/bin/python3'		
+		-e 'ansible_python_interpreter=/usr/bin/python3'
+
+snmp_install: check_hosts ## Install snmp_install
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_snmp.yml \
+		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+		-e "snmp_dell_idrac_auth_community=$(SNMP_DELL_IDRAC_AUTH_COMMUNITY)" \
+		-e "snmp_riello_ups_auth_community=$(SNMP_RIELLO_UPS_AUTH_COMMUNITY)" \
+		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
+		-e 'ansible_python_interpreter=/usr/bin/python3'
+
+snmp_destroy: check_hosts ## Destroy snmp services
+	@ansible-playbook $(PLAYBOOKS_DIR)/destroy_snmp.yml \
+		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
+		-e 'ansible_python_interpreter=/usr/bin/python3'			
 
 grafana: check_hosts ## Install Grafana Server
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_grafana.yml \

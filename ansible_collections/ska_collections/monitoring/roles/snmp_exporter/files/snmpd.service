@@ -1,0 +1,5 @@
+[Service]
+
+ExecStart=
+
+ExecStart=/usr/sbin/snmptrapd -Ln -f -Lf /var/log/snmptrapd.log

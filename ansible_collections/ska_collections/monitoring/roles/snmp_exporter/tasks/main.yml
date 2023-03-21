@@ -1,4 +1,0 @@
----
-
-- name: Task snmp_exporter
-  ansible.builtin.include_tasks: snmp_exporter.yml

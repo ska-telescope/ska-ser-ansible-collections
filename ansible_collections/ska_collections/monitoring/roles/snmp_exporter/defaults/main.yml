@@ -3,6 +3,7 @@ monitoring_localuser: ubuntu
 monitoring_localgroup: ubuntu
 
 snmp_config_dir: /etc/snmp
+snmptt_config_dir: /etc/snmptt
 snmp_server_docker_tags: v0.21.0
 
 snmp_dell_idrac_auth_community: "{{ _ | mandatory('`snmp_dell_idrac_auth_community` definition is mandatory') }}"
