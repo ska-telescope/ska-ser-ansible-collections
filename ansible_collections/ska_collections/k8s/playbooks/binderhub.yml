@@ -1,6 +1,6 @@
 ---
 - name: "Install Binderhub"
-  hosts: "{{ groups[target_hosts][0] }}"
+  hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
     k8s_kubeconfig: "/etc/kubernetes/admin.conf"
@@ -18,4 +18,3 @@
 
   tags:
     - binderhub
-

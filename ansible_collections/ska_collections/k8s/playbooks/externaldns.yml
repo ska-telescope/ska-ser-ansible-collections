@@ -4,8 +4,20 @@
 # Installs coredns
 - name: "Install ExternalDNS"
   hosts: "{{ target_hosts }}"
+  become: true
   vars:
     target_hosts: localhost
-  become: true
+    k8s_kubeconfig: "/etc/kubernetes/admin.conf"
+
+  pre_tasks:
+    - name: Check k8s_kubeconfig
+      ansible.builtin.debug:
+        var: k8s_kubeconfig
+
   roles:
     - role: externaldns
+
+  environment:
+    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
+  tags:
+    - externaldns
