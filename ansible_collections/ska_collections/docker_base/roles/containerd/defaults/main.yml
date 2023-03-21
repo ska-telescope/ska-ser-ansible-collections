@@ -10,6 +10,7 @@ nexus: "{{ _ | mandatory('`nexus` definition is mandatory') }}"
 nexus_docker_hosted_port: 9080
 nexus_docker_group_port: 9082
 
+containerd_version: 1.6.6-1
 containerd_crictl_version: v1.24.2
 
 containerd_activate_nvidia: false
