@@ -11,3 +11,36 @@
         namespace: kube-system
         wait: true
         wait_timeout: 120
+
+    - name: Apply pv host path pod
+      kubernetes.core.k8s:
+        state: present
+        template: 'resources/storageprovisioner.yml'
+
+    - name: Wait Until Pod Is Running
+      kubernetes.core.k8s_info:
+        name: read-write-hostpath-pv
+        kind: Pod
+        wait: true
+        wait_timeout: 120
+
+    - name: Get Logs
+      kubernetes.core.k8s_log:
+        name: read-write-hostpath-pv
+        namespace: default
+      register: log
+
+    - name: Check storage working
+      ansible.builtin.assert:
+        that:
+          - "'something' in log"
+        fail_msg: "Read write failure on host path"
+        success_msg: "Test complete"
+
+    - name: Remove host path pod
+      kubernetes.core.k8s:
+        state: absent
+        api_version: v1
+        kind: Pod
+        namespace: default
+        name: read-write-hostpath-pv

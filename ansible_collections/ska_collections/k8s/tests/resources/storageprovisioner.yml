@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: read-write-hostpath-pv
+  namespace: default
+spec:
+  restartPolicy: Never
+  volumes:
+  - name: vol
+    hostPath:
+      path: /cucumber
+  containers:
+  - name: write-pv
+    image: "registry.k8s.io/busybox"
+    command: ["/bin/sh", "-c", "echo 'something' > /cucumber/cucu.txt"]
+    volumeMounts:
+    - name: vol
+      mountPath: /cucumber
+  - name: read-pv
+    image: "registry.k8s.io/busybox"
+    command: ["/bin/sh", "-c", "cat /cucumber/cucu.txt"]
+    volumeMounts:
+    - name: vol
+      mountPath: /cucumber
