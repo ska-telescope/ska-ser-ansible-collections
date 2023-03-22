@@ -1,7 +1,7 @@
 #!/usr/bin/env ansible-playbook
 ---
 
-- name: "Apply the k8s metallb role to nodes"
+- name: Apply the k8s metallb role to nodes
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost

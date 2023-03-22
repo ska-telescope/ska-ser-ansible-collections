@@ -11,7 +11,7 @@
   register: os_var_cloud
   tags: openstack_disable_port_security
 
-- name: Fail if the Openstack env variable are not defined
+- name: Fail if the Openstack env variables are not defined
   ansible.builtin.fail:
     msg: Source the OpenStack RC File. Download it on the OpenStack Dashboard.
   when: os_var_cloud.msg == "" and os_var_auth.msg == ""

@@ -2,7 +2,7 @@
 ---
 
 # Installs coredns
-- name: "Install ExternalDNS"
+- name: Install ExternalDNS
   hosts: "{{ target_hosts }}"
   become: true
   vars:
