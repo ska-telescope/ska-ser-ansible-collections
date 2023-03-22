@@ -1,11 +1,22 @@
 ---
 
-- name: Ensure directories exists
+- name: Ensure directories exists {{ snmp_config_dir }}
   ansible.builtin.file:
     state: directory
-    mode: "0700"
+    mode: 0755
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
     recurse: true
     path: "{{ snmp_config_dir }}"
+
+- name: Ensure directories exists {{ snmp_trap_logs_dir }}
+  ansible.builtin.file:
+    state: directory
+    mode: 0755
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+    recurse: true
+    path: "{{ snmp_trap_logs_dir }}"
 
 - name: Create a symlink to a folder
   ansible.builtin.file:
@@ -21,7 +32,7 @@
   tags:
     - all
 
-- name: Install snmp-mibs-downloader (apt)
+- name: Install snmp (apt)
   ansible.builtin.apt:
     name:
       - "snmp"
@@ -46,7 +57,6 @@
     name: "snmptrapd"
     state: "stopped"
     enabled: false
-
 
 - name: Copy mibs
   become: true
@@ -92,11 +102,25 @@
     force: true
     mode: 0644
 
-- name: Copy trap_handler.sh file
+- name: Copy trap_handler.sh file to {{ snmp_trap_logs_dir }}
+  become: true
+  ansible.builtin.template:
+    src: "trap_handler.sh.j2"
+    dest: "{{ snmp_trap_logs_dir }}/trap_handler.sh"
+    force: true
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+    mode: 0777
+
+- name: Copy shutdown.yml to {{ shutdown_playbook_path }}
+  become: true
   ansible.builtin.copy:
-    src: "trap_handler.sh"
-    dest: "/home/ubuntu/trap_handler.sh"
-    mode: "0700"
+    src: "shutdown.yml"
+    dest: "{{ shutdown_playbook_path }}/shutdown.yml"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+    force: true
+    mode: 0644
 
 - name: Ensure directories snmpd.service.d exists
   ansible.builtin.file:
@@ -106,12 +130,14 @@
     group: root
     mode: 0755
 
-- name: Copy snmpd.service override
-  ansible.builtin.copy:
-    src: snmpd.service
-    dest: /etc/systemd/system/snmpd.service.d/override.conf
-    owner: root
-    group: root
+- name: Copy snmptrapd.conf file to {{ snmp_config_dir }}
+  become: true
+  ansible.builtin.template:
+    src: "snmpd.service.j2"
+    dest: "/etc/systemd/system/snmpd.service.d/override.conf"
+    force: true
+    owner: "root"
+    group: "root"
     mode: 0644
   notify:
     - Reload-systemd-daemon
