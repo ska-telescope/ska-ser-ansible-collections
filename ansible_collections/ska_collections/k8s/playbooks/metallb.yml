@@ -17,6 +17,14 @@
     - ska_collections.k8s.externaldns
   environment:
     KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
+    OS_CLOUD: "{{ lookup('env', 'OS_CLOUD') }}"
+    OS_AUTH_TYPE: "{{ lookup('env', 'OS_AUTH_TYPE') }}"
+    OS_AUTH_URL: "{{ lookup('env', 'OS_AUTH_URL') }}"
+    OS_IDENTITY_API_VERSION: "{{ lookup('env', 'OS_IDENTITY_API_VERSION') }}"
+    OS_REGION_NAME: "{{ lookup('env', 'OS_REGION_NAME') }}"
+    OS_INTERFACE: "{{ lookup('env', 'OS_INTERFACE') }}"
+    OS_APPLICATION_CREDENTIAL_ID: "{{ lookup('env', 'OS_APPLICATION_CREDENTIAL_ID') }}"
+    OS_APPLICATION_CREDENTIAL_SECRET: "{{ lookup('env', 'OS_APPLICATION_CREDENTIAL_SECRET') }}"
 
   tags:
     - metallb
