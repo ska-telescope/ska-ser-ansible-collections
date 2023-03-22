@@ -26,6 +26,7 @@ elasticsearch_api_port: 9200
 elasticsearch_transport_port: 9300
 
 elasticsearch_api_key_issuer: "system-team-auto-issuer"
+elasticsearch_api_key_cert_fetch_dir: /tmp/
 elasticsearch_api_keys: {}
 #
 # Declarative set of keys to issue. To invalidate a key, remove it from the set

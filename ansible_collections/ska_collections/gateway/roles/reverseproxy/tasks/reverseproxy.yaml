@@ -14,7 +14,6 @@
         tasks_from: sign-cert
       vars:
         certificate_name: "{{ reverseproxy_dns_name }}"
-        certificate_key_name: "{{ reverseproxy_dns_name }}"
         certificate_dns_alt_name: "{{ reverseproxy_dns_name }}"
     - name: "Copy self-signed ca"
       ansible.builtin.copy:

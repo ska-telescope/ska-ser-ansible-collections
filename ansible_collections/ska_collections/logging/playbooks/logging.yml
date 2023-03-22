@@ -12,7 +12,6 @@
         tasks_from: sign-cert
       vars:
         certificate_name: "{{ logging_filebeat_certificate_name }}"
-        certificate_key_name: "{{ logging_filebeat_certificate_name }}"
         certificate_dns_alt_name: "{{ inventory_hostname }}"
 
     - name: Install filebeat common

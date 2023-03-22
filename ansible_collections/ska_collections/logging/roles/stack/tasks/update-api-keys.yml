@@ -30,6 +30,7 @@
     valid_api_key_names: "{{ issued_api_keys | selectattr('invalidated', 'equalto', false) | map(attribute='name') }}"
     invalidated_api_keys: "{{ issued_api_keys | selectattr('invalidated', 'equalto', true) | map(attribute='name') }}"
     declared_api_keys: "{{ (elasticsearch_api_keys | default({})) | dict2items }}"
+    certificates_to_create: {}
 
 - name: Get valid api keys
   ansible.builtin.set_fact:
@@ -86,7 +87,7 @@
   timeout: 60
   when: '(api_keys_to_invalidate | length) > 0'
 
-- name: Create elasticsearch_api_keys
+- name: Create elasticsearch api keys
   ansible.builtin.uri:
     url: "https://{{ hostvars[inventory_hostname].ip }}:{{ elasticsearch_api_port }}/_security/api_key"
     method: POST
@@ -107,6 +108,48 @@
   with_items: "{{ api_keys_to_create }}"
   loop_control:
     label: "{{ item.name }}"
+
+- name: Set certificates to create for API Keys
+  ansible.builtin.set_fact:
+    certificates_to_create: "{{ certificates_to_create | combine({item.value: elasticsearch_api_keys[item.value].cert}) }}"
+  with_items: "{{ valid_api_keys | dict2items }}"
+  when: elasticsearch_api_keys is defined and elasticsearch_api_keys[item.value].cert is defined
+  loop_control:
+    label: "{{ item.value }}[{{ item.key }}]"
+
+- name: Create certificates for API Key clients
+  ansible.builtin.include_role:
+    name: ska_collections.instance_common.certs
+    tasks_from: sign-cert
+  vars:
+    certificate_name: "apikey.{{ item.key }}"
+    certificate_common_name: "{{ item.value.common_name }}"
+    certificate_subject_alt_names: "{{ item.value.subject_alt_names | default([]) }}"
+  with_items: "{{ certificates_to_create | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Bundle API Key clients certificates
+  community.general.archive:
+    path:
+      - "{{ certificates_dir }}/ca-certificate.crt"
+      - "{{ certificates_dir }}/apikey.{{ item.key }}.crt"
+      - "{{ certificates_dir }}/apikey.{{ item.key }}.key"
+    dest: "{{ certificates_dir }}/apikey.{{ item.key }}.bundle.tgz"
+    format: gz
+    mode: 0600
+  with_items: "{{ certificates_to_create | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Fetch API Key clients certificate bundles
+  ansible.builtin.fetch:
+    src: "{{ certificates_dir }}/apikey.{{ item.key }}.bundle.tgz"
+    dest: "{{ elasticsearch_api_key_cert_fetch_dir }}"
+    flat: true
+  with_items: "{{ certificates_to_create | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
 
 - name: Show created api keys
   ansible.builtin.debug:

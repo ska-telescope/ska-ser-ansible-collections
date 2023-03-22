@@ -2,7 +2,12 @@
 certificates_dir: /etc/pki/tls/private
 
 certificate_name: certificate
+certificate_common_name: "{{ ansible_hostname }}"
 certificate_dns_alt_name: skao.stfc
+certificate_subject_alt_names:
+  - "DNS:{{ certificate_dns_alt_name }}"
+  - "IP:{{ ansible_default_ipv4.address }}"
+certificate_validity_days: 365
 certificate_recreate: false
 
 ca_host: ca
