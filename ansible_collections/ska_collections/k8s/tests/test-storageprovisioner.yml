@@ -22,20 +22,18 @@
         name: read-write-hostpath-pv
         kind: Pod
         wait: true
-        wait_timeout: 120
+        wait_timeout: 10
 
     - name: Get Logs
       kubernetes.core.k8s_log:
         name: read-write-hostpath-pv
         namespace: default
+        container: read-pv
       register: log
 
-    - name: Check storage working
-      ansible.builtin.assert:
-        that:
-          - "'something' in log"
-        fail_msg: "Read write failure on host path"
-        success_msg: "Test complete"
+    - name: Print log
+      ansible.builtin.debug:
+        var: log
 
     - name: Remove host path pod
       kubernetes.core.k8s:
@@ -44,3 +42,10 @@
         kind: Pod
         namespace: default
         name: read-write-hostpath-pv
+
+    - name: Check storage working
+      ansible.builtin.assert:
+        that:
+          - "'something' in log.log"
+        fail_msg: "Read write failure on host path"
+        success_msg: "Test complete"

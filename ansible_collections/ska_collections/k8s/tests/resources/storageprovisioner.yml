@@ -12,13 +12,13 @@ spec:
   containers:
     - name: write-pv
       image: "registry.k8s.io/busybox"
-      command: ["/bin/sh", "-c", "echo 'something' > /cucumber/cucu.txt"]
+      command: ["/bin/sh", "-c", "while true; do echo 'something' > /cucumber/cucu.txt; sleep 5; done"]
       volumeMounts:
         - name: vol
           mountPath: /cucumber
     - name: read-pv
       image: "registry.k8s.io/busybox"
-      command: ["/bin/sh", "-c", "cat /cucumber/cucu.txt"]
+      command: ["/bin/sh", "-c", "while true; do cat /cucumber/cucu.txt; sleep 5; done"]
       volumeMounts:
         - name: vol
           mountPath: /cucumber

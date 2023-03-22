@@ -8,6 +8,7 @@ endif
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
+TESTS_DIR ?= ./ansible_collections/ska_collections/k8s/tests
 
 TAGS ?= all,metallb,cloudprovider,externaldns,ping,ingress,rookio,standardprovisioner,metrics,binderhub ## Ansible tags to run in post deployment processing
 CAPI_CLUSTER ?= capo-test
