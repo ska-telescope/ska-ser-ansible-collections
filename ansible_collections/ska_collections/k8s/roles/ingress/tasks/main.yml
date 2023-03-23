@@ -1,6 +1,6 @@
 ---
 
-- name: Install nginx with Helm
+- name: Install Nginx Helm chart
   kubernetes.core.helm:
     atomic: true
     chart_repo_url: https://kubernetes.github.io/ingress-nginx
