@@ -9,15 +9,15 @@
     create_namespace: true
     namespace: ingress-nginx
     name: ingress-nginx
-    values: 
+    values:
       controller:
         ingressClassResource:
           default: true
-        extraArgs: 
+        extraArgs:
           ingress-class: nginx
         service:
           loadBalancerIP: "{{ ingress_lb_ip }}"
-          annotations: 
+          annotations:
             service.beta.kubernetes.io/openstack-internal-load-balancer: "true"
           type: LoadBalancer
           nodePorts:
