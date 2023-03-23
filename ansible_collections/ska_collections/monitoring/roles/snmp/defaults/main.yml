@@ -2,11 +2,11 @@
 monitoring_localuser: ubuntu
 monitoring_localgroup: ubuntu
 snmp_config_dir: /etc/snmp
-snmptt_config_dir: /etc/snmptt
+snmp_snmptt_config_dir: /etc/snmptt
 snmp_trap_logs_dir: /home/ubuntu/upstraps
 snmp_server_docker_tags: v0.21.0
 
 snmp_dell_idrac_auth_community: "{{ _ | mandatory('`snmp_dell_idrac_auth_community` definition is mandatory') }}"
 snmp_riello_ups_auth_community: "{{ _ | mandatory('`snmp_riello_ups_auth_community` definition is mandatory') }}"
 
-shutdown_playbook_path: /home/ubuntu/kayobe/config/src/kayobe-config/etc/kayobe/ansible/
+snmp_shutdown_playbook_path: /home/ubuntu/kayobe/config/src/kayobe-config/etc/kayobe/ansible/

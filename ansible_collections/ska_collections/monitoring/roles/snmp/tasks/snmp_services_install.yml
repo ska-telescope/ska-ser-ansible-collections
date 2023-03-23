@@ -21,7 +21,7 @@
 - name: Create a symlink to a folder
   ansible.builtin.file:
     src: "{{ snmp_config_dir }}"
-    dest: "{{ snmptt_config_dir }}"
+    dest: "{{ snmp_snmptt_config_dir }}"
     state: link
     force: true
 
@@ -90,7 +90,7 @@
   become: true
   ansible.builtin.copy:
     src: "snmptt.conf"
-    dest: "{{ snmptt_config_dir }}/snmptt.conf"
+    dest: "{{ snmp_snmptt_config_dir }}/snmptt.conf"
     force: true
     mode: 0644
 
@@ -98,7 +98,7 @@
   become: true
   ansible.builtin.copy:
     src: "snmptt.ini"
-    dest: "{{ snmptt_config_dir }}/snmptt.ini"
+    dest: "{{ snmp_snmptt_config_dir }}/snmptt.ini"
     force: true
     mode: 0644
 
@@ -112,11 +112,11 @@
     group: "{{ monitoring_localgroup }}"
     mode: 0777
 
-- name: Copy shutdown.yml to {{ shutdown_playbook_path }}
+- name: Copy shutdown.yml to {{ snmp_shutdown_playbook_path }}
   become: true
   ansible.builtin.copy:
     src: "shutdown.yml"
-    dest: "{{ shutdown_playbook_path }}/shutdown.yml"
+    dest: "{{ snmp_shutdown_playbook_path }}/shutdown.yml"
     owner: "{{ monitoring_localuser }}"
     group: "{{ monitoring_localgroup }}"
     force: true

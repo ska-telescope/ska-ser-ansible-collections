@@ -7,7 +7,7 @@
   become: true
   gather_facts: false
   tasks:
-    - name: Destroy SNMP services
+    - name: Deploy SNMP services
       ansible.builtin.import_role:
         name: snmp
         tasks_from: snmp_services_install
