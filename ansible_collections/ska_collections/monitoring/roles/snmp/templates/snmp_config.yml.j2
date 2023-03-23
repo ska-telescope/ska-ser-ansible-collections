@@ -3059,4 +3059,380 @@ dell_idrac:
   retries: 3
   timeout: 60s
   auth:
-    community: public
+    community: {{ snmp_dell_idrac_auth_community }}
+riello_ups:
+  max_repetitions: 10
+  retries: 3
+  timeout: 60s
+  auth:
+    community: {{ snmp_riello_ups_auth_community }}
+  walk:
+  - 1.3.6.1.4.1.5491.10.1.1   # rupsIdent
+  - 1.3.6.1.4.1.5491.10.1.2   # rupsBattery
+  - 1.3.6.1.4.1.5491.10.1.3   # rupsInput
+  - 1.3.6.1.4.1.5491.10.1.4   # rupsOutput
+  - 1.3.6.1.4.1.5491.10.1.5   # rupsBypass
+  - 1.3.6.1.4.1.5491.10.1.6   # alarm
+  - 1.3.6.1.4.1.5491.10.1.7   # rupsTest
+  - 1.3.6.1.4.1.5491.10.1.10  # rupsTemperature    
+  get:
+  - 1.3.6.1.2.1.1.3.0
+  metrics:
+  - name: sysUpTime
+    oid: 1.3.6.1.2.1.1.3
+    type: gauge
+    help: The time (in hundredths of a second) since the network management portion
+      of the system was last re-initialized. - 1.3.6.1.2.1.1.3
+  - name: rupsIdentManufacturer
+    oid: 1.3.6.1.4.1.5491.10.1.1.1
+    type: DisplayString
+    help: The name of the UPS manufacturer. - 1.3.6.1.4.1.5491.10.1.1.1
+  - name: rupsIdentModel
+    oid: 1.3.6.1.4.1.5491.10.1.1.2
+    type: DisplayString
+    help: The UPS Model designation. - 1.3.6.1.4.1.5491.10.1.1.2
+  - name: rupsIdentUPSSoftwareVersion
+    oid: 1.3.6.1.4.1.5491.10.1.1.3
+    type: DisplayString
+    help: The UPS firmware/software version(s) - 1.3.6.1.4.1.5491.10.1.1.3
+  - name: rupsIdentAgentSoftwareVersion
+    oid: 1.3.6.1.4.1.5491.10.1.1.4
+    type: DisplayString
+    help: The UPS agent software version - 1.3.6.1.4.1.5491.10.1.1.4
+  - name: rupsIdentName
+    oid: 1.3.6.1.4.1.5491.10.1.1.5
+    type: DisplayString
+    help: A string identifying the UPS - 1.3.6.1.4.1.5491.10.1.1.5
+  - name: rupsIdentAttachedDevices
+    oid: 1.3.6.1.4.1.5491.10.1.1.6
+    type: DisplayString
+    help: A string identifying the devices attached to the output(s) of the UPS -
+      1.3.6.1.4.1.5491.10.1.1.6
+  - name: rupsIdentIOConfiguration
+    oid: 1.3.6.1.4.1.5491.10.1.1.7
+    type: gauge
+    help: The UPS IO configuration. - 1.3.6.1.4.1.5491.10.1.1.7
+  - name: rupsIdentUpsType
+    oid: 1.3.6.1.4.1.5491.10.1.1.8
+    type: gauge
+    help: The UPS IO configuration. - 1.3.6.1.4.1.5491.10.1.1.8
+  - name: rupsIdentNominalPowerVA
+    oid: 1.3.6.1.4.1.5491.10.1.1.9
+    type: gauge
+    help: The UPS IO configuration. - 1.3.6.1.4.1.5491.10.1.1.9
+  - name: rupsIdentNominalPowerW
+    oid: 1.3.6.1.4.1.5491.10.1.1.10
+    type: gauge
+    help: The UPS IO configuration. - 1.3.6.1.4.1.5491.10.1.1.10
+  - name: rupsIdentBatteryVoltage
+    oid: 1.3.6.1.4.1.5491.10.1.1.11
+    type: gauge
+    help: The UPS IO configuration. - 1.3.6.1.4.1.5491.10.1.1.11
+  - name: rupsIdentBatteryCapacity
+    oid: 1.3.6.1.4.1.5491.10.1.1.12
+    type: gauge
+    help: The UPS IO configuration. - 1.3.6.1.4.1.5491.10.1.1.12
+  - name: rupsIdentOutputVoltage
+    oid: 1.3.6.1.4.1.5491.10.1.1.13
+    type: gauge
+    help: The UPS IO configuration. - 1.3.6.1.4.1.5491.10.1.1.13
+  - name: rupsIdentOutputFrequency
+    oid: 1.3.6.1.4.1.5491.10.1.1.14
+    type: gauge
+    help: The UPS IO configuration. - 1.3.6.1.4.1.5491.10.1.1.14
+  - name: rupsSystemTemperature
+    oid: 1.3.6.1.4.1.5491.10.1.10.1
+    type: gauge
+    help: The present temperature. - 1.3.6.1.4.1.5491.10.1.10.1
+  - name: rupsPowerTemperature1
+    oid: 1.3.6.1.4.1.5491.10.1.10.2
+    type: gauge
+    help: The present temperature. - 1.3.6.1.4.1.5491.10.1.10.2
+  - name: rupsPowerTemperature2
+    oid: 1.3.6.1.4.1.5491.10.1.10.3
+    type: gauge
+    help: The present temperature. - 1.3.6.1.4.1.5491.10.1.10.3
+  - name: rupsPowerTemperature3
+    oid: 1.3.6.1.4.1.5491.10.1.10.4
+    type: gauge
+    help: The present temperature. - 1.3.6.1.4.1.5491.10.1.10.4
+  - name: rupsChargerTemperature
+    oid: 1.3.6.1.4.1.5491.10.1.10.5
+    type: gauge
+    help: The present temperature. - 1.3.6.1.4.1.5491.10.1.10.5
+  - name: rupsBatteryPositiveTemperature
+    oid: 1.3.6.1.4.1.5491.10.1.10.6
+    type: gauge
+    help: The present temperature. - 1.3.6.1.4.1.5491.10.1.10.6
+  - name: rupsBatteryNegativeTemperature
+    oid: 1.3.6.1.4.1.5491.10.1.10.7
+    type: gauge
+    help: The present temperature. - 1.3.6.1.4.1.5491.10.1.10.7
+  - name: rupsBatteryExternalTemperature
+    oid: 1.3.6.1.4.1.5491.10.1.10.8
+    type: gauge
+    help: The present temperature. - 1.3.6.1.4.1.5491.10.1.10.8
+  - name: rupsBatteryStatus
+    oid: 1.3.6.1.4.1.5491.10.1.2.1
+    type: gauge
+    help: The indication of the capacity remaining in the UPS system's batteries -
+      1.3.6.1.4.1.5491.10.1.2.1
+    enum_values:
+      1: unknown
+      2: batteryNormal
+      3: batteryLow
+      4: batteryDepleted
+  - name: rupsSecondsOnBattery
+    oid: 1.3.6.1.4.1.5491.10.1.2.2
+    type: gauge
+    help: If the unit is on battery power, the elapsed time since the UPS last switched
+      to battery power, or the time since the network management subsystem was last
+      restarted, whichever is less - 1.3.6.1.4.1.5491.10.1.2.2
+  - name: rupsEstimatedMinutesRemaining
+    oid: 1.3.6.1.4.1.5491.10.1.2.3
+    type: gauge
+    help: An estimate of the time to battery charge depletion under the present load
+      conditions if the utility power is off and remains off, or if it were to be
+      lost and remain off. - 1.3.6.1.4.1.5491.10.1.2.3
+  - name: rupsEstimatedChargeRemaining
+    oid: 1.3.6.1.4.1.5491.10.1.2.4
+    type: gauge
+    help: An estimate of the battery charge remaining expressed as a percent of full
+      charge. - 1.3.6.1.4.1.5491.10.1.2.4
+  - name: rupsBatteryVoltage
+    oid: 1.3.6.1.4.1.5491.10.1.2.5
+    type: gauge
+    help: The magnitude of the present battery voltage. - 1.3.6.1.4.1.5491.10.1.2.5
+  - name: rupsBatteryCurrent
+    oid: 1.3.6.1.4.1.5491.10.1.2.6
+    type: gauge
+    help: The present battery current. - 1.3.6.1.4.1.5491.10.1.2.6
+  - name: rupsBatteryTemperature
+    oid: 1.3.6.1.4.1.5491.10.1.2.7
+    type: gauge
+    help: The ambient temperature at or near the UPS Battery casing. - 1.3.6.1.4.1.5491.10.1.2.7
+  - name: rupsBatteryPositiveVoltage
+    oid: 1.3.6.1.4.1.5491.10.1.2.8
+    type: gauge
+    help: The ambient temperature at or near the UPS Battery casing. - 1.3.6.1.4.1.5491.10.1.2.8
+  - name: rupsBatteryNegativeVoltage
+    oid: 1.3.6.1.4.1.5491.10.1.2.9
+    type: gauge
+    help: The ambient temperature at or near the UPS Battery casing. - 1.3.6.1.4.1.5491.10.1.2.9
+  - name: rupsBatteryPositiveCurrent
+    oid: 1.3.6.1.4.1.5491.10.1.2.10
+    type: gauge
+    help: The ambient temperature at or near the UPS Battery casing. - 1.3.6.1.4.1.5491.10.1.2.10
+  - name: rupsBatteryNegativeCurrent
+    oid: 1.3.6.1.4.1.5491.10.1.2.11
+    type: gauge
+    help: The ambient temperature at or near the UPS Battery casing. - 1.3.6.1.4.1.5491.10.1.2.11
+  - name: rupsIsCharging
+    oid: 1.3.6.1.4.1.5491.10.1.2.12
+    type: gauge
+    help: The ambient temperature at or near the UPS Battery casing. - 1.3.6.1.4.1.5491.10.1.2.12
+  - name: rupsInputLineBads
+    oid: 1.3.6.1.4.1.5491.10.1.3.1
+    type: counter
+    help: A count of the number of times the input entered an out-of-tolerance condition
+      as defined by the manufacturer - 1.3.6.1.4.1.5491.10.1.3.1
+  - name: rupsInputNumLines
+    oid: 1.3.6.1.4.1.5491.10.1.3.2
+    type: gauge
+    help: The number of input lines utilized in this device - 1.3.6.1.4.1.5491.10.1.3.2
+  - name: rupsInputLineIndex
+    oid: 1.3.6.1.4.1.5491.10.1.3.3.1.1
+    type: gauge
+    help: The input line identifier. - 1.3.6.1.4.1.5491.10.1.3.3.1.1
+    indexes:
+    - labelname: rupsInputLineIndex
+      type: gauge
+  - name: rupsInputFrequency
+    oid: 1.3.6.1.4.1.5491.10.1.3.3.1.2
+    type: gauge
+    help: The present input frequency. - 1.3.6.1.4.1.5491.10.1.3.3.1.2
+    indexes:
+    - labelname: rupsInputLineIndex
+      type: gauge
+  - name: rupsInputVoltage
+    oid: 1.3.6.1.4.1.5491.10.1.3.3.1.3
+    type: gauge
+    help: The magnitude of the present input voltage. - 1.3.6.1.4.1.5491.10.1.3.3.1.3
+    indexes:
+    - labelname: rupsInputLineIndex
+      type: gauge
+  - name: rupsInputCurrent
+    oid: 1.3.6.1.4.1.5491.10.1.3.3.1.4
+    type: gauge
+    help: The magnitude of the present input current. - 1.3.6.1.4.1.5491.10.1.3.3.1.4
+    indexes:
+    - labelname: rupsInputLineIndex
+      type: gauge
+  - name: rupsInputTruePower
+    oid: 1.3.6.1.4.1.5491.10.1.3.3.1.5
+    type: gauge
+    help: The magnitude of the present input true power. - 1.3.6.1.4.1.5491.10.1.3.3.1.5
+    indexes:
+    - labelname: rupsInputLineIndex
+      type: gauge
+  - name: rupsOutputSource
+    oid: 1.3.6.1.4.1.5491.10.1.4.1
+    type: gauge
+    help: The present source of output power - 1.3.6.1.4.1.5491.10.1.4.1
+    enum_values:
+      1: other
+      2: none
+      3: normal
+      4: bypass
+      5: battery
+      6: booster
+      7: reducer
+  - name: rupsOutputFrequency
+    oid: 1.3.6.1.4.1.5491.10.1.4.2
+    type: gauge
+    help: The present output frequency. - 1.3.6.1.4.1.5491.10.1.4.2
+  - name: rupsOutputNumLines
+    oid: 1.3.6.1.4.1.5491.10.1.4.3
+    type: gauge
+    help: The number of output lines utilized in this device - 1.3.6.1.4.1.5491.10.1.4.3
+  - name: rupsOutputLineIndex
+    oid: 1.3.6.1.4.1.5491.10.1.4.4.1.1
+    type: gauge
+    help: The output line identifier. - 1.3.6.1.4.1.5491.10.1.4.4.1.1
+    indexes:
+    - labelname: rupsOutputLineIndex
+      type: gauge
+  - name: rupsOutputVoltage
+    oid: 1.3.6.1.4.1.5491.10.1.4.4.1.2
+    type: gauge
+    help: The present output voltage. - 1.3.6.1.4.1.5491.10.1.4.4.1.2
+    indexes:
+    - labelname: rupsOutputLineIndex
+      type: gauge
+  - name: rupsOutputCurrent
+    oid: 1.3.6.1.4.1.5491.10.1.4.4.1.3
+    type: gauge
+    help: The present output current. - 1.3.6.1.4.1.5491.10.1.4.4.1.3
+    indexes:
+    - labelname: rupsOutputLineIndex
+      type: gauge
+  - name: rupsOutputPower
+    oid: 1.3.6.1.4.1.5491.10.1.4.4.1.4
+    type: gauge
+    help: The present output true power. - 1.3.6.1.4.1.5491.10.1.4.4.1.4
+    indexes:
+    - labelname: rupsOutputLineIndex
+      type: gauge
+  - name: rupsOutputPercentLoad
+    oid: 1.3.6.1.4.1.5491.10.1.4.4.1.5
+    type: gauge
+    help: The percentage of the UPS power capacity presently being used on this output
+      line, i.e., the greater of the percent load of true power capacity and the percent
+      load of VA. - 1.3.6.1.4.1.5491.10.1.4.4.1.5
+    indexes:
+    - labelname: rupsOutputLineIndex
+      type: gauge
+  - name: rupsOutputPeakCurrent
+    oid: 1.3.6.1.4.1.5491.10.1.4.4.1.6
+    type: gauge
+    help: The present output current. - 1.3.6.1.4.1.5491.10.1.4.4.1.6
+    indexes:
+    - labelname: rupsOutputLineIndex
+      type: gauge
+  - name: rupsBypassFrequency
+    oid: 1.3.6.1.4.1.5491.10.1.5.1
+    type: gauge
+    help: The present bypass frequency. - 1.3.6.1.4.1.5491.10.1.5.1
+  - name: rupsBypassNumLines
+    oid: 1.3.6.1.4.1.5491.10.1.5.2
+    type: gauge
+    help: The number of bypass lines utilized in this device - 1.3.6.1.4.1.5491.10.1.5.2
+  - name: rupsBypassLineIndex
+    oid: 1.3.6.1.4.1.5491.10.1.5.3.1.1
+    type: gauge
+    help: The bypass line identifier. - 1.3.6.1.4.1.5491.10.1.5.3.1.1
+    indexes:
+    - labelname: rupsBypassLineIndex
+      type: gauge
+  - name: rupsBypassVoltage
+    oid: 1.3.6.1.4.1.5491.10.1.5.3.1.2
+    type: gauge
+    help: The present bypass voltage. - 1.3.6.1.4.1.5491.10.1.5.3.1.2
+    indexes:
+    - labelname: rupsBypassLineIndex
+      type: gauge
+  - name: rupsBypassCurrent
+    oid: 1.3.6.1.4.1.5491.10.1.5.3.1.3
+    type: gauge
+    help: The present bypass current. - 1.3.6.1.4.1.5491.10.1.5.3.1.3
+    indexes:
+    - labelname: rupsBypassLineIndex
+      type: gauge
+  - name: rupsBypassPower
+    oid: 1.3.6.1.4.1.5491.10.1.5.3.1.4
+    type: gauge
+    help: The present true power conveyed by the bypass. - 1.3.6.1.4.1.5491.10.1.5.3.1.4
+    indexes:
+    - labelname: rupsBypassLineIndex
+      type: gauge
+  - name: rupsAlarmsPresent
+    oid: 1.3.6.1.4.1.5491.10.1.6.1
+    type: gauge
+    help: The present number of active alarm conditions. - 1.3.6.1.4.1.5491.10.1.6.1
+  - name: rupsAlarmId
+    oid: 1.3.6.1.4.1.5491.10.1.6.2.1.1
+    type: gauge
+    help: A unique identifier for an alarm condition - 1.3.6.1.4.1.5491.10.1.6.2.1.1
+    indexes:
+    - labelname: rupsAlarmId
+      type: gauge
+  - name: rupsAlarmDescr
+    oid: 1.3.6.1.4.1.5491.10.1.6.2.1.2
+    type: OctetString
+    help: A reference to an alarm description object - 1.3.6.1.4.1.5491.10.1.6.2.1.2
+    indexes:
+    - labelname: rupsAlarmId
+      type: gauge
+  - name: rupsAlarmTime
+    oid: 1.3.6.1.4.1.5491.10.1.6.2.1.3
+    type: gauge
+    help: The value of sysUpTime when the alarm condition was detected - 1.3.6.1.4.1.5491.10.1.6.2.1.3
+    indexes:
+    - labelname: rupsAlarmId
+      type: gauge
+  - name: rupsTestId
+    oid: 1.3.6.1.4.1.5491.10.1.7.1
+    type: OctetString
+    help: The test is named by an OBJECT IDENTIFIER which allows a standard mechanism
+      for the initiation of tests, including the well known tests identified in this
+      document as well as those introduced by a particular implementation, i.e., as
+      documented in the private enterprise MIB definition for the device - 1.3.6.1.4.1.5491.10.1.7.1
+  - name: rupsTestSpinLock
+    oid: 1.3.6.1.4.1.5491.10.1.7.2
+    type: gauge
+    help: A spin lock on the test subsystem - 1.3.6.1.4.1.5491.10.1.7.2
+  - name: rupsTestResultsSummary
+    oid: 1.3.6.1.4.1.5491.10.1.7.3
+    type: gauge
+    help: The results of the current or last UPS diagnostics test performed - 1.3.6.1.4.1.5491.10.1.7.3
+    enum_values:
+      1: donePass
+      2: doneWarning
+      3: doneError
+      4: aborted
+      5: inProgress
+      6: noTestsInitiated
+  - name: rupsTestResultsDetail
+    oid: 1.3.6.1.4.1.5491.10.1.7.4
+    type: DisplayString
+    help: Additional information about upsTestResultsSummary - 1.3.6.1.4.1.5491.10.1.7.4
+  - name: rupsTestStartTime
+    oid: 1.3.6.1.4.1.5491.10.1.7.5
+    type: gauge
+    help: The value of sysUpTime at the time the test in progress was initiated, or,
+      if no test is in progress, the time the previous test was initiated - 1.3.6.1.4.1.5491.10.1.7.5
+  - name: rupsTestElapsedTime
+    oid: 1.3.6.1.4.1.5491.10.1.7.6
+    type: gauge
+    help: The amount of time, in TimeTicks, since the test in progress was initiated,
+      or, if no test is in progress, the previous test took to complete - 1.3.6.1.4.1.5491.10.1.7.6

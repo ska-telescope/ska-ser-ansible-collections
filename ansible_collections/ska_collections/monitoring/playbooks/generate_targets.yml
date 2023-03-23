@@ -40,6 +40,7 @@
         mode: 0644
 
     - name: Archive DataCentre inventory Files
+      become: false
       community.general.archive:
         path: "{{ inventory_path }}"
         dest: inventory.tgz

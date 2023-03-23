@@ -1,0 +1,25 @@
+---
+
+- name: Riello-ups-exporter-dashboard make sure grafana configuration directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+  with_items:
+    - "/etc/grafana/provisioning/datasources"
+    - "/etc/grafana/provisioning/dashboards/riello-ups-exporter-dashboard"
+    - "/etc/grafana/provisioning/notifiers"
+
+- name: Riello-ups-exporter-dashboard Copy up resource files
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/dashboards/riello-ups-exporter/{{ item }}"
+    dest: "/etc/grafana/provisioning/dashboards/riello-ups-exporter-dashboard/{{ item }}"
+    mode: 0640
+  with_items:
+    - riello-ups-exporter.json
+
+- name: Riello-ups-exporter-dashboard Write dashboards provisioning config file
+  ansible.builtin.template:
+    src: dashboards-riello-ups-exporter-dashboard.yml.j2
+    dest: /etc/grafana/provisioning/dashboards/riello-ups-exporter-dashboard.yml
+    mode: 0640
