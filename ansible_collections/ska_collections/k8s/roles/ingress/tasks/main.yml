@@ -31,11 +31,3 @@
     name: ingress-nginx-controller
     namespace: ingress-nginx
     wait_timeout: 120
-
-- name: Wait till the nginx is created
-  kubernetes.core.k8s_info:
-    kind: Deployment
-    wait: true
-    name: ingress-nginx-controller
-    namespace: ingress-nginx
-    wait_timeout: 120
