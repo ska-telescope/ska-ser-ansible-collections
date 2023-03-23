@@ -9,7 +9,20 @@
     create_namespace: true
     namespace: ingress-nginx
     name: ingress-nginx
-    values: "{{ ingress_nginx_values | default(omit) }}"
+    values: 
+      controller:
+        ingressClassResource:
+          default: true
+        extraArgs: 
+          ingress-class: nginx
+        service:
+          loadBalancerIP: "{{ ingress_lb_ip }}"
+          annotations: 
+            service.beta.kubernetes.io/openstack-internal-load-balancer: "true"
+          type: LoadBalancer
+          nodePorts:
+            http: 30080
+            https: 30443
 
 - name: Wait till the nginx is created
   kubernetes.core.k8s_info:
@@ -18,55 +31,6 @@
     name: ingress-nginx-controller
     namespace: ingress-nginx
     wait_timeout: 120
-
-- name: Apply patch to ingress controller deployment
-  ska_collections.k8s.kubectl_patch:
-    name: deployment/ingress-nginx-controller
-    kubectl_namespace: ingress-nginx
-    type: json
-    patch: >-
-      [
-        {"op": "add",
-        "path": "/spec/template/spec/containers/0/args/-",
-        "value": "--ingress-class=nginx"}
-      ]
-    kubectl_kubeconfig: "{{ k8s_kubeconfig }}"
-
-- name: Apply patch to ingress class
-  ska_collections.k8s.kubectl_patch:
-    name: ingressclass/nginx
-    kubectl_namespace: kube-system
-    patch: >-
-      {"metadata":
-        {"annotations":
-          {"ingressclass.kubernetes.io/is-default-class": "true"}
-        }
-      }
-    kubectl_kubeconfig: "{{ k8s_kubeconfig }}"
-
-- name: Apply patch to ingress controller service
-  ska_collections.k8s.kubectl_patch:
-    name: service/ingress-nginx-controller
-    kubectl_namespace: ingress-nginx
-    patch: >-
-      {"spec":
-        {"ports":
-          [{"port": 80, "nodePort": 30080},
-          {"port": 443, "nodePort": 30443}
-          ]
-        }
-      }
-    kubectl_kubeconfig: "{{ k8s_kubeconfig }}"
-
-- name: Apply Ingress ACLs
-  kubernetes.core.k8s:
-    state: present
-    template: 'acls.yaml.j2'
-
-- name: Apply LoadBalancer Service
-  kubernetes.core.k8s:
-    state: present
-    template: 'service.yaml.j2'
 
 - name: Wait till the nginx is created
   kubernetes.core.k8s_info:

@@ -2,6 +2,4 @@
 debug: false
 
 ingress_nginx_chart_version: "4.5.2"
-ingress_nginx_version: 1.6.4
-ingress_lb_suffix: "test"
-ingress_lb_ip:
+ingress_lb_ip: ""

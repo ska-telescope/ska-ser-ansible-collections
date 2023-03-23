@@ -51,14 +51,11 @@ ifneq (,$(findstring cloudprovider,$(TAGS)))
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
-	--extra-vars "ingress_nginx_version=${NGINX_VERSION}" \
-	--extra-vars "ingress_lb_suffix=${CLUSTER_NAME}" \
 	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	--tags "$(TAGS)" \
 	-vv
 endif
 
-#	# --extra-vars 'ingress_nginx_version: 1.3.1 ingress_lb_suffix: "{{ capi_cluster }}"'
 ifneq (,$(findstring ingress,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/ingress.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
