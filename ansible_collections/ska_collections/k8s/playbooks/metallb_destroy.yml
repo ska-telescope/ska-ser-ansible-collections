@@ -17,16 +17,17 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
+    k8s_kubeconfig: "/etc/kubernetes/admin.conf"
   become: true
   gather_facts: true
 
   tasks:
     - name: Destroy MetalLB
       ansible.builtin.import_role:
-        name: metallb
+        name: ska_collections.k8s.metallb
         tasks_from: destroy
 
     - name: Destroy ExternalDNS
       ansible.builtin.import_role:
-        name: externaldns
+        name: ska_collections.k8s.externaldns
         tasks_from: destroy
