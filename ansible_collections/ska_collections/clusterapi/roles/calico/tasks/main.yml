@@ -1,51 +1,48 @@
 ---
+- name: Add Calico helm repo
+  kubernetes.core.helm_repository:
+    name: projectcalico
+    repo_url: "https://docs.tigera.io/calico/charts"
 
-- name: Tidy up Calico manifests
-  ansible.builtin.file:
-    path: "/tmp/calico.yaml"
-    state: absent
-
-- name: Download Calico manifests
-  ansible.builtin.get_url:
-    url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ calico_version }}/manifests/calico.yaml"
-    dest: "/tmp/calico.yaml"
-    mode: '0664'
-
-- name: Check Calico is running
-  kubernetes.core.k8s_info:
+- name: Stop old Calico is running on kube-system
+  kubernetes.core.k8s:
     api_version: apps/v1
     kind: DaemonSet
     name: calico-node
     namespace: kube-system
-  register: calico_node_check
+    state: absent
 
-- name: Start Calico
-  # Calico is not started
-  when: "not calico_node_check.resources"
+- name: Deploy calico chart with values
   block:
-    - name: Apply Calico manifests
-      kubernetes.core.k8s:
-        state: present
-        apply: true
-        src: "/tmp/calico.yaml"
+    - name: Template calico values yaml
+      ansible.builtin.template:
+        src: values.yaml.j2
+        dest: "/tmp/calico.values.yaml"
+        mode: "0644"
+    - name: Deploy calico chart with values
+      kubernetes.core.helm:
+        name: calico
+        chart_ref: "projectcalico/tigera-operator"
+        chart_version: "{{ calico_version }}"
+        release_namespace: "{{ calico_operator_namespace }}"
+        create_namespace: true
+        values_files:
+          - "/tmp/calico.values.yaml"
+  always:
+    - name: Remove values
+      ansible.builtin.file:
+        path: "/tmp/calico.values.yaml"
+        state: absent
 
-- name: Set Calico config
-  ska_collections.clusterapi.kubectl_set_env:
-    name: "daemonset/calico-node"
-    kubectl_namespace: "kube-system"
-    envvars:
-      CALICO_IPV4POOL_CIDR: "{{ calico_ipv4pool_cidr }}"
-      CALICO_IPV4POOL_IPIP: "{{ calico_ipv4pool_ipip }}"
-      IP_AUTODETECTION_METHOD: "{{ calico_ip_autodetection_method }}"
-
-- name: Check calico-node Daemonset is running
-  ska_collections.clusterapi.wait_for_daemonset:
-    name: calico-node
-    kubectl_namespace: kube-system
-    initpause: 10
-    wait: 20
-    retries: 15
-    kubectl_kubeconfig: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
-
-- name: Flush those handlers
-  ansible.builtin.meta: flush_handlers
+# - name: Wait for Deployment to be up and running
+#   kubernetes.core.k8s:
+#     state: present
+#     definition:
+#       kind: Deployment
+#       name: "{{ deployment_name }}"
+#       namespace: default
+#     wait_condition:
+#       type: Ready
+#       status: "True"
+#       timeout: 300
+#       delay: 10
