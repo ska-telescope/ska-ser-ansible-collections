@@ -1,20 +1,28 @@
 #!/usr/bin/env ansible-playbook
 ---
 
-- name: Apply the k8s metallb role to nodes
+- name: Install MetalLB
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-    k8s_kubeconfig: "/etc/kubernetes/admin.conf"
+    k8s_kubeconfig: "/home/vagrant/.kube/config"
 
   pre_tasks:
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:
         var: k8s_kubeconfig
 
-  roles:
-    - ska_collections.k8s.metallb
-    - ska_collections.k8s.externaldns
+  tasks:
+    - name: Deploy MetalLB
+      ansible.builtin.import_role:
+        name: ska_collections.k8s.metallb
+        tasks_from: install
+
+    - name: Deploy ExternalDNS
+      ansible.builtin.import_role:
+        name: ska_collections.k8s.externaldns
+        tasks_from: install
+
   environment:
     KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
     OS_CLOUD: "{{ lookup('env', 'OS_CLOUD') }}"

@@ -1,76 +1,15 @@
 ---
 
-- name: Create a MetalLB namespace
-  kubernetes.core.k8s:
-    name: "{{ k8s_metallb_namespace }}"
-    api_version: v1
-    kind: Namespace
-    state: present
-
-- name: Tidy up MetalLB manifests
-  ansible.builtin.file:
-    path: "/tmp/metallb.yaml"
-    state: absent
-
-- name: Download MetalLB manifests
-  ansible.builtin.get_url:
-    url: "https://raw.githubusercontent.com/metallb/metallb/v{{ k8s_metallb_version }}/config/manifests/metallb-native.yaml"
-    dest: "/tmp/metallb.yaml"
-    mode: 0664
-
-- name: Check MetalLB is running
-  kubernetes.core.k8s_info:
-    api_version: apps/v1
-    kind: Deployment
-    name: controller
+- name: Install MetalLB Helm Chart
+  kubernetes.core.helm:
+    atomic: true
+    chart_repo_url: https://charts.bitnami.com/bitnami
+    chart_ref: metallb
+    chart_version: "{{ k8s_metallb_chart_version }}"
+    create_namespace: true
     namespace: "{{ k8s_metallb_namespace }}"
-  register: k8s_metallb_check
-
-- name: Start MetalLB
-  when: "not k8s_metallb_check.resources"
-  block:
-    - name: Apply MetalLB manifests
-      kubernetes.core.k8s:
-        state: present
-        apply: true
-        src: "/tmp/metallb.yaml"
-
-    - name: Apply patch to MetalLB controller deployment
-      ska_collections.k8s.kubectl_patch:
-        name: deployment/controller
-        kubectl_namespace: "{{ k8s_metallb_namespace }}"
-        type: json
-        patch: >-
-          [
-            {"op": "add",
-            "path": "/spec/template/spec/containers/0/args/-",
-            "value": "--lb-class={{ k8s_metallb_class }}"}
-          ]
-        kubectl_kubeconfig: "{{ k8s_kubeconfig }}"
-      when: k8s_metallb_set_class
-
-    - name: Apply patch to MetalLB speaker daemonset
-      ska_collections.k8s.kubectl_patch:
-        name: daemonset/speaker
-        kubectl_namespace: "{{ k8s_metallb_namespace }}"
-        type: json
-        patch: >-
-          [
-            {"op": "add",
-            "path": "/spec/template/spec/containers/0/args/-",
-            "value": "--lb-class={{ k8s_metallb_class }}"}
-          ]
-        kubectl_kubeconfig: "{{ k8s_kubeconfig }}"
-      when: k8s_metallb_set_class
-
-- name: Check MetalLB speaker Daemonset is running
-  ska_collections.k8s.wait_for_daemonset:
-    name: speaker
-    kubectl_namespace: metallb-system
-    initpause: 30
-    wait: 15
-    retries: 25
-    kubectl_kubeconfig: "{{ k8s_kubeconfig }}"
+    name: metallb
+    wait: true
 
 - name: Apply MetalLB config
   kubernetes.core.k8s:

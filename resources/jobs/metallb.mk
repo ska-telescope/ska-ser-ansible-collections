@@ -1,6 +1,6 @@
 .PHONY: check_hosts vars install destroy help
 .DEFAULT_GOAL := help
-ANSIBLE_PLAYBOOK_ARGUMENTS ?=
+ANSIBLE_PLAYBOOK_ARGUMENTS ?= 
 ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/k8s/playbooks
