@@ -1,0 +1,37 @@
+- name: Test MetalLB Deployment
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+    k8s_metallb_namespace: metallb-system
+  tasks:
+    - name: Get MetalLB running pods
+      kubernetes.core.k8s_info:
+        kind: Pod
+        namespace: "{{ k8s_metallb_namespace }}"
+        field_selectors:
+          - status.phase=Running
+        wait: true
+      register: metallb_pods
+
+    - name: Check MetalLB running pods
+      ansible.builtin.debug:
+        msg: "{{ metallb_pods.resources[0].metadata.name }} and {{ metallb_pods.resources[1].metadata.name }} are running"
+
+    - name: Apply test-metallb
+      kubernetes.core.k8s:
+        state: present
+        template: 'resources/metallb_test.yml'
+
+    - name: Wait until test-metallb-service is created
+      kubernetes.core.k8s_info:
+        kind: Service
+        wait: true
+        name: test-metallb-service
+        namespace: default
+      register: metallb_service
+
+    - name: Check MetalLB service
+      ansible.builtin.debug:
+        msg: "{{ metallb_service.resources[0].metadata.name }} has been created \
+              with the ExternalIP {{ metallb_service.resources[0].status.loadBalancer.ingress[0].ip }} \
+              and Port {{ metallb_service.resources[0].spec.ports[0].port }}"

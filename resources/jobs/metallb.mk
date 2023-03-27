@@ -4,6 +4,7 @@ ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/k8s/playbooks
+TESTS_DIR ?= ./ansible_collections/ska_collections/k8s/tests
 
 -include $(BASE_PATH)/PrivateRules.mak
 
@@ -31,6 +32,11 @@ openstack-disable-port-security: check_hosts ## Disable openstack port security
 	ansible-playbook $(PLAYBOOKS_DIR)/metallb.yml --tags openstack_disable_port_security \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+test: check_hosts
+	ansible-playbook $(TESTS_DIR)/test-metallb.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"	
 
 help: ## Show Help
 	@echo "metallb targets - make playbooks metallb <target>:"
