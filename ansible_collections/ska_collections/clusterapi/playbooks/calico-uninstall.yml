@@ -5,16 +5,14 @@
   vars:
     target_hosts: localhost
     k8s_kubeconfig: "/etc/clusterapi/{{ capi_cluster }}-kubeconfig"
-
-  pre_tasks:
+  tasks:
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:
         var: k8s_kubeconfig
 
-  roles:
-    - ska_collections.clusterapi.calico
+    - name: Install calico
+      ansible.builtin.include_role:
+        name: ska_collections.clusterapi.calico
+        tasks_from: uninstall.yml
   environment:
     KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
-
-  tags:
-    - calico

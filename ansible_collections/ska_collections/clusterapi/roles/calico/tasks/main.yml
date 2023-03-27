@@ -26,6 +26,7 @@
         chart_version: "{{ calico_version }}"
         release_namespace: "{{ calico_operator_namespace }}"
         create_namespace: true
+        wait: true
         values_files:
           - "/tmp/calico.values.yaml"
   always:
@@ -34,15 +35,31 @@
         path: "/tmp/calico.values.yaml"
         state: absent
 
-# - name: Wait for Deployment to be up and running
-#   kubernetes.core.k8s:
-#     state: present
-#     definition:
-#       kind: Deployment
-#       name: "{{ deployment_name }}"
-#       namespace: default
-#     wait_condition:
-#       type: Ready
-#       status: "True"
-#       timeout: 300
-#       delay: 10
+- name: Check kubernetes resources
+  kubernetes.core.k8s_info:
+    kind: "{{ item.kind }}"
+    wait: true
+    name: "{{ item.name }}"
+    namespace: "{{ item.namespace }}"
+    wait_sleep: 10
+    wait_timeout: 600
+  loop:
+    - kind: Deployment
+      namespace: calico-operator
+      name: tigera-operator
+    - kind: DaemonSet
+      namespace: calico-system
+      name: calico-node
+    - kind: DaemonSet
+      namespace: calico-system
+      name: csi-node-driver
+    - kind: Deployment
+      namespace: calico-system
+      name: calico-kube-controllers
+    - kind: Deployment
+      namespace: calico-apiserver
+      name: calico-apiserver
+    - kind: Deployment
+      namespace: calico-system
+      name: calico-typha
+  when: calico_install_wait

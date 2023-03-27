@@ -7,6 +7,7 @@ endif
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
+TESTS_DIR ?= ./ansible_collections/ska_collections/clusterapi/tests
 
 CAPI_CLUSTER_TYPE ?= capo
 CAPI_APPLY ?= false ## Apply workload cluster: true or false - default: false
@@ -31,6 +32,27 @@ vars:
 	@echo "CAPI_CLUSTER=$(CAPI_CLUSTER)"
 	@echo "CAPI_APPLY=$(CAPI_APPLY)"
 	@echo "CAPI_AC_BRANCH=$(CAPI_AC_BRANCH)"
+
+calico-install: clusterapi-check-hosts  ## Install base for management server
+	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
+	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/calico-install.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) k8s_kubeconfig=$(KUBECONFIG)"
+
+calico-uninstall: clusterapi-check-hosts  ## Install base for management server
+	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
+	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/calico-uninstall.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) k8s_kubeconfig=$(KUBECONFIG)"
+
+calico-test: clusterapi-check-hosts ## Test elastic cluster
+	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
+	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
+	ansible-playbook $(TESTS_DIR)/calico.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) k8s_kubeconfig=$(KUBECONFIG)"
 
 clusterapi-install-base: clusterapi-check-hosts  ## Install base for management server
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \

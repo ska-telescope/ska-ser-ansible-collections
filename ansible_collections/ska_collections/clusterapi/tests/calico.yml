@@ -1,0 +1,79 @@
+---
+- name: Apply the clusterapi calico role to nodes
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+    k8s_kubeconfig: "/etc/clusterapi/{{ capi_cluster }}-kubeconfig"
+    calico_action: install
+  tasks:
+    - name: Check k8s_kubeconfig
+      ansible.builtin.debug:
+        var: k8s_kubeconfig
+
+    - name: Check kubernetes resources
+      kubernetes.core.k8s_info:
+        kind: "{{ item.kind }}"
+        namespace: "{{ item.namespace }}"
+        name: "{{ item.name }}"
+        wait: true
+        wait_timeout: 300
+      loop:
+        - kind: Deployment
+          namespace: calico-operator
+          name: tigera-operator
+        - kind: Deployment
+          namespace: calico-system
+          name: calico-kube-controllers
+        - kind: Deployment
+          namespace: calico-apiserver
+          name: calico-apiserver
+        - kind: Deployment
+          namespace: calico-system
+          name: calico-typha
+        - kind: DaemonSet
+          namespace: calico-system
+          name: calico-node
+        - kind: DaemonSet
+          namespace: calico-system
+          name: csi-node-driver
+
+    - name: Create CalicoNodeStatus resource
+      kubernetes.core.k8s:
+        state: present
+        namespace: calico-system
+        wait: true
+        definition:
+          apiVersion: projectcalico.org/v3
+          kind: CalicoNodeStatus
+          metadata:
+            name: calico-status
+          spec:
+            classes:
+              - Agent
+              - BGP
+              - Routes
+            node: minikube
+            updatePeriodSeconds: 10
+
+    - name: Get CalicoNode status
+      kubernetes.core.k8s_info:
+        kind: CalicoNodeStatus
+        name: calico-status
+        namespace: calico-system
+      register: calico_node_status
+
+    - name: Display CalicoNode status
+      ansible.builtin.debug:
+        var: calico_node_status.resources[0].status
+
+    - name: Destroy CalicoNodeStatus resource
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: CalicoNodeStatus
+        state: absent
+        namespace: calico-system
+        name: calico-status
+        wait: true
+
+  environment:
+    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
