@@ -15,3 +15,34 @@
   loop_control:
     loop_var: volume
   when: hostvars[inventory_hostname]['volumes'] is defined
+
+- name: Set ulimits limits
+  ansible.builtin.copy:
+    dest: /etc/security/limits.d/99-ska.conf
+    content: |
+      * soft nofile 65536
+      * hard nofile 65536
+      * soft memlock unlimited
+      * hard memlock unlimited
+      * soft nproc 65536
+      * hard nproc 65536
+
+# https://linuxhint.com/understanding_vm_swappiness/
+- name: Set swappiness to 1
+  ansible.posix.sysctl:
+    sysctl_file: /etc/sysctl.d/99-ska-swappiness.conf
+    name: vm.swappiness
+    value: "1"
+
+# TODO: why?
+- name: Disable Transparent Huge Pages in Grub 2
+  ansible.builtin.lineinfile:
+    dest: /etc/default/grub
+    state: present
+    line: 'GRUB_CMDLINE_LINUX=$GRUB_CMDLINE_LINUX" transparent_hugepage=never"'
+  notify: Run update-grub
+
+- name: Disable Transparent Huge Pages until reboot
+  ansible.builtin.command: echo never > /sys/kernel/mm/transparent_hugepage/enabled && echo never > /sys/kernel/mm/transparent_hugepage/defrag
+  failed_when: false
+  changed_when: false
