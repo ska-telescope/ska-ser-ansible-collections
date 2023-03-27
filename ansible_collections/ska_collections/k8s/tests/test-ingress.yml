@@ -1,0 +1,41 @@
+- name: Test ingress controller
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  tasks:
+    - name: Wait till the nginx is created
+      kubernetes.core.k8s_info:
+        kind: Service
+        wait: true
+        name: ingress-nginx-controller
+        namespace: ingress-nginx
+        wait_timeout: 10
+      register: ingress_nginx_controller
+
+    - name: Check ingress-nginx-controller
+      ansible.builtin.debug:
+        var: ingress_nginx_controller
+
+    - name: Apply test ingress
+      kubernetes.core.k8s:
+        state: present
+        template: 'resources/ingress.yml'
+
+    - name: Wait till pod is created
+      kubernetes.core.k8s_info:
+        kind: Pod
+        wait: true
+        name: banana-app
+        namespace: default
+        wait_timeout: 120
+
+    - name: Test test ingress
+      ansible.builtin.uri:
+        url: "http://{{ ingress_nginx_controller.resources[0].status.loadBalancer.ingress[0].ip }}:/banana"
+        method: GET
+        status_code: [200]
+
+    - name: Delete test ingress
+      kubernetes.core.k8s:
+        state: absent
+        template: 'resources/ingress.yml'
