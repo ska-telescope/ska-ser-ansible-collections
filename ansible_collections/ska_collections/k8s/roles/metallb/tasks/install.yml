@@ -3,7 +3,7 @@
 - name: Install MetalLB Helm Chart
   kubernetes.core.helm:
     atomic: true
-    chart_repo_url: https://charts.bitnami.com/bitnami
+    chart_repo_url: https://metallb.github.io/metallb
     chart_ref: metallb
     chart_version: "{{ k8s_metallb_chart_version }}"
     create_namespace: true

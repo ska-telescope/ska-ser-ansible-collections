@@ -1,7 +1,7 @@
 ---
 debug: false
 
-k8s_metallb_chart_version: 4.1.17
+k8s_metallb_chart_version: 0.13.7
 k8s_metallb_namespace: metallb-system
 k8s_metallb_addresses: 10.100.10.1-10.100.253.254
 k8s_metallb_set_class: false

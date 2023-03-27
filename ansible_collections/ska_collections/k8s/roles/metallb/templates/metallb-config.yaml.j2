@@ -20,16 +20,3 @@ spec:
   ipAddressPools:
   - default
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  annotations:
-  name: config
-  namespace: {{ k8s_metallb_namespace }}
-data:
-  config: |
-    address-pools:
-    - name: default
-      protocol: layer2
-      addresses:
-      - {{ k8s_metallb_addresses }}
