@@ -66,3 +66,5 @@ containerd_sysctls:
   # Why do we set this? The default Kubernetes service port range is 30000-32767,
   # and the default value for this parameter is "32768 60999" which doesn't overlap.
   net.ipv4.ip_local_port_range: "40000 65535"
+
+containerd_sysctls_override: {}

@@ -44,7 +44,7 @@
     name: "{{ item.key }}"
     value: "{{ item.value }}"
     sysctl_file: /etc/sysctl.d/99-kubernetes-cri.conf
-  with_dict: "{{ containerd_sysctls }}"
+  with_dict: "{{ containerd_sysctls | combine(containerd_sysctls_override) }}"
 
 - name: Debian containerd install
   when: ansible_os_family == "Debian"
