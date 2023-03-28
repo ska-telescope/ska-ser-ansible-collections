@@ -41,7 +41,7 @@
 
 - name: Remove project_id
   ansible.builtin.set_fact:
-    capi_base64_capo_ostack_cloud_yaml_no_project_id: "{% set copy=capi_capo_ostack_cloud_yaml.copy() %}{% set removed=copy['clouds'][capi_capo_openstack_cloud]['auth'].pop('project_id') %}{{ copy | to_nice_yaml(indent=2) | b64encode }}"
+    capi_base64_capo_ostack_cloud_yaml_no_project_id: "{% set copy = capi_capo_ostack_cloud_yaml.copy() %}{% set removed = copy['clouds'][capi_capo_openstack_cloud]['auth'].pop('project_id') %}{{ copy | to_nice_yaml(indent=2) | b64encode }}"
 
 - name: Show capi_base64_capo_ostack_cloud_yaml_no_project_id
   ansible.builtin.debug:

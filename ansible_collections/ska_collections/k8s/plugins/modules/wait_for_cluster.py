@@ -232,7 +232,7 @@ class Kubectl:
         self.transport_cmd = kwargs.get(cmd_arg, shutil.which(self.transport))
         if not self.transport_cmd:
             raise AnsibleError(
-                "{0} command not found in PATH".format(self.transport)
+                (f"{0} command not " f"found in PATH").format(self.transport)
             )
 
     def _vars(self):
@@ -313,10 +313,10 @@ class Kubectl:
         """Run a command against Kubernetes"""
 
         local_cmd, censored_local_cmd = self._build_exec_cmd(cmd.split(" "))
-
-        local_cmd = [
-            to_bytes(i, errors="surrogate_or_strict") for i in local_cmd
-        ]
+        # fmt: off
+        local_cmd = [to_bytes(i, errors="surrogate_or_strict")
+                     for i in local_cmd]
+        # fmt: on
         p = subprocess.Popen(
             local_cmd,
             shell=False,
@@ -337,19 +337,20 @@ class Kubectl:
 def get_machines(connector, name):
     """find the machines state"""
 
+    # fmt: off
     # kubectl get machines -l cluster.x-k8s.io/cluster-name=capo-examples
     rc, stdout, err = connector.exec_command(
-        (
-            "get machines "
-            "-l cluster.x-k8s.io/cluster-name={name}"
-            " -o yaml"
-        ).format(name=name)
+        ("get machines "
+         "-l cluster.x-k8s.io/cluster-name={name}" " -o yaml").format(
+            name=name
+        )
     )
     if not rc == 0:
         raise AnsibleError(
-            "get machines call failed - rc: %d out: %s err: %s"
-            % (rc, stdout, err)
+            ("get machines call failed - rc: %d "
+             "out: %s err: %s") % (rc, stdout, err)
         )
+    # fmt: on
     kubectl_yaml = AnsibleLoader(stdout).get_data()
     machines = []
 
@@ -406,19 +407,26 @@ def main():
             machines = get_machines(connector, module.params["name"])
             for m in machines:
                 desired += 1
-                if m["phase"] == module.params["phase"] or m["phase"] == "Running": # only Running if cloud provider ccm installed
+                # only Running if cloud provider ccm installed
+                # fmt: off
+                if m["phase"] == module.params["phase"] or \
+                   m["phase"] == "Running":
                     if "cluster.x-k8s.io/control-plane" in m["labels"]:
                         mready += 1
                     else:
                         wready += 1
+                # fmt: on
+            # fmt: off
             connector._msg += (
                 "\n ATTEMPT: {tries} "
                 " - mready: {mready} "
                 "wready: {wready} "
                 "total: {desired} \n "
-            ).format(
-                tries=tries, mready=mready, wready=wready, desired=desired
-            )
+            ).format(tries=tries,
+                     mready=mready,
+                     wready=wready,
+                     desired=desired)
+            # fmt: on
             if desired == (wready + mready):
                 changed = True
                 break
