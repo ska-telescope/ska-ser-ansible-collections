@@ -1,6 +1,7 @@
 ---
 debug: false
 
-k8s_ingress_nginx_version: 1.6.4
-k8s_ingress_lb_suffix: "{{ capi_cluster | default('test') }}"
-k8s_ingress_lb_ip:
+ingress_lb_suffix: "{{ capi_cluster | default('test') }}"
+ingress_nginx_chart_version: "4.5.2"
+ingress_lb_ip: ""
+

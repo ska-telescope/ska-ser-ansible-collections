@@ -8,6 +8,7 @@ endif
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
+TESTS_DIR ?= ./ansible_collections/ska_collections/k8s/tests
 
 TAGS ?= all,metallb,cloudprovider,externaldns,ping,ingress,rookio,standardprovisioner,metrics,binderhub ## Ansible tags to run in post deployment processing
 CAPI_CLUSTER ?= capo-test
@@ -50,14 +51,11 @@ ifneq (,$(findstring cloudprovider,$(TAGS)))
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
-	--extra-vars "ingress_nginx_version=${NGINX_VERSION}" \
-	--extra-vars "ingress_lb_suffix=${CLUSTER_NAME}" \
 	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	--tags "$(TAGS)" \
 	-vv
 endif
 
-#	# --extra-vars 'ingress_nginx_version: 1.3.1 ingress_lb_suffix: "{{ capi_cluster }}"'
 ifneq (,$(findstring ingress,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/ingress.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
@@ -164,4 +162,23 @@ k8s-velero-backups:  ## Configure Velero backups on Kubernetes
 # --existing-resource-policy=update \
 # --exclude-namespaces kube-system,ingress-nginx,kube-node-lease,kube-public,metallb-system,velero  \
 # --include-cluster-resources=true
+
+k8s-post-deployment-test:
+ifneq (,$(findstring ingress,$(TAGS)))
+	@ansible-playbook $(TESTS_DIR)/test-ingress.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+endif
+
+ifneq (,$(findstring metrics,$(TAGS)))
+	@ansible-playbook $(TESTS_DIR)/test-metrics.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+endif
+
+ifneq (,$(findstring standardprovisioner,$(TAGS)))
+	@ansible-playbook $(TESTS_DIR)/test-storageprovisioner.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+endif
 
