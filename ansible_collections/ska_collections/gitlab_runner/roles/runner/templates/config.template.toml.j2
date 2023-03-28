@@ -1,0 +1,9 @@
+[[runners]]
+  name = "{{ gitlab_runner_name }}"
+  [runners.docker]
+    {% if gitlab_runner_docker_socket %}
+    host = "unix:///var/run/docker.sock"
+    {%- endif -%}
+    volumes = ["/certs/client"]
+    [runners.docker.sysctls]
+      "net.ipv4.ip_forward" = "1"

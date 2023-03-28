@@ -16,7 +16,7 @@
   become: true
 
 - name: Copy cron scripts to /usr/local/bin
-  ansible.builtin.copy:
+  ansible.builtin.template:
     src: "{{ playbook_dir }}/../roles/cron/files/{{ item }}"
     dest: "/usr/local/bin"
     mode: 0755

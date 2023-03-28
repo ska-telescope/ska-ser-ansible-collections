@@ -1,0 +1,101 @@
+---
+
+# Remove snmp services
+
+- name: Remove snmp packages
+  ansible.builtin.apt:
+    pkg:
+      - "snmp"
+      - "snmpd"
+      - "snmptrapd"
+      - "snmptt" # for the snmptthandler
+      - "snmp-mibs-downloader"
+    state: absent
+  become: true
+  tags:
+    - all
+
+- name: Stop and disable snmpd
+  ansible.builtin.service:
+    name: "snmpd"
+    state: "stopped"
+    enabled: false
+
+- name: Remove snmpd
+  ansible.builtin.apt:
+    pkg: snmpd
+    state: absent
+
+- name: Remove snmptrapd
+  ansible.builtin.apt:
+    pkg: snmptrapd
+    state: absent
+
+# Purge pkgs
+
+- name: Purge snmp-mibs-downloader
+  ansible.builtin.dpkg_selections:
+    name: snmp-mibs-downloader
+    selection: purge
+
+- name: Purge snmptt
+  ansible.builtin.dpkg_selections:
+    name: snmptt
+    selection: purge
+
+- name: Purge snmptrapd
+  ansible.builtin.dpkg_selections:
+    name: snmptrapd
+    selection: purge
+
+- name: Purge snmpd
+  ansible.builtin.dpkg_selections:
+    name: snmpd
+    selection: purge
+
+- name: Purge snmptrapd
+  ansible.builtin.dpkg_selections:
+    name: snmptrapd
+    selection: purge
+
+# Remove Configurations
+
+- name: Remove /usr/share/snmp/mibs/RielloUPS.mib file
+  ansible.builtin.file:
+    dest: "/usr/share/snmp/mibs/RielloUPS.mib"
+    state: absent
+
+- name: Remove snmpd.conf file from {{ snmp_config_dir }}
+  ansible.builtin.file:
+    dest: "{{ snmp_config_dir }}/snmpd.conf"
+    state: absent
+
+- name: Remove snmptrapd.conf file from {{ snmp_config_dir }}
+  ansible.builtin.file:
+    dest: "{{ snmp_config_dir }}/snmptrapd.conf"
+    state: absent
+
+- name: Remove snmptt.conf file from {{ snmp_config_dir }}
+  ansible.builtin.file:
+    dest: "{{ snmp_config_dir }}/snmptt.conf"
+    state: absent
+
+- name: Remove snmptt.ini file from {{ snmp_config_dir }}
+  ansible.builtin.file:
+    dest: "{{ snmp_config_dir }}/snmptt.ini"
+    state: absent
+
+- name: Remove trap_handler.sh file
+  ansible.builtin.file:
+    dest: "{{ snmp_trap_logs_dir }}/trap_handler.sh"
+    state: absent
+
+- name: Remove /etc/systemd/system/snmpd.service.d/override.conf
+  ansible.builtin.file:
+    path: /etc/systemd/system/snmpd.service.d/override.conf
+    state: absent
+
+- name: Remove /etc/systemd/system/snmptrapd.service.d/override.conf
+  ansible.builtin.file:
+    path: /etc/systemd/system/snmptrapd.service.d/override.conf
+    state: absent

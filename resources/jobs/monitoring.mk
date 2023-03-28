@@ -25,6 +25,9 @@ AZUREAD_CLIENT_ID ?= "" ## mandatory field for configuring the authentication of
 AZUREAD_CLIENT_SECRET ?= "" ## mandatory field for configuring the authentication of grafana
 AZUREAD_TENANT_ID ?= "" ## mandatory field for configuring the authentication of grafana
 
+SNMP_DELL_IDRAC_AUTH_COMMUNITY ?= "" ## mandatory field for configuring the authentication of idrac snmp exporter
+SNMP_RIELLO_UPS_AUTH_COMMUNITY ?= "" ## mandatory field for configuring the authentication of ups snmp exporter
+
 PROMETHEUS_EXTRAVARS ?=
 
 -include $(BASE_PATH)/PrivateRules.mak
@@ -47,6 +50,8 @@ vars:  ## Variables
 	@echo "GITLAB_TOKEN=$(GITLAB_TOKEN)"
 	@echo "KUBECONFIG=$(KUBECONFIG)"
 	@echo "NODES=$(NODES)"
+	@echo "SNMP_DELL_IDRAC_AUTH_COMMUNITY=$(SNMP_DELL_IDRAC_AUTH_COMMUNITY)"
+	@echo "SNMP_RIELLO_UPS_AUTH_COMMUNITY=$(SNMP_RIELLO_UPS_AUTH_COMMUNITY)"
 
 lint: ## Lint playbooks
 	@yamllint -d "{extends: relaxed, rules: {line-length: {max: 350}}}" \
@@ -75,6 +80,28 @@ prometheus: check_hosts ## Install Prometheus Server
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" $(PROMETHEUS_EXTRAVARS) \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
+
+snmp_exporter: check_hosts ## Install snmp_exporter
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_snmp_exporter.yml \
+		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+		-e "snmp_dell_idrac_auth_community=$(SNMP_DELL_IDRAC_AUTH_COMMUNITY)" \
+		-e "snmp_riello_ups_auth_community=$(SNMP_RIELLO_UPS_AUTH_COMMUNITY)" \
+		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
+		-e 'ansible_python_interpreter=/usr/bin/python3'
+
+snmp_install: check_hosts ## Install snmp_install
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_snmp.yml \
+		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+		-e "snmp_dell_idrac_auth_community=$(SNMP_DELL_IDRAC_AUTH_COMMUNITY)" \
+		-e "snmp_riello_ups_auth_community=$(SNMP_RIELLO_UPS_AUTH_COMMUNITY)" \
+		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
+		-e 'ansible_python_interpreter=/usr/bin/python3'
+
+snmp_destroy: check_hosts ## Destroy snmp services
+	@ansible-playbook $(PLAYBOOKS_DIR)/destroy_snmp.yml \
+		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
+		-e 'ansible_python_interpreter=/usr/bin/python3'			
 
 grafana: check_hosts ## Install Grafana Server
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_grafana.yml \

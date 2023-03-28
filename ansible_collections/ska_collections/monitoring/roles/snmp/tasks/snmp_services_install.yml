@@ -1,0 +1,144 @@
+---
+
+- name: Ensure directories exists {{ snmp_config_dir }}
+  ansible.builtin.file:
+    state: directory
+    mode: 0755
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+    recurse: true
+    path: "{{ snmp_config_dir }}"
+
+- name: Ensure directories exists {{ snmp_trap_logs_dir }}
+  ansible.builtin.file:
+    state: directory
+    mode: 0755
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+    recurse: true
+    path: "{{ snmp_trap_logs_dir }}"
+
+- name: Create a symlink to a folder
+  ansible.builtin.file:
+    src: "{{ snmp_config_dir }}"
+    dest: "{{ snmp_snmptt_config_dir }}"
+    state: link
+    force: true
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+  tags:
+    - all
+
+- name: Install snmp (apt)
+  ansible.builtin.apt:
+    name:
+      - "snmp"
+      - "snmpd"
+      - "snmptrapd"
+      - "snmptt" # for the snmptthandler
+      - "snmp-mibs-downloader"
+    state: present
+    force: true
+  become: true
+  tags:
+    - all
+
+- name: Stop and disable snmptrapd.socket"
+  ansible.builtin.service:
+    name: "snmptrapd.socket"
+    state: "stopped"
+    enabled: false
+
+- name: Stop and disable snmptrapd
+  ansible.builtin.service:
+    name: "snmptrapd"
+    state: "stopped"
+    enabled: false
+
+- name: Copy mibs
+  become: true
+  ansible.builtin.copy:
+    src: "RielloUPS.mib"
+    dest: "/usr/share/snmp/mibs/RielloUPS.mib"
+    force: true
+    mode: 0644
+
+- name: Copy snmpd.conf file to {{ snmp_config_dir }}
+  become: true
+  ansible.builtin.template:
+    src: "snmpd.conf.j2"
+    dest: "{{ snmp_config_dir }}/snmpd.conf"
+    force: true
+    owner: "root"
+    group: "root"
+    mode: 0644
+
+- name: Copy snmptrapd.conf file to {{ snmp_config_dir }}
+  become: true
+  ansible.builtin.template:
+    src: "snmptrapd.conf.j2"
+    dest: "{{ snmp_config_dir }}/snmptrapd.conf"
+    force: true
+    owner: "root"
+    group: "root"
+    mode: 0644
+
+- name: Copy snmptt.conf file to {{ snmp_config_dir }}
+  become: true
+  ansible.builtin.copy:
+    src: "snmptt.conf"
+    dest: "{{ snmp_snmptt_config_dir }}/snmptt.conf"
+    force: true
+    mode: 0644
+
+- name: Copy snmptt.ini
+  become: true
+  ansible.builtin.copy:
+    src: "snmptt.ini"
+    dest: "{{ snmp_snmptt_config_dir }}/snmptt.ini"
+    force: true
+    mode: 0644
+
+- name: Copy trap_handler.sh file to {{ snmp_trap_logs_dir }}
+  become: true
+  ansible.builtin.template:
+    src: "trap_handler.sh.j2"
+    dest: "{{ snmp_trap_logs_dir }}/trap_handler.sh"
+    force: true
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+    mode: 0777
+
+- name: Copy shutdown.yml to {{ snmp_shutdown_playbook_path }}
+  become: true
+  ansible.builtin.copy:
+    src: "shutdown.yml"
+    dest: "{{ snmp_shutdown_playbook_path }}/shutdown.yml"
+    owner: "{{ monitoring_localuser }}"
+    group: "{{ monitoring_localgroup }}"
+    force: true
+    mode: 0644
+
+- name: Ensure directories snmpd.service.d exists
+  ansible.builtin.file:
+    path: /etc/systemd/system/snmpd.service.d/
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Copy snmptrapd.conf file to {{ snmp_config_dir }}
+  become: true
+  ansible.builtin.template:
+    src: "snmpd.service.j2"
+    dest: "/etc/systemd/system/snmpd.service.d/override.conf"
+    force: true
+    owner: "root"
+    group: "root"
+    mode: 0644
+  notify:
+    - Reload-systemd-daemon
+    - Restart-snmpd-service

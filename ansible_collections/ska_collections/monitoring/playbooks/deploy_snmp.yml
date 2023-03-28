@@ -1,0 +1,13 @@
+---
+
+- name: Deploy SNMP services
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Deploy SNMP services
+      ansible.builtin.import_role:
+        name: snmp
+        tasks_from: snmp_services_install

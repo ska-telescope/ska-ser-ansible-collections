@@ -1,0 +1,60 @@
+- name: Test metrics service
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  tasks:
+    - name: Wait till the kube-state-metrics is created
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        wait: true
+        name: kube-state-metrics
+        namespace: kube-system
+        wait_timeout: 120
+      register: kube_state_metrics
+
+    - name: Check kube_state_metrics
+      ansible.builtin.debug:
+        var: kube_state_metrics
+
+    - name: Create curl pod
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: curl-test
+            namespace: default
+          spec:
+            template:
+              spec:
+                containers:
+                  - image: curlimages/curl
+                    name: curl-test
+                    command:
+                      - curl
+                      - kube-state-metrics.kube-system.svc.cluster.local:8080/metrics
+                restartPolicy: Never
+
+    - name: Wait Until Job Is Done
+      kubernetes.core.k8s_info:
+        name: curl-job
+        kind: Job
+        wait: true
+        wait_timeout: 10
+        wait_condition:
+          type: Complete
+          status: "True"
+      register: job_status
+
+    - fail:
+        msg: "Metrics not working!"
+      when: job_status.failed == 1
+
+    - name: Remove curl-job
+      kubernetes.core.k8s:
+        state: absent
+        api_version: v1
+        kind: Job
+        namespace: default
+        name: curl-job
