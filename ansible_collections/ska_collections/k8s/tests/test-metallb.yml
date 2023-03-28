@@ -36,7 +36,7 @@
               with the ExternalIP {{ metallb_service.resources[0].status.loadBalancer.ingress[0].ip }} \
               and Port {{ metallb_service.resources[0].spec.ports[0].port }}"
 
-    - name: Test test lb
+    - name: Test connection to test-metallb-service
       ansible.builtin.uri:
         url: "http://{{ metallb_service.resources[0].status.loadBalancer.ingress[0].ip }}:{{ metallb_service.resources[0].spec.ports[0].port }}"
         method: GET
