@@ -35,3 +35,14 @@
         msg: "{{ metallb_service.resources[0].metadata.name }} has been created \
               with the ExternalIP {{ metallb_service.resources[0].status.loadBalancer.ingress[0].ip }} \
               and Port {{ metallb_service.resources[0].spec.ports[0].port }}"
+
+    - name: Test test lb
+      ansible.builtin.uri:
+        url: "http://{{ metallb_service.resources[0].status.loadBalancer.ingress[0].ip }}:{{ metallb_service.resources[0].spec.ports[0].port }}"
+        method: GET
+        status_code: [200]
+
+    - name: Delete test-metallb
+      kubernetes.core.k8s:
+        state: absent
+        template: 'resources/metallb_test.yml'
