@@ -72,7 +72,7 @@ service:
 # externalTrafficPolicy: ""
   # The name of the Service
   # If not set, a name is generated using the fullname template
-  name: "kube_service_kubernetes_extdns_extdns-coredns{{ k8s_externaldns_lb_suffix }}"
+  name: "kube_service_extdns_extdns_coredns_{{ k8s_externaldns_lb_suffix }}"
   annotations:
     service.beta.kubernetes.io/openstack-internal-load-balancer: "true"
 
