@@ -17,20 +17,6 @@
   ansible.builtin.debug:
     var: k8s_cloudprovider_config_ini
 
-# - name: Set kubernetes config dir
-#   ansible.builtin.file:
-#     path: /etc/kubernetes
-#     state: directory
-#     mode: "0755"
-#   become: true
-
-# - name: Output cloud config file to server  # noqa: template-instead-of-copy
-#   ansible.builtin.copy:
-#     content: "{{ slurped_cloud_config.content | b64decode }}"
-#     dest: "{{ k8s_cloudprovider_config }}"
-#     mode: 0644
-#   become: true
-
 - name: Check Cloud Config Secret exist
   kubernetes.core.k8s_info:
     api_version: v1
@@ -39,7 +25,7 @@
     namespace: kube-system
   register: k8s_cloudprovider_secret_check
 
-- name: Check Workload Cluster is Provisioned
+- name: Check Workload Cluster is Provisioned or Running
   ska_collections.clusterapi.wait_for_cluster:
     name: "{{ capi_cluster }}"
     phase: "Provisioned"
