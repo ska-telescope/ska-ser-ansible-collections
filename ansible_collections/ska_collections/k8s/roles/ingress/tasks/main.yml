@@ -5,18 +5,21 @@
     atomic: true
     chart_repo_url: https://kubernetes.github.io/ingress-nginx
     chart_ref: ingress-nginx
-    chart_version: "{{ ingress_nginx_chart_version }}"
+    chart_version: "{{ k8s_ingress_nginx_chart_version }}"
     create_namespace: true
     namespace: ingress-nginx
     name: ingress-nginx
     values:
       controller:
+        # set the name so that the svc and Octavia inherits
+        # a unique one
+        name: "ingress-nginx-controller-{{ k8s_ingress_lb_suffix }}"
         ingressClassResource:
           default: true
         extraArgs:
           ingress-class: nginx
         service:
-          loadBalancerIP: "{{ ingress_lb_ip }}"
+          loadBalancerIP: "{{ k8s_ingress_lb_ip }}"
           annotations:
             service.beta.kubernetes.io/openstack-internal-load-balancer: "true"
           type: LoadBalancer
