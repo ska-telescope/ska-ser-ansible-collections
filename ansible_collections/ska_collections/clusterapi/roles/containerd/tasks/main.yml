@@ -20,6 +20,13 @@
     - overlay
     - br_netfilter
 
+- name: Add containerd cri sysctl vars
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/99-kubernetes-cri.conf
+  with_dict: "{{ capi_containerd_sysctls }}"
+
 - name: Debian containerd install
   when: ansible_os_family == "Debian"
   block:
