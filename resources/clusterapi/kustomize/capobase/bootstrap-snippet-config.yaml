@@ -6,6 +6,23 @@ spec:
   template:
     spec:
       verbosity: 5
+      files:
+      - content: ${OPENSTACK_CLOUD_PROVIDER_CONF_B64}
+        encoding: base64
+        owner: root
+        path: /etc/kubernetes/cloud.conf
+        permissions: "0600"
+      - content: ${OPENSTACK_CLOUD_CACERT_B64}
+        encoding: base64
+        owner: root
+        path: /etc/certs/cacert
+        permissions: "0600"
+      joinConfiguration:
+        nodeRegistration:
+          kubeletExtraArgs:
+            cloud-provider: external
+            cloud-config:
+          name: '{{ local_hostname }}'
       preKubeadmCommands:
         - 'echo "preKubeadmCommands [happens on workers] : start $(date)" >>/tmp/capo-config.log'
       postKubeadmCommands:

@@ -17,6 +17,20 @@
   ansible.builtin.debug:
     var: k8s_cloudprovider_config_ini
 
+# - name: Set kubernetes config dir
+#   ansible.builtin.file:
+#     path: /etc/kubernetes
+#     state: directory
+#     mode: "0755"
+#   become: true
+
+# - name: Output cloud config file to server  # noqa: template-instead-of-copy
+#   ansible.builtin.copy:
+#     content: "{{ slurped_cloud_config.content | b64decode }}"
+#     dest: "{{ k8s_cloudprovider_config }}"
+#     mode: 0644
+#   become: true
+
 - name: Check Cloud Config Secret exist
   kubernetes.core.k8s_info:
     api_version: v1
@@ -24,6 +38,16 @@
     name: cloud-config
     namespace: kube-system
   register: k8s_cloudprovider_secret_check
+
+- name: Check Workload Cluster is Provisioned
+  ska_collections.clusterapi.wait_for_cluster:
+    name: "{{ capi_cluster }}"
+    phase: "Provisioned"
+    kubectl_namespace: "{{ capi_kube_namespace }}"
+    initpause: 3
+    wait: 30
+    retries: 56
+    kubectl_kubeconfig: "/home/ubuntu/.kube/config"
 
 - name: Install Cloud Provider Cloud Config Secret
   when: "not k8s_cloudprovider_secret_check.resources"
@@ -104,6 +128,16 @@
         apply: true
         definition: "{{ item }}"
       with_items: "{{ k8s_cloudprovider_storage_classes }}"
+
+- name: Check Workload Cluster is Running - required before further components can be deployed
+  ska_collections.clusterapi.wait_for_cluster:
+    name: "{{ capi_cluster }}"
+    phase: "Running"
+    kubectl_namespace: "{{ capi_kube_namespace }}"
+    initpause: 3
+    wait: 30
+    retries: 56
+    kubectl_kubeconfig: "/home/ubuntu/.kube/config"
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers

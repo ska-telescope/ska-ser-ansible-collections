@@ -10,7 +10,48 @@ spec:
     postKubeadmCommands:
       - 'echo "postKubeadmCommands: start $(date)" >>/tmp/capo-config.log'
     clusterConfiguration:
+      etcd:
+        local:
+          extraArgs:
+            listen-metrics-urls: http://0.0.0.0:2381
       imageRepository: k8s.gcr.io
       dns:
         imageRepository: docker.io/coredns
-        imageTag: "1.9.3"
+        imageTag: "1.9.4"
+      apiServer:
+        extraArgs:
+          cloud-provider: external
+          cloud-config:
+        extraVolumes: []
+      controllerManager:
+        bind-address: 0.0.0.0
+        extraArgs:
+          cloud-provider: external
+          cloud-config:
+        extraVolumes: []
+      scheduler:
+        extraArgs:
+          bind-address: 0.0.0.0
+    files:
+    - content: ${OPENSTACK_CLOUD_PROVIDER_CONF_B64}
+      encoding: base64
+      owner: root
+      path: /etc/kubernetes/cloud.conf
+      permissions: "0600"
+    - content: ${OPENSTACK_CLOUD_CACERT_B64}
+      encoding: base64
+      owner: root
+      path: /etc/certs/cacert
+      permissions: "0600"
+    initConfiguration:
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-config:
+          cloud-provider: external
+    joinConfiguration:
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-provider: external
+          cloud-config:
+    kubeProxyConfiguration:
+      metricsBindAddress: 0.0.0.0:10249

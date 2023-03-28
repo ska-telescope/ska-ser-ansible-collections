@@ -27,6 +27,10 @@
     capi_capo_cacert: "{{ capi_capo_selected_cloud.cacert | default('\n') }}"
     capi_openstack_cloud_cacert_b64: "{{ capi_capo_selected_cloud.cacert | default('\n') | b64encode }}"
 
+- name: Show capi_capo_ostack_cloud_yaml
+  ansible.builtin.debug:
+    var: capi_capo_ostack_cloud_yaml
+
 - name: Show capi_capo_selected_cloud
   ansible.builtin.debug:
     var: capi_capo_selected_cloud
@@ -34,6 +38,14 @@
 - name: Show capi_base64_capo_ostack_cloud_yaml
   ansible.builtin.debug:
     var: capi_base64_capo_ostack_cloud_yaml
+
+- name: Remove project_id
+  ansible.builtin.set_fact:
+    capi_base64_capo_ostack_cloud_yaml_no_project_id: "{% set copy=capi_capo_ostack_cloud_yaml.copy() %}{% set removed=copy['clouds'][capi_capo_openstack_cloud]['auth'].pop('project_id') %}{{ copy | to_nice_yaml(indent=2) | b64encode }}"
+
+- name: Show capi_base64_capo_ostack_cloud_yaml_no_project_id
+  ansible.builtin.debug:
+    var: capi_base64_capo_ostack_cloud_yaml_no_project_id
 
 - name: Show capi_openstack_cloud_cacert_b64
   ansible.builtin.debug:
