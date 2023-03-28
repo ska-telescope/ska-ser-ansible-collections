@@ -22,20 +22,6 @@
   retries: 15
   until: apt_res is success
 
-# Only attempt this for x86, as it can break some rpi4
-- name: Install CEPH dependent packages
-  ansible.builtin.apt:
-    name: 'linux-image-extra-virtual'
-    force: true
-    state: present
-  when: ansible_architecture == 'x86_64'
-
-- name: Install CEPH dependent packages
-  ansible.builtin.apt:
-    name: 'ceph-common'
-    force: true
-    state: present
-
 - name: Check if firewalld service exists
   ansible.builtin.stat:
     path: /usr/lib/systemd/system/firewalld.service
