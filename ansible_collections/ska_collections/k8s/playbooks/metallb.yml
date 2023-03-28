@@ -1,7 +1,7 @@
 #!/usr/bin/env ansible-playbook
 ---
 
-- name: "Apply the k8s metallb role to nodes"
+- name: Install MetalLB
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
@@ -12,11 +12,27 @@
       ansible.builtin.debug:
         var: k8s_kubeconfig
 
-  roles:
-    - ska_collections.k8s.metallb
-    - ska_collections.k8s.externaldns
+  tasks:
+    - name: Deploy MetalLB
+      ansible.builtin.import_role:
+        name: ska_collections.k8s.metallb
+        tasks_from: install
+
+    - name: Deploy ExternalDNS
+      ansible.builtin.import_role:
+        name: ska_collections.k8s.externaldns
+        tasks_from: install
+
   environment:
     KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
+    OS_CLOUD: "{{ lookup('env', 'OS_CLOUD') }}"
+    OS_AUTH_TYPE: "{{ lookup('env', 'OS_AUTH_TYPE') }}"
+    OS_AUTH_URL: "{{ lookup('env', 'OS_AUTH_URL') }}"
+    OS_IDENTITY_API_VERSION: "{{ lookup('env', 'OS_IDENTITY_API_VERSION') }}"
+    OS_REGION_NAME: "{{ lookup('env', 'OS_REGION_NAME') }}"
+    OS_INTERFACE: "{{ lookup('env', 'OS_INTERFACE') }}"
+    OS_APPLICATION_CREDENTIAL_ID: "{{ lookup('env', 'OS_APPLICATION_CREDENTIAL_ID') }}"
+    OS_APPLICATION_CREDENTIAL_SECRET: "{{ lookup('env', 'OS_APPLICATION_CREDENTIAL_SECRET') }}"
 
   tags:
     - metallb

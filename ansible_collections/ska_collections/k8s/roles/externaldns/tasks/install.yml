@@ -5,13 +5,13 @@
     name: coredns
     repo_url: "https://coredns.github.io/helm"
 
-- name: Deploy externaldns chart with values
+- name: Deploy ExternalDNS chart with values
   block:
-    - name: Template externaldns values yaml
+    - name: Template ExternalDNS values yaml
       ansible.builtin.template:
         src: "values.externaldns.yaml.j2"
         dest: "/tmp/externaldns.values.yaml"
-        mode: "0644"
+        mode: 0644
 
     - name: Deploy CoreDNS chart with values loaded from template
       kubernetes.core.helm:

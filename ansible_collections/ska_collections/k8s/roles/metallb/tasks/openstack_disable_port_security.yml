@@ -3,29 +3,34 @@
   ansible.builtin.debug:
     msg: "{{ lookup('env', 'OS_AUTH_TYPE') }}"
   register: os_var_auth
+  tags: openstack_disable_port_security
 
 - name: Fetch Openstack env variable OS_CLOUD
   ansible.builtin.debug:
     msg: "{{ lookup('env', 'OS_CLOUD') }}"
   register: os_var_cloud
+  tags: openstack_disable_port_security
 
-- name: Fail if the Openstack env variable are not defined
+- name: Fail if the Openstack env variables are not defined
   ansible.builtin.fail:
     msg: Source the OpenStack RC File. Download it on the OpenStack Dashboard.
   when: os_var_cloud.msg == "" and os_var_auth.msg == ""
   any_errors_fatal: true
+  tags: openstack_disable_port_security
 
 - name: Get Kubernetes network on Openstack
   openstack.cloud.subnets_info:
     filters:
       cidr: "{{ k8s_metallb_openstack_network_cidr }}"
   register: result
+  tags: openstack_disable_port_security
 
 - name: Get Openstack Ports for the previous network
   openstack.cloud.port_info:
     filters:
       network_id: "{{ result.openstack_subnets[0].network_id }}"
   register: result_ports
+  tags: openstack_disable_port_security
 
 - name: Disable port security for the previous ports
   openstack.cloud.port:
@@ -35,3 +40,4 @@
     name: "{{ item.name }}"
   loop: "{{ result_ports.openstack_ports }}"
   when: result_ports is defined and item.name != "" and item.status == "ACTIVE"
+  tags: openstack_disable_port_security

@@ -1,9 +1,10 @@
 .PHONY: check_hosts vars install destroy help
 .DEFAULT_GOAL := help
-ANSIBLE_PLAYBOOK_ARGUMENTS ?=
+ANSIBLE_PLAYBOOK_ARGUMENTS ?= 
 ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
-PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/metallb/playbooks
+PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/k8s/playbooks
+TESTS_DIR ?= ./ansible_collections/ska_collections/k8s/tests
 
 -include $(BASE_PATH)/PrivateRules.mak
 
@@ -18,7 +19,7 @@ vars:
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
 install: check_hosts ## Install metallb's helm chart
-	ansible-playbook $(PLAYBOOKS_DIR)/metallb.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/metallb.yml --skip-tags openstack_disable_port_security \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
@@ -27,10 +28,15 @@ destroy: check_hosts ## Destroy metallb's helm chart
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-openstack_disable_port_security: check_hosts ## Disable openstack port security
-	ansible-playbook $(PLAYBOOKS_DIR)/metallb_openstack.yml \
+openstack-disable-port-security: check_hosts ## Disable openstack port security
+	ansible-playbook $(PLAYBOOKS_DIR)/metallb.yml --tags openstack_disable_port_security \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+test: check_hosts
+	ansible-playbook $(TESTS_DIR)/test-metallb.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"	
 
 help: ## Show Help
 	@echo "metallb targets - make playbooks metallb <target>:"

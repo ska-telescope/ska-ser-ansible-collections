@@ -1,0 +1,17 @@
+---
+
+- name: Install MetalLB Helm Chart
+  kubernetes.core.helm:
+    atomic: true
+    chart_repo_url: https://metallb.github.io/metallb
+    chart_ref: metallb
+    chart_version: "{{ k8s_metallb_chart_version }}"
+    create_namespace: true
+    namespace: "{{ k8s_metallb_namespace }}"
+    name: metallb
+    wait: true
+
+- name: Apply MetalLB config
+  kubernetes.core.k8s:
+    state: present
+    template: 'metallb-config.yaml.j2'

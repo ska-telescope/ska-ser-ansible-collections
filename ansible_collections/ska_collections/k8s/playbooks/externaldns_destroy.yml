@@ -2,7 +2,7 @@
 ---
 
 # Destroy coredns
-- name: Destroy ExternalDNS"
+- name: Destroy ExternalDNS
   hosts: "{{ target_hosts }}"
   become: true
   gather_facts: true
@@ -17,7 +17,7 @@
 
   tasks:
 
-    - name: Destroy externaldns
+    - name: Destroy ExternalDNS
       ansible.builtin.import_role:
         name: externaldns
         tasks_from: destroy

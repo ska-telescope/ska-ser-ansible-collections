@@ -20,8 +20,7 @@ Each role encompasses a individual component/service/integration to be deployed 
 | [k8s.ingress](./roles/ingress) | Install and configure NGINX Ingress Controller | 1.6.6 | 1.25.5+ |
 | [k8s.join](./roles/join) | Bootstrap and Join nodes to a Kubernetes cluster | 1.25.5+/Ubuntu 22.04 | 1.25.5+ |
 | [k8s.k8s](./roles/k8s) | Install and configure K8s OS dependencies on nodes | 1.25.5+/Ubuntu 22.04 | 1.25.5+ |
-| [k8s.metallb](./roles/metallb) | Install and configure Metallb LoadBalancer (ARP/BGP)  | 0.13.7 | 1.25.5+ |
-| [k8s.metallb_openstack](./roles/metallb_openstack) | Modify Port Security on OpenStack Inventory for Metallb comms | N/A | 1.25.5+ |
+| [k8s.metallb](./roles/metallb) | Install and configure MetalLB LoadBalancer (ARP/BGP)  | 0.13.7 | 1.25.5+ |
 | [k8s.metrics](./roles/metrics) | Install and configure kube-state-metrics and metrics-server | 4.11.0/ | 1.25.5+ |
 | [k8s.ping](./roles/ping) | Install ping test endpoint /ping/ | 1.10 | 1.25.5+ |
 | [k8s.rookio](./roles/rookio) | Install and configure Rook/Ceph integration and StorageClasses | release-1.10 | 1.25.5+ |
@@ -56,9 +55,8 @@ Installation playbooks for each component can be found in the [playbooks/](./pla
 | [externaldns.yml](./playbooks/externaldns.yml) | Install External DNS CoreDNS |
 | [ingress.yml](./playbooks/ingress.yml) | Install NGINX Ingress Controller |
 | [k8s.yml](./playbooks/k8s.yml) | Install Kubernetes cluster with `kubeadm` |
-| [metallb_destroy.yml](./playbooks/metallb_destroy.yml) | Uninstall Metallb |
-| [metallb_openstack.yml](./playbooks/metallb_openstack.yml) | Modify Port Security on OpenStack Inventory for Metallb comms |
-| [metallb.yml](./playbooks/metallb.yml) | Install Metallb LoadBalancer |
+| [metallb_destroy.yml](./playbooks/metallb_destroy.yml) | Uninstall MetalLB |
+| [metallb.yml](./playbooks/metallb.yml) | Install MetalLB LoadBalancer and, if needed, modify Port Security on OpenStack Inventory for MetalLB comms|
 | [metrics.yml](./playbooks/metrics.yml) | Install Containerd|
 | [ping.yml](./playbooks/ping.yml) | Install ping tester endpoint |
 | [rookio.yml](./playbooks/rookio.yml) | Install Rook/Ceph integration and StorageClasses |

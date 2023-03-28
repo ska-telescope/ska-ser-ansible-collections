@@ -182,3 +182,8 @@ ifneq (,$(findstring standardprovisioner,$(TAGS)))
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 endif
 
+ifneq (,$(findstring metallb,$(TAGS)))
+	@ansible-playbook $(TESTS_DIR)/test-metallb.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+endif

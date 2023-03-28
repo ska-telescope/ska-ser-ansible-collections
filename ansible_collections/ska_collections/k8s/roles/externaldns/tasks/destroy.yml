@@ -1,7 +1,8 @@
 ---
 
-- name: Delete cordns Helm release
+- name: Delete CoreDNS Helm release
   kubernetes.core.helm:
     state: absent
     name: "extdns"
     release_namespace: "{{ k8s_externaldns_namespace }}"
+    kubeconfig: "{{ k8s_kubeconfig }}"
