@@ -1,8 +1,50 @@
 ---
 
+# Remove old deployment if exists
+
+- name: Check old Ingress Controller is running
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: ingress-nginx-controller
+    namespace: ingress-nginx
+  register: ingress_check
+
+- name: Remove old Ingress Controller
+  # Calico is not started
+  when: ingress_check.resources
+  block:
+
+    - name: Download Ingress Controller manifests
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v{{ k8s_ingress_old_nginx_version }}/deploy/static/provider/baremetal/deploy.yaml"
+        dest: "/tmp/ingress.yaml"
+        mode: '0664'
+
+    - name: Apply Ingress Controller manifests
+      kubernetes.core.k8s:
+        state: absent
+        apply: true
+        src: "/tmp/ingress.yaml"
+
+    - name: Tidy up ingress resources - ensure Namespace deleted
+      kubernetes.core.k8s:
+        name: ingress-nginx
+        api_version: v1
+        kind: Namespace
+        state: absent
+
+  always:
+    - name: Remove manifests
+      ansible.builtin.file:
+        path: "/tmp/ingress.yaml"
+        state: absent
+
 - name: Install Nginx Helm chart
   kubernetes.core.helm:
     atomic: true
+    wait: true
+    timeout: "600s"
     chart_repo_url: https://kubernetes.github.io/ingress-nginx
     chart_ref: ingress-nginx
     chart_version: "{{ k8s_ingress_nginx_chart_version }}"
@@ -27,10 +69,22 @@
             http: 30080
             https: 30443
 
-- name: Wait till the nginx is created
+- name: Wait till the nginx ingress controller is created
   kubernetes.core.k8s_info:
     kind: Deployment
     wait: true
-    name: ingress-nginx-controller
+    name: "ingress-nginx-controller-{{ k8s_ingress_lb_suffix }}"
     namespace: ingress-nginx
     wait_timeout: 120
+
+- name: Apply patch to ingress class so that it is the default
+  ska_collections.k8s.kubectl_patch:
+    name: ingressclass/nginx
+    kubectl_namespace: kube-system
+    patch: >-
+      {"metadata":
+        {"annotations":
+          {"ingressclass.kubernetes.io/is-default-class": "true"}
+        }
+      }
+    kubectl_kubeconfig: "{{ k8s_kubeconfig }}"
