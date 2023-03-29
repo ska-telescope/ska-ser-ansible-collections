@@ -3,6 +3,7 @@ debug: false
 
 k8s_cloudprovider_config: /etc/kubernetes/cloud.conf
 k8s_cloudprovider_config_ini: /etc/clusterapi/cloud-provider.ini
+k8s_cloudprovider_wait: true
 
 k8s_cloudprovider_storage_classes:
   - apiVersion: storage.k8s.io/v1

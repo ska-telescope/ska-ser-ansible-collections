@@ -23,6 +23,7 @@
 
       export KUBECONFIG=/etc/kubernetes/admin.conf
       export CLUSTER_NAME=${CLUSTER_NAME}
+      export OPENSTACK_CLOUD=${OPENSTACK_CLOUD}
 
       export CALICO_VERSION=${CALICO_VERSION}
       export CALICO_IPV4POOL_CIDR=${CIDR_BLOCK}
@@ -55,5 +56,14 @@
         -e "calico_ip_autodetection_method=${IP_AUTODETECTION_METHOD}" \
         -vv
 
+      echo "Controlplane initialise: cloud provider config"
+      /usr/src/ska-ser-ansible-collections/run-play.sh ../../k8s/playbooks/cloudprovider.yml \
+        --extra-vars "capi_cluster=${CLUSTER_NAME}" \
+        --extra-vars "k8s_cloudprovider_wait=false" \
+        --extra-vars "capi_capo_openstack_cloud_config=/etc/kubernetes/clouds.yaml" \
+        --extra-vars "capi_capo_openstack_cloud=${OPENSTACK_CLOUD}" \
+        --tags "cloudprovider" \
+        -vv
       echo "postKubeadmCommands: end $(date)"
       exit 0
+

@@ -38,6 +38,11 @@ spec:
       owner: root
       path: /etc/kubernetes/cloud.conf
       permissions: "0600"
+    - content: ${OPENSTACK_CLOUD_YAML_B64}
+      encoding: base64
+      owner: root
+      path: /etc/kubernetes/clouds.yaml
+      permissions: "0600"
     - content: ${OPENSTACK_CLOUD_CACERT_B64}
       encoding: base64
       owner: root
