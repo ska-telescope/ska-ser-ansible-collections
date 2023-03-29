@@ -73,6 +73,8 @@
     namespace: ingress-nginx
     wait_timeout: 120
 
+# creating a separate SVC with external LB allows the ingress deployment
+# to gracefully degrade if there is a timing issue with CCM
 - name: Apply LoadBalancer Service
   kubernetes.core.k8s:
     state: present
