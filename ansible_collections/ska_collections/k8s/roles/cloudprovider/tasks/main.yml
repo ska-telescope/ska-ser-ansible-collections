@@ -5,26 +5,6 @@
     name: ska_collections.clusterapi.createworkload
     tasks_from: os_config
 
-- name: "Show slurped_cloud_config"
-  ansible.builtin.debug:
-    var: slurped_cloud_config
-
-- name: Decode Clusterapi cloud config and store as fact
-  ansible.builtin.set_fact:
-    k8s_cloudprovider_config_ini: "{{ slurped_cloud_config.content | b64decode }}"
-
-- name: "Show k8s_cloudprovider_config_ini"
-  ansible.builtin.debug:
-    var: k8s_cloudprovider_config_ini
-
-- name: Check Cloud Config Secret exist
-  kubernetes.core.k8s_info:
-    api_version: v1
-    kind: Secret
-    name: cloud-config
-    namespace: kube-system
-  register: k8s_cloudprovider_secret_check
-
 - name: Check Workload Cluster is Provisioned or Running
   ska_collections.clusterapi.wait_for_cluster:
     name: "{{ capi_cluster }}"
@@ -35,54 +15,62 @@
     retries: 56
     kubectl_kubeconfig: "/home/ubuntu/.kube/config"
 
-- name: Install Cloud Provider Cloud Config Secret
-  when: "not k8s_cloudprovider_secret_check.resources"
-  block:
-    - name: Create Cloud Config Secret
-      kubernetes.core.k8s:
-        state: present
-        definition:
-          apiVersion: v1
-          kind: Secret
-          metadata:
-            name: cloud-config
-            namespace: kube-system
-          data:
-            cloud.conf: "{{ slurped_cloud_config.content }}"
-
-- name: Tidy up Cloud Provider manifests
-  ansible.builtin.file:
-    path: "/tmp/{{ item }}"
-    state: absent
-  with_items:
-    - "cloud-controller-manager-roles.yaml"
-    - "cloud-controller-manager-role-bindings.yaml"
-    - "openstack-cloud-controller-manager-ds.yaml"
-
-- name: Download Cloud Provider manifests
-  ansible.builtin.get_url:
-    url: "https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/master/manifests/controller-manager/{{ item }}"
-    dest: "/tmp/{{ item }}"
-    mode: '0664'
-  with_items:
-    - "cloud-controller-manager-roles.yaml"
-    - "cloud-controller-manager-role-bindings.yaml"
-    - "openstack-cloud-controller-manager-ds.yaml"
-
-- name: Apply Cloud Provider manifests
-  kubernetes.core.k8s:
-    state: present
-    apply: true
-    src: "/tmp/{{ item }}"
-  with_items:
-    - "cloud-controller-manager-roles.yaml"
-    - "cloud-controller-manager-role-bindings.yaml"
-    - "openstack-cloud-controller-manager-ds.yaml"
-
 - name: Add cloud provider chart repo
   kubernetes.core.helm_repository:
     name: cpo
     repo_url: "https://kubernetes.github.io/cloud-provider-openstack"
+
+- name: Deploy externaldns chart with values
+  block:
+    - name: Template openstack-ccm values yaml
+      ansible.builtin.template:
+        src: "openstack-ccm.yaml.j2"
+        dest: "/tmp/openstack-ccm.values.yaml"
+        mode: "0644"
+
+    - name: Apply cloud controller manager chart
+      kubernetes.core.helm:
+        name: openstack-ccm
+        chart_ref: cpo/openstack-cloud-controller-manager
+        release_namespace: kube-system
+        create_namespace: false
+        update_repo_cache: true
+        force: true
+        values_files:
+          - "/tmp/openstack-ccm.values.yaml"
+
+    # apply the CCM roles and bindings required for updating Ingress
+    - name: Download Cloud Provider manifests
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/master/manifests/controller-manager/{{ item }}"
+        dest: "/tmp/{{ item }}"
+        mode: '0664'
+      with_items:
+        - "cloud-controller-manager-roles.yaml"
+        - "cloud-controller-manager-role-bindings.yaml"
+
+    - name: Apply Cloud Provider manifests
+      kubernetes.core.k8s:
+        state: present
+        apply: true
+        src: "/tmp/{{ item }}"
+      with_items:
+        - "cloud-controller-manager-roles.yaml"
+        - "cloud-controller-manager-role-bindings.yaml"
+
+  always:
+    - name: Remove values
+      ansible.builtin.file:
+        path: "/tmp/openstack-ccm.values.yaml"
+        state: absent
+
+    - name: Tidy up Cloud Provider manifests
+      ansible.builtin.file:
+        path: "/tmp/{{ item }}"
+        state: absent
+      with_items:
+        - "cloud-controller-manager-roles.yaml"
+        - "cloud-controller-manager-role-bindings.yaml"
 
   # https://github.com/kubernetes/cloud-provider-openstack/blob/master/examples/cinder-csi-plugin/block/block.yaml
   # helm repo add cpo https://kubernetes.github.io/cloud-provider-openstack
