@@ -42,9 +42,7 @@
 
 - name: Install Nginx Helm chart
   kubernetes.core.helm:
-    atomic: true
-    wait: true
-    timeout: "600s"
+    wait: false
     chart_repo_url: https://kubernetes.github.io/ingress-nginx
     chart_ref: ingress-nginx
     chart_version: "{{ k8s_ingress_nginx_chart_version }}"
@@ -61,10 +59,10 @@
         extraArgs:
           ingress-class: nginx
         service:
-          loadBalancerIP: "{{ k8s_ingress_lb_ip }}"
-          annotations:
-            service.beta.kubernetes.io/openstack-internal-load-balancer: "true"
-          type: LoadBalancer
+          # loadBalancerIP: "{{ k8s_ingress_lb_ip }}"
+          # annotations:
+          #   service.beta.kubernetes.io/openstack-internal-load-balancer: "true"
+          # type: LoadBalancer
           nodePorts:
             http: 30080
             https: 30443
@@ -73,9 +71,14 @@
   kubernetes.core.k8s_info:
     kind: Deployment
     wait: true
-    name: "ingress-nginx-controller-{{ k8s_ingress_lb_suffix }}"
+    name: "ingress-nginx-ingress-nginx-controller-{{ k8s_ingress_lb_suffix }}"
     namespace: ingress-nginx
     wait_timeout: 120
+
+- name: Apply LoadBalancer Service
+  kubernetes.core.k8s:
+    state: present
+    template: 'service.yaml.j2'
 
 - name: Apply patch to ingress class so that it is the default
   ska_collections.k8s.kubectl_patch:
