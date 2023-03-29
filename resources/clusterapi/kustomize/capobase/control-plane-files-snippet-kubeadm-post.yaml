@@ -59,7 +59,7 @@
       echo "Controlplane initialise: cloud provider config"
       /usr/src/ska-ser-ansible-collections/run-play.sh ../../k8s/playbooks/cloudprovider.yml \
         --extra-vars "capi_cluster=${CLUSTER_NAME}" \
-        --extra-vars '{"k8s_cloudprovider_wait": false}' \
+        --extra-vars "{\"k8s_cloudprovider_wait\": false}" \
         --extra-vars "k8s_cloudprovider_kubeconfig=$KUBECONFIG" \
         --extra-vars "capi_capo_openstack_cloud_config=/etc/kubernetes/clouds.yaml" \
         --extra-vars "capi_capo_openstack_cloud=${OPENSTACK_CLOUD}" \
