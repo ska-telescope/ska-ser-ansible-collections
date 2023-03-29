@@ -4,35 +4,36 @@
     name: projectcalico
     repo_url: "https://docs.tigera.io/calico/charts"
 
-- name: Stop old Calico is running on kube-system
-  kubernetes.core.k8s:
+- name: Check if Calico is running on kube-system
+  kubernetes.core.k8s_info:
     api_version: apps/v1
     kind: DaemonSet
     name: calico-node
     namespace: kube-system
-    state: absent
+  register: calico_old
 
 - name: Deploy calico chart with values
-  kubernetes.core.helm:
-    name: calico
-    chart_ref: "projectcalico/tigera-operator"
-    chart_version: "{{ calico_version }}"
-    release_namespace: "{{ calico_operator_namespace }}"
-    create_namespace: true
-    wait: true
-    values:
-      installation:
-        enabled: true
-        calicoNetwork:
-          ipPools:
-            - cidr: "{{ calico_ipv4pool_cidr }}"
-              encapsulation: None
-          nodeAddressAutodetectionV4:
-            interface: "{{ calico_ip_autodetection_interface }}"
-      tigeraOperator:
-        version: v{{ calico_tigera_operator_version }}
-      calicoctl:
-        tag: v{{ calico_version }}
+  block:
+    - name: Template calico values yaml
+      ansible.builtin.template:
+        src: values.yaml.j2
+        dest: "/tmp/calico.values.yaml"
+        mode: 0644
+    - name: Deploy calico chart with values
+      kubernetes.core.helm:
+        name: calico
+        chart_ref: "projectcalico/tigera-operator"
+        chart_version: "{{ calico_version }}"
+        release_namespace: "{{ calico_operator_namespace }}"
+        create_namespace: true
+        wait: true
+        values_files:
+          - "/tmp/calico.values.yaml"
+  always:
+    - name: Remove values
+      ansible.builtin.file:
+        path: "/tmp/calico.values.yaml"
+        state: absent
 
 - name: Check kubernetes resources
   kubernetes.core.k8s_info:
