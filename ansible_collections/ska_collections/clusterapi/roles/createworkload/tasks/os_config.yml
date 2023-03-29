@@ -39,11 +39,19 @@
     capi_base64_capo_ostack_cloud_yaml: "{{ capi_capo_ostack_cloud_yaml | to_nice_yaml(indent=2) | b64encode }}"
   when: capi_capo_auth_username
 
+- name: Set selected cloud yaml when app creds
+  ansible.builtin.set_fact:
+    capi_base64_capo_ostack_cloud_yaml: "{{ capi_capo_ostack_cloud_yaml | to_nice_yaml(indent=2) | b64encode }}"
+  when: >
+    capi_capo_auth_application_credential_secret and
+     not 'project_id' in capi_capo_ostack_cloud_yaml['clouds'][capi_capo_openstack_cloud]
+
 - name: Set selected cloud yaml when app creds -  Remove project_id
   ansible.builtin.set_fact:
     capi_base64_capo_ostack_cloud_yaml: "{% set copy = capi_capo_ostack_cloud_yaml.copy() %}{% set removed = copy['clouds'][capi_capo_openstack_cloud]['auth'].pop('project_id') %}{{ copy | to_nice_yaml(indent=2) | b64encode }}"
-  when: capi_capo_auth_application_credential_secret
-
+  when: >
+    capi_capo_auth_application_credential_secret and
+     'project_id' in capi_capo_ostack_cloud_yaml['clouds'][capi_capo_openstack_cloud]
 
 - name: Show capi_capo_ostack_cloud_yaml
   ansible.builtin.debug:
