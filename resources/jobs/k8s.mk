@@ -10,7 +10,7 @@ ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
 TESTS_DIR ?= ./ansible_collections/ska_collections/k8s/tests
 
-TAGS ?= all,metallb,cloudprovider,externaldns,ping,ingress,rookio,standardprovisioner,metrics,binderhub ## Ansible tags to run in post deployment processing
+TAGS ?= all,metallb,externaldns,ping,ingress,rookio,standardprovisioner,metrics,binderhub ## Ansible tags to run in post deployment processing
 CAPI_CLUSTER ?= capo-test
 K8S_KUBECONFIG ?= /etc/clusterapi/$(CAPI_CLUSTER)-kubeconfig
 
@@ -42,10 +42,7 @@ k8s-manual-deployment: ## Manual K8s deployment based on kubeadm
 
 k8s-post-deployment:  ## Post deployment for workload cluster
 
-#   echo "Controlplane initialise: cloud provider config"
-#   echo "$OPENSTACK_CLOUD_PROVIDER_CONF_B64" | base64 -d > /etc/kubernetes/cloud.conf
-#   cloud_provider_config: /etc/kubernetes/cloud.conf
-
+# If you want to run the CCM install you must explicitly add 'cloudprovider' to TAGS
 ifneq (,$(findstring cloudprovider,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/cloudprovider.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
