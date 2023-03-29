@@ -1,10 +1,9 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: Apply the clusterapi calico role to nodes
+- name: Uninstall Calico
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-    k8s_kubeconfig: "/etc/clusterapi/{{ capi_cluster }}-kubeconfig"
   tasks:
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:

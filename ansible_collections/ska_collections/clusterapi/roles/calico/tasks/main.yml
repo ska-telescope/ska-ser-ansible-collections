@@ -13,27 +13,26 @@
     state: absent
 
 - name: Deploy calico chart with values
-  block:
-    - name: Template calico values yaml
-      ansible.builtin.template:
-        src: values.yaml.j2
-        dest: "/tmp/calico.values.yaml"
-        mode: "0644"
-    - name: Deploy calico chart with values
-      kubernetes.core.helm:
-        name: calico
-        chart_ref: "projectcalico/tigera-operator"
-        chart_version: "{{ calico_version }}"
-        release_namespace: "{{ calico_operator_namespace }}"
-        create_namespace: true
-        wait: true
-        values_files:
-          - "/tmp/calico.values.yaml"
-  always:
-    - name: Remove values
-      ansible.builtin.file:
-        path: "/tmp/calico.values.yaml"
-        state: absent
+  kubernetes.core.helm:
+    name: calico
+    chart_ref: "projectcalico/tigera-operator"
+    chart_version: "{{ calico_version }}"
+    release_namespace: "{{ calico_operator_namespace }}"
+    create_namespace: true
+    wait: true
+    values:
+      installation:
+        enabled: true
+        calicoNetwork:
+          ipPools:
+            - cidr: "{{ calico_ipv4pool_cidr }}"
+              encapsulation: None
+          nodeAddressAutodetectionV4:
+            interface: "{{ calico_ip_autodetection_interface }}"
+      tigeraOperator:
+        version: v{{ calico_tigera_operator_version }}
+      calicoctl:
+        tag: v{{ calico_version }}
 
 - name: Check kubernetes resources
   kubernetes.core.k8s_info:

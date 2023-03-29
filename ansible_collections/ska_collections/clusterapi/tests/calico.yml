@@ -1,10 +1,13 @@
 ---
-- name: Apply the clusterapi calico role to nodes
+- name: Test Calico
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-    k8s_kubeconfig: "/etc/clusterapi/{{ capi_cluster }}-kubeconfig"
-    calico_action: install
+    calico_test_nodes:
+      - "minikube"
+    calico_ipv4pool_cidr: 10.244.0.0/16
+    calico_ip_autodetection_interface: "ens.*,eth.*"
+    calico_test_pod_namespace: calico-test
   tasks:
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:
@@ -37,43 +40,93 @@
           namespace: calico-system
           name: csi-node-driver
 
-    - name: Create CalicoNodeStatus resource
-      kubernetes.core.k8s:
-        state: present
-        namespace: calico-system
-        wait: true
-        definition:
-          apiVersion: projectcalico.org/v3
-          kind: CalicoNodeStatus
-          metadata:
-            name: calico-status
-          spec:
-            classes:
-              - Agent
-              - BGP
-              - Routes
-            node: minikube
-            updatePeriodSeconds: 10
+    - name: Check Calico Node(s) Status
+      ansible.builtin.include_tasks:
+        file: "utils/checkCalicoNodeStatus.yml"
+      loop: "{{ calico_test_nodes }}"
 
-    - name: Get CalicoNode status
-      kubernetes.core.k8s_info:
-        kind: CalicoNodeStatus
-        name: calico-status
-        namespace: calico-system
-      register: calico_node_status
+    - name: Test the pod network
+      block:
+        - name: Create "{{ calico_test_pod_namespace }}" namespace
+          kubernetes.core.k8s:
+            state: present
+            definition:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: "{{ calico_test_pod_namespace }}"
 
-    - name: Display CalicoNode status
-      ansible.builtin.debug:
-        var: calico_node_status.resources[0].status
+        - name: Create Nginx deployment
+          kubernetes.core.k8s:
+            state: present
+            definition:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: nginx
+                namespace: "{{ calico_test_pod_namespace }}"
+              spec:
+                replicas: 3
+                selector:
+                  matchLabels:
+                    app: nginx
+                template:
+                  metadata:
+                    labels:
+                      app: nginx
+                  spec:
+                    containers:
+                      - name: nginx
+                        image: nginx
+                        ports:
+                          - containerPort: 80
+        - name: Wait and Get Nginx pod IP addresses
+          kubernetes.core.k8s_info:
+            kind: Pod
+            namespace: "{{ calico_test_pod_namespace }}"
+            label_selectors: "app=nginx"
+            wait: true
+          register: nginx_pods
 
-    - name: Destroy CalicoNodeStatus resource
-      kubernetes.core.k8s:
-        api_version: v1
-        kind: CalicoNodeStatus
-        state: absent
-        namespace: calico-system
-        name: calico-status
-        wait: true
+        - name: Deploy a curl pod
+          kubernetes.core.k8s:
+            kind: Pod
+            api_version: v1
+            wait: true
+            definition:
+              metadata:
+                name: curl-test
+                namespace: "{{ calico_test_pod_namespace }}"
+              spec:
+                containers:
+                  - name: curl
+                    image: curlimages/curl
+                    command: ["sleep", "infinity"]
+
+        - name: Run curl command to each ngix pod
+          kubernetes.core.k8s_exec:
+            namespace: "{{ calico_test_pod_namespace }}"
+            pod: curl-test
+            command: "curl -sS http://{{ item }}"
+          loop: "{{ nginx_pods.resources | community.general.json_query('[*].status.podIP') }}"
+          register: command_status
+          ignore_errors: true
+
+        - name: Check command status
+          ansible.builtin.fail:
+            msg: "Something went wrong with the network: {{ command_status.results }}"
+          when: item != 0
+          loop: "{{ command_status.results | community.general.json_query('[*].rc') }}"
+      always:
+        - name: Delete "{{ calico_test_pod_namespace }}" namespace
+          kubernetes.core.k8s:
+            wait: true
+            state: absent
+            definition:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: "{{ calico_test_pod_namespace }}"
 
   environment:
     KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
