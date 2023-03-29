@@ -13,7 +13,7 @@
     initpause: 3
     wait: 30
     retries: 56
-    kubectl_kubeconfig: "/home/ubuntu/.kube/config"
+    kubectl_kubeconfig: "{{ k8s_cloudprovider_kubeconfig }}"
   when: k8s_cloudprovider_wait
 
 - name: Add cloud provider chart repo
@@ -112,7 +112,7 @@
     initpause: 3
     wait: 30
     retries: 56
-    kubectl_kubeconfig: "/home/ubuntu/.kube/config"
+    kubectl_kubeconfig: "{{ k8s_cloudprovider_kubeconfig }}"
   when: k8s_cloudprovider_wait
 
 - name: Flush those handlers
