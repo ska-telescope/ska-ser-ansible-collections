@@ -6,6 +6,24 @@ spec:
   template:
     spec:
       verbosity: 5
+      files:
+      # used by CCM deployment in cloudprovider.yml - pxh, 30.03.2023
+      - content: ${OPENSTACK_CLOUD_YAML_B64}
+        encoding: base64
+        owner: root
+        path: /etc/kubernetes/clouds.yaml
+        permissions: "0600"
+      - content: ${OPENSTACK_CLOUD_CACERT_B64}
+        encoding: base64
+        owner: root
+        path: /etc/certs/cacert
+        permissions: "0600"
+      joinConfiguration:
+        nodeRegistration:
+          kubeletExtraArgs:
+            cloud-provider: external
+            cloud-config:
+          name: '{{ local_hostname }}'
       preKubeadmCommands:
         - 'echo "preKubeadmCommands [happens on workers] : start $(date)" >>/tmp/capo-config.log'
       postKubeadmCommands:

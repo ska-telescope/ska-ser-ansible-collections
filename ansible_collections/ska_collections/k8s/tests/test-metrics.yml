@@ -47,7 +47,8 @@
           status: "True"
       register: job_status
 
-    - fail:
+    - name: Test metrics
+      ansible.builtin.fail:
         msg: "Metrics not working!"
       when: job_status.failed == 1
 

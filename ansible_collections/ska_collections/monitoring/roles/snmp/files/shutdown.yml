@@ -14,12 +14,13 @@
   - name: Fail if lockfile exists
     ansible.builtin.fail:
       msg: "Another instance of this playbook is already running! Abort..."
-    when: lock_stat.stat.exists == true
+    when: lock_stat.stat.exists
 
   - name: Create lockfile
     ansible.builtin.file:
       path: /tmp/shutdown-playbook.lock
       state: touch
+      mode: "0644"
     register: lockfile
 
   - name: "Print traps vars"

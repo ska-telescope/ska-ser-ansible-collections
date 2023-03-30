@@ -28,7 +28,7 @@
     name: 'linux-image-extra-virtual'
     force: true
     state: present
-  when: ansible_architecture == 'x86_64'
+  when: ansible_architecture == 'x86_64' and k8s_install_drivers
 
 - name: Install CEPH dependent packages
   ansible.builtin.apt:

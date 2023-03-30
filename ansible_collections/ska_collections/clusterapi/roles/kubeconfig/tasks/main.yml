@@ -11,10 +11,11 @@
 - name: Check Workload Cluster is running
   ska_collections.clusterapi.wait_for_cluster:
     name: "{{ capi_cluster }}"
+    phase: "{{ capi_machine_phase }}"
     kubectl_namespace: "{{ capi_kube_namespace }}"
-    initpause: 180
+    initpause: 10
     wait: 30
-    retries: 50
+    retries: 56
     kubectl_kubeconfig: "/home/ubuntu/.kube/config"
 
 - name: Save cluster kubeconfig credentials # noqa no-changed-when risky-shell-pipe
