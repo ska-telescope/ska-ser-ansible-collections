@@ -40,7 +40,7 @@
 
 - name: Get calico pre defined interfaces
   ansible.builtin.set_fact:
-    calico_possible_interfaces: "{{ calico_ip_autodetection_interface.replace(',','|') }}"
+    calico_possible_interfaces: "{{ calico_ip_autodetection_interface.replace(',', '|') }}"
 
 - name: Find the pre defined interfaces in the interface list
   ansible.builtin.set_fact:

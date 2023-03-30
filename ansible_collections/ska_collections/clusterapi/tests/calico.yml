@@ -47,7 +47,7 @@
 
     - name: Test the pod network
       block:
-        - name: Create "{{ calico_test_pod_namespace }}" namespace
+        - name: Create namespace "{{ calico_test_pod_namespace }}"
           kubernetes.core.k8s:
             state: present
             definition:
@@ -118,7 +118,7 @@
           when: item != 0
           loop: "{{ command_status.results | community.general.json_query('[*].rc') }}"
       always:
-        - name: Delete "{{ calico_test_pod_namespace }}" namespace
+        - name: Delete namespace "{{ calico_test_pod_namespace }}"
           kubernetes.core.k8s:
             wait: true
             state: absent
