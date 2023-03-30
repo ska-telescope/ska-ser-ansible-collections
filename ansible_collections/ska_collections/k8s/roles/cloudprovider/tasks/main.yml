@@ -78,7 +78,7 @@
   # helm repo update
   # helm upgrade --create-namespace --namespace kube-system --install cinder-csi cpo/openstack-cinder-csi
 
-- name: Apply cloud provider chart
+- name: Apply cloud provider cinder csi chart
   kubernetes.core.helm:
     name: cinder-csi
     chart_ref: cpo/openstack-cinder-csi
@@ -86,6 +86,12 @@
     create_namespace: false
     update_repo_cache: true
     force: true
+    values:
+      secret:
+        enabled: true
+        create: false
+        filename: cloud.conf
+        name: cloud-config
 
 - name: Check Storage Classes exist
   kubernetes.core.k8s_info:

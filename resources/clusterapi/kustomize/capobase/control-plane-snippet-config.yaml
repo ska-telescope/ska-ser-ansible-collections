@@ -33,11 +33,6 @@ spec:
         extraArgs:
           bind-address: 0.0.0.0
     files:
-    - content: ${OPENSTACK_CLOUD_PROVIDER_CONF_B64}
-      encoding: base64
-      owner: root
-      path: /etc/kubernetes/cloud.conf
-      permissions: "0600"
     - content: ${OPENSTACK_CLOUD_YAML_B64}
       encoding: base64
       owner: root

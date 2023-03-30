@@ -7,11 +7,7 @@ spec:
     spec:
       verbosity: 5
       files:
-      - content: ${OPENSTACK_CLOUD_PROVIDER_CONF_B64}
-        encoding: base64
-        owner: root
-        path: /etc/kubernetes/cloud.conf
-        permissions: "0600"
+      # used by CCM deployment in cloudprovider.yml - pxh, 30.03.2023
       - content: ${OPENSTACK_CLOUD_YAML_B64}
         encoding: base64
         owner: root
