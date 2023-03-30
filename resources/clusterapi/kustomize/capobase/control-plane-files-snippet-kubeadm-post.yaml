@@ -30,8 +30,6 @@
       export IP_AUTODETECTION_METHOD=${IP_AUTODETECTION_METHOD}
       export CALICO_IPV4POOL_IPIP=${CALICO_IPV4POOL_IPIP}
 
-      export OPENSTACK_CLOUD_PROVIDER_CONF_B64="${OPENSTACK_CLOUD_PROVIDER_CONF_B64}"
-
       set -x
 
       # check if we are running on one of the other nodes
