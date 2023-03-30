@@ -21,7 +21,7 @@
     name: cpo
     repo_url: "https://kubernetes.github.io/cloud-provider-openstack"
 
-- name: Deploy externaldns chart with values
+- name: Deploy CCM chart with values
   block:
     - name: Template openstack-ccm values yaml
       ansible.builtin.template:

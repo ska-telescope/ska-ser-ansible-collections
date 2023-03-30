@@ -35,10 +35,9 @@ cloudConfig:
 # https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/openstack-cloud-controller-manager/expose-applications-using-loadbalancer-type-service.md
   loadBalancer:
     internal-lb: true
-#    floating-subnet: SKA-TechOps-ClusterAPI-Net1
     create-monitor: true
 
-# ensure the daemonset is free of these taints
+# ensure the daemonset is free of these taints - modelled on the chart values.yaml
 tolerations:
   - key: node.cloudprovider.kubernetes.io/uninitialized
     value: "true"
