@@ -111,7 +111,7 @@ clusterapi-workload-inventory: clusterapi-check-cluster-type  ## Post deployment
 
 clusterapi-post-deployment: clusterapi-check-cluster-type  ## Post deployment for workload cluster
 
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/calico.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/calico-install.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=management-cluster" \
 	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \

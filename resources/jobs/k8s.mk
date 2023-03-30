@@ -40,6 +40,26 @@ k8s-manual-deployment: ## Manual K8s deployment based on kubeadm
 	--tags "$(TAGS)" \
 	-vv
 
+k8s-calico-unistall-manifest:  ## Deploy calico
+
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/calico-uninstall-manifest.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
+	--tags "$(TAGS)" \
+	-vv
+
+k8s-calico-deployment:  ## Deploy calico
+
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/calico-install.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
+	--tags "$(TAGS)" \
+	-vv
+
 k8s-post-deployment:  ## Post deployment for workload cluster
 
 # If you want to run the CCM install you must explicitly add 'cloudprovider' to TAGS
