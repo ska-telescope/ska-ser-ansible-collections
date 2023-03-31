@@ -1,42 +1,58 @@
 #!/bin/bash
 
 function log () { 
-  echo $1 >> {{ snmp_trap_logs_dir }}/traps.log 
+  echo $now $1 >> {{ snmp_trap_logs_dir }}/traps.log 
 }
+
+now=$(date +"%Y-%m-%d %T")
+log "New Trap..."
 
 read host
 read ip
 
 oidPrefix="SNMPv2-SMI::enterprises.5491."
 
-v1=
-v2=
-v3=
-
 while read oid val
 do
 
-  log "$oid = $val"
+  #log "$oid = $val"
 
   if [ $oid = "$oidPrefix""10.1.2.3.0" ] #rupsEstimatedMinutesRemaining
   then
-    v1=$val
+    minRemaining=$val
   elif [ $oid = "$oidPrefix""10.1.2.2.0" ] #rupsSecondsOnBattery
   then
-    v2=$val
+    secOnBattery=$val
   elif [ $oid = "$oidPrefix""10.1.9.7.0" ] #rupsConfigLowBattTime
   then
-    v3=$val    
+    confLowBattTime=$val
+  elif [ $oid = "$oidPrefix""10.1.6.2.1.1" ] #alarm
+  then
+    alarm=$val
+  elif [ $oid = "$oidPrefix""10.1.6.2.1.2" ] #alarmdesc
+  then
+    alarmDescr=$val
   fi
 
 done
 
-log "rupsEstimatedMinutesRemaining: $v1"
-log "rupsSecondsOnBattery: $v2"
-log "rupsConfigLowBattTime: $v3"
+if [ "$alarm" != "" ]
+then
+  log "Alarm: $alarm | desc: $alarmDescr"
+  exit
+fi
 
+log "rupsTrapOnBattery -> rupsEstimatedMinutesRemaining: $minRemaining | rupsSecondsOnBattery: $secOnBattery | rupsConfigLowBattTime: $confLowBattTime"
 
-. /home/ubuntu/kayobe-env
-kayobe playbook run /home/ubuntu/kayobe/config/src/kayobe-config/etc/kayobe/ansible/shutdown.yml -e rupsEstimatedMinutesRemaining=$v1 \
-      -e rupsSecondsOnBattery=$v2 \
-      -e rupsConfigLowBattTime=$v3 >> shutdown.txt
+timestamp=$(date +"%Y%m%d_%H%M%S")
+if [ "$minRemaining" -le 5 ]
+then
+  log "Run shutdown gateway..."
+  . /home/ubuntu/kayobe-env && \
+  kayobe playbook run $KAYOBE_CONFIG_PATH/ansible/shutdown/shutdown_gateway.yml -vv > {{ snmp_trap_handler_dir }}/shutdown_gateway_$timestamp.txt
+elif [ "$secOnBattery" -gt 300 ] || [ "$minRemaining" -le 15 ]
+then
+  log "Run shutdown..."
+  . /home/ubuntu/kayobe-env && \
+  kayobe playbook run $KAYOBE_CONFIG_PATH/ansible/shutdown/handle_trap.yml -vv > {{ snmp_trap_handler_dir }}/shutdown_$timestamp.txt
+fi
