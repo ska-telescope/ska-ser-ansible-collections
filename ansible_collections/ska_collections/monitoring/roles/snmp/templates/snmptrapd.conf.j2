@@ -28,7 +28,7 @@
 # Listen for SNMP traps on UDP port 162
 traphandle default /usr/sbin/snmptthandler
 
-traphandle .1.3.6.1.4.1.5491.* {{ snmp_trap_logs_dir }}/trap_handler.sh
+traphandle .1.3.6.1.4.1.5491.* {{ snmp_trap_handler_dir }}/trap_handler.sh
 
 # Set the community string
 authCommunity log,execute,net {{ snmp_riello_ups_auth_community }}

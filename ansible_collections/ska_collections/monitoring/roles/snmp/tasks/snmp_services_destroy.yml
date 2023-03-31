@@ -87,7 +87,7 @@
 
 - name: Remove trap_handler.sh file
   ansible.builtin.file:
-    dest: "{{ snmp_trap_logs_dir }}/trap_handler.sh"
+    dest: "{{ snmp_trap_handler_dir }}/trap_handler.sh"
     state: absent
 
 - name: Remove /etc/systemd/system/snmpd.service.d/override.conf
