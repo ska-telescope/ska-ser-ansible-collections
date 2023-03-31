@@ -40,7 +40,7 @@ k8s-manual-deployment: ## Manual K8s deployment based on kubeadm
 	--tags "$(TAGS)" \
 	-vv
 
-k8s-calico-unistall-manifest:  ## Deploy calico
+k8s-calico-uninstall-manifest:  ## Deploy calico
 
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/calico-uninstall-manifest.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
