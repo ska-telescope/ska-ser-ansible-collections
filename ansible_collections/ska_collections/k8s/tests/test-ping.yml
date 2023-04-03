@@ -3,7 +3,7 @@
   vars:
     target_hosts: localhost
   tasks:
-    - name: Wait till the nginx is created
+    - name: Retrieve nginx information
       kubernetes.core.k8s_info:
         kind: Service
         wait: true
@@ -11,10 +11,6 @@
         namespace: ingress-nginx
         wait_timeout: 10
       register: ingress_nginx_controller
-
-    - name: Check ingress-nginx-controller
-      ansible.builtin.debug:
-        var: ingress_nginx_controller
 
     - name: Test ping ingress
       ansible.builtin.uri:
