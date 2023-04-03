@@ -35,3 +35,4 @@
             - key: skao.int/dedicated
               operator: Exists
           runtimeClassName: nvidia
+        wait: true

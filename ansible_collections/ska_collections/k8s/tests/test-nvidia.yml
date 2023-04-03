@@ -1,0 +1,60 @@
+- name: Test Nvidia Plugin Deployment
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+    k8s_nvidia_plugin_namespace: kube-system
+    k8s_nvidia_plugin_pod_name_label: nvidia-device-plugin-ds
+    k8s_nvidia_test_pod_namespace: default
+    k8s_nvidia_test_pod_name: nvidia-test-pod
+  tasks:
+    - name: Get Nvidia running pods
+      kubernetes.core.k8s_info:
+        kind: Pod
+        namespace: "{{ k8s_nvidia_plugin_namespace }}"
+        field_selectors:
+          - status.phase=Running
+        label_selectors:
+          - name = {{ k8s_nvidia_plugin_pod_name_label }}
+        wait: true
+      register: nvidia_plugin_pods
+
+    - name: Check Nvidia running pods
+      ansible.builtin.debug:
+        msg: "{{ nvidia_plugin_pods.resources[0].metadata.name }} and {{ nvidia_plugin_pods.resources[1].metadata.name }} are running"
+
+    - name: Attempt to create Nvidia test pod using a GPU resource
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: "{{ k8s_nvidia_test_pod_name }}"
+            namespace: "{{ k8s_nvidia_test_pod_namespace }}"
+          spec:
+            restartPolicy: Never
+            containers:
+            - name: cuda-container
+              image: nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda10.2
+              resources:
+              limits:
+                nvidia.com/gpu: 1 # requesting 1 GPU
+            tolerations:
+            - key: nvidia.com/gpu
+              operator: Exists
+              effect: NoSchedule
+      wait: true
+
+    - name: Clean up Nvidia GPU test pod
+      kubernetes.core.k8s:
+        state: absent
+        definition:  
+          api_version: v1
+          kind: Pod
+          metadata:
+            name: "{{ k8s_nvidia_test_pod_name }}"
+            namespace: "{{ k8s_nvidia_test_pod_namespace }}"
+
+
+
+
