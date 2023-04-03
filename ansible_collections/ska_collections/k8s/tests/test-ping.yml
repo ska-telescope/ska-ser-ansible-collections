@@ -1,0 +1,10 @@
+- name: Test ping service
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  tasks:
+    - name: Test ping ingress
+      ansible.builtin.uri:
+        url: "http://{{ ingress_nginx_controller.resources[0].status.loadBalancer.ingress[0].ip }}:/ping"
+        method: GET
+        status_code: [200]
