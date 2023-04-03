@@ -25,35 +25,33 @@
     - name: Attempt to create Nvidia test pod using a GPU resource
       kubernetes.core.k8s:
         state: present
-        definition:
-          apiVersion: v1
-          kind: Pod
-          metadata:
-            name: "{{ k8s_nvidia_test_pod_name }}"
-            namespace: "{{ k8s_nvidia_test_pod_namespace }}"
-          spec:
-            restartPolicy: Never
-            containers:
-            - name: cuda-container
-              image: nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda10.2
-              resources:
-              limits:
-                nvidia.com/gpu: 1 # requesting 1 GPU
-            tolerations:
-            - key: nvidia.com/gpu
-              operator: Exists
-              effect: NoSchedule
-      wait: true
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: "{{ k8s_nvidia_test_pod_name }}"
+          namespace: "{{ k8s_nvidia_test_pod_namespace }}"
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: cuda-container
+            image: nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda10.2
+            resources:
+            limits:
+              nvidia.com/gpu: 1 # requesting 1 GPU
+          tolerations:
+          - key: nvidia.com/gpu
+            operator: Exists
+            effect: NoSchedule
+        wait: true
 
     - name: Clean up Nvidia GPU test pod
       kubernetes.core.k8s:
         state: absent
-        definition:  
-          api_version: v1
-          kind: Pod
-          metadata:
-            name: "{{ k8s_nvidia_test_pod_name }}"
-            namespace: "{{ k8s_nvidia_test_pod_namespace }}"
+        api_version: v1
+        kind: Pod
+        metadata:
+          name: "{{ k8s_nvidia_test_pod_name }}"
+          namespace: "{{ k8s_nvidia_test_pod_namespace }}"
 
 
 
