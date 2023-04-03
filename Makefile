@@ -75,17 +75,28 @@ ac-ping: ac-check-env ## Ping Ansible targets
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
-	@ansible all -i $(INVENTORY) -m ping -l $(PLAYBOOKS_HOSTS)
+	@ansible $(PLAYBOOKS_HOSTS) -i $(INVENTORY) -m ping $(ANSIBLE_PLAYBOOK_ARGUMENTS)
 
 ac-info: ac-check-env ## Get Ansible targets' info
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
-	@ansible all -i $(INVENTORY) -m debug -a "msg=[\
-		\"Alias: {{ inventory_hostname }}\",\
-		\"Host: {{ hostvars[inventory_hostname].ansible_host }}\",\
-		\"IP: {{ hostvars[inventory_hostname].ip }}\"\
-	]" -l $(PLAYBOOKS_HOSTS)
+	@FACTS=$$(echo "ansible_distribution \
+		ansible_distribution_version \
+		ansible_hostname \
+		ansible_fqdn \
+		ansible_default_ipv4" | \
+		sed 's/ /,/g'); \
+	ansible $(PLAYBOOKS_HOSTS) -i $(INVENTORY) -m ansible.builtin.gather_facts -a "filter=$$FACTS" $(ANSIBLE_PLAYBOOK_ARGUMENTS)
+
+ac-command: ac-check-env ## Run command on target
+ifndef PLAYBOOKS_HOSTS
+	$(error PLAYBOOKS_HOSTS is undefined)
+endif
+ifndef ANSIBLE_PLAYBOOK_ARGUMENTS
+	$(error ANSIBLE_PLAYBOOK_ARGUMENTS is undefined)
+endif
+	ansible $(PLAYBOOKS_HOSTS) -i $(INVENTORY) -m ansible.builtin.shell $(ANSIBLE_PLAYBOOK_ARGUMENTS)
 
 ac-install-dependencies:  ## Install dependent ansible collections and roles
 	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
