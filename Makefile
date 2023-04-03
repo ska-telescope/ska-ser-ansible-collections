@@ -89,6 +89,13 @@ endif
 		sed 's/ /,/g'); \
 	ansible $(PLAYBOOKS_HOSTS) -i $(INVENTORY) -m ansible.builtin.gather_facts -a "filter=$$FACTS" $(ANSIBLE_PLAYBOOK_ARGUMENTS)
 
+ac-ssh: ac-check-env ## Open ssh shell on target
+ifndef PLAYBOOKS_HOSTS
+	$(error PLAYBOOKS_HOSTS is undefined)
+endif
+	@SSH_EXTRA_ARGS=$$(ansible-inventory -i $(INVENTORY) --host $(PLAYBOOKS_HOSTS) 2>/dev/null | jq -r '.ansible_ssh_extra_args // ""' ); \
+	ssh $(ANSIBLE_SSH_ARGS) $$SSH_EXTRA_ARGS $(PLAYBOOKS_HOSTS)
+
 ac-command: ac-check-env ## Run command on target
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
