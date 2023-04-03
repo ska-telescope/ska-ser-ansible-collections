@@ -33,26 +33,38 @@ vars:
 	@echo "CAPI_APPLY=$(CAPI_APPLY)"
 	@echo "CAPI_AC_BRANCH=$(CAPI_AC_BRANCH)"
 
-calico-install: clusterapi-check-hosts  ## Install base for management server
+calico-install: clusterapi-check-hosts  ## Install Calico
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/calico-install.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) k8s_kubeconfig=$(KUBECONFIG)"
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "k8s_kubeconfig=$(KUBECONFIG)" \
+	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
+	--tags "$(TAGS)"
 
-calico-uninstall: clusterapi-check-hosts  ## Install base for management server
+calico-uninstall: clusterapi-check-hosts  ## Uninstall Calico
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/calico-uninstall.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) k8s_kubeconfig=$(KUBECONFIG)"
 
-calico-test: clusterapi-check-hosts ## Test elastic cluster
+calico-test: clusterapi-check-hosts ## Test calico network
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
 	ansible-playbook $(TESTS_DIR)/calico.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) k8s_kubeconfig=$(KUBECONFIG)"
+
+calico-uninstall-manifest:  ## Uninstall calico deployed using manifest
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/calico-uninstall-manifest.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
+	--tags "$(TAGS)" \
+	-vv
 
 clusterapi-install-base: clusterapi-check-hosts  ## Install base for management server
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
