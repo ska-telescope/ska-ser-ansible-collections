@@ -1,0 +1,4 @@
+---
+
+nvidia_device_plugin_version: "0.11.0"
+nvidia_device_plugin_affinity: {}
