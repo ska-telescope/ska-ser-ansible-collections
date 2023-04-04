@@ -17,4 +17,4 @@
     KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
   
   tags:
-    - nvidia_device_plugin
+    - nvidia
