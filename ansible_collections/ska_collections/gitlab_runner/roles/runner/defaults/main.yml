@@ -1,7 +1,7 @@
 ---
 gitlab_runner_configuration_dir: /srv/gitlab-runner/config
 gitlab_runner_name: ska-st-docker-gitlab-runner # default, should be overridden per deployment
-gitlab_runner_image: gitlab/gitlab-runner:v15.10.1
+gitlab_runner_image: "{{ _ | mandatory }}"
 gitlab_runner_log_options:
   max-size: "10m"
   max-file: "3"
