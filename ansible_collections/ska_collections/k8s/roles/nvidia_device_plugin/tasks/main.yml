@@ -34,5 +34,7 @@
               operator: Exists
             - key: skao.int/dedicated
               operator: Exists
+          nodeSelector:
+            gpu: "true"
           runtimeClassName: nvidia
         wait: true
