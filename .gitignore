@@ -13,3 +13,6 @@ ansible_collections/ska_collections/clusterapi/playbooks/bootstrap*
 resources/clusterapi/manifests/*.yaml
 resources/clusterapi/templates/*.yaml
 
+ansible_collections/ska_collections/gitlab_runner/roles/manifestgen/files/runner-metrics.yaml
+ansible_collections/ska_collections/gitlab_runner/roles/k8s/files/runner_manifest.yaml
+ansible_collections/ska_collections/gitlab_runner/roles/k8s/files/runner-metrics.yaml

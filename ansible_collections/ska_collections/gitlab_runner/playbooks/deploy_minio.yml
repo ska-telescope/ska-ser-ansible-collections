@@ -14,5 +14,5 @@
   tasks:
     - name: Deploy MinIO
       ansible.builtin.import_role:
-        name: ska_collections.gitlab_runner.manifestgen
+        name: ska_collections.gitlab_runner.minio
         tasks_from: deploy_minio

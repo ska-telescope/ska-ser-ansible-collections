@@ -1,5 +1,5 @@
 - name: Template values file
-  template:
+  ansible.builtin.template:
     src: "templates/minio-values.yaml.j2"
     dest: "values.yaml"
     force: true
@@ -15,33 +15,33 @@
   register: tmp_minio_operator_chart
 
 - name: Template users file
-  template:
+  ansible.builtin.template:
     src: "templates/bucket-with-users.yaml.j2"
     dest: "bucket-with-users.yaml"
     force: true
     mode: 0755
 
 - name: "Output minio tenant users"
-  shell: |
+  ansible.builtin.shell: |
     cat bucket-with-users.yaml
   register: tmp_minio_add_users
   changed_when: true
 
 - name: Template minio tenant service file
-  template:
+  ansible.builtin.template:
     src: "templates/tenant-service.yaml.j2"
     dest: "tenant-service.yaml"
     force: true
     mode: 0755
 
 - name: "Output minio tenant service users"
-  shell: |
+  ansible.builtin.shell: |
     cat tenant-service.yaml
   register: tmp_minio_tenant_service
   changed_when: true
 
 - name: Tidy up tmp files
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   with_items:

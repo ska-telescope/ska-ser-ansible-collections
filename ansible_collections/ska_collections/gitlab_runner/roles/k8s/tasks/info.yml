@@ -5,8 +5,8 @@
     namespace: gitlab
   register: nodes
 
-- name: "print nodes"
-  debug:  # how to get ip addresses from here, tried followings but failed
+- name: Print nodes
+  ansible.builtin.debug:  # how to get ip addresses from here, tried followings but failed
     var: nodes
     # msg: "{{ item }}"
     # loop: "{{ q('dict', nodes.resources[0].status.addresses) }}" #this works up until status

@@ -1,24 +1,30 @@
-- name: "Create {{ gitlab_runner_minio_namespace }} namespace"
+- name: "Create namespace {{ gitlab_runner_minio_namespace }}"
   kubernetes.core.k8s:
     name: "{{ gitlab_runner_minio_namespace }}"
     api_version: v1
     kind: Namespace
     state: present
 
-- name: Install {{ gitlab_runner_minio_chart_name }} operator Helm chart
+- name: Template values file
+  ansible.builtin.template:
+    src: "templates/minio-values.yaml.j2"
+    dest: "values.yaml"
+    force: true
+    mode: 0755
+
+- name: Install operator Helm chart {{ gitlab_runner_minio_chart_name }}
   kubernetes.core.helm:
     wait: true
     timeout: "300s"
-    chart_repo_url: {{ gitlab_runner_minio_repo_name }}
-    chart_ref: {{ gitlab_runner_minio_chart_name }}
+    chart_repo_url: "{{ gitlab_runner_minio_chart_repo }}"
+    chart_ref: "{{ gitlab_runner_minio_chart_name }}"
     chart_version: "{{ gitlab_runner_minio_chart_version }}"
-    create_namespace: true
-    namespace: {{ gitlab_runner_minio_namespace }}
-    name: {{ gitlab_runner_minio_release_name }}
-    values: "{{ lookup('template', 'templates/minio-values.yaml.j2') | from_yaml }}"
+    namespace: "{{ gitlab_runner_minio_namespace }}"
+    name: "{{ gitlab_runner_minio_release_name }}"
+    values_files: "values.yaml"
 
 - name: Template minio tenant service file
-  template:
+  ansible.builtin.template:
     src: "templates/tenant-service.yaml.j2"
     dest: "/tmp/tenant-service.yaml"
     force: true
@@ -31,7 +37,7 @@
     src: "/tmp/tenant-service.yaml"
 
 - name: Template users file
-  template:
+  ansible.builtin.template:
     src: "templates/bucket-with-users.yaml.j2"
     dest: "/tmp/bucket-with-users.yaml"
     force: true
@@ -44,10 +50,11 @@
     src: "/tmp/bucket-with-users.yaml"
 
 - name: Tidy up tmp files
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   with_items:
     - "/tmp/tenant-service.yaml"
     - "/tmp/values.yaml"
     - "/tmp/bucket-with-users.yaml"
+    - "values.yaml"

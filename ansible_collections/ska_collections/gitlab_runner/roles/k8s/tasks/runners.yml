@@ -1,39 +1,39 @@
-- name: Template {{ gitlab_runner_namespace }} namespace
-  template:
+- name: Template {{ gitlab_runner_k8s_namespace }} namespace
+  ansible.builtin.template:
     src: "templates/namespace.yaml.j2"
     dest: "/tmp/namespace.yaml"
     force: true
     mode: 0755
 
 - name: Create Temp gitlab-runner config values file
-  tempfile:
+  ansible.builtin.tempfile:
     suffix: -runner-values
   register: gitlab_values_file
 
 - name: Template values file to {{ gitlab_values_file.path }}
-  template:
+  ansible.builtin.template:
     src: "templates/gitlab-runner-values.yaml.j2"
     dest: "{{ gitlab_values_file.path }}"
     mode: '0644'
 
 - name: Create Temp Kustomize Folder
-  tempfile:
+  ansible.builtin.tempfile:
     state: directory
     suffix: -kustomize
   register: temp_kustomize_dir
 
 - name: Template kustomization.yaml file
-  template:
+  ansible.builtin.template:
     src: "templates/kustomization.yaml.j2"
     dest: "{{ temp_kustomize_dir.path }}/kustomization.yaml"
     mode: '0644'
 
 - name: Render templates
   kubernetes.core.helm_template:
-    chart_ref: "{{ gitlab_runner_manifestgen_gitlab_chart_name }}"
-    chart_repo_url: "{{ gitlab_runner_manifestgen_gitlab_chart_repo }}"
-    chart_version: "{{ gitlab_runner_manifestgen_gitlab_chart_version }}"
-    release_namespace: "{{ gitlab_runner_namespace }}"
+    chart_ref: "{{ gitlab_runner_k8s_chart_name }}"
+    chart_repo_url: "{{ gitlab_runner_k8s_chart_repo }}"
+    chart_version: "{{ gitlab_runner_k8s_chart_version }}"
+    release_namespace: "{{ gitlab_runner_k8s_namespace }}"
     values_files: "{{ gitlab_values_file.path }}"
   register: template_output
 
@@ -67,14 +67,14 @@
     dest: "{{ role_path }}/files/generated_namespace.yaml"
 
 - name: Merge output
-  shell: |
+  ansible.builtin.shell: |
     mkdir -p build
     cat {{ role_path }}/files/generated_namespace.yaml > {{ role_path }}/files/runner_manifest.yaml
     echo "\n---\n" >> {{ role_path }}/files/runner_manifest.yaml
     cat {{ role_path }}/files/generated_manifest.yaml >> {{ role_path }}/files/runner_manifest.yaml
 
 - name: Tidy up tmp files
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   with_items:
