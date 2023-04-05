@@ -1,4 +1,3 @@
-
 - name: Delete {{ gitlab_runner_minio_chart_name }} operator Helm chart
   kubernetes.core.helm:
     namespace: {{ gitlab_runner_minio_namespace }}
@@ -17,7 +16,7 @@
     state: absent
     apply: true
     src: "/tmp/tenant-service.yaml"
-  
+
 - name: Template users file
   template:
     src: "templates/bucket-with-users.yaml.j2"

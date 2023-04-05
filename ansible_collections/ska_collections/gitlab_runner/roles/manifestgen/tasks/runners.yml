@@ -50,7 +50,7 @@
   ansible.builtin.shell: |
     cd {{ temp_kustomize_dir.path }}
     kubectl kustomize .
-  
+
 - name: Output helm template
   ansible.builtin.debug: var=item
   with_file:
@@ -78,7 +78,7 @@
     path: "{{ item }}"
     state: absent
   with_items:
-    - "{{ gitlab_values_file.path }}"
-    - "{{ temp_kustomize_dir.path }}"
-    - "{{ role_path }}/files/generated_namespace.yaml"
-    - "{{ role_path }}/files/generated_manifest.yaml"
+  - "{{ gitlab_values_file.path }}"
+  - "{{ temp_kustomize_dir.path }}"
+  - "{{ role_path }}/files/generated_namespace.yaml"
+  - "{{ role_path }}/files/generated_manifest.yaml"
