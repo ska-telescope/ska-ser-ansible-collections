@@ -34,32 +34,3 @@
       ansible.builtin.file:
         path: "/tmp/calico.values.yaml"
         state: absent
-
-- name: Check kubernetes resources
-  kubernetes.core.k8s_info:
-    kind: "{{ item.kind }}"
-    wait: true
-    name: "{{ item.name }}"
-    namespace: "{{ item.namespace }}"
-    wait_sleep: 10
-    wait_timeout: 600
-  loop:
-    - kind: Deployment
-      namespace: calico-operator
-      name: tigera-operator
-    - kind: DaemonSet
-      namespace: calico-system
-      name: calico-node
-    - kind: DaemonSet
-      namespace: calico-system
-      name: csi-node-driver
-    - kind: Deployment
-      namespace: calico-system
-      name: calico-kube-controllers
-    - kind: Deployment
-      namespace: calico-apiserver
-      name: calico-apiserver
-    - kind: Deployment
-      namespace: calico-system
-      name: calico-typha
-  when: calico_install_wait
