@@ -1,7 +1,7 @@
 ---
 gitlab_runner_configuration_dir: /srv/gitlab-runner/config
 gitlab_runner_name: ska-st-docker-gitlab-runner # default, should be overridden per deployment
-gitlab_runner_image: gitlab/gitlab-runner:latest
+gitlab_runner_image: gitlab/gitlab-runner:v15.10.1
 gitlab_runner_log_options:
   max-size: "10m"
   max-file: "3"
@@ -18,7 +18,7 @@ gitlab_runner_reregister: false
 gitlab_runner_unregister_all: false
 gitlab_runner_metrics_port: 30931
 
-gitlab_runner_base_image: artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.8.2
+gitlab_runner_base_image: artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.8.6
 gitlab_runner_env_variables: {}
 gitlab_runner_default_env_variables:
   RUNNER_NAME: "{{ gitlab_runner_name }}"
