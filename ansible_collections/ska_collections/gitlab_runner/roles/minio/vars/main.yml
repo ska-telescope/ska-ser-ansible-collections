@@ -1,0 +1,21 @@
+---
+# vars file for manifestgen
+
+debug: false
+
+gitlab_runner_minio_namespace: gitlab
+gitlab_runner_minio_storage_class: block
+gitlab_runner_minio_release_name: minio-cache
+gitlab_runner_minio_repo_name: minio
+gitlab_runner_minio_chart_repo: https://operator.min.io/
+gitlab_runner_minio_chart_name: minio-operator
+gitlab_runner_minio_chart_version: "4.3.2"
+
+gitlab_runner_minio_access_key: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_ACCESS_KEY', default=secrets['gitlab_runner_minio_access_key']) | mandatory }}"
+gitlab_runner_minio_console_access_key: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_CONSOLE_ACCESS_KEY', default=secrets['gitlab_runner_minio_console_access_key']) | mandatory }}"
+gitlab_runner_minio_console_passphrase: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_CONSOLE_PASSPHRASE', default=secrets['gitlab_runner_minio_console_passphrase']) | mandatory }}"
+gitlab_runner_minio_console_salt: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_CONSOLE_SALT', default=secrets['gitlab_runner_minio_console_salt']) | mandatory }}"
+gitlab_runner_minio_console_secret_key: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_CONSOLE_SECRET_KEY', default=secrets['gitlab_runner_minio_console_secret_key']) | mandatory }}"
+gitlab_runner_minio_password: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_PASSWORD', default=secrets['gitlab_runner_minio_password']) | mandatory }}"
+gitlab_runner_minio_username: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_USERNAME', default=secrets['gitlab_runner_minio_username']) | mandatory }}"
+gitlab_runner_minio_secret_key: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_SECRET_KEY', default=secrets['gitlab_runner_minio_secret_key']) | mandatory }}"

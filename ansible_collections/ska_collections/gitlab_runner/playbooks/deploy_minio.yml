@@ -1,0 +1,18 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Deploy MinIO
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+    k8s_kubeconfig: "/etc/kubernetes/admin.conf"
+  pre_tasks:
+    - name: Check k8s_kubeconfig
+      ansible.builtin.debug:
+        var: k8s_kubeconfig
+  environment:
+    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
+  tasks:
+    - name: Deploy MinIO
+      ansible.builtin.import_role:
+        name: ska_collections.gitlab_runner.manifestgen
+        tasks_from: deploy_minio

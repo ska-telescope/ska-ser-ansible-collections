@@ -1,0 +1,14 @@
+- name: Check Calico is running
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Node
+    namespace: gitlab
+  register: nodes
+
+- name: "print nodes"
+  debug:  # how to get ip addresses from here, tried followings but failed
+    var: nodes
+    # msg: "{{ item }}"
+    # loop: "{{ q('dict', nodes.resources[0].status.addresses) }}" #this works up until status
+    # loop: "{{ q('dict', nodes.resources) }}" #this does'nt work
+    # loop: "{{ results | json_query(nodes.resources[*].status.addresses.type==InternalIP) }}" # this says it need JMESPath installed

@@ -1,0 +1,368 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gitlab
+---
+
+---
+# Source: gitlab-runner/templates/service-account.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+  name: release-name-gitlab-runner
+  labels:
+    app: release-name-gitlab-runner
+    chart: gitlab-runner-0.45.0
+    release: "release-name"
+    heritage: "Helm"
+---
+# Source: gitlab-runner/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: release-name-gitlab-runner
+  namespace: "gitlab"
+  labels:
+    app: release-name-gitlab-runner
+    chart: gitlab-runner-0.45.0
+    release: "release-name"
+    heritage: "Helm"
+data:
+  entrypoint: |
+    #!/bin/bash
+    set -e
+
+    mkdir -p /home/gitlab-runner/.gitlab-runner/
+
+    cp /configmaps/config.toml /home/gitlab-runner/.gitlab-runner/
+
+    # Set up environment variables for cache
+    if [[ -f /secrets/accesskey && -f /secrets/secretkey ]]; then
+      export CACHE_S3_ACCESS_KEY=$(cat /secrets/accesskey)
+      export CACHE_S3_SECRET_KEY=$(cat /secrets/secretkey)
+    fi
+
+    if [[ -f /secrets/gcs-applicaton-credentials-file ]]; then
+      export GOOGLE_APPLICATION_CREDENTIALS="/secrets/gcs-applicaton-credentials-file"
+    elif [[ -f /secrets/gcs-application-credentials-file ]]; then
+      export GOOGLE_APPLICATION_CREDENTIALS="/secrets/gcs-application-credentials-file"
+    else
+      if [[ -f /secrets/gcs-access-id && -f /secrets/gcs-private-key ]]; then
+        export CACHE_GCS_ACCESS_ID=$(cat /secrets/gcs-access-id)
+        # echo -e used to make private key multiline (in google json auth key private key is oneline with \n)
+        export CACHE_GCS_PRIVATE_KEY=$(echo -e $(cat /secrets/gcs-private-key))
+      fi
+    fi
+
+    if [[ -f /secrets/azure-account-name && -f /secrets/azure-account-key ]]; then
+      export CACHE_AZURE_ACCOUNT_NAME=$(cat /secrets/azure-account-name)
+      export CACHE_AZURE_ACCOUNT_KEY=$(cat /secrets/azure-account-key)
+    fi
+
+    if [[ -f /secrets/runner-registration-token ]]; then
+      export REGISTRATION_TOKEN=$(cat /secrets/runner-registration-token)
+    fi
+
+    if [[ -f /secrets/runner-token ]]; then
+      export CI_SERVER_TOKEN=$(cat /secrets/runner-token)
+    fi
+
+    # Validate this also at runtime in case the user has set a custom secret
+    if [[ ! -z "$CI_SERVER_TOKEN" && "1" -ne "1" ]]; then
+      echo "Using a runner token with more than 1 replica is not supported."
+      exit 1
+    fi
+
+    # Register the runner
+    if ! sh /configmaps/register-the-runner; then
+      exit 1
+    fi
+
+    # Run pre-entrypoint-script
+    if ! bash /configmaps/pre-entrypoint-script; then
+      exit 1
+    fi
+
+    # Start the runner
+    exec /entrypoint run --user=gitlab-runner \
+      --working-directory=/home/gitlab-runner
+
+  config.toml: |
+    concurrent = 20
+    check_interval = 3
+    log_level = "info"
+    listen_address = ':9252'
+
+  
+  config.template.toml:   |
+    [[runners]]
+    pre_build_script = """
+        echo "This is a pre-build script for SKA."
+        echo "Project: ${CI_PROJECT_NAME}"
+        echo "Namespace: ${KUBE_NAMESPACE}"
+        echo "Agent: ${SKA_AGENT_NAME}"
+        if [[ -n "${SKA_AGENT_NAME}" ]]; then
+        echo "Agent configuration detected, setting context and creating namespace."
+        # kubectl config use-context ${SKA_AGENT_URL}:${SKA_AGENT_NAME}
+        # kubectl config set-context --current --namespace=${KUBE_NAMESPACE}
+        cp $KUBECONFIG_STFC_SDHP $KUBECONFIG # kubeconfig_name - Gitlab SKAO Group CI/CD file
+        fi
+        if [[ ${CI_PROJECT_NAME} == "ska-skampi" ]] && [[ ${KUBE_NAMESPACE} == ci-* || ${KUBE_NAMESPACE} == integration-* ]]; then
+            echo "Applying Quotas to the SKAMPI pipeline namespace ${KUBE_NAMESPACE}."
+            kubectl describe namespace ${KUBE_NAMESPACE} > /dev/null 2>&1 && K_DESC=$? || K_DESC=$?
+            if [[ ${K_DESC} -eq 0 ]] && [[ ${KEEP_NAMESPACE} == "true" ]]; then
+                kubectl describe namespace ${KUBE_NAMESPACE};
+            else
+                kubectl delete --ignore-not-found namespace ${KUBE_NAMESPACE}
+                kubectl create namespace ${KUBE_NAMESPACE};
+            fi
+            if [[ -n "${KUBE_NAMESPACE_SDP}" ]]; then
+                kubectl describe namespace ${KUBE_NAMESPACE_SDP} > /dev/null 2>&1 && K_DESC=$? || K_DESC=$?
+                if [[ ${K_DESC} -eq 0 ]] && [[ ${KEEP_NAMESPACE} == "true" ]] ; then
+                    kubectl describe namespace ${KUBE_NAMESPACE_SDP}
+                else
+                    kubectl delete --ignore-not-found namespace ${KUBE_NAMESPACE_SDP}
+                    kubectl create namespace ${KUBE_NAMESPACE_SDP}
+                fi
+            fi
+            kubectl apply -f resources/namespace_with_quotas.yaml --namespace=${KUBE_NAMESPACE}
+        else
+            echo "Nothing changed. You can ignore messages above this line."
+            if [[ ${CI_PROJECT_NAME} == "ska-skampi" ]] && [[ ${KUBE_NAMESPACE} != staging* ]]; then
+                echo "Non-standard SKAMPI namespace detected, please contact System team."
+            fi
+        fi
+    """
+    [runners.kubernetes]
+        name = "SKA-K8s-Runner-STFC-SDHP"
+        image = "ubuntu:20.04"
+        helper_cpu_request = "100m"
+        helper_memory_request = "128Mi"
+        service_cpu_request = "100m"
+        service_memory_request = "128Mi"
+        cpu_request = "1000m"
+        memory_request = "2Gi"
+        cpu_request_overwrite_max_allowed = "3000m"
+        memory_request_overwrite_max_allowed = "8Gi"
+        poll_timeout = 600
+        namespace = "gitlab"
+        privileged = true
+        protected = false
+        pull_policy = ["always", "if-not-present"]
+    [runners.kubernetes.node_selector]
+        "node-role.skatelescope.org/ci-worker" = "true"
+    [runners.cache]
+        Type = "s3"
+        Shared = true
+        [runners.cache.s3]
+        ServerAddress = "https://k8s.stfc.skao.int:9443"
+        BucketName = "cache"
+        BucketLocation = ""
+        Insecure = true
+        AuthenticationType = "access-key"
+    [runners.kubernetes.volumes]
+        [[runners.kubernetes.volumes.host_path]]
+        name = "docker"
+        mount_path = "/var/run/docker.sock"
+        host_path  = "/var/run/docker.sock"
+  
+
+  register-the-runner: |
+    #!/bin/bash
+    MAX_REGISTER_ATTEMPTS=30
+
+    for i in $(seq 1 "${MAX_REGISTER_ATTEMPTS}"); do
+      echo "Registration attempt ${i} of ${MAX_REGISTER_ATTEMPTS}"
+      /entrypoint register \
+        --template-config /configmaps/config.template.toml \
+        --non-interactive
+
+      retval=$?
+
+      if [ ${retval} = 0 ]; then
+        break
+      elif [ ${i} = ${MAX_REGISTER_ATTEMPTS} ]; then
+        exit 1
+      fi
+
+      sleep 5
+    done
+
+    exit 0
+
+  check-live: |
+    #!/bin/bash
+    if /usr/bin/pgrep -f .*register-the-runner; then
+      exit 0
+    elif /usr/bin/pgrep gitlab.*runner; then
+      exit 0
+    else
+      exit 1
+    fi
+
+  pre-entrypoint-script: |
+---
+# Source: gitlab-runner/templates/role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: "Role"
+metadata:
+  name: release-name-gitlab-runner
+  labels:
+    app: release-name-gitlab-runner
+    chart: gitlab-runner-0.45.0
+    release: "release-name"
+    heritage: "Helm"
+  namespace: "gitlab"
+rules:
+- apiGroups: [""]
+  resources: ["*"]
+  verbs: ["*"]
+---
+# Source: gitlab-runner/templates/role-binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: "RoleBinding"
+metadata:
+  name: release-name-gitlab-runner
+  labels:
+    app: release-name-gitlab-runner
+    chart: gitlab-runner-0.45.0
+    release: "release-name"
+    heritage: "Helm"
+  namespace: "gitlab"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: "Role"
+  name: release-name-gitlab-runner
+subjects:
+- kind: ServiceAccount
+  name: release-name-gitlab-runner
+  namespace: "gitlab"
+---
+# Source: gitlab-runner/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: release-name-gitlab-runner
+  namespace: "gitlab"
+  labels:
+    app: release-name-gitlab-runner
+    chart: gitlab-runner-0.45.0
+    release: "release-name"
+    heritage: "Helm"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: release-name-gitlab-runner
+  template:
+    metadata:
+      labels:
+        app: release-name-gitlab-runner
+        chart: gitlab-runner-0.45.0
+        release: "release-name"
+        heritage: "Helm"
+      annotations:
+        checksum/configmap: 45133860731a2d91eaf6820858c4a2803a8a468b3a352c59d85b0cce01b42127
+        checksum/secrets: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: "9252"
+        vault.hashicorp.com/agent-init-first: "true"
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/agent-inject-secret-accesskey: "stfc/gitlab-runner/s3_access_key"
+        vault.hashicorp.com/agent-inject-secret-runner-registration-token: "stfc/gitlab-runner/runner_registration_token"
+        vault.hashicorp.com/agent-inject-secret-secretkey: "stfc/gitlab-runner/s3_secret_key"
+        vault.hashicorp.com/agent-inject-status: "update"
+        vault.hashicorp.com/agent-inject-template-accesskey: "{{- with secret \"stfc/gitlab-runner/s3_access_key\" -}}\n{{- range $k, $v := .Data.data }}\n{{- $v }}\n{{- end }}\n{{- end }}\n"
+        vault.hashicorp.com/agent-inject-template-runner-registration-token: "{{- with secret \"stfc/gitlab-runner/runner_registration_token\" -}}\n{{- range $k, $v := .Data.data }}\n{{- $v }}\n{{- end }}\n{{- end }}\n"
+        vault.hashicorp.com/agent-inject-template-secretkey: "{{- with secret \"stfc/gitlab-runner/s3_secret_key\" -}}\n{{- range $k, $v := .Data.data }}\n{{- $v }}\n{{- end }}\n{{- end }}\n"
+        vault.hashicorp.com/role: "kube-role"
+        vault.hashicorp.com/secret-volume-path: "/secrets"
+    spec:
+      securityContext: 
+        fsGroup: 65533
+        runAsUser: 100
+      terminationGracePeriodSeconds: 3600
+      serviceAccountName: release-name-gitlab-runner
+      containers:
+      - name: release-name-gitlab-runner
+        image: registry.gitlab.com/gitlab-org/gitlab-runner:alpine-v15.4.0
+        imagePullPolicy: "IfNotPresent"
+        securityContext: 
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/entrypoint", "unregister", "--all-runners"]
+        command: ["/usr/bin/dumb-init", "--", "/bin/bash", "/configmaps/entrypoint"]
+        env:
+                
+        - name: CI_SERVER_URL
+          value: "https://gitlab.com/"
+        - name: CLONE_URL
+          value: ""
+        - name: RUNNER_EXECUTOR
+          value: "kubernetes"
+        - name: REGISTER_LOCKED
+          value: "false"
+        - name: RUNNER_TAG_LIST
+          value: "ska-ops-sandbox"
+        - name: RUNNER_NAME
+          value: "SKA-K8s-Runner-STFC-SDHP"
+        livenessProbe:
+          exec:
+            command: ["/bin/bash", "/configmaps/check-live"]
+          initialDelaySeconds: 60
+          timeoutSeconds: 1
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command: ["/usr/bin/pgrep","gitlab.*runner"]
+          initialDelaySeconds: 10
+          timeoutSeconds: 1
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        ports:
+        - name: "metrics"
+          containerPort: 9252
+        volumeMounts:
+        - name: projected-secrets
+          mountPath: /secrets
+        - name: etc-gitlab-runner
+          mountPath: /home/gitlab-runner/.gitlab-runner
+        - name: configmaps
+          mountPath: /configmaps
+        resources:
+          {}
+      volumes:
+      - name: runner-secrets
+        emptyDir:
+          medium: "Memory"
+      - name: etc-gitlab-runner
+        emptyDir:
+          medium: "Memory"
+      - name: projected-secrets
+        projected:
+          sources:
+            - secret:
+                name: "release-name-gitlab-runner"
+                items:
+                  - key: runner-registration-token
+                    path: runner-registration-token
+                  - key: runner-token
+                    path: runner-token
+      - name: configmaps
+        configMap:
+          name: release-name-gitlab-runner
+      nodeSelector:
+        node-role.skatelescope.org/ci-worker: "true"
