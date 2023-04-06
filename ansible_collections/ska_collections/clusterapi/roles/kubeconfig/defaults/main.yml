@@ -3,3 +3,4 @@ debug: false
 
 capi_cluster: capi-cluster
 capi_kube_namespace: default
+capi_machine_phase: Provisioned

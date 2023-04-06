@@ -8,16 +8,6 @@
     - ../configcapo/defaults/main.yml
   tags: [always]
 
-# - name: Check Workload Cluster is running
-#   ska_collections.clusterapi.wait_for_cluster:
-#     name: "{{ capi_cluster }}"
-#     kubectl_namespace: "{{ capi_kube_namespace }}"
-#     initpause: 3
-#     wait: 30
-#     retries: 30
-#     kubectl_kubeconfig: "/home/ubuntu/.kube/config"
-
-
 - name: Get Machine details from management cluster
   kubernetes.core.k8s_info:
     kind: Machine

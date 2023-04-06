@@ -9,14 +9,14 @@
     recurse: true
     path: "{{ snmp_config_dir }}"
 
-- name: Ensure directories exists {{ snmp_trap_logs_dir }}
+- name: Ensure directories exists {{ snmp_trap_handler_dir }}
   ansible.builtin.file:
     state: directory
     mode: 0755
     owner: "{{ monitoring_localuser }}"
     group: "{{ monitoring_localgroup }}"
     recurse: true
-    path: "{{ snmp_trap_logs_dir }}"
+    path: "{{ snmp_trap_handler_dir }}"
 
 - name: Create a symlink to a folder
   ansible.builtin.file:
@@ -102,11 +102,11 @@
     force: true
     mode: 0644
 
-- name: Copy trap_handler.sh file to {{ snmp_trap_logs_dir }}
+- name: Copy trap_handler.sh file to {{ snmp_trap_handler_dir }}
   become: true
   ansible.builtin.template:
     src: "trap_handler.sh.j2"
-    dest: "{{ snmp_trap_logs_dir }}/trap_handler.sh"
+    dest: "{{ snmp_trap_handler_dir }}/trap_handler.sh"
     force: true
     owner: "{{ monitoring_localuser }}"
     group: "{{ monitoring_localgroup }}"

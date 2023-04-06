@@ -93,7 +93,6 @@
       OPENSTACK_EXTERNAL_NETWORK_ID: "{{ capi_capo_openstack_external_network_id }}"
       OPENSTACK_CLOUD_YAML_B64: "{{ capi_base64_capo_ostack_cloud_yaml }}"
       OPENSTACK_CLOUD_CACERT_B64: "{{ capi_openstack_cloud_cacert_b64 }}"
-      OPENSTACK_CLOUD_PROVIDER_CONF_B64: "{{ capi_base64_cloud_config }}"
       CLUSTER_API_OPENSTACK_INSTANCE_CREATE_TIMEOUT: "{{ capi_capo_openstack_instance_create_timeout }}"
       BUNDLE_LOOKUP_TAG: "{{ capi_k8s_version }}"
       K8S_VERSION: "{{ capi_k8s_version }}"
