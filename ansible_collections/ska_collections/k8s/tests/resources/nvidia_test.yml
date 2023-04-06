@@ -13,6 +13,6 @@ spec:
         limits:
           nvidia.com/gpu: 1 # requesting 1 GPU
   tolerations:
-  - key: nvidia.com/gpu
-    operator: Exists
-    effect: NoSchedule
+    - key: "nvidia.com/gpu"
+      operator: "Exists"
+      effect: "NoExecute"
