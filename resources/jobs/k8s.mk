@@ -184,3 +184,9 @@ ifneq (,$(findstring metallb,$(TAGS)))
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 endif
+
+ifneq (,$(findstring ping,$(TAGS)))
+	@ansible-playbook $(TESTS_DIR)/test-ping.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+endif
