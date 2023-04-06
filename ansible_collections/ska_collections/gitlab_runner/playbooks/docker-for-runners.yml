@@ -1,0 +1,11 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Install docker service on k8s nodes
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  tasks:
+    - name: Install docker service on k8s nodes
+      ansible.builtin.import_role:
+        name: ska_collections.gitlab_runner.k8s
+        tasks_from: docker-for-runners.yml

@@ -63,6 +63,13 @@ tidy:  ## Clean up patch files
 	@rm -rf ./runner_kustomize/cache-secret.yaml \
 	./playbooks/files/minio_tenant.yml
 
+docker_for_runners:  ## Install dockerd for runners
+	ansible-playbook $(PLAYBOOKS_DIR)/docker-for-runners.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	$(GITLAB_RUNNER_TAG_LIST_ARG) \
+	$(V)
+
 label_nodes:  ## Label worker nodes for CI
 	ansible-playbook $(PLAYBOOKS_DIR)/label_nodes.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \

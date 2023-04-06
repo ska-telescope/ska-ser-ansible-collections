@@ -1,154 +1,136 @@
-#!/usr/bin/env ansible-playbook
----
-- name: "Install additional docker service for runners"
-  hosts:
-    - k8s_syscore_worker  # only run on Kubernetes worker nodes. This is only needed for syscore nodes! STFC and PSI_LOW doesn't use this
-  become: true
-  vars:
-    data_root: /var/lib/docker-for-gitlab  # Data root should be on separate volume
-    docker_driver: overlay2
-    docker_repo: localhost:5000
-    registry_mirror: "http://192.168.93.12:8181"
-    log_max_size: "10m"
-    log_max_file: "3"
-    log_driver: json-file
-    log_options:
-      max-size: "{{  log_max_size }}"
-      max-file: "{{ log_max_file }}"
-      labels: "org.ska.app.group"
+- name: Instructions
+  ansible.builtin.debug:
+    msg: Connect to the second docker with 'docker --host=unix:///var/run/docker-for-gitlab.sock ps'
 
-  tasks:
-    - name: Instructions
-      debug:
-        msg: Connect to the second docker with 'docker --host=unix:///var/run/docker-for-gitlab.sock ps'
+- name: "Create {{ gitlab_runner_k8s_data_root }}"
+  ansible.builtin.file:
+    path: "{{ gitlab_runner_k8s_data_root }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
 
-    - name: "Create {{ data_root }}"
-      file:
-        path: "{{ data_root }}"
-        state: directory
-        owner: root
-        group: root
-        mode: "0755"
+- name: Create docker-for-gitlab service
+  ansible.builtin.copy:
+    mode: "0644"
+    content: |-
+      [Unit]
+      Description=Docker Application Container Engine For GitLab
+      Documentation=https://docs.docker.com
+      BindsTo=containerd.service
+      After=network-online.target firewalld.service containerd.service
+      Wants=network-online.target
+      Requires=docker.socket
 
-    - name: /lib/systemd/system/docker-for-gitlab.service
-      copy:
-        mode: "0644"
-        content: |-
-          [Unit]
-          Description=Docker Application Container Engine For GitLab
-          Documentation=https://docs.docker.com
-          BindsTo=containerd.service
-          After=network-online.target firewalld.service containerd.service
-          Wants=network-online.target
-          Requires=docker.socket
+      [Service]
+      MountFlags=shared
+      ExecStart=
 
-          [Service]
-          MountFlags=shared
-          ExecStart=
+      [Service]
+      Type=notify
+      # the default is not to use systemd for cgroups because the delegate issues still
+      # exists and systemd currently does not support the cgroup feature set required
+      # for containers run by docker
+      ExecStart=
+      ExecStart=/usr/bin/dockerd --host unix:///var/run/docker-for-gitlab.sock \
+                  --containerd=/run/containerd/containerd.sock \
+                --data-root={{ gitlab_runner_k8s_data_root }} \
+                --exec-root=/var/run/docker-for-gitlab \
+                --pidfile=/var/run/docker-for-gitlab.pid \
+                --config-file=/etc/docker-for-gitlab/daemon.json \
+                --storage-driver={{ gitlab_runner_k8s_docker_driver }} \
+                --insecure-registry={{ gitlab_runner_k8s_docker_repo }}
+      ExecReload=/bin/kill -s HUP $MAINPID
+      TimeoutSec=0
+      RestartSec=2
+      Restart=always
 
-          [Service]
-          Type=notify
-          # the default is not to use systemd for cgroups because the delegate issues still
-          # exists and systemd currently does not support the cgroup feature set required
-          # for containers run by docker
-          ExecStart=
-          ExecStart=/usr/bin/dockerd --host unix:///var/run/docker-for-gitlab.sock \
-                     --containerd=/run/containerd/containerd.sock \
-                    --data-root={{ data_root }} \
-                    --exec-root=/var/run/docker-for-gitlab \
-                    --pidfile=/var/run/docker-for-gitlab.pid \
-                    --config-file=/etc/docker-for-gitlab/daemon.json \
-                    --storage-driver={{ docker_driver }} \
-                    --insecure-registry={{ docker_repo }}
-          ExecReload=/bin/kill -s HUP $MAINPID
-          TimeoutSec=0
-          RestartSec=2
-          Restart=always
+      # Note that StartLimit* options were moved from "Service" to "Unit" in systemd 229.
+      # Both the old, and new location are accepted by systemd 229 and up, so using the old location
+      # to make them work for either version of systemd.
+      StartLimitBurst=3
 
-          # Note that StartLimit* options were moved from "Service" to "Unit" in systemd 229.
-          # Both the old, and new location are accepted by systemd 229 and up, so using the old location
-          # to make them work for either version of systemd.
-          StartLimitBurst=3
+      # Note that StartLimitInterval was renamed to StartLimitIntervalSec in systemd 230.
+      # Both the old, and new name are accepted by systemd 230 and up, so using the old name to make
+      # this option work for either version of systemd.
+      StartLimitInterval=60s
 
-          # Note that StartLimitInterval was renamed to StartLimitIntervalSec in systemd 230.
-          # Both the old, and new name are accepted by systemd 230 and up, so using the old name to make
-          # this option work for either version of systemd.
-          StartLimitInterval=60s
+      # Having non-zero Limit*s causes performance problems due to accounting overhead
+      # in the kernel. We recommend using cgroups to do container-local accounting.
+      LimitNOFILE=infinity
+      LimitNPROC=infinity
+      LimitCORE=infinity
 
-          # Having non-zero Limit*s causes performance problems due to accounting overhead
-          # in the kernel. We recommend using cgroups to do container-local accounting.
-          LimitNOFILE=infinity
-          LimitNPROC=infinity
-          LimitCORE=infinity
+      # Comment TasksMax if your systemd version does not supports it.
+      # Only systemd 226 and above support this option.
+      TasksMax=infinity
 
-          # Comment TasksMax if your systemd version does not supports it.
-          # Only systemd 226 and above support this option.
-          TasksMax=infinity
+      # set delegate yes so that systemd does not reset the cgroups of docker containers
+      Delegate=yes
 
-          # set delegate yes so that systemd does not reset the cgroups of docker containers
-          Delegate=yes
+      # kill only the docker process, not all processes in the cgroup
+      KillMode=process
 
-          # kill only the docker process, not all processes in the cgroup
-          KillMode=process
+      [Install]
+      WantedBy=multi-user.target
 
-          [Install]
-          WantedBy=multi-user.target
+    force: true
+    dest: /lib/systemd/system/docker-for-gitlab.service
+  register: updatedockerconf
 
-        force: true
-        dest: /lib/systemd/system/docker-for-gitlab.service
-      register: updatedockerconf
+- name: Create /etc/docker-for-gitlab
+  ansible.builtin.file:
+    path: "/etc/docker-for-gitlab"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
 
-    - name: Create /etc/docker-for-gitlab
-      file:
-        path: "/etc/docker-for-gitlab"
-        state: directory
-        owner: root
-        group: root
-        mode: "0755"
-
-    - name: /etc/docker-for-gitlab/daemon.json
-      copy:
-        mode: "0644"
-        content: |-
+- name: /etc/docker-for-gitlab/daemon.json
+  ansible.builtin.copy:
+    mode: "0644"
+    content: |-
+      {
+        "default-address-pools": [
           {
-            "default-address-pools": [
-              {
-                  "base": "10.132.0.0/16",
-                  "size": 24
-              }
-            ],
-            {% if registry_mirror|length > 1 %}
-            "registry-mirrors": ["{{ registry_mirror }}"],
-            {% endif %}
-            "metrics-addr" : "0.0.0.0:8323",
-            "experimental" : true,
-            "log-driver": "{{ log_driver }}",
-            "log-opts": {
-                "max-size": "{{ log_max_size }}",
-                "max-file": "{{ log_max_file }}"
-                },
-            "exec-opts": ["native.cgroupdriver=cgroupfs"],
-              "default-runtime": "runc",
-              "runtimes": {
-                  "nvidia": {
-                      "path": "/usr/bin/nvidia-container-runtime",
-                      "runtimeArgs": []
-                  }
+            "base": "10.132.0.0/16",
+            "size": 24
+          }
+        ],
+        {% if registry_mirror | length > 1 %}
+        "registry-mirrors": ["{{ gitlab_runner_k8s_registry_mirror }}"],
+        {% endif %}
+        "metrics-addr": "0.0.0.0:8323",
+        "experimental": true,
+        "log-driver": "{{ gitlab_runner_k8s_log_driver }}",
+        "log-opts": {
+            "max-size": "{{ gitlab_runner_k8s_log_max_size }}",
+            "max-file": "{{ gitlab_runner_k8s_log_max_file }}"
+            },
+        "exec-opts": ["native.cgroupdriver=cgroupfs"],
+          "default-runtime": "runc",
+          "runtimes": {
+              "nvidia": {
+                  "path": "/usr/bin/nvidia-container-runtime",
+                  "runtimeArgs": []
               }
           }
+      }
+    force: true
+    dest: /etc/docker-for-gitlab/daemon.json
+  register: updatedockerconf
 
-        force: true
-        dest: /etc/docker-for-gitlab/daemon.json
-      register: updatedockerconf
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
 
-    - name: reload systemd
-      systemd:
-        daemon_reload: true
+- name: Remove /var/run/docker-for-gitlab.sock
+  ansible.builtin.file:
+    path: /var/run/docker-for-gitlab.sock
+    state: absent
 
-    - name: remove /var/run/docker-for-gitlab.sock
-      file:
-        path: /var/run/docker-for-gitlab.sock
-        state: absent
-
-    - name: restart docker-for-gitlab
-      service: name=docker-for-gitlab enabled=yes state=restarted
+- name: Restart docker-for-gitlab
+  ansible.builtin.service:
+    name: "docker-for-gitlab"
+    enabled: true
+    state: restarted

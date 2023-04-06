@@ -35,3 +35,15 @@ gitlab_runner_k8s_s3_access_key_secret_path: "{{ gitlab_vault_prefix }}/gitlab-r
 gitlab_runner_k8s_s3_secret_key_secret_path: "{{ gitlab_vault_prefix }}/gitlab-runner/s3_secret_key"
 gitlab_runner_k8s_runner_registration_token: "{{ gitlab_vault_prefix }}/gitlab-runner/runner_registration_token"
 gitlab_runner_k8s_vault_role: kube-role
+
+gitlab_runner_k8s_data_root: /var/lib/docker-for-gitlab  # Data root should be on separate volume
+gitlab_runner_k8s_docker_driver: overlay2
+gitlab_runner_k8s_docker_repo: localhost:5000
+gitlab_runner_k8s_registry_mirror: "http://192.168.93.12:8181"
+gitlab_runner_k8s_log_max_size: "10m"
+gitlab_runner_k8s_log_max_file: "3"
+gitlab_runner_k8s_log_driver: json-file
+gitlab_runner_k8s_log_options:
+  max-size: "{{ gitlab_runner_k8s_log_max_size }}"
+  max-file: "{{ gitlab_runner_k8s_log_max_file }}"
+  labels: "org.ska.app.group"
