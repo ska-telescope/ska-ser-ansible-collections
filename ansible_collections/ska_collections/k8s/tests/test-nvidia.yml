@@ -32,8 +32,3 @@
       kubernetes.core.k8s:
         state: absent
         template: 'resources/nvidia_test.yml'
-        namespace: "{{ k8s_nvidia_test_pod_namespace }}"
-
-
-
-
