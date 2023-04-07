@@ -4,6 +4,7 @@ ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/gitlab_runner/playbooks
+TESTS_DIR ?= ./ansible_collections/ska_collections/gitlab_runner/tests
 
 GITLAB_RUNNER_K8S_CLUSTER ?= localhost## subset of hosts from inventory to run against, default is set to localhost so that it works with local kubeconfig
 GITLAB_RUNNER_STORAGE_CLASS ?= block ## Minio shared cache StorageClass
@@ -97,6 +98,18 @@ k8s_runner: tidy envsubst  ## Deploy runners
 
 deploy_minio: tidy envsubst  ## Deploy Minio
 	ansible-playbook $(PLAYBOOKS_DIR)/deploy_minio.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	$(GITLAB_RUNNER_TAG_LIST_ARG) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars="gitlab_runner_minio_namespace=$(GITLAB_RUNNER_K8S_NAMESPACE) minio_release_name='$(GITLAB_RUNNER_MINIO_RELEASE)'" \
+	--extra-vars="gitlab_runner_minio_storage_class=$(GITLAB_RUNNER_STORAGE_CLASS)" \
+	--extra-vars="gitlab_runner_gitlab_s3_bucket_name=$(GITLAB_RUNNER_MINIO_BUCKET_NAME)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
+	$(V)
+
+test_minio: tidy envsubst  ## Test Minio
+	ansible-playbook $(TESTS_DIR)/test_minio.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	$(GITLAB_RUNNER_TAG_LIST_ARG) \
