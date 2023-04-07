@@ -24,7 +24,7 @@
         wait: true
         name: minio-test-script
         namespace: "{{ gitlab_runner_minio_namespace }}"
-        wait_timeout: 120
+        wait_timeout: 10
 
     - name: Delete test script
       kubernetes.core.k8s:
