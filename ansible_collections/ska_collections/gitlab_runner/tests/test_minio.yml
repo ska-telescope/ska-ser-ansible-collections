@@ -31,6 +31,3 @@
         state: absent
         apply: true
         template: "resources/minio.yaml"
-        
-
-
