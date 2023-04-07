@@ -7,7 +7,7 @@ metadata:
 data:
   create-cache.sh: |
     # Get access to our tenant (named cache)
-    mc alias set cache http://minio ${ACCESS_KEY} ${SECRET_KEY}
+    mc alias set cache http://minio "{{ gitlab_runner_minio_access_key }}" "{{ gitlab_runner_minio_secret_key }}"
     # Create cache bucket
     mc mb --ignore-existing cache/{{ gitlab_runner_gitlab_s3_bucket_name }}
     # Create read-write policy for cache bucket
@@ -41,10 +41,12 @@ data:
       ]
     }
     EOF
-    mc admin policy add cache cachereadwrite cachereadwrite.json
+    mc admin policy create cache cachereadwrite cachereadwrite.json
     # Add user and set the policy
     mc admin user add cache {{ gitlab_runner_minio_username }} {{ gitlab_runner_minio_password }}
-    mc admin policy set cache cachereadwrite user={{ gitlab_runner_minio_username }}
+    echo "mc admin policy set cache cachereadwrite user={{ gitlab_runner_minio_username }}"
+    # NOTE!! The following 2 statements are not working. 
+    mc admin policy attach cache cachereadwrite --user {{ gitlab_runner_minio_username }}
 
 ---
 apiVersion: batch/v1

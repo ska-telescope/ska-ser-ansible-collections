@@ -193,7 +193,7 @@ get_cache:  ## retrieve the minio cache
 	-v $${HOME}:$${HOME} -w $${HOME} \
 	--volume $$(pwd)/tmp:/mnt \
 	--entrypoint=/bin/sh minio/mc -c \
-	'mc alias set cache http://$(GITLAB_RUNNER_LOCAL_DOCKER):9001 $(GITLAB_RUNNER_MINIO_ACCESS_KEY) $(GITLAB_RUNNER_MINIO_SECRET_KEY); mc ls --recursive cache; mc cp --recursive cache/cache /mnt/'
+	'mc alias set cache http://$(GITLAB_RUNNER_LOCAL_DOCKER):9001 $(GITLAB_RUNNER_MINIO_ACCESS_KEY) $(GITLAB_RUNNER_MINIO_SECRET_KEY); mc ls --recursive cache; mc cp --recursive cache/$(GITLAB_RUNNER_MINIO_BUCKET_NAME) /mnt/'
 	ls -lR $$(pwd)/tmp
 	ps axf | grep 'port-forward service' | grep -v grep | awk '{print $$1}' | xargs kill
 
@@ -201,7 +201,7 @@ get_key: ## get keys from minio environmen variables
 	kubectl exec -n $(GITLAB_RUNNER_K8S_NAMESPACE) -it minio-ss-0-0 -- env | grep KEY
 
 get_operator_jwt: ## get jwt token for operator console
-	kubectl -n $(GITLAB_RUNNER_K8S_NAMESPACE) get secret $$(kubectl -n $(GITLAB_RUNNER_K8S_NAMESPACE) get serviceaccount console-sa -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" | base64 --decode
+	kubectl -n $(GITLAB_RUNNER_K8S_NAMESPACE) get secret console-sa-secret -o jsonpath="{.data.token}" | base64 --decode
 
 forward_operator_console: ## port forward operator console on 9090
 	kubectl -n $(GITLAB_RUNNER_K8S_NAMESPACE) port-forward svc/console 9090:9090
@@ -228,7 +228,8 @@ list_ilms:
 
 create_cache_bucket: ## create the minio bucket named cache for gitlab manually
 	@kubectl -n $(GITLAB_RUNNER_K8S_NAMESPACE) run mc --rm -ti --image=minio/mc --restart=Never --command -- \
-	/bin/sh -c "mc alias set cache http://minio $(GITLAB_RUNNER_MINIO_ACCESS_KEY) $(GITLAB_RUNNER_MINIO_SECRET_KEY); mc mb --ignore-existing cache/$(MINIO_BUCKET_NAME)"
+	/bin/sh -c "mc alias set cache http://minio $(GITLAB_RUNNER_MINIO_ACCESS_KEY) $(GITLAB_RUNNER_MINIO_SECRET_KEY); \
+	mc mb --ignore-existing cache/$(GITLAB_RUNNER_MINIO_BUCKET_NAME)"
 
 help: ## Show Help
 	@echo "Gitlab_runner targets - make playbooks gitlab_runner <target>:"

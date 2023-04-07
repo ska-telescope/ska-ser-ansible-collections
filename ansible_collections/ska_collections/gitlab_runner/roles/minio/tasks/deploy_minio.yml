@@ -23,6 +23,20 @@
     name: "{{ gitlab_runner_minio_release_name }}"
     values_files: "values.yaml"
 
+
+- name: Template secret for console
+  ansible.builtin.template:
+    src: "templates/secret.yaml.j2"
+    dest: "/tmp/secret.yaml"
+    force: true
+    mode: 0755
+
+- name: Apply secret for console
+  kubernetes.core.k8s:
+    state: present
+    apply: true
+    src: "/tmp/secret.yaml"
+
 - name: Template minio tenant service file
   ansible.builtin.template:
     src: "templates/tenant-service.yaml.j2"
@@ -58,3 +72,4 @@
     - "/tmp/values.yaml"
     - "/tmp/bucket-with-users.yaml"
     - "values.yaml"
+    - "/tmp/secret.yaml"
