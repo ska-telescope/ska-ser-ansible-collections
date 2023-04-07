@@ -20,6 +20,8 @@ V ?= ## ansible-playbook debug options, i.e. -vvv
 GITLAB_RUNNER_LOCAL_DOCKER ?= 127.0.0.1
 GITLAB_RUNNER_METRICS_PORT ?= 30931
 
+K8S_KUBECONFIG ?= /etc/clusterapi/$(CAPI_CLUSTER)-kubeconfig
+
 -include $(BASE_PATH)/PrivateRules.mak
 
 ifneq ($(GITLAB_RUNNER_TAG_LIST),)
@@ -102,6 +104,7 @@ deploy_minio: tidy envsubst  ## Deploy Minio
 	--extra-vars="gitlab_runner_minio_namespace=$(GITLAB_RUNNER_K8S_NAMESPACE) minio_release_name='$(GITLAB_RUNNER_MINIO_RELEASE)'" \
 	--extra-vars="gitlab_runner_minio_storage_class=$(GITLAB_RUNNER_STORAGE_CLASS)" \
 	--extra-vars="gitlab_runner_gitlab_s3_bucket_name=$(GITLAB_RUNNER_MINIO_BUCKET_NAME)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	$(V)
 
 # ANSIBLE_STDOUT_CALLBACK=yaml makes it nice to read
@@ -112,6 +115,7 @@ show_minio: tidy envsubst  ## Show Mino chart
 	--extra-vars="gitlab_runner_minio_namespace=$(GITLAB_RUNNER_K8S_NAMESPACE) minio_release_name='$(GITLAB_RUNNER_MINIO_RELEASE)'" \
 	--extra-vars="gitlab_runner_minio_storage_class=$(GITLAB_RUNNER_STORAGE_CLASS)" \
 	--extra-vars="gitlab_runner_gitlab_s3_bucket_name=$(GITLAB_RUNNER_MINIO_BUCKET_NAME)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	$(V)
 
 destroy_minio:  ## Delete minio
@@ -119,6 +123,7 @@ destroy_minio:  ## Delete minio
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--extra-vars="gitlab_runner_gitlab_s3_bucket_name=$(GITLAB_RUNNER_MINIO_BUCKET_NAME)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	$(V)
 
 runner_logs: ## Show runner logs
@@ -172,10 +177,10 @@ minio_logs: ## Show minio logs
 
 list_cache:  ## list the minio cache using in-cluster connection
 	@kubectl -n $(GITLAB_RUNNER_K8S_NAMESPACE) run mc --rm -ti --image=minio/mc --restart=Never --command -- \
-	/bin/sh -c "mc alias set cache http://minio $(ACCESS_KEY) $(SECRET_KEY); mc ls --recursive cache/"
+	/bin/sh -c "mc alias set cache http://minio $(GITLAB_RUNNER_MINIO_ACCESS_KEY) $(GITLAB_RUNNER_MINIO_SECRET_KEY); mc ls --recursive cache/"
 
 list_cache_remote: ## list the global minio cache using remote connection
-	docker run --rm -it --entrypoint=/bin/sh minio/mc -c 'mc alias set cache https://k8s.stfc.skao.int:9443 $(ACCESS_KEY) $(SECRET_KEY); mc ls --recursive cache/'
+	docker run --rm -it --entrypoint=/bin/sh minio/mc -c 'mc alias set cache https://k8s.stfc.skao.int:9443 $(GITLAB_RUNNER_MINIO_ACCESS_KEY) $(GITLAB_RUNNER_MINIO_SECRET_KEY); mc ls --recursive cache/'
 
 get_cache:  ## retrieve the minio cache
 	sudo rm -rf $$(pwd)/tmp
@@ -188,12 +193,12 @@ get_cache:  ## retrieve the minio cache
 	-v $${HOME}:$${HOME} -w $${HOME} \
 	--volume $$(pwd)/tmp:/mnt \
 	--entrypoint=/bin/sh minio/mc -c \
-	'mc alias set cache http://$(GITLAB_RUNNER_LOCAL_DOCKER):9001 $(ACCESS_KEY) $(SECRET_KEY); mc ls --recursive cache; mc cp --recursive cache/cache /mnt/'
+	'mc alias set cache http://$(GITLAB_RUNNER_LOCAL_DOCKER):9001 $(GITLAB_RUNNER_MINIO_ACCESS_KEY) $(GITLAB_RUNNER_MINIO_SECRET_KEY); mc ls --recursive cache; mc cp --recursive cache/cache /mnt/'
 	ls -lR $$(pwd)/tmp
 	ps axf | grep 'port-forward service' | grep -v grep | awk '{print $$1}' | xargs kill
 
 get_key: ## get keys from minio environmen variables
-	kubectl exec -n gitlab -it minio-ss-0-0 -- env | grep KEY
+	kubectl exec -n $(GITLAB_RUNNER_K8S_NAMESPACE) -it minio-ss-0-0 -- env | grep KEY
 
 get_operator_jwt: ## get jwt token for operator console
 	kubectl -n $(GITLAB_RUNNER_K8S_NAMESPACE) get secret $$(kubectl -n $(GITLAB_RUNNER_K8S_NAMESPACE) get serviceaccount console-sa -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" | base64 --decode
@@ -207,23 +212,23 @@ forward_tenant_console: ## port forward tenant console on 9091
 # https://docs.min.io/minio/baremetal/reference/minio-cli/minio-mc/mc-rm.html#mc-rm-older-than
 prune_cache:  ## prune the minio cache
 	@kubectl -n $(GITLAB_RUNNER_K8S_NAMESPACE) run mc --rm -ti --image=minio/mc --restart=Never --command -- \
-	/bin/sh -c "mc alias set cache http://minio $(ACCESS_KEY) $(SECRET_KEY); mc rm --older-than 15d --recursive --dangerous --force cache/"
+	/bin/sh -c "mc alias set cache http://minio $(GITLAB_RUNNER_MINIO_ACCESS_KEY) $(GITLAB_RUNNER_MINIO_SECRET_KEY); mc rm --older-than 15d --recursive --dangerous --force cache/"
 
 delete_ilm:
 	@kubectl -n $(GITLAB_RUNNER_K8S_NAMESPACE) run mc --rm -ti --image=minio/mc --restart=Never --command -- \
-	/bin/sh -c "mc alias set cache http://minio $(ACCESS_KEY) $(SECRET_KEY); mc ilm rule rm --id $(MINIO_ILM_LIFECYCLE_ID) cache/cache"
+	/bin/sh -c "mc alias set cache http://minio $(GITLAB_RUNNER_MINIO_ACCESS_KEY) $(GITLAB_RUNNER_MINIO_SECRET_KEY); mc ilm rule rm --id $(MINIO_ILM_LIFECYCLE_ID) cache/cache"
 
 add_ilm:
 	@kubectl -n $(GITLAB_RUNNER_K8S_NAMESPACE) run mc --rm -ti --image=minio/mc --restart=Never --command -- \
-	/bin/sh -c "mc alias set cache http://minio $(ACCESS_KEY) $(SECRET_KEY); mc ilm rule add --expire-days 30 cache/cache"
+	/bin/sh -c "mc alias set cache http://minio $(GITLAB_RUNNER_MINIO_ACCESS_KEY) $(GITLAB_RUNNER_MINIO_SECRET_KEY); mc ilm rule add --expire-days 30 cache/cache"
 
 list_ilms:
 	@kubectl -n $(GITLAB_RUNNER_K8S_NAMESPACE) run mc --rm -ti --image=minio/mc --restart=Never --command -- \
-	/bin/sh -c "mc alias set cache http://minio $(ACCESS_KEY) $(SECRET_KEY); mc ilm rule ls cache/cache"
+	/bin/sh -c "mc alias set cache http://minio $(GITLAB_RUNNER_MINIO_ACCESS_KEY) $(GITLAB_RUNNER_MINIO_SECRET_KEY); mc ilm rule ls cache/cache"
 
 create_cache_bucket: ## create the minio bucket named cache for gitlab manually
 	@kubectl -n $(GITLAB_RUNNER_K8S_NAMESPACE) run mc --rm -ti --image=minio/mc --restart=Never --command -- \
-	/bin/sh -c "mc alias set cache http://minio $(ACCESS_KEY) $(SECRET_KEY); mc mb --ignore-existing cache/$(MINIO_BUCKET_NAME)"
+	/bin/sh -c "mc alias set cache http://minio $(GITLAB_RUNNER_MINIO_ACCESS_KEY) $(GITLAB_RUNNER_MINIO_SECRET_KEY); mc mb --ignore-existing cache/$(MINIO_BUCKET_NAME)"
 
 help: ## Show Help
 	@echo "Gitlab_runner targets - make playbooks gitlab_runner <target>:"

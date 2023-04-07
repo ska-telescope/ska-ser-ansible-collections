@@ -1,6 +1,6 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: Deploy MinIO
+- name: Destroy MinIO
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
@@ -12,7 +12,7 @@
   environment:
     KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
   tasks:
-    - name: Deploy MinIO
+    - name: Destroy MinIO
       ansible.builtin.import_role:
         name: ska_collections.gitlab_runner.minio
         tasks_from: destroy_minio
