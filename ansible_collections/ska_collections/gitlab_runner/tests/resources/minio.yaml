@@ -21,19 +21,19 @@ metadata:
   namespace: "{{ gitlab_runner_minio_namespace }}"
 spec:
   volumes:
-  - name: config-volume
-    configMap:
-      name: minio-test-script
-      defaultMode: 0777
-  containers:
-  - name: "minio-mc"
-    image: minio/mc
-    imagePullPolicy: IfNotPresent
-    command:
-    - sh
-    args:
-    - -c
-    - "/tmp/data/test.sh"
-    volumeMounts:
     - name: config-volume
-      mountPath: /tmp/data
+      configMap:
+        name: minio-test-script
+        defaultMode: 0777
+  containers:
+    - name: "minio-mc"
+      image: minio/mc
+      imagePullPolicy: IfNotPresent
+      command:
+        - sh
+      args:
+        - -c
+        - "/tmp/data/test.sh"
+      volumeMounts:
+        - name: config-volume
+          mountPath: /tmp/data
