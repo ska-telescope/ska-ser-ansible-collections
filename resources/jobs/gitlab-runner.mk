@@ -84,7 +84,7 @@ label_nodes:  ## Label worker nodes for CI
 	  $(V)
 
 k8s_runner: tidy envsubst  ## Deploy runners
-	ansible-playbook $(PLAYBOOKS_DIR)/generate_manifest_runner.yml \
+	ANSIBLE_STDOUT_CALLBACK=yaml ansible-playbook $(PLAYBOOKS_DIR)/generate_manifest_runner.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	$(GITLAB_RUNNER_TAG_LIST_ARG) \

@@ -1,4 +1,5 @@
 #!/usr/bin/env ansible-playbook
+# Deprecated! 
 ---
 - name: Install docker service on k8s nodes
   hosts: "{{ target_hosts }}"

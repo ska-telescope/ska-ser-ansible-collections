@@ -35,6 +35,8 @@
     chart_version: "{{ gitlab_runner_k8s_chart_version }}"
     release_namespace: "{{ gitlab_runner_k8s_namespace }}"
     values_files: "{{ gitlab_values_file.path }}"
+    # not yet available
+    # release_name: "{{ gitlab_runner_k8s_release_name }}"
   register: template_output
 
 - name: Save runner manifest before kustomization
@@ -42,7 +44,6 @@
     content: "{{ template_output.stdout }}"
     dest: "{{ temp_kustomize_dir.path }}/all.yaml"
     mode: 0644
-    delegate_to: 127.0.0.1
 
 - name: "Copy runner-metrics.yaml"
   ansible.builtin.copy:
