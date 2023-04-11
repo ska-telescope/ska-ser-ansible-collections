@@ -1,11 +1,11 @@
 ---
-
 - name: Add stable chart repo
   kubernetes.core.helm_repository:
     name: nvdp
     repo_url: "https://nvidia.github.io/k8s-device-plugin"
 
-- run_once: true
+- name: Create RuntimeClass and deploy nvidia-device-plugin Helm chart
+  run_once: true
   block:
     - name: Create RuntimeClass "nvidia"
       kubernetes.core.k8s:

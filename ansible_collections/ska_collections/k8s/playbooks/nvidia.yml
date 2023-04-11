@@ -15,6 +15,6 @@
     - ska_collections.k8s.nvidia_device_plugin
   environment:
     KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
-  
+
   tags:
     - nvidia
