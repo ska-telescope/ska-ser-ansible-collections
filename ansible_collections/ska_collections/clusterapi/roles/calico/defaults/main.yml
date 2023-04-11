@@ -2,7 +2,9 @@
 debug: false
 
 calico_version: 3.24.5
+calico_operator_namespace: calico-operator
 
 calico_ipv4pool_cidr: 10.10.0.0/16
 calico_ipv4pool_ipip: Never
-calico_ip_autodetection_method: interface=ens.*,eth.*
+calico_ip_autodetection_interface: "ens.*,eth.*"
+calico_tigera_operator_version: 1.28.6
