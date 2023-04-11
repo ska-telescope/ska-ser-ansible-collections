@@ -1,0 +1,29 @@
+- name: Test ping service
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  tasks:
+    - name: Test ping with external dns entry
+      ansible.builtin.uri:
+        url: "https://{{ prometheus_k8s_external_dns_entry }}:/ping"
+        method: GET
+        status_code: [200]
+        validate_certs: false
+      when: prometheus_k8s_external_dns_entry
+
+    - name: Retrieve nginx information
+      kubernetes.core.k8s_info:
+        kind: Service
+        wait: true
+        name: ingress-nginx-controller
+        namespace: ingress-nginx
+        wait_timeout: 10
+      register: ingress_nginx_controller
+      when: not prometheus_k8s_external_dns_entry
+
+    - name: Test ping ingress
+      ansible.builtin.uri:
+        url: "http://{{ ingress_nginx_controller.resources[0].status.loadBalancer.ingress[0].ip }}:/ping"
+        method: GET
+        status_code: [200]
+      when: not prometheus_k8s_external_dns_entry

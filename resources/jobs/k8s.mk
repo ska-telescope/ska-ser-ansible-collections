@@ -108,7 +108,7 @@ ifneq (,$(findstring metrics,$(TAGS)))
 	-vv
 endif
 
-#	# ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_ceph_conf_ini_file=<path to>/ceph.conf capi_ceph_conf_key_ring=<path to>/ceph.client.admin.keyring'
+#	# ANSIBLE_EXTRA_VARS+= --extra-vars 'k8s_capi_ceph_conf_ini_file=<path to>/ceph.conf k8s_capi_ceph_conf_key_ring=<path to>/ceph.client.admin.keyring'
 ifneq (,$(findstring rookio,$(TAGS)))
     # rookio is a target - avoid undefined ansible vars issue with tags
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/rookio.yml \
@@ -181,6 +181,12 @@ endif
 
 ifneq (,$(findstring metallb,$(TAGS)))
 	@ansible-playbook $(TESTS_DIR)/test-metallb.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+endif
+
+ifneq (,$(findstring ping,$(TAGS)))
+	@ansible-playbook $(TESTS_DIR)/test-ping.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 endif

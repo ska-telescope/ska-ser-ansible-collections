@@ -49,10 +49,10 @@ if [ "$minRemaining" -le 5 ]
 then
   log "Run shutdown gateway..."
   . /home/ubuntu/kayobe-env && \
-  kayobe playbook run $KAYOBE_CONFIG_PATH/ansible/shutdown/shutdown_gateway.yml -vv > {{ snmp_trap_handler_dir }}/shutdown_gateway_$timestamp.txt
+  nohup kayobe playbook run $KAYOBE_CONFIG_PATH/ansible/shutdown/shutdown_gateway.yml -vv > {{ snmp_trap_handler_dir }}/shutdown_gateway_$timestamp.txt &
 elif [ "$secOnBattery" -gt 300 ] || [ "$minRemaining" -le 15 ]
 then
   log "Run shutdown..."
   . /home/ubuntu/kayobe-env && \
-  kayobe playbook run $KAYOBE_CONFIG_PATH/ansible/shutdown/handle_trap.yml -vv > {{ snmp_trap_handler_dir }}/shutdown_$timestamp.txt
+  nohup kayobe playbook run $KAYOBE_CONFIG_PATH/ansible/shutdown/handle_trap.yml -vv > {{ snmp_trap_handler_dir }}/shutdown_$timestamp.txt &
 fi
