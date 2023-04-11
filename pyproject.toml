@@ -6,7 +6,6 @@ authors = ["Domingos Nunes <domingos.nunes@atlar.pt>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-mitogen = "^0.3.3"
 ansible = "^6.5"
 jmespath = "^1.0.1"
 flake8 = "^5.0.4"
