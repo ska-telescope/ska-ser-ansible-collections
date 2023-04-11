@@ -1,0 +1,17 @@
+---
+# load shared vars with clusterapi
+- name: Include vars
+  ansible.builtin.include_vars:
+    file: "{{ item }}"
+  with_items:
+    - ../clusterapi/defaults/main.yml
+  tags: [always]
+
+- name: Check cluster configuration
+  ansible.builtin.debug:
+    msg: {
+      cluster: "{{ capi_cluster }}",
+      namespace: "{{ capi_kube_namespace }}",
+      branch: "{{ capi_collections_branch }}",
+      kustomize_overlay: "{{ capi_kustomize_overlay}}"
+    }

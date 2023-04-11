@@ -16,7 +16,7 @@
       ansible.builtin.set_fact:
         target_kubeconfig: "{{ capi_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig)) }}"
 
-- name: Deploy and configure the clusterapi management cluster
+- name: Create the workload cluster
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
@@ -25,7 +25,6 @@
       ansible.builtin.debug:
         var: target_kubeconfig
   roles:
-    - clusterapi
-    - configcapo
+    - createworkload
   environment:
     KUBECONFIG: "{{ target_kubeconfig }}"

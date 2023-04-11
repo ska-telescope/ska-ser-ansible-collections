@@ -73,22 +73,23 @@ Setup `PrivateRules.mak` - the following highlights key variables that are likel
 DATACENTRE = stfc-techops
 ENVIRONMENT = production
 SERVICE = clusterapi
-
-# Always point to the management-cluster group
-PLAYBOOKS_HOSTS = management-cluster
-CAPI_CLUSTER = capo-examples
-
-# Ceph config
-ANSIBLE_EXTRA_VARS+= --extra-vars 'k8s_capi_ceph_conf_ini_file=$(THIS_BASE)/clusterapi/ceph/ceph.conf'
-ANSIBLE_EXTRA_VARS+= --extra-vars 'k8s_capi_ceph_conf_key_ring=$(THIS_BASE)/clusterapi/ceph/ceph.client.admin.keyring'
-ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_controlplane_count=3 capi_worker_count=3'
-
-# Cloud config
-ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_capo_openstack_cloud_config=$(THIS_BASE)/clouds-clusterapi.yaml'
-ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_capo_openstack_cloud=skatechops'
-
 ```
 
+You can override all the required variables in group_vars/host_vars file as follows:
+
+```
+base_path: "{{ lookup('ansible.builtin.env', 'BASE_PATH', default='') | mandatory }}"
+
+capi_cluster: some-cluster
+capi_controlplane_count: 1
+capi_worker_count: 1
+
+capi_capo_openstack_cloud_config: "{{ base_path }}/clusterapi/clouds.yaml"
+capi_capo_openstack_cloud: skatechops
+
+capi_ceph_conf_ini_file: "{{ base_path }}/clusterapi/ceph/ceph.conf"
+capi_ceph_conf_key_ring: "{{ base_path }}/clusterapi/ceph/ceph.client.admin.keyring"
+```
 ### First - Create VM Image
 
 Make sure the appropriate OS image has been generated for the Kubernetes version being deployed.  This can be generated with:
@@ -103,9 +104,9 @@ Establish a single node management cluster based on Minikube:
 
 Deploy the host, generate the inventory and then provision the management cluster:
 ```
-make orch apply PLAYBOOKS_HOSTS=management-cluster TF_AUTO_APPROVE=true
-make orch generate-inventory PLAYBOOKS_HOSTS=management-cluster
-make playbooks clusterapi clusterapi-build-management-server
+make orch apply
+make orch generate-inventory
+make playbooks clusterapi clusterapi-build-management-server PLAYBOOKS_HOSTS=management-cluster
 ```
 
 This will have initialised a VM using Terraform, generated the required inventory, and then:
@@ -117,7 +118,7 @@ This will have initialised a VM using Terraform, generated the required inventor
 Build a workload cluster, and perform post deployment customisations:
 
 ```
-make playbooks clusterapi clusterapi-createworkload CAPI_APPLY=true PLAYBOOKS_HOSTS=clusterapi
+make playbooks clusterapi clusterapi-createworkload CAPI_APPLY=true PLAYBOOKS_HOSTS=management-cluster
 make playbooks k8s k8s-get-kubeconfig PLAYBOOKS_HOSTS=clusterapi
 make playbooks k8s k8s-post-deployment
 make playbooks clusterapi clusterapi-workload-inventory

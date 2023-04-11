@@ -1,4 +1,8 @@
 ---
+- name: Check kubeconfig
+  ansible.builtin.debug:
+    var: ansible_env.KUBECONFIG
+
 - name: Add Calico helm repo
   kubernetes.core.helm_repository:
     name: projectcalico

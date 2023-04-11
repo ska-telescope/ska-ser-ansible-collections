@@ -19,6 +19,7 @@
 - name: Show capi_base64_cloud_config
   ansible.builtin.debug:
     var: capi_base64_cloud_config
+  when: debug
 
 - name: Check if kubectl is installed locally
   block:
@@ -72,10 +73,6 @@
     suffix: capo-template
   register: capi_capo_template_dir
 
-
-# capo-cluster-template: kustomize/base/cluster-template.orig.yaml capo-vars ## generate the cluster manifest template
-# 	kubectl kustomize ./kustomize/overlay/$(KUSTOMIZE_OVERLAY)/ > $(THIS_BASE)/$(CAPO_CLUSTER)-template.yaml
-
 - name: Setup environment
   ansible.builtin.set_fact:
     capi_cluster_environment:
@@ -108,7 +105,7 @@
       WORKER_COUNT: "{{ capi_worker_count }}"
       RUN_KUBELET_INSTALL: "{% if capi_capo_run_kubelet_install %}yes{% else %}no{% endif %}"
 
-- name: Generate Cluster Instance
+- name: Generate cluster
   ansible.builtin.shell: |
     clusterctl generate cluster {{ capi_cluster }} \
       --target-namespace {{ capi_kube_namespace }} \
@@ -123,13 +120,14 @@
 - name: Show capi_capo_template_result
   ansible.builtin.debug:
     var: capi_capo_template_result
+  when: debug
 
-- name: Slurp CAPO Cluster instance manifest
+- name: Slurp CAPO cluster manifest
   ansible.builtin.slurp:
     src: "{{ capi_capo_template_dir.path }}/{{ capi_cluster }}.yaml"
   register: slurped_cluster_instance_manifest
 
-- name: Unpack CAPO Cluster manifest
+- name: Unpack CAPO cluster manifest
   ansible.builtin.set_fact:
     capi_cluster_manifest: "{{ slurped_cluster_instance_manifest.content | b64decode }}"
 
@@ -139,21 +137,56 @@
     state: absent
   delegate_to: localhost
 
-- name: Output cluster instance manifest file  # noqa: template-instead-of-copy
+- name: Check if a previous manifest exists
+  ansible.builtin.stat:
+    path: "{{ playbook_dir }}/../../../../resources/clusterapi/manifests/{{ capi_cluster }}-cluster-manifest.yaml.applied"
+  register: previous_cluster_manifest
+  delegate_to: localhost
+
+- name: Output cluster manifest file  # noqa: template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ capi_cluster_manifest }}"
     dest: "{{ playbook_dir }}/../../../../resources/clusterapi/manifests/{{ capi_cluster }}-cluster-manifest.yaml"
     mode: 0644
   delegate_to: localhost
 
-- name: Apply Cluster Template from remote clusterapi server
-  when: cluster_apply
+- name: Apply cluster manifest
+  when: capi_apply_manifest
   block:
+    - name: Read previously applied manifest
+      ansible.builtin.set_fact:
+        capi_previous_cluster_manifest: "{{ lookup('ansible.builtin.file', previous_cluster_manifest.stat.path) }}"
+      when: previous_cluster_manifest.stat.exists
+
+    - name: Show manifest differences
+      ansible.utils.fact_diff:
+        before: "{{ capi_previous_cluster_manifest }}"
+        after: "{{ capi_cluster_manifest }}"
+
+    - name: Validate manifest changes
+      ansible.builtin.pause:
+        prompt: "Do you want to apply this manifest? [yes/no]"
+        echo: true
+      register: validate_manifest_apply
+      when: capi_apply_manifest_review_diff
+
+    - name: Abort manifest changes before apply
+      ansible.builtin.fail:
+        msg: "Aborting manifest apply. To really do it, say 'yes' on the prompt"
+      when: validate_manifest_apply.user_input != 'yes' and capi_apply_manifest_review_diff
+
     - name: Apply CAPO Cluster manifest
       kubernetes.core.k8s:
         state: present
         apply: true
         src: "{{ capi_capo_template_dir.path }}/{{ capi_cluster }}.yaml"
+
+    - name: Output cluster manifest file  # noqa: template-instead-of-copy
+      ansible.builtin.copy:
+        content: "{{ capi_cluster_manifest }}"
+        dest: "{{ playbook_dir }}/../../../../resources/clusterapi/manifests/{{ capi_cluster }}-cluster-manifest.yaml.applied"
+        mode: 0644
+      delegate_to: localhost
 
 - name: Remove the temp template directory
   ansible.builtin.file:

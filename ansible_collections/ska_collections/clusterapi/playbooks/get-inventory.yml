@@ -1,22 +1,32 @@
 #!/usr/bin/env ansible-playbook
 ---
-
-- name: "Apply the get workload cluster inventory from management cluster role to nodes"
+# This is here to force loading the default variables of the role (respecting the overrides) and also
+# to validate what are we destroying
+- name: Check cluster configurations
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-    k8s_kubeconfig: "/home/ubuntu/.kube/config"
+  tasks:
+    - name: Check workload cluster
+      ansible.builtin.include_role:
+        name: ska_collections.clusterapi.createworkload
+        tasks_from: check-configs.yml
+        public: True
+    - name: Set target kubeconfig
+      ansible.builtin.set_fact:
+        kubeconfig: "{{ capi_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig)) }}"
 
+- name: Get workload cluster inventory
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
   pre_tasks:
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:
         var: k8s_kubeconfig
-
   roles:
     - clusterinventory
-
   environment:
-    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
-
+    KUBECONFIG: "{{ kubeconfig }}"
   tags:
     - clusterinventory

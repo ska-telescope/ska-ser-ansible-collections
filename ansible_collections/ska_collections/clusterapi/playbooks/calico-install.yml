@@ -8,7 +8,6 @@
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:
         var: k8s_kubeconfig
-
     - name: Install calico
       ansible.builtin.include_role:
         name: ska_collections.clusterapi.calico

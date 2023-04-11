@@ -1,5 +1,4 @@
 ---
-
 - name: Install MetalLB Helm Chart
   kubernetes.core.helm:
     atomic: true

@@ -41,10 +41,6 @@
     mode: '0644'
   become: true
 
-- name: Find the local running user
-  ansible.builtin.set_fact:
-    whoami: "{{ lookup('env', 'USER') }}"
-
 - name: Copy clusterapi CAPO template back
   ansible.builtin.slurp:
     src: "{{ capi_config_dir }}/{{ capi_capo_template_name }}"
