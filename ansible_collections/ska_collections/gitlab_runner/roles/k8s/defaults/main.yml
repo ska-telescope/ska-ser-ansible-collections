@@ -7,15 +7,15 @@ gitlab_runner_k8s_node_label: node-role.skatelescope.org/ci-worker
 
 gitlab_runner_k8s_namespace: gitlab
 
-gitlab_runner_k8s_release_name: stfc-sdhp-gitlab-runner
-
-gitlab_runner_k8s_kubeconfig_name: KUBECONFIG_STFC_SDHP
+gitlab_runner_k8s_release_name: "{{ _ | mandatory('`gitlab_runner_k8s_release_name` definition is mandatory') }}"
+gitlab_runner_k8s_kubeconfig_name: "{{ _ | mandatory('`gitlab_runner_k8s_kubeconfig_name` definition is mandatory') }}"
+gitlab_runner_k8s_runner_name: "{{ _ | mandatory('`gitlab_runner_k8s_runner_name` definition is mandatory') }}"
 
 gitlab_runner_k8s_chart_repo: https://charts.gitlab.io
 gitlab_runner_k8s_chart_name: gitlab-runner
 gitlab_runner_k8s_chart_version: "0.45.0"
 gitlab_runner_k8s_tag_list: ska-ops-sandbox # auto-k8sv2,k8srunner,docker,docker-executor,engageska,ska
-gitlab_runner_k8s_runner_name: SKA-K8s-Runner-STFC-SDHP
+
 gitlab_runner_k8s_node_selector: "node-role.skatelescope.org/ci-worker"
 
 # Minio details
