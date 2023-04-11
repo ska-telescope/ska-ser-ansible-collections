@@ -65,6 +65,10 @@
     status_code: 200
   environment:
     SSL_CERT_FILE: "{{ certificates_dir }}/ca-certificate.crt"
+  register: kibana_previleges_role
+  until: kibana_previleges_role.status == 200
+  retries: 6
+  delay: 10
 
 - name: Create kibana user with viewer roles
   ansible.builtin.uri:

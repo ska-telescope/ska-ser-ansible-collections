@@ -79,8 +79,8 @@ PLAYBOOKS_HOSTS = management-cluster
 CAPI_CLUSTER = capo-examples
 
 # Ceph config
-ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_ceph_conf_ini_file=$(THIS_BASE)/clusterapi/ceph/ceph.conf'
-ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_ceph_conf_key_ring=$(THIS_BASE)/clusterapi/ceph/ceph.client.admin.keyring'
+ANSIBLE_EXTRA_VARS+= --extra-vars 'k8s_capi_ceph_conf_ini_file=$(THIS_BASE)/clusterapi/ceph/ceph.conf'
+ANSIBLE_EXTRA_VARS+= --extra-vars 'k8s_capi_ceph_conf_key_ring=$(THIS_BASE)/clusterapi/ceph/ceph.client.admin.keyring'
 ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_controlplane_count=3 capi_worker_count=3'
 
 # Cloud config

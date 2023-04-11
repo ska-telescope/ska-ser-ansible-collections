@@ -30,11 +30,13 @@
     - name: Prepare elasticsearch_first_install check
       ansible.builtin.set_fact:
         elasticsearch_first_install: true
+      when: not elasticsearch_first_install is defined
 
     - name: Assess elasticsearch_first_install from nodes
       ansible.builtin.set_fact:
         elasticsearch_first_install: "{{ (elasticsearch_first_install and (not hostvars[item]['elasticsearch_deployed_on_node'])) | bool }}"
       with_items: "{{ elasticsearch_nodes }}"
+      when: not elasticsearch_first_install is defined
   tags:
     - elasticsearch
 
