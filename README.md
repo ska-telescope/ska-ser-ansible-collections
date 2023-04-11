@@ -107,6 +107,34 @@ make <collection> <job> <VARS>
 These variables must be exported to your terminal shell, passed as
 command line arguments or add them to your a `PrivateRules.mak` file.
 
+## Tasks
+
+### RookIO
+
+In case you are redeploying the rook operator, you must first delete the existing rook operator deployment and the rook operator namespace.
+
+RookIO deployment is done by invoking the `k8s-post-deployment` target with the `TAGS=rookio`. This target will deploy the rook operator for an existing Ceph cluster.
+
+In order for this to work though, RookIO needs to be aware of the Ceph's cluster configuration. In order to do that, you need to:
+
+1. Obtain the Ceph's cluster configuration files `ceph.conf` and `ceph.client.admin.keyring`
+2. Place them in the `ceph` folder at the root of the infra machinery repo. The working folder should look like this:
+
+        ska-ser-infra-machinery:
+        └── ceph:
+            ├── ceph.client.admin.keyring
+            └── ceph.conf
+
+3. Add the relevant variables to your `PrivateRules.mak`:
+
+        CEPH_CONF=ceph.conf
+        CEPH_ADMIN_KEYRING=ceph.client.admin.keyring
+
+After the configuration is done, from the base infra machinery repo, run the following command:
+
+```
+TAGS=rookio make playbooks k8s k8s-post-deployment
+```
 ## How to Contribute
 
 ### Add/Update an Ansible Collection
