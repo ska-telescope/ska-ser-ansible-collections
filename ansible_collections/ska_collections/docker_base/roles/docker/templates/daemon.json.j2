@@ -1,4 +1,5 @@
 {
+  "insecure-registries": ["http://{{ nexus }}:{{ nexus_docker_hosted_port }}"],
   "default-address-pools": [{{ docker_default_address_pools | map("to_json") | join(", ")}}],
 {% if docker_registry_mirrors is defined and docker_registry_mirrors|length > 0 %}
   "registry-mirrors": [{{ docker_registry_mirrors | map("to_json") | join(", ") }}],
