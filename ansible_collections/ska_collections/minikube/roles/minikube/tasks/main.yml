@@ -107,7 +107,6 @@
       become: true
       become_user: "{{ minikube_start_user }}"
 
-
 - name: Add minikube service
   # Only add the service if we are using the 'none' driver
   when: "minikube_driver == 'none'"
@@ -124,7 +123,7 @@
 
     - name: Enable minikube service
       ansible.builtin.systemd:
-        enabled: yes
+        enabled: true
         daemon_reload: true
         name: minikube
 

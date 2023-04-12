@@ -82,7 +82,7 @@
         src: /etc/ska_log_parsing_pipeline.json
       register: ska_log_parsing_pipeline_file
 
-    - name: Create filebeat ingest pipeline
+    - name: Create filebeat ingest pipeline  # noqa: no-handler
       ansible.builtin.uri:
         url: "{{ logging_filebeat_elasticsearch_url }}/_ingest/pipeline/{{ logging_filebeat_pipeline_name }}"
         method: PUT
