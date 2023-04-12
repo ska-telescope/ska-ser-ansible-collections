@@ -3,19 +3,19 @@
 This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html), that can be reused to install and/or config services.
 
 
-| Collection            | Description                                               |
-| --------------------- | ----------------------------------------------------------|
-| [instance_common](./ansible_collections/ska_collections/instance_common/) | VM initialization (common packages, mount volumes, etc) <br> Generate SSL Certificates   |
-| [docker_base](./ansible_collections/ska_collections/docker_base/)     | Install specific OCI engine                               |
-| [logging](./ansible_collections/ska_collections/logging/)      | Elasticsearch, Beats and Kibana roles                    |
-| [monitoring](./ansible_collections/ska_collections/monitoring/)    | Install prometheus-based metrics services |
-| [minikube](./ansible_collections/ska_collections/minikube/)  | Install minikube and associated tools                    |
-| [gitlab_runner](./ansible_collections/ska_collections/gitlab_runner/)   | Install docker-based Gitlab runner                       |
-| [ceph](./ansible_collections/ska_collections/ceph/)  | Ceph roles                                                |
-| [nexus](./ansible_collections/ska_collections/nexus/)  | Install Nexus Repository                                  |
-| [dns](./ansible_collections/ska_collections/dns/)  | Install DNS                                  |
-| [openvpn](./ansible_collections/ska_collections/openvpn/)  | Install openvpn                                  |
-| [metallb](./ansible_collections/ska_collections/metallb/)  | Install metallb                                   |
+| Collection                                                                | Description                                                                            |
+| ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [instance_common](./ansible_collections/ska_collections/instance_common/) | VM initialization (common packages, mount volumes, etc) <br> Generate SSL Certificates |
+| [docker_base](./ansible_collections/ska_collections/docker_base/)         | Install specific OCI engine                                                            |
+| [logging](./ansible_collections/ska_collections/logging/)                 | Elasticsearch, Beats and Kibana roles                                                  |
+| [monitoring](./ansible_collections/ska_collections/monitoring/)           | Install prometheus-based metrics services                                              |
+| [minikube](./ansible_collections/ska_collections/minikube/)               | Install minikube and associated tools                                                  |
+| [gitlab_runner](./ansible_collections/ska_collections/gitlab_runner/)     | Install docker-based Gitlab runner                                                     |
+| [ceph](./ansible_collections/ska_collections/ceph/)                       | Ceph roles                                                                             |
+| [nexus](./ansible_collections/ska_collections/nexus/)                     | Install Nexus Repository                                                               |
+| [dns](./ansible_collections/ska_collections/dns/)                         | Install DNS                                                                            |
+| [openvpn](./ansible_collections/ska_collections/openvpn/)                 | Install openvpn                                                                        |
+| [metallb](./ansible_collections/ska_collections/metallb/)                 | Install metallb                                                                        |
 
 ## TLDR
 
@@ -94,15 +94,15 @@ make <collection> <job> <VARS>
 
 ### Mandatory Environment Variables
 
-| ENV variable | Description |
-| ----------- | ----- |
-| PLAYBOOKS_ROOT_DIR | Location where the inventories and ansible variables are |
-| PLAYBOOKS_HOSTS | Host or ansible group that the playbook will target |
-| INVENTORY | Directory where mulitple inventories will be loaded from |
-| ANSIBLE_COLLECTIONS_PATHS | Path to ansible collections |
-| ANSIBLE_CONFIG | Path to ansible.cfg |
-| ANSIBLE_SSH_ARGS | Arguments passed to ssh calls done by ansible |
-| ANSIBLE_EXTRA_VARS | List of "--extra-vars" arguments to enrich a playbook call |
+| ENV variable              | Description                                                |
+| ------------------------- | ---------------------------------------------------------- |
+| PLAYBOOKS_ROOT_DIR        | Location where the inventories and ansible variables are   |
+| PLAYBOOKS_HOSTS           | Host or ansible group that the playbook will target        |
+| INVENTORY                 | Directory where mulitple inventories will be loaded from   |
+| ANSIBLE_COLLECTIONS_PATHS | Path to ansible collections                                |
+| ANSIBLE_CONFIG            | Path to ansible.cfg                                        |
+| ANSIBLE_SSH_ARGS          | Arguments passed to ssh calls done by ansible              |
+| ANSIBLE_EXTRA_VARS        | List of "--extra-vars" arguments to enrich a playbook call |
 
 These variables must be exported to your terminal shell, passed as
 command line arguments or add them to your a `PrivateRules.mak` file.
@@ -124,11 +124,6 @@ In order for this to work though, RookIO needs to be aware of the Ceph's cluster
         └── ceph:
             ├── ceph.client.admin.keyring
             └── ceph.conf
-
-3. Add the relevant variables to your `PrivateRules.mak`:
-
-        CEPH_CONF=ceph.conf
-        CEPH_ADMIN_KEYRING=ceph.client.admin.keyring
 
 After the configuration is done, from the base infra machinery repo, run the following command:
 
