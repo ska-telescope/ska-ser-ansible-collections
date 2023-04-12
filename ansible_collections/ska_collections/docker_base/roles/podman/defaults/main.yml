@@ -13,7 +13,7 @@ nexus_docker_group_port: 9082
 podman_deb_pkgs:
   - "crun=100:1.7-1"
   - "podman=100:4.3.0-1"
-  - "buildah=100:1.28.0-1"
+  - "buildah=100:1.30.0-1"
   - "skopeo=100:1.10.0-1"
 
 podman_registry_mirrors: []

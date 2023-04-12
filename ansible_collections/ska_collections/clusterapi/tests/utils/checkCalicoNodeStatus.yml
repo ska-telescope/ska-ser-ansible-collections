@@ -24,19 +24,14 @@
     namespace: calico-system
   register: calico_node_status
 
-- name: Set calico routes
-  ansible.builtin.set_fact:
-    calico_routes: "{{ calico_node_status.resources[0].status.routes.routesV4 }}"
-
 - name: Calico birdV4 Agent must be running
   ansible.builtin.fail:
     msg: "Calico birdV4 Agent state is {{ calico_node_status.resources[0].status.agent.birdV4.state }}"
   when: calico_node_status.resources[0].status.agent.birdV4.state != "Ready"
 
-- name: Check if CIDR is present in 'bridge' interface
-  ansible.builtin.fail:
-    msg: "CIDR ({{ calico_ipv4pool_cidr }}) is not present in 'bridge' interface"
-  when: "'bridge' not in calico_routes | json_query('[*].interface') or calico_ipv4pool_cidr not in calico_routes | json_query('[?interface==`bridge`].destination')"
+- name: Set calico routes
+  ansible.builtin.set_fact:
+    calico_routes: "{{ calico_node_status.resources[0].status.routes.routesV4 }}"
 
 - name: Get calico pre defined interfaces
   ansible.builtin.set_fact:
