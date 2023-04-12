@@ -1,7 +1,7 @@
 ---
 debug: false
 
-k8s_rook_version: release-1.10
+k8s_rook_version: release-1.11
 k8s_rook_namespace: rook-ceph
 k8s_kubeconfig: /etc/kubernetes/admin.conf
 k8s_rook_ceph_image: quay.io/ceph/ceph:v17.2.5
