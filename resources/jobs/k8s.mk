@@ -7,6 +7,7 @@ ANSIBLE_COLLECTIONS_PATHS ?=
 TESTS_DIR ?= ./ansible_collections/ska_collections/k8s/tests
 
 TAGS ?= all,metallb,externaldns,ping,ingress,rookio,standardprovisioner,metrics,binderhub,nvidia ## Ansible tags to run in post deployment processing
+
 -include $(BASE_PATH)/PrivateRules.mak
 
 check-hosts:
@@ -164,6 +165,7 @@ test: check-hosts  # Test service deployments
 ifneq (,$(findstring ingress,$(TAGS)))
 	@ansible-playbook $(TESTS_DIR)/test-ingress.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "capi_cluster_hash=$(CAPI_CLUSTER_HASH)" \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 endif
 

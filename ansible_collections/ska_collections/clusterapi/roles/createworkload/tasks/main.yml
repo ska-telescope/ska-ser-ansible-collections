@@ -189,6 +189,32 @@
         mode: 0644
       delegate_to: localhost
 
+    - name: Wait for workload cluster to be ready
+      block:
+        - name: Wait Cluster
+          kubernetes.core.k8s_info:
+            kind: Cluster
+            api_version: cluster.x-k8s.io/v1beta1
+            namespace: "{{ capi_kube_namespace }}"
+            name: "{{ capi_cluster }}"
+            wait: true
+            wait_timeout: "{{ capi_capo_openstack_instance_create_timeout }}"
+            wait_condition:
+              type: Ready
+
+        - name: Wait MachineDeployment
+          kubernetes.core.k8s_info:
+            kind: MachineDeployment
+            api_version: cluster.x-k8s.io/v1beta1
+            namespace: "{{ capi_kube_namespace }}"
+            label_selectors:
+              - "cluster.x-k8s.io/cluster-name = {{ capi_cluster }}"
+            wait: true
+            wait_timeout: "{{ capi_capo_openstack_instance_create_timeout }}"
+            wait_condition:
+              type: Ready
+      when: capi_apply_wait | bool
+
 - name: Remove the temp template directory
   ansible.builtin.file:
     path: "{{ capi_capo_template_dir.path }}"

@@ -10,6 +10,7 @@ capi_kustomize_overlay: capo
 capi_kubeconfig: "/home/{{ ansible_user }}/.kube/config"
 capi_apply_manifest: false
 capi_apply_manifest_review_diff: false
+capi_apply_wait: true
 
 # https://github.com/kubernetes-sigs/cluster-api/releases
 capi_k8s_version: v1.25.7
@@ -29,7 +30,7 @@ capi_capo_openstack_cloud: skatechops
 
 capi_capo_openstack_failure_domain: ceph
 capi_capo_openstack_image_name: "ubuntu-2204-kube-{{ capi_k8s_version }}"
-capi_capo_openstack_instance_create_timeout: 15
+capi_capo_openstack_instance_create_timeout: 1800
 capi_capo_controlplane_machine_flavour: l3.micro
 capi_capo_openstack_dns_servers: 192.168.99.162
 capi_capo_node_machine_flavour: l3.tiny
