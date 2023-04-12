@@ -1,0 +1,60 @@
+---
+- name: Create CalicoNodeStatus resource
+  kubernetes.core.k8s:
+    state: present
+    namespace: calico-system
+    wait: true
+    definition:
+      apiVersion: projectcalico.org/v3
+      kind: CalicoNodeStatus
+      metadata:
+        name: "calico-status-{{ item }}"
+      spec:
+        classes:
+          - Agent
+          - BGP
+          - Routes
+        node: "{{ item }}"
+        updatePeriodSeconds: 10
+
+- name: Get CalicoNode status
+  kubernetes.core.k8s_info:
+    kind: CalicoNodeStatus
+    name: "calico-status-{{ item }}"
+    namespace: calico-system
+  register: calico_node_status
+
+- name: Set calico routes
+  ansible.builtin.set_fact:
+    calico_routes: "{{ calico_node_status.resources[0].status.routes.routesV4 }}"
+
+- name: Calico birdV4 Agent must be running
+  ansible.builtin.fail:
+    msg: "Calico birdV4 Agent state is {{ calico_node_status.resources[0].status.agent.birdV4.state }}"
+  when: calico_node_status.resources[0].status.agent.birdV4.state != "Ready"
+
+- name: Check if CIDR is present in 'bridge' interface
+  ansible.builtin.fail:
+    msg: "CIDR ({{ calico_ipv4pool_cidr }}) is not present in 'bridge' interface"
+  when: "'bridge' not in calico_routes | json_query('[*].interface') or calico_ipv4pool_cidr not in calico_routes | json_query('[?interface==`bridge`].destination')"
+
+- name: Get calico pre defined interfaces
+  ansible.builtin.set_fact:
+    calico_possible_interfaces: "{{ calico_ip_autodetection_interface.replace(',', '|') }}"
+
+- name: Find the pre defined interfaces in the interface list
+  ansible.builtin.set_fact:
+    calico_interfaces_regex: "{{ calico_routes | community.general.json_query('[*].interface') | unique | regex_search(calico_possible_interfaces) }}"
+
+- name: Check interfaces
+  ansible.builtin.fail:
+    msg: "No interface in {{ calico_ip_autodetection_interface }} is present in a routesV4 list"
+  when: calico_interfaces_regex == ""
+
+- name: Destroy CalicoNodeStatus resource
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: CalicoNodeStatus
+    state: absent
+    namespace: calico-system
+    name: "calico-status-{{ item }}"
