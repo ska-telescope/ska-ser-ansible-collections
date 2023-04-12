@@ -132,14 +132,12 @@ ifneq (,$(findstring binderhub,$(TAGS)))
 	-vv
 endif
 
-
 ifneq (,$(findstring nvidia,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/nvidia.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	--tags "$(TAGS)" \
-	-vv
 endif
 
 k8s-velero-backups:  ## Configure Velero backups on Kubernetes
