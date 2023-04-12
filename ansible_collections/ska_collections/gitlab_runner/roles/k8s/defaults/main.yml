@@ -10,6 +10,7 @@ gitlab_runner_k8s_namespace: gitlab
 gitlab_runner_k8s_release_name: "{{ _ | mandatory('`gitlab_runner_k8s_release_name` definition is mandatory') }}"
 gitlab_runner_k8s_kubeconfig_name: "{{ _ | mandatory('`gitlab_runner_k8s_kubeconfig_name` definition is mandatory') }}"
 gitlab_runner_k8s_runner_name: "{{ _ | mandatory('`gitlab_runner_k8s_runner_name` definition is mandatory') }}"
+gitlab_runner_k8s_registry_mirror: "{{ _ | mandatory('`gitlab_runner_k8s_registry_mirror` definition is mandatory') }}"
 
 gitlab_runner_k8s_chart_repo: https://charts.gitlab.io
 gitlab_runner_k8s_chart_name: gitlab-runner
@@ -39,7 +40,6 @@ gitlab_runner_k8s_vault_role: kube-role
 gitlab_runner_k8s_data_root: /var/lib/docker-for-gitlab  # Data root should be on separate volume
 gitlab_runner_k8s_docker_driver: overlay2
 gitlab_runner_k8s_docker_repo: localhost:5000
-gitlab_runner_k8s_registry_mirror: "http://192.168.93.12:8181"
 gitlab_runner_k8s_log_max_size: "10m"
 gitlab_runner_k8s_log_max_file: "3"
 gitlab_runner_k8s_log_driver: json-file
