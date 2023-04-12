@@ -11,6 +11,8 @@ minikube_haproxy_name: haproxy
 minikube_haproxy_image: "haproxy:2.7"
 minikube_driver: podman
 minikube_runtime: docker
+minikube_additional_names: []
+minikube_additional_ips: []
 
 minikube_addons:
   - logviewer

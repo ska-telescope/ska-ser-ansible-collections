@@ -52,7 +52,13 @@
         --apiserver-port=6443 \
         --apiserver-names={{ ansible_hostname }} \
         --apiserver-names={{ ansible_fqdn }} \
+        {% for names in minikube_additional_names %}
+        --apiserver-names={{ names }} \
+        {% endfor %}
         --apiserver-ips={{ ansible_default_ipv4.address }} \
+        {% for ip in minikube_additional_ips %}
+        --apiserver-ips={{ ip }} \
+        {% endfor %}
         --nodes=1 \
         {% for addon in minikube_addons %}
         --addons={{ addon }}
@@ -100,6 +106,27 @@
       when: "'metallb' in minikube_addons"
       become: true
       become_user: "{{ minikube_start_user }}"
+
+
+- name: Add minikube service
+  # Only add the service if we are using the 'none' driver
+  when: "minikube_driver == 'none'"
+  become: true
+  tags:
+    - build
+  block:
+
+    - name: Add minikube service
+      ansible.builtin.template:
+        src: minikube.service.j2
+        dest: /etc/systemd/system/minikube.service
+        mode: 0644
+
+    - name: Enable minikube service
+      ansible.builtin.systemd:
+        enabled: yes
+        daemon_reload: true
+        name: minikube
 
 - name: Add haproxy
   # Only add the proxy if we are not using the 'none' driver
@@ -189,6 +216,10 @@
       changed_when: false
       register: minikube_exec_check
 
+    - name: Remove minikube service
+      ansible.builtin.file:
+        path: /etc/systemd/system/minikube.service
+        state: absent
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers

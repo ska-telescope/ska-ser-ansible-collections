@@ -1,0 +1,17 @@
+[Unit]
+Description=minikube
+After=network-online.target firewalld.service containerd.service docker.service
+Wants=network-online.target docker.service
+Requires=docker.socket containerd.service docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/root
+ExecStart=/usr/local/bin/minikube start --driver=none
+ExecStop=/usr/local/bin/minikube stop
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
