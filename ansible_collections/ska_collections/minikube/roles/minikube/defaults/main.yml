@@ -1,6 +1,8 @@
 ---
 debug: false
 
+minikube_start_user: ubuntu
+minikube_calico: false
 minikube_mount: true
 minikube_mount_from: /srv
 minikube_mount_to: /srv
