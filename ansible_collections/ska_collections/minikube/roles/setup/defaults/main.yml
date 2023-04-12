@@ -3,7 +3,7 @@ debug: false
 
 minikube_exe_dir: /usr/local/bin
 # https://github.com/kubernetes/minikube/releases
-minikube_version: v1.29.0
+minikube_version: v1.30.0
 # https://kubernetes.io/releases/
 minikube_kubernetes_version: v1.26.2
 # Memory in MB

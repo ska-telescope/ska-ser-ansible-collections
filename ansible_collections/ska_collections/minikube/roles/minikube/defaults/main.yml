@@ -6,7 +6,7 @@ minikube_mount_from: /srv
 minikube_mount_to: /srv
 
 minikube_haproxy_name: haproxy
-minikube_haproxy_image: "haproxy:2.6"
+minikube_haproxy_image: "haproxy:2.7"
 minikube_driver: podman
 minikube_runtime: docker
 
