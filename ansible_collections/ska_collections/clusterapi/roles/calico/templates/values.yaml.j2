@@ -1,0 +1,17 @@
+installation:
+  enabled: true
+{% if calico_old is defined and calico_old.resources|length != 0 %}
+{% else %}
+  calicoNetwork:
+    ipPools:
+      - cidr: "{{ calico_ipv4pool_cidr }}"
+        encapsulation: None
+    nodeAddressAutodetectionV4:
+      interface: "{{ calico_ip_autodetection_interface }}"
+{% endif %}
+
+# Image and registry configuration for the tigera/operator pod.
+tigeraOperator:
+  version: v{{ calico_tigera_operator_version }}
+calicoctl:
+  tag: v{{ calico_version }}

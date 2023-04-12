@@ -1,0 +1,40 @@
+---
+- name: Add stable chart repo
+  kubernetes.core.helm_repository:
+    name: nvdp
+    repo_url: "https://nvidia.github.io/k8s-device-plugin"
+
+- name: Create RuntimeClass and deploy nvidia-device-plugin Helm chart
+  run_once: true
+  block:
+    - name: Create RuntimeClass "nvidia"
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: node.k8s.io/v1
+          kind: RuntimeClass
+          metadata:
+            name: nvidia
+          handler: nvidia
+
+    - name: Deploy nvidia-device-plugin Helm chart
+      kubernetes.core.helm:
+        update_repo_cache: true
+        chart_ref: nvdp/nvidia-device-plugin
+        chart_version: "{{ nvidia_device_plugin_version }}"
+        release_name: nvidia-device-plugin
+        release_namespace: kube-system
+        values:
+          affinity: "{{ nvidia_device_plugin_affinity }}"
+          tolerations:
+            # From the original chart
+            - key: nvidia.com/gpu
+              operator: Exists
+            # Used to give teams exclusive access to certain machines. Should be namespaced.
+            - key: dedicated
+              operator: Exists
+            - key: skao.int/dedicated
+              operator: Exists
+          nodeSelector:
+            nvidia.com/gpu: "true"
+          runtimeClassName: nvidia
+        wait: true

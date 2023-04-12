@@ -1,0 +1,132 @@
+---
+- name: Test Calico
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+    calico_test_nodes:
+      - "minikube"
+    calico_ipv4pool_cidr: 10.244.0.0/16
+    calico_ip_autodetection_interface: "ens.*,eth.*"
+    calico_test_pod_namespace: calico-test
+  tasks:
+    - name: Check k8s_kubeconfig
+      ansible.builtin.debug:
+        var: k8s_kubeconfig
+
+    - name: Check kubernetes resources
+      kubernetes.core.k8s_info:
+        kind: "{{ item.kind }}"
+        namespace: "{{ item.namespace }}"
+        name: "{{ item.name }}"
+        wait: true
+        wait_timeout: 300
+      loop:
+        - kind: Deployment
+          namespace: calico-operator
+          name: tigera-operator
+        - kind: Deployment
+          namespace: calico-system
+          name: calico-kube-controllers
+        - kind: Deployment
+          namespace: calico-apiserver
+          name: calico-apiserver
+        - kind: Deployment
+          namespace: calico-system
+          name: calico-typha
+        - kind: DaemonSet
+          namespace: calico-system
+          name: calico-node
+        - kind: DaemonSet
+          namespace: calico-system
+          name: csi-node-driver
+
+    - name: Check Calico Node(s) Status
+      ansible.builtin.include_tasks:
+        file: "utils/checkCalicoNodeStatus.yml"
+      loop: "{{ calico_test_nodes }}"
+
+    - name: Test the pod network
+      block:
+        - name: Create namespace "{{ calico_test_pod_namespace }}"
+          kubernetes.core.k8s:
+            state: present
+            definition:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: "{{ calico_test_pod_namespace }}"
+
+        - name: Create Nginx deployment
+          kubernetes.core.k8s:
+            state: present
+            definition:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: nginx
+                namespace: "{{ calico_test_pod_namespace }}"
+              spec:
+                replicas: 3
+                selector:
+                  matchLabels:
+                    app: nginx
+                template:
+                  metadata:
+                    labels:
+                      app: nginx
+                  spec:
+                    containers:
+                      - name: nginx
+                        image: nginx
+                        ports:
+                          - containerPort: 80
+        - name: Wait and Get Nginx pod IP addresses
+          kubernetes.core.k8s_info:
+            kind: Pod
+            namespace: "{{ calico_test_pod_namespace }}"
+            label_selectors: "app=nginx"
+            wait: true
+          register: nginx_pods
+
+        - name: Deploy a curl pod
+          kubernetes.core.k8s:
+            kind: Pod
+            api_version: v1
+            wait: true
+            definition:
+              metadata:
+                name: curl-test
+                namespace: "{{ calico_test_pod_namespace }}"
+              spec:
+                containers:
+                  - name: curl
+                    image: curlimages/curl
+                    command: ["sleep", "infinity"]
+
+        - name: Run curl command to each ngix pod
+          kubernetes.core.k8s_exec:
+            namespace: "{{ calico_test_pod_namespace }}"
+            pod: curl-test
+            command: "curl -sS http://{{ item }}"
+          loop: "{{ nginx_pods.resources | community.general.json_query('[*].status.podIP') }}"
+          register: command_status
+          ignore_errors: true
+
+        - name: Check command status
+          ansible.builtin.fail:
+            msg: "Something went wrong with the network: {{ command_status.results }}"
+          when: item != 0
+          loop: "{{ command_status.results | community.general.json_query('[*].rc') }}"
+      always:
+        - name: Delete namespace "{{ calico_test_pod_namespace }}"
+          kubernetes.core.k8s:
+            wait: true
+            state: absent
+            definition:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: "{{ calico_test_pod_namespace }}"
+
+  environment:
+    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
