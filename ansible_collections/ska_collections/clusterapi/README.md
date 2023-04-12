@@ -50,7 +50,7 @@ Playbooks can be found in the [playbooks/](./playbooks) folder in the following 
 
 | Name | Description |
 | ---- | ----------- |
-| [calico.yml](./playbooks/calico.yml) | Install Calico Pod Network |
+| [calico-install.yml](./playbooks/calico-install.yml) | Install Calico Pod Network |
 | [clusterapi.yml](./playbooks/clusterapi.yml) | Install and configure `cluserctl` and the CAPO provider on management cluster |
 | [containerd.yml](./playbooks/containerd.yml) | Install and configure containerd |
 | [createworkload.yml](./playbooks/createworkload.yml) | Generate workload cluster manifests and apply |
