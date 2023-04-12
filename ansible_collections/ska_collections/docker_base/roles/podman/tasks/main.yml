@@ -26,11 +26,6 @@
         update_cache_retries: 30
         update_cache_retry_max_delay: 30
 
-    - name: Upgrade all packages (apt)
-      ansible.builtin.apt:
-        upgrade: true
-        autoremove: true
-
     - name: Set kernel.unprivileged_userns_clone=1
       ansible.posix.sysctl:
         name: kernel.unprivileged_userns_clone
