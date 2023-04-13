@@ -16,9 +16,6 @@
     dest: "{{ gitlab_values_file.path }}"
     mode: '0644'
 
-- name: Print values
-  debug: var=gitlab_values_file
-
 - name: Create Temp Kustomize Folder
   ansible.builtin.tempfile:
     state: directory
