@@ -5,7 +5,7 @@
   vars:
     target_hosts: localhost
     xilinx_xrt_install: false
-    activate_nvidia: false
+    k8s_activate_nvidia: false
     activate_mellanox: false
   become: true
 
@@ -19,9 +19,9 @@
       # not technically required as the role checks this, but for clarity...
       when: xilinx_xrt_install
     - role: nvidia.nvidia_driver
-      when: activate_nvidia
+      when: k8s_activate_nvidia
     - role: nvidia-container-runtime
-      when: activate_nvidia
+      when: k8s_activate_nvidia
     - role: haggaie.mlnx_ofed
       when: activate_mellanox
   tags:

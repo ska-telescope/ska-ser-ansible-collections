@@ -41,6 +41,7 @@
       ansible.builtin.command: |
         {{ minikube_exe_dir }}/minikube \
         start \
+        --profile {{ minikube_name }} \
         --driver={{ minikube_driver }} \
         --container-runtime={{ minikube_runtime }} \
         --kubernetes-version={{ minikube_kubernetes_version }} \
@@ -104,6 +105,18 @@
         state: present
         template: 'metallb.yaml.j2'
       when: "'metallb' in minikube_addons"
+      become: true
+      become_user: "{{ minikube_start_user }}"
+
+    - name: Add GPU label to existing Node
+      kubernetes.core.k8s:
+        state: patched
+        kind: Node
+        name: "{{ minikube_name }}"
+        definition:
+          metadata:
+            labels:
+              nvidia.com/gpu: "true"
       become: true
       become_user: "{{ minikube_start_user }}"
 

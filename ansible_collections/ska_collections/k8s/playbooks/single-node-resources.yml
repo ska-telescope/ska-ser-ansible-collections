@@ -6,9 +6,6 @@
 
   vars:
     target_hosts: localhost
-    xilinx_xrt_install: false
-    activate_nvidia: false
-    activate_mellanox: false
 
   roles:
     - role: multihoming

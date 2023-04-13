@@ -1,2 +1,4 @@
-kube_state_metrics: true
-kube_state_metrics_chart_version: "5.0.0"
+---
+k8s_state_metrics: true
+k8s_state_metrics_chart_version: "5.0.0"
+k8s_metrics_server_chart_version: "3.8.4"
