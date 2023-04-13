@@ -1,0 +1,54 @@
+# Retrieved from https://github.com/k8snetworkplumbingwg/sriov-cni/blob/011ae68decda53a148c053aaba62afef037e7a03/images/k8s-v1.16/sriov-cni-daemonset.yaml,
+# the canonical git ref for tag v2.7.0 on 2023-03-27.
+# Edited to add v2.7.0 image tag.
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kube-sriov-cni-ds-amd64
+  namespace: kube-system
+  labels:
+    tier: node
+    app: sriov-cni
+spec:
+  selector:
+    matchLabels:
+      name: sriov-cni
+  template:
+    metadata:
+      labels:
+        name: sriov-cni
+        tier: node
+        app: sriov-cni
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: kube-sriov-cni
+        image: ghcr.io/k8snetworkplumbingwg/sriov-cni:v2.7.0
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          privileged: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "50Mi"
+          limits:
+            cpu: "100m"
+            memory: "50Mi"
+        volumeMounts:
+        - name: cnibin
+          mountPath: /host/opt/cni/bin
+      volumes:
+      - name: cnibin
+        hostPath:
+          path: /opt/cni/bin
