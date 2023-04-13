@@ -10,11 +10,12 @@ gitlab_runner_k8s_namespace: gitlab
 gitlab_runner_k8s_release_name: "{{ _ | mandatory('`gitlab_runner_k8s_release_name` definition is mandatory') }}"
 gitlab_runner_k8s_kubeconfig_name: "{{ _ | mandatory('`gitlab_runner_k8s_kubeconfig_name` definition is mandatory') }}"
 gitlab_runner_k8s_runner_name: "{{ _ | mandatory('`gitlab_runner_k8s_runner_name` definition is mandatory') }}"
-gitlab_runner_k8s_registry_mirror: "{{ _ | mandatory('`gitlab_runner_k8s_registry_mirror` definition is mandatory') }}"
+gitlab_runner_k8s_registry_mirror: ""
+gitlab_runner_k8s_metrics_port: 30931
 
 gitlab_runner_k8s_chart_repo: https://charts.gitlab.io
 gitlab_runner_k8s_chart_name: gitlab-runner
-gitlab_runner_k8s_chart_version: "0.45.0"
+gitlab_runner_k8s_chart_version: "0.51.1"
 gitlab_runner_k8s_tag_list: ska-ops-sandbox # auto-k8sv2,k8srunner,docker,docker-executor,engageska,ska
 
 gitlab_runner_k8s_node_selector: "node-role.skatelescope.org/ci-worker"

@@ -97,7 +97,7 @@
             "size": 24
           }
         ],
-        {% if registry_mirror | length > 1 %}
+        {% if gitlab_runner_k8s_registry_mirror | length > 1 %}
         "registry-mirrors": ["{{ gitlab_runner_k8s_registry_mirror }}"],
         {% endif %}
         "metrics-addr": "0.0.0.0:8323",

@@ -8,8 +8,6 @@ TESTS_DIR ?= ./ansible_collections/ska_collections/gitlab_runner/tests
 
 GITLAB_RUNNER_K8S_CLUSTER ?= localhost## subset of hosts from inventory to run against, default is set to localhost so that it works with local kubeconfig
 GITLAB_RUNNER_STORAGE_CLASS ?= block ## Minio shared cache StorageClass
-GITLAB_RUNNER_K8S_NAMESPACE ?= gitlab
-GITLAB_RUNNER_K8S_RELEASE_NAME ?= gitlab-runner
 GITLAB_RUNNER_MINIO_RELEASE ?= minio-cache
 GITLAB_RUNNER_MINIO_BUCKET_NAME ?= cache
 GITLAB_RUNNER_MINIO_BUCKET_LOCATION ?= 
@@ -19,7 +17,6 @@ GITLAB_RUNNER_TOKEN ?= xxx ## GitLab Registration Token
 GITLAB_RUNNER_TAG_LIST ?= ## Runner tags, if this is defined these values are used, else the values defined in the group_vars directory are used
 V ?= ## ansible-playbook debug options, i.e. -vvv
 GITLAB_RUNNER_LOCAL_DOCKER ?= 127.0.0.1
-GITLAB_RUNNER_METRICS_PORT ?= 30931
 
 K8S_KUBECONFIG ?= /etc/clusterapi/$(CAPI_CLUSTER)-kubeconfig
 
@@ -39,8 +36,6 @@ vars:
 	@echo "\033[36mGitlab_runner:\033[0m"
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
-	@echo "GITLAB_RUNNER_K8S_NAMESPACE=$(GITLAB_RUNNER_K8S_NAMESPACE)"
-	@echo "GITLAB_RUNNER_K8S_RELEASE_NAME=$(GITLAB_RUNNER_K8S_RELEASE_NAME)"
 	@echo "GITLAB_RUNNER_MINIO_RELEASE=$(GITLAB_RUNNER_MINIO_RELEASE)"
 	@echo "GITLAB_RUNNER_K8S_RELEASE_NAME=$(GITLAB_RUNNER_K8S_RELEASE_NAME)"
 	@echo "GITLAB_RUNNER_K8S_NODE_LABEL=$(GITLAB_RUNNER_K8S_NODE_LABEL)"
@@ -56,11 +51,6 @@ destroy_runner_docker_executor: check_hosts ## Destroy gitlab_runner
 	ansible-playbook $(PLAYBOOKS_DIR)/destroy_runner_docker_executor.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
-
-envsubst:
-	@GITLAB_RUNNER_K8S_RELEASE_NAME=$(GITLAB_RUNNER_K8S_RELEASE_NAME) \
-	 GITLAB_RUNNER_METRICS_PORT=$(GITLAB_RUNNER_METRICS_PORT) \
-	 envsubst < $(PLAYBOOKS_DIR)/../roles/k8s/files/runner-metrics.yaml.in >$(PLAYBOOKS_DIR)/../roles/k8s/files/runner-metrics.yaml
 
 tidy:  ## Clean up patch files
 	@rm -rf ./runner_kustomize/cache-secret.yaml \
@@ -83,20 +73,18 @@ label_nodes:  ## Label worker nodes for CI
 	  --extra-vars="gitlab_runner_k8s_node_label='$(GITLAB_RUNNER_K8S_NODE_LABEL)'" \
 	  $(V)
 
-k8s_runner: tidy envsubst  ## Deploy runners
+k8s_runner: tidy  ## Deploy runners
 	ANSIBLE_STDOUT_CALLBACK=yaml ansible-playbook $(PLAYBOOKS_DIR)/generate_manifest_runner.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	$(GITLAB_RUNNER_TAG_LIST_ARG) \
-	-e "gitlab_runner_k8s_namespace=$(GITLAB_RUNNER_K8S_NAMESPACE)" \
-	-e "gitlab_runner_k8s_release_name='$(GITLAB_RUNNER_K8S_RELEASE_NAME)'" \
 	-e "gitlab_runner_k8s_node_label='$(GITLAB_RUNNER_K8S_NODE_LABEL)'" \
 	-e "gitlab_runner_k8s_s3_bucket_name=$(GITLAB_RUNNER_MINIO_BUCKET_NAME)" \
 	-e "gitlab_runner_k8s_s3_bucket_location=$(GITLAB_RUNNER_MINIO_BUCKET_LOCATION)" \
 	-e "gitlab_vault_prefix=$(GITLAB_RUNNER_GITLAB_VAULT_PREFIX)" \
 	$(V)
 
-deploy_minio: tidy envsubst  ## Deploy Minio
+deploy_minio: tidy  ## Deploy Minio
 	ansible-playbook $(PLAYBOOKS_DIR)/deploy_minio.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
@@ -108,7 +96,7 @@ deploy_minio: tidy envsubst  ## Deploy Minio
 	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	$(V)
 
-test_minio: tidy envsubst  ## Test Minio
+test_minio: tidy  ## Test Minio
 	ansible-playbook $(TESTS_DIR)/test_minio.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
@@ -121,7 +109,7 @@ test_minio: tidy envsubst  ## Test Minio
 	$(V)
 
 # ANSIBLE_STDOUT_CALLBACK=yaml makes it nice to read
-show_minio: tidy envsubst  ## Show Mino chart
+show_minio: tidy  ## Show Mino chart
 	ANSIBLE_STDOUT_CALLBACK=yaml ansible-playbook $(PLAYBOOKS_DIR)/show_minio.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \

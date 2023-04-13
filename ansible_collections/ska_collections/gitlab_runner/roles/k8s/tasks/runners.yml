@@ -16,6 +16,9 @@
     dest: "{{ gitlab_values_file.path }}"
     mode: '0644'
 
+- name: Print values
+  debug: var=gitlab_values_file
+
 - name: Create Temp Kustomize Folder
   ansible.builtin.tempfile:
     state: directory
@@ -28,16 +31,30 @@
     dest: "{{ temp_kustomize_dir.path }}/kustomization.yaml"
     mode: '0644'
 
-- name: Render templates
-  kubernetes.core.helm_template:
-    chart_ref: "{{ gitlab_runner_k8s_chart_name }}"
-    chart_repo_url: "{{ gitlab_runner_k8s_chart_repo }}"
-    chart_version: "{{ gitlab_runner_k8s_chart_version }}"
-    release_namespace: "{{ gitlab_runner_k8s_namespace }}"
-    values_files: "{{ gitlab_values_file.path }}"
-    # not yet available
-    # release_name: "{{ gitlab_runner_k8s_release_name }}"
+# - name: Render templates
+#   kubernetes.core.helm_template:
+#     chart_ref: "{{ gitlab_runner_k8s_chart_name }}"
+#     chart_repo_url: "{{ gitlab_runner_k8s_chart_repo }}"
+#     chart_version: "{{ gitlab_runner_k8s_chart_version }}"
+#     release_namespace: "{{ gitlab_runner_k8s_namespace }}"
+#     values_files: "{{ gitlab_values_file.path }}"
+#     # not yet available
+#     # release_name: "{{ gitlab_runner_k8s_release_name }}"
+#   register: template_output
+- name: Add gitlab repository
+  ansible.builtin.shell: |
+    helm repo add gitlab {{ gitlab_runner_k8s_chart_repo }}
+    helm repo update
+  changed_when: true
+
+- name: Render template
+  ansible.builtin.shell: |
+    helm template {{ gitlab_runner_k8s_release_name }} gitlab/{{ gitlab_runner_k8s_chart_name }} \
+          --namespace {{ gitlab_runner_k8s_namespace }} \
+          --version {{ gitlab_runner_k8s_chart_version }} \
+          --values {{ gitlab_values_file.path }}
   register: template_output
+  changed_when: true
 
 - name: Save runner manifest before kustomization
   ansible.builtin.copy:
@@ -45,22 +62,17 @@
     dest: "{{ temp_kustomize_dir.path }}/all.yaml"
     mode: 0644
 
-- name: "Copy runner-metrics.yaml"
-  ansible.builtin.copy:
-    src: "files/runner-metrics.yaml"
-    dest: "{{ temp_kustomize_dir.path }}/runner-metrics.yaml"
-    mode: 0644
+- name: Template runner-metrics.yaml file
+  ansible.builtin.template:
+    src: "templates/runner-metrics.yaml.j2"
+    dest: "{{ role_path }}/files/runner-metrics.yaml"
+    mode: '0644'
 
 - name: Kustomize manifest
   ansible.builtin.shell: |
     cd {{ temp_kustomize_dir.path }}
     kubectl kustomize .
   changed_when: true
-
-- name: Output helm template
-  ansible.builtin.debug: "{{ item }}"
-  with_file:
-    - "{{ temp_kustomize_dir.path }}/all.yaml"
 
 - name: Copy file with owner and permissions
   ansible.builtin.copy:
