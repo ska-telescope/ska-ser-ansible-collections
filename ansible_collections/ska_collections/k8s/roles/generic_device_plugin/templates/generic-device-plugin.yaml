@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: generic-device-plugin
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: generic-device-plugin
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: generic-device-plugin
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: generic-device-plugin
+    spec:
+      priorityClassName: system-node-critical
+      # hack
+      nodeSelector:
+        kubernetes.io/hostname: pst-beam1
+      tolerations:
+      - operator: "Exists"
+        effect: "NoExecute"
+      - operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+      - image: squat/generic-device-plugin:bd0d5d18081e0b56b00271688f2ded15e6a1b3c3
+        args:
+        - --device
+        - '{"name": "infiniband", "groups": [{"paths": [
+               {"path": "/dev/infiniband/issm0"},
+               {"path": "/dev/infiniband/issm1"},
+               {"path": "/dev/infiniband/issm2"},
+               {"path": "/dev/infiniband/issm3"},
+               {"path": "/dev/infiniband/rdma_cm"},
+               {"path": "/dev/infiniband/ucm0"},
+               {"path": "/dev/infiniband/ucm1"},
+               {"path": "/dev/infiniband/ucm2"},
+               {"path": "/dev/infiniband/ucm3"},
+               {"path": "/dev/infiniband/umad0"},
+               {"path": "/dev/infiniband/umad1"},
+               {"path": "/dev/infiniband/umad2"},
+               {"path": "/dev/infiniband/umad3"},
+               {"path": "/dev/infiniband/uverbs0"},
+               {"path": "/dev/infiniband/uverbs1"},
+               {"path": "/dev/infiniband/uverbs2"},
+               {"path": "/dev/infiniband/uverbs3"}
+           ]}]}'
+        - --domain
+        - "skao.int"
+        name: generic-device-plugin
+        resources:
+          requests:
+            cpu: 50m
+            memory: 10Mi
+          limits:
+            cpu: 50m
+            memory: 10Mi
+        ports:
+        - containerPort: 8080
+          name: http
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: device-plugin
+          mountPath: /var/lib/kubelet/device-plugins
+        - name: dev
+          mountPath: /dev
+      volumes:
+      - name: device-plugin
+        hostPath:
+          path: /var/lib/kubelet/device-plugins
+      - name: dev
+        hostPath:
+          path: /dev
+  updateStrategy:
+    type: RollingUpdate

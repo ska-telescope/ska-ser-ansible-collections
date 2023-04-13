@@ -24,5 +24,6 @@
       when: k8s_activate_nvidia
     - role: haggaie.mlnx_ofed
       when: activate_mellanox
+
   tags:
     - devices
