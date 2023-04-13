@@ -1,20 +1,17 @@
 ---
 debug: false
 
-podman_deb_repo_url: "deb http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_{{ ansible_distribution_version }}/ /"
-podman_deb_repo_key_url: "http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_{{ ansible_distribution_version }}/Release.key"
-
-podman_deb_podman_version: "100:4.4.4-1"
-podman_deb_buildah_version: "100:1.30.0-1"
-podman_deb_skopeo_version: "100:1.11.2-1"
+podman_deb_podman_version: "3.4.4+ds1-1ubuntu1"
+podman_deb_buildah_version: "1.23.1+ds1-2"
+podman_deb_skopeo_version: "1.4.1+ds1-1"
 nexus: "{{ _ | mandatory('`nexus` definition is mandatory') }}"
 nexus_docker_group_port: 9082
 
 podman_deb_pkgs:
-  - "crun=100:1.7-1"
-  - "podman=100:4.4.4-1"
-  - "buildah=100:1.30.0-1"
-  - "skopeo=100:1.11.2-1"
+  - "crun=0.17+dfsg-1.1"
+  - "podman=3.4.4+ds1-1ubuntu1"
+  - "buildah=1.23.1+ds1-2"
+  - "skopeo=1.4.1+ds1-1"
 
 podman_registry_mirrors: []
 

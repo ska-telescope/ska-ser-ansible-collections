@@ -1,0 +1,28 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: "Apply the devices roles to the k8s nodes"
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+    xilinx_xrt_install: false
+    activate_nvidia: false
+    activate_mellanox: false
+  become: true
+
+  pre_tasks:
+    - name: Refresh package cache
+      ansible.builtin.apt:
+        update_cache: true
+
+  roles:
+    - role: accelize.xilinx_xrt
+      # not technically required as the role checks this, but for clarity...
+      when: xilinx_xrt_install
+    - role: nvidia.nvidia_driver
+      when: activate_nvidia
+    - role: nvidia-container-runtime
+      when: activate_nvidia
+    - role: haggaie.mlnx_ofed
+      when: activate_mellanox
+  tags:
+    - devices

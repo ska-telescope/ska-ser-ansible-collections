@@ -8,6 +8,7 @@ endif
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
+ANSIBLE_COLLECTIONS_PATHS ?=
 TESTS_DIR ?= ./ansible_collections/ska_collections/k8s/tests
 
 TAGS ?= all,metallb,externaldns,ping,ingress,rookio,standardprovisioner,metrics,binderhub,nvidia ## Ansible tags to run in post deployment processing
@@ -22,6 +23,7 @@ vars:
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 	@echo "ANSIBLE_PLAYBOOK_ARGUMENTS=$(ANSIBLE_PLAYBOOK_ARGUMENTS)"
 	@echo "ANSIBLE_EXTRA_VARS=$(ANSIBLE_EXTRA_VARS)"
+	@echo "ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS)"
 	@echo "ANSIBLE_SSH_ARGS=$(ANSIBLE_SSH_ARGS)"
 
 k8s-get-kubeconfig:  ## Post deployment get workload kubeconfig
@@ -37,6 +39,26 @@ k8s-manual-deployment: ## Manual K8s deployment based on kubeadm
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=workload-cluster" \
 	--limit "workload-cluster" \
+	--tags "$(TAGS)" \
+	-vv
+
+k8s-device-integration:  ## Pre deployment of device integration for workload cluster
+
+	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
+	ANSIBLE_ROLES_PATH=$(ANSIBLE_COLLECTIONS_PATHS) \
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/devices.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
+	--tags "$(TAGS)" \
+	-vv
+
+k8s-single-node-resources:  ## Post deployment of single node resources for workload cluster
+
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/single-node-resources.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	--tags "$(TAGS)" \
 	-vv
 

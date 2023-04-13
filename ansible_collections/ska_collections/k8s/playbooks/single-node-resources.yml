@@ -1,0 +1,144 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: "Apply the devices roles to the k8s nodes"
+  hosts: "{{ target_hosts }}"
+  become: true
+
+  vars:
+    target_hosts: localhost
+    xilinx_xrt_install: false
+    activate_nvidia: false
+    activate_mellanox: false
+
+  roles:
+    - role: multihoming
+      tags:
+        - multihoming
+
+  tasks:
+  - name: Set up support for local persistent volumes
+    tags: local_pvs
+    block:
+    - name: Install persistent volume reclaimer from Helm chart
+      kubernetes.core.helm:
+        atomic: true
+        name: pv-releaser
+        chart_repo_url: https://plumber-cd.github.io/helm/
+        chart_ref: reclaimable-pv-releaser
+        chart_version: 0.0.2
+        release_namespace: kube-system
+        values:
+          extraArgs:
+            # this prevents the reclaimer from removing the managed-by label
+            -disable-automatic-association: ~
+          image:
+            tag: 0.1.0
+
+    - name: Create StorageClass for local shared persistent volumes
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: storage.k8s.io/v1
+          kind: StorageClass
+          metadata:
+            name: local-shared
+          provisioner: kubernetes.io/no-provisioner
+          volumeBindingMode: WaitForFirstConsumer
+          reclaimPolicy: Retain
+
+    - name: Create a pool of eight persistent volumes for Perentie test-data
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: v1
+          kind: PersistentVolume
+          metadata:
+            labels:
+              reclaimable-pv-releaser/managed-by: dynamic-reclaimable-pvc-controllers
+              skao.int/shared-volume-name: perentie-test-data
+            name: perentie-test-data-{{ item }}
+          spec:
+            capacity:
+              storage: 930Gi
+            volumeMode: Filesystem
+            accessModes:
+            - ReadWriteOnce
+            storageClassName: local-shared
+            local:
+              path: /media/test-data
+            nodeAffinity:
+              required:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                    - psi-perentie1
+      loop: "{{ range(8) }}"
+
+    - name: Create PersistentVolumeClaim for Perentie data in jupyterhub ns
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: v1
+          kind: PersistentVolumeClaim
+          metadata:
+            namespace: jupyterhub
+            name: perentie-test-data
+          spec:
+            storageClassName: local-shared
+            accessModes:
+            - ReadWriteOnce
+            resources:
+              requests:
+                storage: 930Gi
+            selector:
+              matchLabels:
+                skao.int/shared-volume-name: perentie-test-data
+
+  - name: Install Taranta dashboard and auth components in taranta namespace
+    tags: taranta
+    vars:
+      taranta_values:
+        global:
+          minikube: false
+        ingress:
+          enabled: true
+          hostname: "*"
+          tls:
+            enabled: false
+    block:
+    - name: Create taranta namespace
+      kubernetes.core.k8s:
+        kind: Namespace
+        name: taranta
+
+    - name: Install ska-tango-taranta-dashboard-pvc Helm chart
+      kubernetes.core.helm:
+        atomic: true
+        chart_repo_url: https://artefact.skao.int/repository/helm-internal
+        chart_ref: ska-tango-taranta-dashboard-pvc
+        chart_version: 1.3.0
+        namespace: taranta
+        name: pvc
+        values: "{{ taranta_values }}"
+
+    - name: Install ska-tango-taranta-dashboard Helm chart
+      kubernetes.core.helm:
+        atomic: true
+        chart_repo_url: https://artefact.skao.int/repository/helm-internal
+        chart_ref: ska-tango-taranta-dashboard
+        chart_version: 1.3.0
+        namespace: taranta
+        name: dash
+        values: "{{ taranta_values }}"
+
+    - name: Install ska-tango-taranta-auth Helm chart
+      kubernetes.core.helm:
+        atomic: true
+        chart_repo_url: https://artefact.skao.int/repository/helm-internal
+        chart_ref: ska-tango-taranta-auth
+        chart_version: 0.1.6
+        namespace: taranta
+        name: auth
+        values: "{{ taranta_values }}"
+
+  tags:
+    - services
