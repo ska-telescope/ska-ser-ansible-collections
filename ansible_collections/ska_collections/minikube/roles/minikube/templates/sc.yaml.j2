@@ -22,6 +22,8 @@ metadata:
     addonmanager.kubernetes.io/mode: Reconcile
   name: nfss1
 provisioner: hostpath.csi.k8s.io
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
 
 ---
 apiVersion: storage.k8s.io/v1
@@ -31,7 +33,9 @@ metadata:
   labels:
     addonmanager.kubernetes.io/mode: Reconcile
   name: block
+provisioner: hostpath.csi.k8s.io
 reclaimPolicy: Delete
+volumeBindingMode: Immediate
 
 ---
 apiVersion: storage.k8s.io/v1
@@ -41,4 +45,6 @@ metadata:
   labels:
     addonmanager.kubernetes.io/mode: Reconcile
   name: bds1
+provisioner: hostpath.csi.k8s.io
+reclaimPolicy: Delete
 volumeBindingMode: Immediate
