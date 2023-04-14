@@ -1,12 +1,15 @@
 ---
+# Storage is handled by https://minikube.sigs.k8s.io/docs/tutorials/volume_snapshots_and_csi/#what-youll-need
+# data is located in /var/lib/csi-hostpath-data
+
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   annotations:
   labels:
-    addonmanager.kubernetes.io/mode: EnsureExists
+    addonmanager.kubernetes.io/mode: Reconcile
   name: nfs
-provisioner: k8s.io/minikube-hostpath
+provisioner: hostpath.csi.k8s.io
 reclaimPolicy: Delete
 volumeBindingMode: Immediate
 
@@ -16,11 +19,9 @@ kind: StorageClass
 metadata:
   annotations:
   labels:
-    addonmanager.kubernetes.io/mode: EnsureExists
+    addonmanager.kubernetes.io/mode: Reconcile
   name: nfss1
-provisioner: k8s.io/minikube-hostpath
-reclaimPolicy: Delete
-volumeBindingMode: Immediate
+provisioner: hostpath.csi.k8s.io
 
 ---
 apiVersion: storage.k8s.io/v1
@@ -28,11 +29,9 @@ kind: StorageClass
 metadata:
   annotations:
   labels:
-    addonmanager.kubernetes.io/mode: EnsureExists
+    addonmanager.kubernetes.io/mode: Reconcile
   name: block
-provisioner: k8s.io/minikube-hostpath
 reclaimPolicy: Delete
-volumeBindingMode: Immediate
 
 ---
 apiVersion: storage.k8s.io/v1
@@ -40,8 +39,6 @@ kind: StorageClass
 metadata:
   annotations:
   labels:
-    addonmanager.kubernetes.io/mode: EnsureExists
+    addonmanager.kubernetes.io/mode: Reconcile
   name: bds1
-provisioner: k8s.io/minikube-hostpath
-reclaimPolicy: Delete
 volumeBindingMode: Immediate

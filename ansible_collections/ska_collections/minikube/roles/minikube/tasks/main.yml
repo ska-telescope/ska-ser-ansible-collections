@@ -74,6 +74,9 @@
       become: true
       become_user: "{{ minikube_start_user }}"
 
+    # Storage is handled by:
+    #  https://minikube.sigs.k8s.io/docs/tutorials/volume_snapshots_and_csi/#what-youll-need
+    # data is located in /var/lib/csi-hostpath-data
     - name: Apply storage classes
       kubernetes.core.k8s:
         state: present
