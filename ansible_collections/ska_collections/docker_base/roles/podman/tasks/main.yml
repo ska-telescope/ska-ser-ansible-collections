@@ -41,7 +41,7 @@
         state: present
         ignoreerrors: true
 
-    - name: Install podman CE again
+    - name: Install podman CE
       block:
         - name: Install podman CE (apt)
           ansible.builtin.apt:
