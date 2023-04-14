@@ -1,3 +1,4 @@
+---
 - name: Test ingress controller
   hosts: "{{ target_hosts }}"
   vars:
@@ -39,7 +40,7 @@
         method: GET
         status_code: [200]
       register: test_ingress
-      until: test_ingress.status == 200 
+      until: test_ingress.status == 200
       retries: 6
       delay: 10
 

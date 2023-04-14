@@ -43,8 +43,8 @@ docker_default_mirrors:
 docker_default_registries:
   - "http://{{ nexus }}:{{ nexus_docker_hosted_port }}"
 
-docker_registry_mirrors: "{{ nexus | ternary(docker_default_mirrors, [])}}"
-docker_insecure_registries: "{{ nexus | ternary(docker_default_registries, [])}}"
+docker_registry_mirrors: "{{ nexus | ternary(docker_default_mirrors, []) }}"
+docker_insecure_registries: "{{ nexus | ternary(docker_default_registries, []) }}"
 
 docker_default_address_pools:
   - base: "172.21.0.0/16"

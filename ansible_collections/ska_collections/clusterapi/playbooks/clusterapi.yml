@@ -1,7 +1,7 @@
 #!/usr/bin/env ansible-playbook
 ---
 # This is here to force loading the default variables of the role (respecting the overrides) and also
-# to validate what are we destroying
+# to validate the target cluster configurations
 - name: Check cluster configurations
   hosts: "{{ target_hosts }}"
   vars:
@@ -11,7 +11,7 @@
       ansible.builtin.include_role:
         name: ska_collections.clusterapi.createworkload
         tasks_from: check-configs.yml
-        public: True
+        public: true
     - name: Set target kubeconfig
       ansible.builtin.set_fact:
         target_kubeconfig: "{{ capi_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig)) }}"

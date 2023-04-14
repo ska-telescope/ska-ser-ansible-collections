@@ -76,12 +76,12 @@ create-workload: check-hosts  ## Template workload manifest and deploy the clust
 	--extra-vars "capi_apply_manifest=$(CAPI_APPLY)"
 
 get-workload-kubeconfig: check-hosts  ## Get workload cluster kubeconfig
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/get-kubeconfig.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/get-workload-kubeconfig.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 get-workload-inventory: check-hosts  ## Get workload cluster inventory
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/get-inventory.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/get-workload-inventory.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 

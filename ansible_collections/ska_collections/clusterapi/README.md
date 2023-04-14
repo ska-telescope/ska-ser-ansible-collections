@@ -50,13 +50,14 @@ Playbooks can be found in the [playbooks/](./playbooks) folder in the following 
 
 | Name | Description |
 | ---- | ----------- |
-| [calico.yml](./playbooks/calico.yml) | Install Calico Pod Network |
+| [calico-install.yml](./playbooks/calico-install.yml) | Install Calico Pod Network |
 | [clusterapi.yml](./playbooks/clusterapi.yml) | Install and configure `cluserctl` and the CAPO provider on management cluster |
 | [containerd.yml](./playbooks/containerd.yml) | Install and configure containerd |
-| [createworkload.yml](./playbooks/createworkload.yml) | Generate workload cluster manifests and apply |
 | [docker.yml](./playbooks/docker.yml) | Install and configure Docker using `ska_collections.docker_base.docker` |
-| [get-inventory.yml](./playbooks/get-inventory.yml) | Extract workload cluster Ansible inventory |
-| [get-kubeconfig.yml](./playbooks/get-kubeconfig.yml) | Extract workload cluster `KUBECONFIG` |
+| [create-workload.yml](./playbooks/create-workload.yml) | Generate workload cluster manifests and apply |
+| [destroy-workload.yml](./playbooks/destroy-workload.yml) | Destroys the workload cluster |
+| [get-workload-inventory.yml](./playbooks/get-workload-inventory.yml) | Extract workload cluster Ansible inventory |
+| [get-workload-kubeconfig.yml](./playbooks/get-workload-kubeconfig.yml) | Extract workload cluster `KUBECONFIG` |
 | [imagebuilder.yml](./playbooks/imagebuilder.yml) | Build OS images for CAPO deployment |
 | [init-hosts.yml](./playbooks/init-hosts.yml) | Initialise hosts using `ska_collections.instance_common.init` |
 | [install-tools.yml](./playbooks/install-tools.yml) | Install tools such as Helm |
