@@ -1,7 +1,7 @@
-#!/usr/bin/env ansible-playbook
 ---
-- name: "Apply the k8s rookio role to nodes"
-  hosts: "{{ target_hosts }}"
+- name: "Apply the nvidia-device-plugin role to nodes"
+  hosts:
+    - "{{ target_hosts }}"
   vars:
     target_hosts: localhost
     k8s_kubeconfig: "/etc/kubernetes/admin.conf"
@@ -12,9 +12,9 @@
         var: k8s_kubeconfig
 
   roles:
-    - ska_collections.k8s.rookio
+    - ska_collections.k8s.nvidia_device_plugin
   environment:
     KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
 
   tags:
-    - rookio
+    - nvidia

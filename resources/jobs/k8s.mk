@@ -10,7 +10,7 @@ ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
 TESTS_DIR ?= ./ansible_collections/ska_collections/k8s/tests
 
-TAGS ?= all,metallb,externaldns,ping,ingress,rookio,standardprovisioner,metrics,binderhub ## Ansible tags to run in post deployment processing
+TAGS ?= all,metallb,externaldns,ping,ingress,rookio,standardprovisioner,metrics,binderhub,nvidia ## Ansible tags to run in post deployment processing
 CAPI_CLUSTER ?= capo-test
 K8S_KUBECONFIG ?= /etc/clusterapi/$(CAPI_CLUSTER)-kubeconfig
 
@@ -108,7 +108,7 @@ ifneq (,$(findstring metrics,$(TAGS)))
 	-vv
 endif
 
-#	# ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_ceph_conf_ini_file=<path to>/ceph.conf capi_ceph_conf_key_ring=<path to>/ceph.client.admin.keyring'
+#	# ANSIBLE_EXTRA_VARS+= --extra-vars 'k8s_capi_ceph_conf_ini_file=<path to>/ceph.conf k8s_capi_ceph_conf_key_ring=<path to>/ceph.client.admin.keyring'
 ifneq (,$(findstring rookio,$(TAGS)))
     # rookio is a target - avoid undefined ansible vars issue with tags
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/rookio.yml \
@@ -132,6 +132,13 @@ ifneq (,$(findstring binderhub,$(TAGS)))
 	-vv
 endif
 
+ifneq (,$(findstring nvidia,$(TAGS)))
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/nvidia.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
+	--tags "$(TAGS)"
+endif
 
 k8s-velero-backups:  ## Configure Velero backups on Kubernetes
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/velero_backups.yml \
@@ -181,6 +188,12 @@ endif
 
 ifneq (,$(findstring metallb,$(TAGS)))
 	@ansible-playbook $(TESTS_DIR)/test-metallb.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+endif
+
+ifneq (,$(findstring nvidia,$(TAGS)))
+	@ansible-playbook $(TESTS_DIR)/test-nvidia.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 endif

@@ -1,0 +1,28 @@
+---
+- name: Delete Calico Installation resource
+  kubernetes.core.k8s:
+    api_version: operator.tigera.io/v1
+    kind: Installation
+    name: default
+    state: absent
+    wait: true
+
+- name: Delete Calico Helm release
+  kubernetes.core.helm:
+    state: absent
+    name: "calico"
+    wait: true
+    purge: true
+    release_namespace: "{{ calico_operator_namespace }}"
+
+- name: Delete Calico namespaces
+  kubernetes.core.k8s:
+    name: "{{ calico_operator_namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: absent
+    wait: true
+  loop:
+    - "{{ calico_operator_namespace }}"
+    - calico-system
+    - calico-apiserver

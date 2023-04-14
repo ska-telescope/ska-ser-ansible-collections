@@ -47,7 +47,7 @@
        --from-literal=ip=$ip
 
       echo "Running the cluster initialisation: deploy calico"
-      /usr/src/ska-ser-ansible-collections/run-play.sh calico.yml \
+      /usr/src/ska-ser-ansible-collections/run-play.sh calico-install.yml \
         -e "calico_version=${CALICO_VERSION}" \
         -e "calico_ipv4pool_cidr=${CALICO_IPV4POOL_CIDR}" \
         -e "calico_ipv4pool_ipip=${CALICO_IPV4POOL_IPIP}" \

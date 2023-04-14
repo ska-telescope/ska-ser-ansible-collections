@@ -1,5 +1,4 @@
 ---
-
 - name: Stash etc/ceph vars to avoid overwriting by createworkload vars
   ansible.builtin.set_fact:
     local_ceph_conf_ini_file: "{{ k8s_capi_ceph_conf_ini_file }}"
@@ -7,11 +6,10 @@
   tags: [always]
 
 - name: Load Ceph config
-  when: (capi_ceph_conf_ini_file|length) > 0 and
-        (capi_ceph_conf_key_ring|length) > 0
+  when: (k8s_capi_ceph_conf_ini_file|length) > 0 and
+    (k8s_capi_ceph_conf_key_ring|length) > 0
   tags: [always]
   block:
-
     - name: Reset etc/ceph vars
       ansible.builtin.set_fact:
         k8s_capi_ceph_conf_ini_file: "{{ local_ceph_conf_ini_file }}"
@@ -69,12 +67,11 @@
   # CAPO is not started
   when: "not rook_operator_check.resources"
   block:
-
     - name: Download Rook IO manifests
       ansible.builtin.get_url:
         url: "https://raw.githubusercontent.com/rook/rook/{{ k8s_rook_version }}/deploy/examples/{{ item }}"
         dest: "/tmp/{{ item }}"
-        mode: '0664'
+        mode: "0664"
       with_items:
         - "crds.yaml"
         - "common.yaml"
@@ -106,7 +103,7 @@
   ansible.builtin.get_url:
     url: "https://raw.githubusercontent.com/rook/rook/{{ k8s_rook_version }}/deploy/examples/import-external-cluster.sh"
     dest: "/tmp/import-external-cluster.sh"
-    mode: '0664'
+    mode: "0664"
 
 - name: Check Rook Config Secret exists
   kubernetes.core.k8s_info:
@@ -148,7 +145,7 @@
     - name: Deploy CephCluster
       kubernetes.core.k8s:
         state: present
-        template: 'cephcluster.yaml.j2'
+        template: "cephcluster.yaml.j2"
 
 - name: Check Storage Classes exist
   kubernetes.core.k8s_info:
@@ -163,7 +160,7 @@
     - name: Deploy Ceph StorageClasses
       kubernetes.core.k8s:
         state: present
-        template: 'ceph-storageclasses.yaml.j2'
+        template: "ceph-storageclasses.yaml.j2"
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers
