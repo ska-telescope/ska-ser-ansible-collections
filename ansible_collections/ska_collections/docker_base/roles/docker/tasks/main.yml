@@ -100,13 +100,13 @@
     state: directory
     owner: root
     group: root
-    mode: "0755"
+    mode: 0755
 
 - name: Configure docker server
   ansible.builtin.template:
     src: docker.conf.j2
     dest: "/etc/systemd/system/docker.service.d/docker.conf"
-    mode: "0644"
+    mode: 0644
   notify:
     - Reload systemd
     - Restart docker
@@ -117,13 +117,13 @@
     state: directory
     owner: root
     group: root
-    mode: "0755"
+    mode: 0755
 
 - name: Configure docker daemon
   ansible.builtin.template:
     src: daemon.json.j2
     dest: "/etc/docker/daemon.json"
-    mode: "0644"
+    mode: 0644
   notify:
     - Reload systemd
     - Restart docker

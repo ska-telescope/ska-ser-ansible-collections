@@ -1,20 +1,19 @@
 ---
 debug: false
 
-# docker_hub_mirror: "http://192.168.99.204:9082"  # default to STFC Nexus Cache
-
-# TODO: Merge with docker_base configurations
-
-docker_hub_mirror: "http://10.165.4.6:9082"  # Mid ITF Cache
-central_nexus_mirror: "http://10.165.4.6:9084"  # Mid ITF Nexus Cache
-gitlab_nexus_mirror: "http://10.165.4.6:9085"  # Mid ITF Nexus Cache
-nexus_hosted_cache_url: "http://10.165.4.6:9080" # Mid ITF Nexus Cache (docker-internal)
-nexus_hosted_cache: "10.165.4.6:9080"
+nexus: "{{ _ | mandatory('`nexus` definition is mandatory') }}"
+nexus_docker_hosted_port: 9080
+nexus_docker_group_port: 9082
+nexus_central_proxy_port: 9084
+nexus_gitlab_proxy_port: 9085
+nexus_hosted_cache: "{{ nexus }}:{{ nexus_docker_hosted_port }}"
+nexus_hosted_cache_url: "http://{{ nexus_hosted_cache }}"
+docker_hub_mirror: "http://{{ nexus }}:{{ nexus_docker_group_port }}"
+central_nexus_mirror: "http://{{ nexus }}:{{ nexus_central_proxy_port }}"
+gitlab_nexus_mirror: "http://{{ nexus }}:{{ nexus_gitlab_proxy_port }}"
 
 crictl_version: v1.24.2
-
 debian_arch: "{{ {'x86_64': 'amd64', 'aarch64': 'arm64'}[ansible_architecture] | default(ansible_architecture) }}"
-
 containerd_deb_dependencies:
   - apt-transport-https
   - ca-certificates
