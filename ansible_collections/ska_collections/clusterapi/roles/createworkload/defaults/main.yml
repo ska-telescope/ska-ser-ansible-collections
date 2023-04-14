@@ -14,7 +14,6 @@ capi_apply_manifest_review_diff: false
 capi_k8s_version: v1.25.7
 capi_calico_version: 3.24.5
 capi_helm_version: v3.11.2
-capi_oci_mirror_ip: 192.168.99.204
 capi_cidr_block: 10.10.0.0/16
 capi_calico_ip_autodetection_method: ens.*,eth.*
 capi_calico_ipv4pool_ipip: Never

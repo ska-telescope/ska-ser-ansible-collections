@@ -77,7 +77,7 @@
   ansible.builtin.set_fact:
     capi_cluster_environment:
       COLLECTIONS_BRANCH: "{{ capi_collections_branch }}"
-      OCI_MIRROR_IP: "{{ capi_oci_mirror_ip }}"
+      OCI_MIRROR_IP: "{{ nexus }}"
       KUBE_NAMESPACE: "{{ capi_kube_namespace }}"
       OPENSTACK_FAILURE_DOMAIN: "{{ capi_capo_openstack_failure_domain }}"
       OPENSTACK_IMAGE_NAME: "{{ capi_capo_openstack_image_name }}"
@@ -162,18 +162,19 @@
       ansible.utils.fact_diff:
         before: "{{ capi_previous_cluster_manifest }}"
         after: "{{ capi_cluster_manifest }}"
+      when: previous_cluster_manifest.stat.exists
 
     - name: Validate manifest changes
       ansible.builtin.pause:
         prompt: "Do you want to apply this manifest? [yes/no]"
         echo: true
       register: validate_manifest_apply
-      when: capi_apply_manifest_review_diff
+      when: previous_cluster_manifest.stat.exists and capi_apply_manifest_review_diff
 
     - name: Abort manifest changes before apply
       ansible.builtin.fail:
         msg: "Aborting manifest apply. To really do it, say 'yes' on the prompt"
-      when: validate_manifest_apply.user_input != 'yes' and capi_apply_manifest_review_diff
+      when: previous_cluster_manifest.stat.exists and capi_apply_manifest_review_diff and validate_manifest_apply.user_input != 'yes'
 
     - name: Apply CAPO Cluster manifest
       kubernetes.core.k8s:

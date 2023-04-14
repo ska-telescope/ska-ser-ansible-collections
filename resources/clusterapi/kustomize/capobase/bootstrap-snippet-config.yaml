@@ -7,7 +7,6 @@ spec:
     spec:
       verbosity: 5
       files:
-      # used by CCM deployment in cloudprovider.yml - pxh, 30.03.2023
       - content: ${OPENSTACK_CLOUD_YAML_B64}
         encoding: base64
         owner: root
