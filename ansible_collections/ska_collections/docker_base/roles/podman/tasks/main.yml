@@ -41,11 +41,28 @@
         state: present
         ignoreerrors: true
 
-    - name: Install podman CE (apt)
-      ansible.builtin.apt:
-        name: "{{ podman_deb_pkgs }}"
-        state: present
-        force: true
+    - name: Install podman CE
+      block:
+        - name: Install podman CE (apt)
+          ansible.builtin.apt:
+            name: "{{ podman_deb_pkgs }}"
+            state: present
+            force: true
+
+      rescue:
+        - name: Purge podman packages
+          become: true
+          ansible.builtin.shell: |
+            dpkg -P podman buildah skopeo
+          args:
+            executable: /bin/bash
+          changed_when: false
+
+        - name: Install podman CE (apt)
+          ansible.builtin.apt:
+            name: "{{ podman_deb_pkgs }}"
+            state: present
+            force: true
 
     - name: Configure podman
       ansible.builtin.template:
