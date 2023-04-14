@@ -32,3 +32,5 @@
       kubernetes.core.k8s:
         state: absent
         template: 'resources/nvidia_test.yml'
+  tags:
+    - nvidia

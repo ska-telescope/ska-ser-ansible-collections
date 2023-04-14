@@ -5,7 +5,7 @@
     target_hosts: localhost
     k8s_ingress_lb_suffix: "{{ capi_cluster | default('test') }}"
   environment:
-    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
 
   tasks:
     - name: Wait till the nginx is created
@@ -14,12 +14,13 @@
         wait: true
         name: "ingress-nginx-controller-lb-{{ k8s_ingress_lb_suffix }}"
         namespace: ingress-nginx
-        wait_timeout: 10
+        wait_timeout: 30
       register: ingress_nginx_controller
 
     - name: Check ingress-nginx-controller
       ansible.builtin.debug:
         var: ingress_nginx_controller
+      when: debug
 
     - name: Apply test ingress
       kubernetes.core.k8s:
@@ -48,3 +49,5 @@
       kubernetes.core.k8s:
         state: absent
         template: 'resources/ingress.yml'
+  tags:
+    - ingress

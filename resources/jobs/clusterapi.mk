@@ -1,6 +1,6 @@
 .PHONY: check-hosts vars calico-install calico-uninstall calico-uninstall-manifest calico-test \
-install-base management-cluster install build-management create-workload get-workload-kubeconfig \
-get-workload-inventory get-workload destroy-management imagebuilder help
+install-base management-cluster install build-management-cluster create-workload-cluster get-workload-kubeconfig \
+get-workload-inventory get-workload-cluster destroy-workload-cluster destroy-management-cluster imagebuilder help
 .DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
@@ -54,7 +54,7 @@ install-base: check-hosts  ## Install base for management server
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-management-cluster: check-hosts  ## Install Minikube management cluster
+create-management-cluster: check-hosts  ## Install Minikube management cluster
 	ansible-playbook $(PLAYBOOKS_DIR)/minikube/playbooks/minikube.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
@@ -65,11 +65,11 @@ install: check-hosts  ## Install clusterapi component
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-build-management: install-base management-cluster install ## Complete steps for building clusterapi management server
+build-management-cluster: install-base create-management-cluster install ## Complete steps for building clusterapi management server
 
 # Leaving CAPI_APPLY so that we can easily not run the apply to check the manifest
 # while we make the playbooks mature
-create-workload: check-hosts  ## Template workload manifest and deploy the cluster
+create-workload-cluster: check-hosts  ## Template workload manifest and deploy the cluster
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/create-workload.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) " \
@@ -85,14 +85,14 @@ get-workload-inventory: check-hosts  ## Get workload cluster inventory
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-get-workload: check-hosts get-workload-kubeconfig get-workload-inventory  ## Gets kubeconfig and inventory of the cluster
+get-workload-cluster: check-hosts get-workload-kubeconfig get-workload-inventory  ## Gets kubeconfig and inventory of the cluster
 
-destroy-workload: check-hosts  ## Destroy the workload cluster
+destroy-workload-cluster: check-hosts  ## Destroy the workload cluster
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/destroy-workload.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-destroy-management:  ## Destroy the management cluster
+destroy-management-cluster:  ## Destroy the management cluster
 	ansible-playbook $(PLAYBOOKS_DIR)/minikube/playbooks/minikube.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \

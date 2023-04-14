@@ -27,3 +27,5 @@
         method: GET
         status_code: [200]
       when: not prometheus_k8s_external_dns_entry
+  tags:
+    - ping

@@ -29,6 +29,9 @@
         name: test-metallb-service
         namespace: default
       register: metallb_service
+      until: metallb_service.resources[0].status.loadBalancer.ingress is defined
+      retries: 6
+      delay: 30
 
     - name: Check MetalLB service
       ansible.builtin.debug:
@@ -46,3 +49,7 @@
       kubernetes.core.k8s:
         state: absent
         template: 'resources/metallb_test.yml'
+  environment:
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
+  tags:
+    - metallb

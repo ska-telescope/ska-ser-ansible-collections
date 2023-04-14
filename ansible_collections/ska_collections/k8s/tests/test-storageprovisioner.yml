@@ -34,6 +34,7 @@
     - name: Print log
       ansible.builtin.debug:
         var: log
+      when: debug
 
     - name: Remove host path pod
       kubernetes.core.k8s:
@@ -49,3 +50,5 @@
           - "'something' in log.log"
         fail_msg: "Read write failure on host path"
         success_msg: "Test complete"
+  tags:
+    - standardprovisioner

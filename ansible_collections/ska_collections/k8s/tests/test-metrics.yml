@@ -2,6 +2,8 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
+  environment:
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tasks:
     - name: Wait till the kube-state-metrics is created
       kubernetes.core.k8s_info:
@@ -15,22 +17,23 @@
     - name: Check kube_state_metrics
       ansible.builtin.debug:
         var: kube_state_metrics
+      when: debug
 
-    - name: Create curl pod
+    - name: Create curl job
       kubernetes.core.k8s:
         state: present
         definition:
           apiVersion: batch/v1
           kind: Job
           metadata:
-            name: curl-test
+            name: kube-state-metrics-test
             namespace: default
           spec:
             template:
               spec:
                 containers:
                   - image: curlimages/curl
-                    name: curl-test
+                    name: curl
                     command:
                       - curl
                       - kube-state-metrics.kube-system.svc.cluster.local:8080/metrics
@@ -38,7 +41,7 @@
 
     - name: Wait Until Job Is Done
       kubernetes.core.k8s_info:
-        name: curl-job
+        name: kube-state-metrics-test
         kind: Job
         wait: true
         wait_timeout: 10
@@ -47,15 +50,19 @@
           status: "True"
       register: job_status
 
-    - name: Test metrics
+    - name: Log if curl job failed
       ansible.builtin.fail:
         msg: "Metrics not working!"
       when: job_status.failed == 1
 
-    - name: Remove curl-job
+    - name: Remove curl job
       kubernetes.core.k8s:
         state: absent
         api_version: v1
         kind: Job
         namespace: default
-        name: curl-job
+        name: kube-state-metrics-test
+        delete_options:
+          propagationPolicy: "Foreground"
+  tags:
+    - metrics
