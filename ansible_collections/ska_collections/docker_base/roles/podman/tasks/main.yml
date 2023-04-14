@@ -6,30 +6,17 @@
 - name: Debian Podman install
   when: ansible_os_family == "Debian"
   block:
-    - name: Add podman project apt key
-      ansible.builtin.apt_key:
-        url: "http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_{{ ansible_distribution_version }}/Release.key"
 
-    - name: Add podman project apt source
-      ansible.builtin.lineinfile:
-        line: "deb http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_{{ ansible_distribution_version }}/ /"
-        dest: /etc/apt/sources.list.d/podman.list
-        create: true
-        owner: root
-        group: root
-        mode: 0644
-      register: installed_podman
+    - name: Remove old podman project apt source
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/podman.list
+        state: absent
 
     - name: Ensure that the apt cache is updated
       ansible.builtin.apt:
         update_cache: true
         update_cache_retries: 30
         update_cache_retry_max_delay: 30
-
-    - name: Upgrade all packages (apt)
-      ansible.builtin.apt:
-        upgrade: true
-        autoremove: true
 
     - name: Set kernel.unprivileged_userns_clone=1
       ansible.posix.sysctl:

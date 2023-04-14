@@ -15,7 +15,6 @@
       },
 {% if docker_activate_nvidia|bool and nvidia_driver_exists|bool %}
   "exec-opts": ["native.cgroupdriver=cgroupfs"],
-    "default-runtime": "nvidia",
     "runtimes": {
         "nvidia": {
             "path": "/usr/bin/nvidia-container-runtime",

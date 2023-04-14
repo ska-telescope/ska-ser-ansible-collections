@@ -1,0 +1,25 @@
+---
+
+- name: Ensure software-properties-common is installed
+  ansible.builtin.apt:
+    name: software-properties-common
+    state: present
+
+- name: Register nvidia-container-runtime apt key
+  ansible.builtin.apt_key:
+    url: https://nvidia.github.io/nvidia-container-runtime/gpgkey
+    state: present
+
+- name: Add nvidia-container-runtime apt repository
+  ansible.builtin.apt_repository:
+    repo: "{{ item }}"
+    filename: nvidia-container-runtime
+    state: present
+  with_items:
+    - deb https://nvidia.github.io/libnvidia-container/{{ ansible_distribution | lower }}{{ ansible_distribution_version }}/$(ARCH) /
+    - deb https://nvidia.github.io/nvidia-container-runtime/{{ ansible_distribution | lower }}{{ ansible_distribution_version }}/$(ARCH) /
+
+- name: Install nvidia-container-runtime package
+  ansible.builtin.apt:
+    name: nvidia-container-runtime
+    state: present
