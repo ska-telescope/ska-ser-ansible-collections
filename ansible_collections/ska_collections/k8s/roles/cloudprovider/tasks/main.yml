@@ -1,9 +1,8 @@
 ---
-
 - name: Clusterapi OS cloud config
   ansible.builtin.import_role:
     name: ska_collections.clusterapi.createworkload
-    tasks_from: os_config
+    tasks_from: openstack-config
 
 - name: Check Workload Cluster is Provisioned or Running
   ska_collections.clusterapi.wait_for_cluster:
@@ -45,7 +44,7 @@
       ansible.builtin.get_url:
         url: "https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/master/manifests/controller-manager/{{ item }}"
         dest: "/tmp/{{ item }}"
-        mode: '0664'
+        mode: 0664
       with_items:
         - "cloud-controller-manager-roles.yaml"
         - "cloud-controller-manager-role-bindings.yaml"
@@ -72,11 +71,6 @@
       with_items:
         - "cloud-controller-manager-roles.yaml"
         - "cloud-controller-manager-role-bindings.yaml"
-
-  # https://github.com/kubernetes/cloud-provider-openstack/blob/master/examples/cinder-csi-plugin/block/block.yaml
-  # helm repo add cpo https://kubernetes.github.io/cloud-provider-openstack
-  # helm repo update
-  # helm upgrade --create-namespace --namespace kube-system --install cinder-csi cpo/openstack-cinder-csi
 
 - name: Apply cloud provider cinder csi chart
   kubernetes.core.helm:

@@ -2,13 +2,25 @@
 - name: Load cloud config
   ansible.builtin.include_vars:
     file: "{{ capi_capo_openstack_cloud_config }}"
-    name: capi_capo_ostack_cloud_yaml
+    name: capi_capo_ostack_cloud_yaml_original
 
-- name: Set selected cloud
+- name: Set selected cloud and sanitize clouds yaml
   ansible.builtin.set_fact:
-    capi_capo_selected_cloud: "{{ capi_capo_ostack_cloud_yaml['clouds'][capi_capo_openstack_cloud] }}"  # noqa: jinja[invalid]
+    capi_capo_selected_cloud: "{{ capi_capo_ostack_cloud_yaml_original['clouds'][capi_capo_openstack_cloud] }}"  # noqa: jinja[invalid]
+    capi_capo_ostack_cloud_yaml_stripped: >
+      {% set copy = capi_capo_ostack_cloud_yaml_original.copy() %}
+      {% if 'cacert' in copy['clouds'][capi_capo_openstack_cloud] %}{% set removed = copy['clouds'][capi_capo_openstack_cloud].pop('cacert') %}{% endif %}
+      {% if 'cacert_data' in copy['clouds'][capi_capo_openstack_cloud] %}{% set removed = copy['clouds'][capi_capo_openstack_cloud].pop('cacert_data') %}{% endif %}
+      {% if 'application_credential_secret' in copy['clouds'][capi_capo_openstack_cloud]['auth'] %}
+        {% if 'project_id' in copy['clouds'][capi_capo_openstack_cloud]['auth'] %}
+          {% set removed = copy['clouds'][capi_capo_openstack_cloud]['auth'].pop('project_id') %}
+        {% endif %}
+      {% endif %}
+      {{ copy }}
 
-# TODO - name: Remove cacert_data from clouds yaml
+- name: Set cacert stripped clouds yaml
+  ansible.builtin.set_fact:
+    capi_capo_ostack_cloud_yaml: "{{ capi_capo_ostack_cloud_yaml_stripped | from_yaml }}"
 
 - name: Set selected cloud
   ansible.builtin.set_fact:
@@ -24,8 +36,8 @@
     capi_capo_auth_application_credential_secret: "{{ capi_capo_selected_cloud.auth.application_credential_secret | default('') }}"
     capi_capo_auth_domain_id: "{{ capi_capo_selected_cloud.auth.domain_id | default('') }}"
     capi_capo_region_name: "{{ capi_capo_selected_cloud.region_name }}"
-    capi_capo_cacert: "{{ capi_capo_selected_cloud.cacert_data | default('\n') }}"
-    capi_openstack_cloud_cacert_b64: "{{ capi_capo_selected_cloud.cacert_data | default('\n') | b64encode }}"
+    capi_capo_cacert: "{{ capi_capo_selected_cloud.cacert_data | default(capi_capo_selected_cloud.cacert | default('')) }}"
+    capi_capo_cacert_b64: "{{ capi_capo_selected_cloud.cacert_data | default(capi_capo_selected_cloud.cacert | default('')) | b64encode }}"
 
 - name: Check for valid cloud yaml
   ansible.builtin.fail:
@@ -35,24 +47,9 @@
     not (capi_capo_auth_username and capi_capo_auth_password) and
     not (capi_capo_auth_application_credential_id and capi_capo_auth_application_credential_secret)
 
-- name: Set selected cloud yaml when user/pass
+- name: Enconde clouds yaml to base64
   ansible.builtin.set_fact:
-    capi_base64_capo_ostack_cloud_yaml: "{{ capi_capo_ostack_cloud_yaml | to_nice_yaml(indent=2) | b64encode }}"
-  when: capi_capo_auth_username
-
-- name: Set selected cloud yaml when app creds
-  ansible.builtin.set_fact:
-    capi_base64_capo_ostack_cloud_yaml: "{{ capi_capo_ostack_cloud_yaml | to_nice_yaml(indent=2) | b64encode }}"
-  when: >
-    capi_capo_auth_application_credential_secret and
-     not 'project_id' in capi_capo_ostack_cloud_yaml['clouds'][capi_capo_openstack_cloud]
-
-- name: Set selected cloud yaml when app creds -  Remove project_id
-  ansible.builtin.set_fact:
-    capi_base64_capo_ostack_cloud_yaml: "{% set copy = capi_capo_ostack_cloud_yaml.copy() %}{% set removed = copy['clouds'][capi_capo_openstack_cloud]['auth'].pop('project_id') %}{{ copy | to_nice_yaml(indent=2) | b64encode }}"
-  when: >
-    capi_capo_auth_application_credential_secret and
-     'project_id' in capi_capo_ostack_cloud_yaml['clouds'][capi_capo_openstack_cloud]
+    capi_capo_ostack_cloud_yaml_b64: "{{ capi_capo_ostack_cloud_yaml | to_nice_yaml(indent=2) | b64encode }}"
 
 - name: Show capi_capo_ostack_cloud_yaml
   ansible.builtin.debug:
@@ -64,14 +61,14 @@
     var: capi_capo_selected_cloud
   when: debug
 
-- name: Show capi_base64_capo_ostack_cloud_yaml
+- name: Show capi_capo_ostack_cloud_yaml_b64
   ansible.builtin.debug:
-    var: capi_base64_capo_ostack_cloud_yaml
+    var: capi_capo_ostack_cloud_yaml_b64
   when: debug
 
-- name: Show capi_openstack_cloud_cacert_b64
+- name: Show capi_capo_cacert_b64
   ansible.builtin.debug:
-    var: capi_openstack_cloud_cacert_b64
+    var: capi_capo_cacert_b64
   when: debug
 
 - name: Set clusterapi config dir
@@ -93,6 +90,11 @@
     src: "{{ capi_config_dir }}/cloud-provider.ini"
   register: slurped_cloud_config
   become: true
+
+- name: Show Clusterapi cloud config
+  ansible.builtin.debug:
+    msg: "{{ slurped_cloud_config.content | b64decode }}"
+  when: debug
 
 - name: Delete cloud config file
   ansible.builtin.file:

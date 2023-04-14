@@ -10,7 +10,7 @@
 # https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/openstack-cloud-controller-manager/using-openstack-cloud-controller-manager.md#global
 
 - name: Include the OS Config
-  ansible.builtin.include_tasks: os_config.yml
+  ansible.builtin.include_tasks: openstack-config.yml
 
 - name: Encode Clusterapi cloud config and store as fact
   ansible.builtin.set_fact:
@@ -88,8 +88,8 @@
       OPENSTACK_SSH_KEY_NAME: "{{ capi_capo_openstack_ssh_key_name }}"
       CAPO_CLOUD: "{{ capi_capo_openstack_cloud }}"
       OPENSTACK_EXTERNAL_NETWORK_ID: "{{ capi_capo_openstack_external_network_id }}"
-      OPENSTACK_CLOUD_YAML_B64: "{{ capi_base64_capo_ostack_cloud_yaml }}"
-      OPENSTACK_CLOUD_CACERT_B64: "{{ capi_openstack_cloud_cacert_b64 }}"
+      OPENSTACK_CLOUD_YAML_B64: "{{ capi_capo_ostack_cloud_yaml_b64 }}"
+      OPENSTACK_CLOUD_CACERT_B64: "{{ capi_capo_cacert_b64 }}"
       CLUSTER_API_OPENSTACK_INSTANCE_CREATE_TIMEOUT: "{{ capi_capo_openstack_instance_create_timeout }}"
       BUNDLE_LOOKUP_TAG: "{{ capi_k8s_version }}"
       K8S_VERSION: "{{ capi_k8s_version }}"
