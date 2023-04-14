@@ -16,6 +16,9 @@
       become: true
       ansible.builtin.shell: |
         dpkg -P podman buildah skopeo
+      args:
+        executable: /bin/bash
+      changed_when: false
 
     - name: Ensure that the apt cache is updated
       ansible.builtin.apt:
