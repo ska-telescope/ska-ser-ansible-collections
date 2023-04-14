@@ -1,0 +1,8 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Apply the scale_workload role
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  roles:
+    - scale_workload

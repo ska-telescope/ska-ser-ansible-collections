@@ -50,16 +50,4 @@
     - kind: DaemonSet
       namespace: calico-system
       name: calico-node
-    # - kind: DaemonSet
-    #   namespace: calico-system
-    #   name: csi-node-driver
-    # - kind: Deployment
-    #   namespace: calico-system
-    #   name: calico-kube-controllers
-    # - kind: Deployment
-    #   namespace: calico-apiserver
-    #   name: calico-apiserver
-    # - kind: Deployment
-    #   namespace: calico-system
-    #   name: calico-typha
   when: calico_install_wait

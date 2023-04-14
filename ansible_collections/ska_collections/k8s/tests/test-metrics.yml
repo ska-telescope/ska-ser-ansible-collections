@@ -59,3 +59,5 @@
         kind: Job
         namespace: default
         name: curl-job
+  environment:
+    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG') | mandatory }}"

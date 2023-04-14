@@ -109,6 +109,24 @@ clusterapi-createworkload: clusterapi-check-cluster-type  ## Template workload m
 	--extra-vars '{"cluster_apply": $(CAPI_APPLY)}' \
 	--extra-vars 'capi_collections_branch=$(CAPI_AC_BRANCH)' \
 	--limit "management-cluster" -vv
+	
+clusterapi-scale-workload: clusterapi-check-cluster-type  ## Template workload manifest and deploy
+	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
+	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/scale-workload.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
+	-vv
+
+clusterapi-delete-workload: clusterapi-check-cluster-type  ## Template workload manifest and deploy
+	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
+	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/delete-workload.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
+	-vv
 
 clusterapi-workload-kubeconfig: clusterapi-check-cluster-type  ## Post deployment get workload kubeconfig
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/get-kubeconfig.yml \

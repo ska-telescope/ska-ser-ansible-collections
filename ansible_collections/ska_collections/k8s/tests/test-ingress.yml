@@ -2,12 +2,13 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
+    k8s_ingress_lb_suffix: "{{ capi_cluster_hash | default('debug') }}"
   tasks:
     - name: Wait till the nginx is created
       kubernetes.core.k8s_info:
         kind: Service
         wait: true
-        name: ingress-nginx-controller
+        name: ingress-nginx-controller-lb-{{ k8s_ingress_lb_suffix }}
         namespace: ingress-nginx
         wait_timeout: 10
       register: ingress_nginx_controller
@@ -20,6 +21,7 @@
       kubernetes.core.k8s:
         state: present
         template: 'resources/ingress.yml'
+        wait: true
 
     - name: Wait till pod is created
       kubernetes.core.k8s_info:
@@ -31,11 +33,16 @@
 
     - name: Test test ingress
       ansible.builtin.uri:
-        url: "http://{{ ingress_nginx_controller.resources[0].status.loadBalancer.ingress[0].ip }}:/banana"
+        url: "http://{{ ingress_nginx_controller.resources[0].status.loadBalancer.ingress[0].ip }}/banana"
         method: GET
-        status_code: [200]
+      register: test_result
+      until: "test_result.status == 200"
+      retries: 30
+      delay: 10
 
     - name: Delete test ingress
       kubernetes.core.k8s:
         state: absent
         template: 'resources/ingress.yml'
+  environment:
+    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG') | mandatory }}"

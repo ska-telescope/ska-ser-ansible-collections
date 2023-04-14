@@ -48,7 +48,7 @@
     - name: Set cluster node name list
       ansible.builtin.set_fact:
         kubernetes_nodes: "{{ node_info.resources | map(attribute='metadata.name') | list }}"
-    
+
     - name: Check Calico Node(s) Status
       ansible.builtin.include_tasks:
         file: "utils/checkCalicoNodeStatus.yml"
@@ -75,7 +75,7 @@
                 name: nginx
                 namespace: "{{ calico_test_pod_namespace }}"
               spec:
-                replicas: 3
+                replicas: "{{ capi_worker_count }}"
                 selector:
                   matchLabels:
                     app: nginx
