@@ -1,0 +1,127 @@
+---
+
+- name: Create vault ServiceAccount
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: vault-auth
+        namespace: default
+
+- name: Template secret for vault
+  ansible.builtin.template:
+    src: "templates/secret.yaml.j2"
+    dest: "/tmp/secret.yaml"
+    force: true
+    mode: 0755
+
+- name: Apply secret for console
+  kubernetes.core.k8s:
+    state: present
+    apply: true
+    src: "/tmp/secret.yaml"
+
+- name: Tidy up tmp file
+  ansible.builtin.file:
+    path: "/tmp/secret.yaml"
+    state: absent
+
+- name: Create vault ClusterRoleBinding
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: vault-server-binding
+        namespace: default
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: system:auth-delegator
+      subjects:
+        - kind: ServiceAccount
+          name: vault-auth
+          namespace: default
+
+- name: Install Vault Helm chart
+  kubernetes.core.helm:
+    wait: true
+    timeout: "{{ k8s_vault_timeout }}"
+    chart_repo_url: https://helm.releases.hashicorp.com
+    chart_ref: vault
+    chart_version: "{{ k8s_vault_chart_version }}"
+    create_namespace: true
+    namespace: vault
+    name: vault
+    values:
+      csi:
+        enabled: true
+        extraArgs:
+        - -vault-mount={{ k8s_vault_csi_extra_args_vault_mount }}
+      injector:
+        authPath: "{{ k8s_vault_injector_auth_path }}"
+        enabled: true
+        externalVaultAddr: "{{ k8s_vault_injector_external_vault_addr }}"
+      server:
+        enabled: false
+
+- name: Install Vault client
+  become: true
+  block:
+    - name: Install gpg
+      ansible.builtin.apt:
+        name: gpg
+        update_cache: true
+        state: present
+
+    - name: Get hashicorp gpg 
+      ansible.builtin.shell: |
+        wget -O- https://apt.releases.hashicorp.com/gpg | gpg --yes --always-trust --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+    - name: Get DEB architecture
+      ansible.builtin.shell: dpkg --print-architecture
+      register: deb_architecture
+
+    - name: Add repo
+      ansible.builtin.apt_repository:
+        repo: "deb [arch={{ deb_architecture.stdout }} signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
+        state: present
+
+    - name: Install consul
+      ansible.builtin.apt:
+        name: consul
+        update_cache: true
+        state: present
+    
+    - name: Install vault
+      ansible.builtin.apt:
+        name: vault
+        update_cache: true
+        state: present
+
+- name: Configuring and Enable Kubernetes configuration on Vault
+  ansible.builtin.shell: |
+    export VAULT_ADDR={{ k8s_vault_injector_external_vault_addr }}
+    vault login {{ k8s_vault_login_token }}
+    vault auth enable --path={{ k8s_vault_cluster_name }} kubernetes
+    export TOKEN_REVIEW_JWT=$(kubectl get secret vault-auth-token --output='go-template={{ .data.token }}' | base64 --decode)
+    export KUBE_CA_CERT=$(kubectl config view --raw --minify --flatten --output='jsonpath={.clusters[].cluster.certificate-authority-data}' | base64 --decode)
+    export KUBE_HOST=$(kubectl config view --raw --minify --flatten --output='jsonpath={.clusters[].cluster.server}')
+    vault write auth/{{ k8s_vault_cluster_name }}/config \
+        token_reviewer_jwt="$TOKEN_REVIEW_JWT" \
+        kubernetes_host="$KUBE_HOST" \
+        kubernetes_ca_cert="$KUBE_CA_CERT" \
+        issuer="{{ k8s_vault_k8s_issuer }}"
+    vault policy write <policy-name> - <<EOF
+    path "{{ k8s_vault_cluster_name }}/data/*" {
+      capabilities = ["read"]
+    }
+    EOF
+    vault write auth/{{ k8s_vault_cluster_name }}/role/kube-role \
+        bound_service_account_names=* \
+        bound_service_account_namespaces=* \
+        policies=<policy-name>\
+        ttl=24h

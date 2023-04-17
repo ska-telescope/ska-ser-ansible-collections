@@ -140,6 +140,16 @@ ifneq (,$(findstring nvidia,$(TAGS)))
 	--tags "$(TAGS)"
 endif
 
+ifneq (,$(findstring vault,$(TAGS)))
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/vault.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
+	--tags "$(TAGS)" \
+	-vv
+endif
+
 k8s-velero-backups:  ## Configure Velero backups on Kubernetes
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/velero_backups.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
@@ -202,4 +212,14 @@ ifneq (,$(findstring ping,$(TAGS)))
 	@ansible-playbook $(TESTS_DIR)/test-ping.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+endif
+
+ifneq (,$(findstring vault,$(TAGS)))
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/test-vault.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
+	--tags "$(TAGS)" \
+	-vv
 endif

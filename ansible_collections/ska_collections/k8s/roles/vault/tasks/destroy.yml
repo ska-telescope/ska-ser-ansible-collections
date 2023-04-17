@@ -1,0 +1,24 @@
+---
+
+- name: Destroy vault ServiceAccount
+  kubernetes.core.k8s:
+    state: absent
+    api_version: v1
+    kind: ServiceAccount
+    namespace: default
+    name: vault-auth
+
+- name: Destroy vault ClusterRoleBinding
+  kubernetes.core.k8s:
+    state: absent
+    api_version: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    name: role-tokenreview-binding
+    namespace: default
+
+- name: Destroy Vault Helm chart
+  kubernetes.core.helm:
+    name: vault
+    namespace: vault
+    state: absent
+    wait: true

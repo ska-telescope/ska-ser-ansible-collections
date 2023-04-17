@@ -1,9 +1,11 @@
 - name: "Create namespace {{ gitlab_runner_minio_namespace }}"
   kubernetes.core.k8s:
-    name: "{{ gitlab_runner_minio_namespace }}"
-    api_version: v1
-    kind: Namespace
     state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ gitlab_runner_minio_namespace }}"
 
 - name: Template values file
   ansible.builtin.template:
@@ -22,7 +24,6 @@
     namespace: "{{ gitlab_runner_minio_namespace }}"
     name: "{{ gitlab_runner_minio_release_name }}"
     values_files: "values.yaml"
-
 
 - name: Template secret for console
   ansible.builtin.template:

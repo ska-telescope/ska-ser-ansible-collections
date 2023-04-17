@@ -1,18 +1,20 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: Label Nodes
+- name: Apply the vault role
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-    k8s_kubeconfig: "/etc/kubernetes/admin.conf"
+    k8s_kubeconfig: "/etc/clusterapi/{{ capi_cluster }}-kubeconfig"
+
   pre_tasks:
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:
         var: k8s_kubeconfig
+
+  roles:
+    - ska_collections.k8s.vault
   environment:
     KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
-  tasks:
-    - name: Label Nodes
-      ansible.builtin.import_role:
-        name: ska_collections.gitlab_runner.k8s
-        tasks_from: label-nodes
+
+  tags:
+    - vault

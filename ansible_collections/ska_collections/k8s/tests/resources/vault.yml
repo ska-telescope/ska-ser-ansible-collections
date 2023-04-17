@@ -1,0 +1,17 @@
+---
+
+kind: Pod
+apiVersion: v1
+metadata:
+  name: vault-app
+  namespace: default
+  annotations:
+    vault.hashicorp.com/agent-inject: 'true'
+    vault.hashicorp.com/role: '{{ k8s_vault_role }}'
+    vault.hashicorp.com/agent-inject-secret-key: '/test-secrets-path'
+spec:
+  containers:
+    - name: vault-app
+      image: hashicorp/http-echo
+      args:
+        - "-text=$(cat /vault/secrets/key)"

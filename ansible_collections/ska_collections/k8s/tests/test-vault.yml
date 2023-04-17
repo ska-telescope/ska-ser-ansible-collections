@@ -1,0 +1,22 @@
+- name: Test Vault
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  tasks:
+    - name: Apply test pod
+      kubernetes.core.k8s:
+        state: present
+        template: 'resources/vault.yml'
+
+    - name: Wait till pod is created
+      kubernetes.core.k8s_info:
+        kind: Pod
+        wait: true
+        name: vault-app
+        namespace: default
+        wait_timeout: 120
+
+    - name: Destroy test pod
+      kubernetes.core.k8s:
+        state: absent
+        template: 'resources/vault.yml'

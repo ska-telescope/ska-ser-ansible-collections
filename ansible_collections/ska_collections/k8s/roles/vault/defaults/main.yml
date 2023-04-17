@@ -1,0 +1,10 @@
+---
+k8s_vault_cluster_name: stfc
+k8s_vault_injector_auth_path: "auth/{{ k8s_vault_cluster_name }}"
+k8s_vault_injector_external_vault_addr: "https://vault-test-1.skao.int"
+k8s_vault_csi_extra_args_vault_mount: "{{ k8s_vault_cluster_name }}"
+k8s_vault_timeout: "300s"
+k8s_vault_chart_version: "0.19.0"
+k8s_vault_login_token: "{{ lookup('ansible.builtin.env', 'K8S_VAULT_LOGIN_TOKEN', default=secrets['k8s_vault_login_token']) | mandatory }}"
+k8s_vault_k8s_issuer: "https://kubernetes.default.svc.cluster.local"3
+k8s_vault_role: kube-role

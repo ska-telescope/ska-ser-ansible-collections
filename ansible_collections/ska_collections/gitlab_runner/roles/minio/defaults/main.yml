@@ -1,6 +1,4 @@
 ---
-# vars file for manifestgen
-
 debug: false
 
 gitlab_runner_minio_namespace: gitlab

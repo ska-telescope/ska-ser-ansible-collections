@@ -90,7 +90,6 @@ deploy_minio: tidy  ## Deploy Minio
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	$(GITLAB_RUNNER_TAG_LIST_ARG) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars="gitlab_runner_minio_namespace=$(GITLAB_RUNNER_K8S_NAMESPACE) minio_release_name='$(GITLAB_RUNNER_MINIO_RELEASE)'" \
 	--extra-vars="gitlab_runner_minio_storage_class=$(GITLAB_RUNNER_STORAGE_CLASS)" \
 	--extra-vars="gitlab_runner_gitlab_s3_bucket_name=$(GITLAB_RUNNER_MINIO_BUCKET_NAME)" \
 	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
