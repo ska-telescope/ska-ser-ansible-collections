@@ -3,6 +3,8 @@
   vars:
     target_hosts: localhost
     k8s_metallb_namespace: metallb-system
+  environment:
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tasks:
     - name: Get MetalLB running pods
       kubernetes.core.k8s_info:
@@ -12,6 +14,7 @@
           - status.phase=Running
         wait: true
       register: metallb_pods
+      failed_when: (metallb_pods.resources) | length == 0
 
     - name: Check MetalLB running pods
       ansible.builtin.debug:
@@ -20,7 +23,7 @@
     - name: Apply test-metallb
       kubernetes.core.k8s:
         state: present
-        template: 'resources/metallb_test.yml'
+        template: 'resources/metallb.yml'
 
     - name: Wait until test-metallb-service is created
       kubernetes.core.k8s_info:
@@ -48,8 +51,6 @@
     - name: Delete test-metallb
       kubernetes.core.k8s:
         state: absent
-        template: 'resources/metallb_test.yml'
-  environment:
-    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
+        template: 'resources/metallb.yml'
   tags:
     - metallb

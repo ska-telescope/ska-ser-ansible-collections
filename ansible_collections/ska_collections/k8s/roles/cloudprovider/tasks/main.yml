@@ -11,7 +11,7 @@
     kubectl_namespace: "{{ capi_kube_namespace }}"
     initpause: 3
     wait: 30
-    retries: 56
+    retries: 60
     kubectl_kubeconfig: "{{ k8s_cloudprovider_kubeconfig }}"
   when: k8s_cloudprovider_wait
 
@@ -111,7 +111,7 @@
     kubectl_namespace: "{{ capi_kube_namespace }}"
     initpause: 3
     wait: 30
-    retries: 56
+    retries: 60
     kubectl_kubeconfig: "{{ k8s_cloudprovider_kubeconfig }}"
   when: k8s_cloudprovider_wait
 

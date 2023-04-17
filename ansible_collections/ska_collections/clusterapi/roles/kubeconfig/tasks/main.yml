@@ -15,7 +15,7 @@
     kubectl_namespace: "{{ capi_kube_namespace }}"
     initpause: 10
     wait: 30
-    retries: 56
+    retries: 60
     kubectl_kubeconfig: "{{ capi_kubeconfig }}"
 
 - name: Save cluster kubeconfig credentials # noqa no-changed-when risky-shell-pipe

@@ -13,6 +13,7 @@
         namespace: kube-system
         wait_timeout: 120
       register: kube_state_metrics
+      failed_when: (kube_state_metrics.resources) | length == 0
 
     - name: Check kube_state_metrics
       ansible.builtin.debug:
@@ -50,9 +51,9 @@
           status: "True"
       register: job_status
 
-    - name: Log if curl job failed
+    - name: Fail test because job failed
       ansible.builtin.fail:
-        msg: "Metrics not working!"
+        msg: "kube-state-metrics not working"
       when: job_status.failed == 1
 
     - name: Remove curl job

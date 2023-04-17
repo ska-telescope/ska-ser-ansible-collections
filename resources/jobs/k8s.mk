@@ -197,6 +197,12 @@ ifneq (,$(findstring ping,$(TAGS)))
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 endif
 
+ifneq (,$(findstring rookio,$(TAGS)))
+	@ansible-playbook $(TESTS_DIR)/test-rookio.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+endif
+
 velero-backups-install: check-hosts  ## Configure Velero backups on Kubernetes. Check the role README.md for how to operate with velero
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/velero_backups.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
