@@ -40,6 +40,18 @@ k8s-manual-deployment: ## Manual K8s deployment based on kubeadm
 	--tags "$(TAGS)" \
 	-vv
 
+k8s-post-deployment-destroy:
+
+ifneq (,$(findstring vault,$(TAGS)))
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/vault_destroy.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
+	--tags "$(TAGS)" \
+	-vv
+endif
+
 k8s-post-deployment:  ## Post deployment for workload cluster
 
 # If you want to run the CCM install you must explicitly add 'cloudprovider' to TAGS
@@ -147,7 +159,7 @@ ifneq (,$(findstring vault,$(TAGS)))
 	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
 	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	--tags "$(TAGS)" \
-	-vvv
+	-vv
 endif
 
 k8s-velero-backups:  ## Configure Velero backups on Kubernetes

@@ -35,7 +35,7 @@
       apiVersion: rbac.authorization.k8s.io/v1
       kind: ClusterRoleBinding
       metadata:
-        name: vault-server-binding
+        name: role-tokenreview-binding
         namespace: default
       roleRef:
         apiGroup: rbac.authorization.k8s.io
@@ -58,7 +58,7 @@
     name: vault
     values:
       csi:
-        enabled: true
+        enabled: false
         extraArgs:
           - -vault-mount={{ k8s_vault_csi_extra_args_vault_mount }}
       injector:
@@ -66,76 +66,24 @@
         enabled: true
         externalVaultAddr: "{{ k8s_vault_injector_external_vault_addr }}"
       server:
-        enabled: false
+        affinity: ""
+        ha:
+          enabled: false
 
-- name: Install Vault client
-  become: true
-  block:
-    - name: Install gpg
-      ansible.builtin.apt:
-        name: gpg
-        update_cache: true
-        state: present
+- name: Template configure job for vault
+  ansible.builtin.template:
+    src: "templates/configure_vault.yaml.j2"
+    dest: "/tmp/configure_vault.yaml"
+    force: true
+    mode: 0755
 
-    - name: Download foo.conf
-      ansible.builtin.get_url:
-        url: https://apt.releases.hashicorp.com/gpg
-        dest: /tmp/hashicorp_gpg
-        mode: '0666'
+- name: Apply configure job
+  kubernetes.core.k8s:
+    state: present
+    apply: true
+    src: "/tmp/configure_vault.yaml"
 
-    - name: Get hashicorp gpg
-      ansible.builtin.shell: |
-        cat /tmp/hashicorp_gpg | gpg --yes --always-trust --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-      changed_when: false
-
-    - name: Tidy up hashicorp_gpg file
-      ansible.builtin.file:
-        path: "/tmp/hashicorp_gpg"
-        state: absent
-
-    - name: Get DEB architecture
-      ansible.builtin.command: dpkg --print-architecture
-      register: deb_architecture
-      changed_when: false
-
-    - name: Add repo
-      ansible.builtin.apt_repository:
-        repo: "deb [arch={{ deb_architecture.stdout }} signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
-        state: present
-
-    - name: Install consul
-      ansible.builtin.apt:
-        name: consul
-        update_cache: true
-        state: present
-
-    - name: Install vault
-      ansible.builtin.apt:
-        name: vault
-        update_cache: true
-        state: present
-
-- name: Configuring and Enable Kubernetes configuration on Vault
-  changed_when: false
-  ansible.builtin.shell: |
-    export VAULT_ADDR="{{ k8s_vault_injector_external_vault_addr }}"
-    vault login "{{ k8s_vault_login_token }}"
-    vault auth enable --path={{ k8s_vault_cluster_name }} kubernetes
-    export TOKEN_REVIEW_JWT=$(kubectl get secret vault-auth-token --output='jsonpath={ .data.token }' | base64 --decode)
-    export KUBE_CA_CERT=$(kubectl config view --raw --minify --flatten --output='jsonpath={.clusters[].cluster.certificate-authority-data}' | base64 --decode)
-    export KUBE_HOST=$(kubectl config view --raw --minify --flatten --output='jsonpath={.clusters[].cluster.server}')
-    vault write auth/{{ k8s_vault_cluster_name }}/config \
-        token_reviewer_jwt="$TOKEN_REVIEW_JWT" \
-        kubernetes_host="$KUBE_HOST" \
-        kubernetes_ca_cert="$KUBE_CA_CERT" \
-        issuer="{{ k8s_vault_k8s_issuer }}"
-    vault policy write {{ k8s_vault_cluster_name }}_policy - <<EOF
-    path "{{ k8s_vault_cluster_name }}/data/*" {
-      capabilities = ["read"]
-    }
-    EOF
-    vault write auth/{{ k8s_vault_cluster_name }}/role/kube-role \
-        bound_service_account_names=* \
-        bound_service_account_namespaces=* \
-        policies={{ k8s_vault_cluster_name }}_policy \
-        ttl=24h
+- name: Tidy up tmp file
+  ansible.builtin.file:
+    path: "/tmp/configure_vault.yaml"
+    state: absent
