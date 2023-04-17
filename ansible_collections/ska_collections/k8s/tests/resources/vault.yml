@@ -7,8 +7,8 @@ metadata:
   namespace: default
   annotations:
     vault.hashicorp.com/agent-inject: 'true'
-    vault.hashicorp.com/role: '{{ k8s_vault_role }}'
-    vault.hashicorp.com/agent-inject-secret-key: '/test-secrets-path'
+    vault.hashicorp.com/role: 'kube-role'
+    vault.hashicorp.com/agent-inject-secret-key: '/test-injection'
 spec:
   containers:
     - name: vault-app

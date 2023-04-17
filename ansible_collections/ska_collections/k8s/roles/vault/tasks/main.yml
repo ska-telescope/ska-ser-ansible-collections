@@ -118,11 +118,10 @@
 - name: Configuring and Enable Kubernetes configuration on Vault
   changed_when: false
   ansible.builtin.shell: |
-    set -o pipefail
-    export VAULT_ADDR={{ k8s_vault_injector_external_vault_addr }}
-    vault login {{ k8s_vault_login_token }}
+    export VAULT_ADDR="{{ k8s_vault_injector_external_vault_addr }}"
+    vault login "{{ k8s_vault_login_token }}"
     vault auth enable --path={{ k8s_vault_cluster_name }} kubernetes
-    export TOKEN_REVIEW_JWT=$(kubectl get secret vault-auth-token --output='go-template={{ .data.token }}' | base64 --decode)
+    export TOKEN_REVIEW_JWT=$(kubectl get secret vault-auth-token --output='jsonpath={ .data.token }' | base64 --decode)
     export KUBE_CA_CERT=$(kubectl config view --raw --minify --flatten --output='jsonpath={.clusters[].cluster.certificate-authority-data}' | base64 --decode)
     export KUBE_HOST=$(kubectl config view --raw --minify --flatten --output='jsonpath={.clusters[].cluster.server}')
     vault write auth/{{ k8s_vault_cluster_name }}/config \
@@ -130,7 +129,7 @@
         kubernetes_host="$KUBE_HOST" \
         kubernetes_ca_cert="$KUBE_CA_CERT" \
         issuer="{{ k8s_vault_k8s_issuer }}"
-    vault policy write <policy-name> - <<EOF
+    vault policy write {{ k8s_vault_cluster_name }}_policy - <<EOF
     path "{{ k8s_vault_cluster_name }}/data/*" {
       capabilities = ["read"]
     }
@@ -138,5 +137,5 @@
     vault write auth/{{ k8s_vault_cluster_name }}/role/kube-role \
         bound_service_account_names=* \
         bound_service_account_namespaces=* \
-        policies=<policy-name>\
+        policies={{ k8s_vault_cluster_name }}_policy \
         ttl=24h
