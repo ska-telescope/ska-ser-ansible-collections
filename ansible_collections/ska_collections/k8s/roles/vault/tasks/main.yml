@@ -60,7 +60,7 @@
       csi:
         enabled: true
         extraArgs:
-        - -vault-mount={{ k8s_vault_csi_extra_args_vault_mount }}
+          - -vault-mount={{ k8s_vault_csi_extra_args_vault_mount }}
       injector:
         authPath: "{{ k8s_vault_injector_auth_path }}"
         enabled: true
@@ -77,13 +77,26 @@
         update_cache: true
         state: present
 
-    - name: Get hashicorp gpg 
+    - name: Download foo.conf
+      ansible.builtin.get_url:
+        url: https://apt.releases.hashicorp.com/gpg
+        dest: /tmp/hashicorp_gpg
+        mode: '0666'
+
+    - name: Get hashicorp gpg
       ansible.builtin.shell: |
-        wget -O- https://apt.releases.hashicorp.com/gpg | gpg --yes --always-trust --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+        cat /tmp/hashicorp_gpg | gpg --yes --always-trust --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+      changed_when: false
+
+    - name: Tidy up hashicorp_gpg file
+      ansible.builtin.file:
+        path: "/tmp/hashicorp_gpg"
+        state: absent
 
     - name: Get DEB architecture
-      ansible.builtin.shell: dpkg --print-architecture
+      ansible.builtin.command: dpkg --print-architecture
       register: deb_architecture
+      changed_when: false
 
     - name: Add repo
       ansible.builtin.apt_repository:
@@ -95,7 +108,7 @@
         name: consul
         update_cache: true
         state: present
-    
+
     - name: Install vault
       ansible.builtin.apt:
         name: vault
@@ -103,7 +116,9 @@
         state: present
 
 - name: Configuring and Enable Kubernetes configuration on Vault
+  changed_when: false
   ansible.builtin.shell: |
+    set -o pipefail
     export VAULT_ADDR={{ k8s_vault_injector_external_vault_addr }}
     vault login {{ k8s_vault_login_token }}
     vault auth enable --path={{ k8s_vault_cluster_name }} kubernetes
