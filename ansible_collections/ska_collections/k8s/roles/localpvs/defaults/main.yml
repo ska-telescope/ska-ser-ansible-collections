@@ -1,0 +1,4 @@
+---
+debug: false
+k8s_localpvs_releaser_chart_version: 0.0.2
+k8s_localpvs_releaser_image_tag: 0.1.0

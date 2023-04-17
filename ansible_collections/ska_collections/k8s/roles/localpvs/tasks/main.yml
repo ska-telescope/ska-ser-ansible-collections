@@ -1,0 +1,92 @@
+---
+- name: Check KUBECONFIG
+  ansible.builtin.debug:
+    msg: "KUBECONFIG: {{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
+
+- name: Check if KUBECONFIG is readable
+  ansible.builtin.stat:
+    path: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
+  register: check_kubeconfig
+
+- name: Fail if KUBECONFIG is NOT readable
+  ansible.builtin.fail:
+    msg: "KUBECONFIG is NOT readable: {{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
+  when: not check_kubeconfig.stat.exists
+  any_errors_fatal: true
+
+- name: Install persistent volume reclaimer from Helm chart
+  kubernetes.core.helm:
+    atomic: true
+    name: pv-releaser
+    chart_repo_url: https://plumber-cd.github.io/helm/
+    chart_ref: reclaimable-pv-releaser
+    chart_version: "{{ k8s_localpvs_releaser_chart_version }}"
+    release_namespace: kube-system
+    values:
+      extraArgs:
+        # this prevents the reclaimer from removing the managed-by label
+        -disable-automatic-association: ~
+      image:
+        tag: "{{ k8s_localpvs_releaser_image_tag }}"
+
+- name: Create StorageClass for local shared persistent volumes
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: storage.k8s.io/v1
+      kind: StorageClass
+      metadata:
+        name: local-shared
+      provisioner: kubernetes.io/no-provisioner
+      volumeBindingMode: WaitForFirstConsumer
+      reclaimPolicy: Retain
+
+# - name: Create a pool of eight persistent volumes for Perentie test-data
+#   kubernetes.core.k8s:
+#     definition:
+#       apiVersion: v1
+#       kind: PersistentVolume
+#       metadata:
+#         labels:
+#           reclaimable-pv-releaser/managed-by: dynamic-reclaimable-pvc-controllers
+#           skao.int/shared-volume-name: perentie-test-data
+#         name: perentie-test-data-{{ item }}
+#       spec:
+#         capacity:
+#           storage: 930Gi
+#         volumeMode: Filesystem
+#         accessModes:
+#           - ReadWriteOnce
+#         storageClassName: local-shared
+#         local:
+#           path: /media/test-data
+#         nodeAffinity:
+#           required:
+#             nodeSelectorTerms:
+#               - matchExpressions:
+#                   - key: kubernetes.io/hostname
+#                     operator: In
+#                     values:
+#                       - psi-perentie1
+#   loop: "{{ range(8) }}"
+
+# - name: Create PersistentVolumeClaim for Perentie data in jupyterhub ns
+#   kubernetes.core.k8s:
+#     definition:
+#       apiVersion: v1
+#       kind: PersistentVolumeClaim
+#       metadata:
+#         namespace: jupyterhub
+#         name: perentie-test-data
+#       spec:
+#         storageClassName: local-shared
+#         accessModes:
+#           - ReadWriteOnce
+#         resources:
+#           requests:
+#             storage: 930Gi
+#         selector:
+#           matchLabels:
+#             skao.int/shared-volume-name: perentie-test-data
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers
