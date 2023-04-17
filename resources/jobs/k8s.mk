@@ -37,8 +37,7 @@ k8s-manual-deployment: ## Manual K8s deployment based on kubeadm
 
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/k8s.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=workload-cluster" \
-	--limit "workload-cluster" \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--tags "$(TAGS)" \
 	-vv
 
@@ -53,13 +52,22 @@ k8s-device-integration:  ## Pre deployment of device integration for workload cl
 	--tags "$(TAGS)" \
 	-vv
 
-k8s-single-node-resources:  ## Post deployment of single node resources for workload cluster
-
-	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/single-node-resources.yml \
+k8s-install-base:  ## Install container base for Kubernetes servers
+	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
+	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
+	ansible-playbook $(PLAYBOOKS_DIR)/docker_base/playbooks/containers.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	--tags "$(TAGS)" \
+	-vv
+
+k8s-deploy-minikube:  ## Deploy Minikube single node cluster
+	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
+	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
+	ansible-playbook $(PLAYBOOKS_DIR)/minikube/playbooks/minikube.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--tags "all" \
 	-vv
 
 k8s-post-deployment:  ## Post deployment for workload cluster
