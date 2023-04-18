@@ -28,6 +28,8 @@ data:
         bound_service_account_namespaces=* \
         policies={{ k8s_vault_cluster_name }}_policy \
         ttl=24h
+    vault secrets enable -version=2 -path={{ k8s_vault_cluster_name }} kv
+    vault kv put {{ k8s_vault_cluster_name }}/test-injection key=123
 
 ---
 apiVersion: batch/v1

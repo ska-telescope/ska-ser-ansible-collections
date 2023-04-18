@@ -40,3 +40,19 @@
     namespace: vault
     state: absent
     wait: true
+
+- name: Destroy configure-vault-config
+  kubernetes.core.k8s:
+    state: absent
+    api_version: v1
+    kind: ConfigMap
+    name: configure-vault-config
+    namespace: default
+
+- name: Destroy configure-vault-config
+  kubernetes.core.k8s:
+    state: absent
+    api_version: batch/v1
+    kind: Job
+    name: configure-vault
+    namespace: default

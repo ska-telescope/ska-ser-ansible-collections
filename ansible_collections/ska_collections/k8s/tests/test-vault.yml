@@ -2,7 +2,6 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-    k8s_vault_role: kube-role
   tasks:
     - name: Apply test pod
       kubernetes.core.k8s:

@@ -8,7 +8,7 @@ metadata:
   annotations:
     vault.hashicorp.com/agent-inject: 'true'
     vault.hashicorp.com/role: 'kube-role'
-    vault.hashicorp.com/agent-inject-secret-key: '/test-injection'
+    vault.hashicorp.com/agent-inject-secret-key: '{{ k8s_vault_cluster_name }}/test-injection'
 spec:
   containers:
     - name: vault-app
