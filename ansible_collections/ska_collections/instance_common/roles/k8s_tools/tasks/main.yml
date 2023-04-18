@@ -96,41 +96,41 @@
 - name: Install k9s
   tags: [k9s]
   block:
-  - name: Check if k9s exists
-    ansible.builtin.stat:
-      path: "{{ k8stools_installation_dir }}/k9s"
-    register: stat_k9s
+    - name: Check if k9s exists
+      ansible.builtin.stat:
+        path: "{{ k8stools_installation_dir }}/k9s"
+      register: stat_k9s
 
-  - name: Check if the k9s version
-    ansible.builtin.command: "{{ k8stools_installation_dir }}/k9s version --short"
-    changed_when: false
-    register: k9s_version_check
-    ignore_errors: true
+    - name: Check if the k9s version
+      ansible.builtin.command: "{{ k8stools_installation_dir }}/k9s version --short"
+      changed_when: false
+      register: k9s_version_check
+      ignore_errors: true
 
-  - name: Set k9s_archive fact
-    ansible.builtin.set_fact:
-      k9s_archive: "k9s_{{ os_name }}_{{ os_binary }}.tar.gz"
+    - name: Set k9s_archive fact
+      ansible.builtin.set_fact:
+        k9s_archive: "k9s_{{ os_name }}_{{ os_binary }}.tar.gz"
 
-  - name: Download k9s
-    ansible.builtin.get_url:
-      url: "https://github.com/derailed/k9s/releases/download/{{ k8stools_k9s_version }}/{{ k9s_archive }}"
-      dest: "/tmp/{{ k9s_archive }}"
-      mode: 0755
-      tmp_dest: "/tmp/"
+    - name: Download k9s
+      ansible.builtin.get_url:
+        url: "https://github.com/derailed/k9s/releases/download/{{ k8stools_k9s_version }}/{{ k9s_archive }}"
+        dest: "/tmp/{{ k9s_archive }}"
+        mode: 0755
+        tmp_dest: "/tmp/"
 
-  - name: Unpack k9s
-    ansible.builtin.unarchive:
-      src: "/tmp/{{ k9s_archive }}"
-      include: "k9s"
-      remote_src: true
-      dest: "{{ k8stools_installation_dir }}/"
-      mode: 0755
-    become: true
+    - name: Unpack k9s
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ k9s_archive }}"
+        include: "k9s"
+        remote_src: true
+        dest: "{{ k8stools_installation_dir }}/"
+        mode: 0755
+      become: true
 
-  - name: Tidy up k9s download
-    ansible.builtin.file:
-      path: "/tmp/{{ k9s_archive }}"
-      state: absent
+    - name: Tidy up k9s download
+      ansible.builtin.file:
+        path: "/tmp/{{ k9s_archive }}"
+        state: absent
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers

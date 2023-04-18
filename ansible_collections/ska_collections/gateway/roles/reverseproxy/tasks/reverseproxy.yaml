@@ -47,6 +47,37 @@
     mode: 0440
     force: true
 
+- name: Pull certificates from vault
+  when: vault_config is defined and reverseproxy_tls_vault_secret and not reverseproxy_use_self_signed_cert
+  block:
+    - name: Get secret from vault
+      community.hashi_vault.vault_kv2_get:
+        url: "{{ vault_config.address }}"
+        engine_mount_point: "{{ vault_config.mount_point }}"
+        path: "{{ reverseproxy_tls_vault_secret }}"
+        token: "{{ vault_config.token }}"
+        token_validate: true
+      become: false
+      register: tls_vault_secret
+      delegate_to: localhost
+
+    - name: Create tls pki directory
+      ansible.builtin.file:
+        path: "{{ reverseproxy_tls_certs_dir }}"
+        state: directory
+        mode: 0700
+
+    - name: Create tls pki files
+      ansible.builtin.copy:
+        content: "{{ tls_vault_secret.secret[item.secret] }}"
+        dest: "{{ item.path }}"
+        mode: 0644
+      with_items: [
+        {"secret": "ca-cert.pem", "path": '{{ reverseproxy_tls_ca_crt_path }}'},
+        {"secret": "cert.pem", "path": '{{ reverseproxy_tls_crt_path }}'},
+        {"secret": "key.pem", "path": '{{ reverseproxy_tls_key_path }}'}
+      ]
+
 - name: "Check existence of ca cert {{ reverseproxy_dns_name }}"
   ansible.builtin.file:
     path: "{{ reverseproxy_tls_ca_crt_path }}"
