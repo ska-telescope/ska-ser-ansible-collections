@@ -44,9 +44,7 @@ data:
     mc admin policy create cache cachereadwrite cachereadwrite.json
     # Add user and set the policy
     mc admin user add cache {{ gitlab_runner_minio_username }} {{ gitlab_runner_minio_password }}
-    echo "mc admin policy set cache cachereadwrite user={{ gitlab_runner_minio_username }}"
-    # NOTE!! The following 2 statements are not working. 
-    mc admin policy attach cache cachereadwrite --user {{ gitlab_runner_minio_username }}
+    mc admin policy set cache cachereadwrite user={{ gitlab_runner_minio_username }}
 
 ---
 apiVersion: batch/v1
@@ -67,7 +65,7 @@ spec:
           defaultMode: 0777
       containers:
       - name: config-users
-        image: minio/mc
+        image: {{ gitlab_runner_minio_mc_image }}
         command: 
         - sh
         args:

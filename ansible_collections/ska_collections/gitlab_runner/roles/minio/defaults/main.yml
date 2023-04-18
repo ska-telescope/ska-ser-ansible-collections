@@ -8,6 +8,7 @@ gitlab_runner_minio_repo_name: minio
 gitlab_runner_minio_chart_repo: https://operator.min.io/
 gitlab_runner_minio_chart_name: minio-operator
 gitlab_runner_minio_chart_version: "4.3.7"
+gitlab_runner_minio_mc_image: "minio/mc:RELEASE.2022-10-01T07-56-14Z"
 
 gitlab_runner_minio_access_key: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_ACCESS_KEY', default=secrets['gitlab_runner_minio_access_key']) | mandatory }}"
 gitlab_runner_minio_console_access_key: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_CONSOLE_ACCESS_KEY', default=secrets['gitlab_runner_minio_console_access_key']) | mandatory }}"
