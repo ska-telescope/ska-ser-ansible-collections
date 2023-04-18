@@ -72,12 +72,14 @@
 
 - name: Get secret
   ansible.builtin.shell: |
+    set -o pipefail
     kubectl get secret vault-auth-token --output='jsonpath={ .data.token }' | base64 --decode
   changed_when: false
   register: k8s_vault_token_review_jwt_shell
 
 - name: Get ca cert
   ansible.builtin.shell: |
+    set -o pipefail
     kubectl config view --raw --minify --flatten --output='jsonpath={.clusters[].cluster.certificate-authority-data}' | base64 --decode
   changed_when: false
   register: k8s_vault_kube_ca_cert_shell
