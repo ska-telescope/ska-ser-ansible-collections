@@ -1,8 +1,8 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: Apply the clusterapi tools roles to nodes
+- name: Install kubernetes tools
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
   roles:
-    - ska_collections.minikube.setup
+    - ska_collections.instance_common.k8s_tools

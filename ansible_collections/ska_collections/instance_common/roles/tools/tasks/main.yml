@@ -1,0 +1,62 @@
+---
+- name: Calculate version vars
+  ansible.builtin.set_fact:
+    os_name: "{{ ansible_system | lower }}"
+    os_binary: "{% if ansible_facts.architecture == 'x86_64' %}amd64{% else %}unknown{% endif %}"
+    os_arch: "{{ ansible_facts.architecture | lower }}"
+    k9s_arch: "{{ ansible_facts.architecture | lower }}"
+  tags: [always]
+
+- name: Ensure that the apt cache is updated
+  ansible.builtin.apt:
+    update_cache: true
+  register: apt_res
+  retries: 15
+  delay: 10
+  until: apt_res is success
+  become: true
+  when: tools_update_apt
+
+- name: Install jq package
+  ansible.builtin.apt:
+    name: "jq"
+    state: present
+  retries: 15
+  delay: 10
+  until: apt_res is success
+  become: true
+  tags: [jq]
+
+- name: Install Yq package
+  tags: [yq]
+  block:
+    - name: Check if yq exists
+      ansible.builtin.stat:
+        path: "{{ tools_installation_dir }}/yq"
+      register: stat_yq
+
+    - name: Check if the yq version is installed
+      ansible.builtin.command: "{{ tools_installation_dir }}/yq --version"
+      changed_when: false
+      register: yq_version_check
+      ignore_errors: true
+
+    - name: Tidy up Yq
+      ansible.builtin.file:
+        path: "{{ tools_installation_dir }}/yq"
+        state: absent
+      when: "not stat_yq.stat.exists or
+        yq_version_check.stdout.find(tools_yq_version) == -1"
+      become: true
+
+    - name: Yq install
+      ansible.builtin.get_url:
+        url: "https://github.com/mikefarah/yq/releases/download/v{{ tools_yq_version }}/yq_{{ os_name }}_{{ os_binary }}"
+        dest: "{{ tools_installation_dir }}/yq"
+        mode: 0755
+      when: "not stat_yq.stat.exists or
+        yq_version_check.stdout.find(tools_yq_version) == -1"
+      become: true
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers

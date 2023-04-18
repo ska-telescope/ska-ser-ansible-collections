@@ -1,0 +1,136 @@
+---
+- name: Calculate version vars
+  ansible.builtin.set_fact:
+    os_name: "{{ ansible_system | lower }}"
+    os_binary: "{% if ansible_facts.architecture == 'x86_64' %}amd64{% else %}unknown{% endif %}"
+    os_arch: "{{ ansible_facts.architecture | lower }}"
+    k9s_arch: "{{ ansible_facts.architecture | lower }}"
+  tags: [always]
+
+- name: Ensure that the apt cache is updated
+  ansible.builtin.apt:
+    update_cache: true
+  register: apt_res
+  retries: 15
+  delay: 10
+  until: apt_res is success
+  become: true
+  when: k8stools_update_apt
+
+- name: Install kubectl
+  tags: [kubectl]
+  block:
+    - name: Check if kubectl exists
+      ansible.builtin.stat:
+        path: "{{ k8stools_installation_dir }}/kubectl"
+      register: stat_kubectl
+
+    - name: Check if the kubectl version is installed
+      ansible.builtin.command: "{{ k8stools_installation_dir }}/kubectl  version --client --short 2>&1"
+      changed_when: false
+      register: kubectl_version_check
+      ignore_errors: true
+
+    - name: Tidy up Kubectl
+      ansible.builtin.file:
+        path: "{{ k8stools_installation_dir }}/kubectl"
+        state: absent
+      when: "not stat_kubectl.stat.exists or
+        kubectl_version_check.stdout.find(k8stools_kubectl_version) == -1"
+      become: true
+
+    - name: Kubectl install
+      ansible.builtin.get_url:
+        url: "https://dl.k8s.io/release/{{ k8stools_kubectl_version }}/bin/{{ os_name }}/{{ os_binary }}/kubectl"
+        dest: "{{ k8stools_installation_dir }}/kubectl"
+        mode: 0755
+      when: "not stat_kubectl.stat.exists or
+        kubectl_version_check.stdout.find(k8stools_kubectl_version) == -1"
+      become: true
+
+- name: Install helm
+  tags: [helm]
+  block:
+    - name: Check if helm exists
+      ansible.builtin.stat:
+        path: "{{ k8stools_installation_dir }}/helm"
+      register: stat_helm
+
+    - name: Check if the helm version
+      ansible.builtin.command: "{{ k8stools_installation_dir }}/helm  version --short"
+      changed_when: false
+      register: helm_version_check
+      ignore_errors: true
+
+    - name: Helm install
+      when: "not stat_helm.stat.exists or
+        helm_version_check.stdout.find(k8stools_helm_version) == -1"
+      block:
+        - name: Set helm_archive fact
+          ansible.builtin.set_fact:
+            helm_archive: "helm-{{ k8stools_helm_version }}-{{ os_name }}-{{ os_binary }}.tar.gz"
+
+        - name: Download helm
+          ansible.builtin.get_url:
+            url: "https://get.helm.sh/{{ helm_archive }}"
+            dest: "/tmp/{{ helm_archive }}"
+            mode: 0755
+            tmp_dest: "/tmp/"
+
+        - name: Unpack helm
+          ansible.builtin.unarchive:
+            src: "/tmp/{{ helm_archive }}"
+            include: "{{ os_name }}-{{ os_binary }}/helm"
+            remote_src: true
+            dest: "{{ k8stools_installation_dir }}/"
+            mode: 0755
+            extra_opts:
+              - "--strip-components=1"
+          become: true
+
+        - name: Tidy up helm download
+          ansible.builtin.file:
+            path: "/tmp/{{ helm_archive }}"
+            state: absent
+
+- name: Install k9s
+  tags: [k9s]
+  block:
+  - name: Check if k9s exists
+    ansible.builtin.stat:
+      path: "{{ k8stools_installation_dir }}/k9s"
+    register: stat_k9s
+
+  - name: Check if the k9s version
+    ansible.builtin.command: "{{ k8stools_installation_dir }}/k9s version --short"
+    changed_when: false
+    register: k9s_version_check
+    ignore_errors: true
+
+  - name: Set k9s_archive fact
+    ansible.builtin.set_fact:
+      k9s_archive: "k9s_{{ os_name }}_{{ os_binary }}.tar.gz"
+
+  - name: Download k9s
+    ansible.builtin.get_url:
+      url: "https://github.com/derailed/k9s/releases/download/{{ k8stools_k9s_version }}/{{ k9s_archive }}"
+      dest: "/tmp/{{ k9s_archive }}"
+      mode: 0755
+      tmp_dest: "/tmp/"
+
+  - name: Unpack k9s
+    ansible.builtin.unarchive:
+      src: "/tmp/{{ k9s_archive }}"
+      include: "k9s"
+      remote_src: true
+      dest: "{{ k8stools_installation_dir }}/"
+      mode: 0755
+    become: true
+
+  - name: Tidy up k9s download
+    ansible.builtin.file:
+      path: "/tmp/{{ k9s_archive }}"
+      state: absent
+
+- name: Flush those handlers
+  ansible.builtin.meta: flush_handlers

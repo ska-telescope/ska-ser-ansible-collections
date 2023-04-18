@@ -9,7 +9,7 @@ Tested with the current Ansible 7.2.x releases.
 ## Ansible Roles
 | Name | Description | Version | OS Requirements | Dependencies |
 | ---- | ----------- | ------- | --- | ---|
-| [minikube.minikube](./roles/minikube) | deploying an instance of minikube and haproxy | Kubernetes: 1.26.2 <br> HA: 2.6 | Ubuntu 20.04/22.04 (LTS) | |
+| [minikube.minikube](./roles/minikube) | Deploying an instance of minikube and haproxy | Kubernetes: 1.26.2 <br> HA: 2.6 | Ubuntu 20.04/22.04 (LTS) | |
 | [minikube.setup](./roles/setup) | Installing Minikube dependencies and useful tools - minikube, kubectl, helm, yq and k9s| Minikube: 1.29.0 <br> Kubernetes: 1.26.2 <br> Helm: 3.11.2 <br> K9s: 0.27.3 <br> yq: 4.30.8 | Ubuntu 20.04/22.04 (LTS) | |
 
 

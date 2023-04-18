@@ -1,11 +1,11 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: Install kubectl
+- name: Apply k8s-tools roles
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
   become: true
   tasks:
-    - name: Install kubectl
+    - name: Apply tools role
       ansible.builtin.include_role:
-        name: kubectl
+        name: ska_collections.instance_common.k8s_tools

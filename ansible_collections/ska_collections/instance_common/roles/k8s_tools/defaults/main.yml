@@ -1,0 +1,8 @@
+---
+debug: false
+
+k8stools_update_apt: true
+k8stools_installation_dir: /usr/local/bin
+k8stools_kubectl_version: v1.26.3
+k8stools_helm_version: v3.11.2
+k8stools_k9s_version: v0.27.3

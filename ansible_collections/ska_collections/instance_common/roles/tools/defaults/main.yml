@@ -1,0 +1,6 @@
+---
+debug: false
+
+tools_update_apt: true
+tools_installation_dir: /usr/local/bin
+tools_yq_version: 4.33.3

@@ -1,5 +1,6 @@
 #!/bin/bash 
-notification_url=https://heartbeat.uptimerobot.com/m787767935-6c18b1c3356566b927f3484dc8bc662b536dde5d
+set -x
+notification_url="{{ cron_runners_notification_url }}"
 interval="1h"
 
 query=`curl -k -g "https://{{ cron_prometheus_ip }}:9090/api/v1/query?query=sum(increase(gitlab_runner_errors_total{level=~'error|fatal|panic'}[${interval}]))"`

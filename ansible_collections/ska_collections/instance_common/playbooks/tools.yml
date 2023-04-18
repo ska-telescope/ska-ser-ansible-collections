@@ -1,12 +1,11 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: Update kubectl Version
+- name: Apply roles
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
   become: true
   tasks:
-    - name: Update kubectl Version
+    - name: Apply tools role
       ansible.builtin.include_role:
-        name: kubectl
-        tasks_from: update
+        name: ska_collections.instance_common.tools
