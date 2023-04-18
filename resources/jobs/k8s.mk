@@ -43,14 +43,17 @@ k8s-manual-deployment: ## Manual K8s deployment based on kubeadm
 
 k8s-device-integration:  ## Pre deployment of device integration for workload cluster
 
+# pxh: must override mlnx_ofed_version and mlnx_ofed_distro here because of vars/main.yml
+# in 3rd party haggaie.mlnx_ofed
 	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
 	ANSIBLE_ROLES_PATH=$(ANSIBLE_COLLECTIONS_PATHS) \
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/devices.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
+	--extra-vars "mlnx_ofed_version=5.9-0.5.6.0" \
+	--extra-vars "mlnx_ofed_distro=ubuntu22.04" \
 	--tags "$(TAGS)" \
-	-vv
+	-vv --flush-cache
 
 k8s-install-base:  ## Install container base for Kubernetes servers
 	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
@@ -67,7 +70,7 @@ k8s-deploy-minikube:  ## Deploy Minikube single node cluster
 	ansible-playbook $(PLAYBOOKS_DIR)/minikube/playbooks/minikube.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--tags "all" \
+	--tags "$(TAGS)" \
 	-vv
 
 k8s-post-deployment:  ## Post deployment for workload cluster
@@ -184,7 +187,6 @@ ifneq (,$(findstring multihoming,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/multihoming.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	--tags "$(TAGS)" \
 	-vv
 endif
@@ -193,7 +195,6 @@ ifneq (,$(findstring spookd_device_plugin,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/spookd_device_plugin.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	--tags "$(TAGS)" \
 	-vv
 endif
@@ -202,7 +203,6 @@ ifneq (,$(findstring generic_device_plugin,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/generic_device_plugin.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	--tags "$(TAGS)" \
 	-vv
 endif
@@ -211,7 +211,6 @@ ifneq (,$(findstring localpvs,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/localpvs.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	--tags "$(TAGS)" \
 	-vv
 endif

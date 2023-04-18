@@ -5,7 +5,6 @@
   become: true
   vars:
     target_hosts: localhost
-    k8s_kubeconfig: "/etc/kubernetes/admin.conf"
 
   pre_tasks:
     - name: Check k8s_kubeconfig
@@ -16,6 +15,6 @@
     - role: localpvs
 
   environment:
-    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tags:
     - localpvs
