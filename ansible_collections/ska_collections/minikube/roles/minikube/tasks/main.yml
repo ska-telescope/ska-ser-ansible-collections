@@ -240,8 +240,8 @@
 
     - name: Teardown containers
       ansible.builtin.shell: |
-        crictl ps -a | awk '{print $1}' | grep -v CON | xargs crictl stop || true; \
-        crictl ps -a | awk '{print $1}' | grep -v CON | xargs crictl rm -f || true
+        set -o pipefail && crictl ps -a | awk '{print $1}' | grep -v CON | xargs crictl stop || true; \
+        set -o pipefail && crictl ps -a | awk '{print $1}' | grep -v CON | xargs crictl rm -f || true
       changed_when: false
       register: minikube_exec_check
 
