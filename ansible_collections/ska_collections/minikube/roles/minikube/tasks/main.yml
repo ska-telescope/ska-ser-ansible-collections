@@ -74,6 +74,10 @@
       become: true
       become_user: "{{ minikube_start_user }}"
 
+- name: Post Minikube startup
+  tags:
+    - build
+  block:
     # Storage is handled by:
     #  https://minikube.sigs.k8s.io/docs/tutorials/volume_snapshots_and_csi/#what-youll-need
     # data is located in /var/lib/csi-hostpath-data
@@ -115,11 +119,14 @@
       kubernetes.core.k8s:
         state: patched
         kind: Node
-        name: "{{ minikube_name }}"
+        name: "{{ item }}"
         definition:
           metadata:
             labels:
               nvidia.com/gpu: "true"
+      with_items:
+        - "{{ ansible_hostname }}"
+        - "{{ minikube_name }}"
       become: true
       become_user: "{{ minikube_start_user }}"
 
@@ -231,10 +238,52 @@
       changed_when: false
       register: minikube_exec_check
 
+    - name: Teardown containers
+      ansible.builtin.shell: |
+        crictl ps -a | awk '{print $1}' | grep -v CON | xargs crictl stop || true; \
+        crictl ps -a | awk '{print $1}' | grep -v CON | xargs crictl rm -f || true
+      changed_when: false
+      register: minikube_exec_check
+
     - name: Remove minikube service
       ansible.builtin.file:
         path: /etc/systemd/system/minikube.service
         state: absent
+
+    - name: Analyzing the directories to delete Juju files ...
+      ansible.builtin.find:
+        paths: /tmp/
+        patterns: "juju-mk.*"
+        use_regex: true
+        file_type: directory
+      register: folders_to_delete
+
+    - name: Deleting the Jujus ...
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ folders_to_delete.files }}"
+      become: true
+
+    - name: Delete residual configuration ...
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - "/{{ minikube_start_user }}/.minikube"
+        - "/var/lib/kubeadm.yaml"
+        - "/data/minikube"
+        - "/var/lib/minikube"
+        - "/var/lib/kubelet"
+        - "/etc/kubernetes"
+        - "/etc/cni"
+        - "/opt/cni"
+        - "/var/lib/calico"
+        - "/etc/systemd/system/kubelet.service.d"
+      become: true
+
+    - name: Reboot to clear out everything
+      ansible.builtin.reboot:
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers
