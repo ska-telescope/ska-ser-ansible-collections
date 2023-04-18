@@ -5,17 +5,18 @@ metadata:
   name: configure-vault-config
   namespace: default
 data:
+  ca_cert: |
+    {{ k8s_vault_kube_ca_cert | indent(width=4) }}
+
   configure-vault.sh: |
     export VAULT_ADDR="{{ k8s_vault_injector_external_vault_addr }}"
     vault login "{{ k8s_vault_login_token }}"
+    export K8S_CA_CERT="$(cat /tmp/data/ca_cert)"
     vault auth enable --path={{ k8s_vault_cluster_name }} kubernetes
-    export TOKEN_REVIEW_JWT=$(kubectl get secret vault-auth-token --output='jsonpath={ .data.token }' | base64 --decode)
-    export KUBE_CA_CERT=$(kubectl config view --raw --minify --flatten --output='jsonpath={.clusters[].cluster.certificate-authority-data}' | base64 --decode)
-    export KUBE_HOST=$(kubectl config view --raw --minify --flatten --output='jsonpath={.clusters[].cluster.server}')
     vault write auth/{{ k8s_vault_cluster_name }}/config \
-        token_reviewer_jwt="$TOKEN_REVIEW_JWT" \
-        kubernetes_host="$KUBE_HOST" \
-        kubernetes_ca_cert="$KUBE_CA_CERT" \
+        token_reviewer_jwt="{{ k8s_vault_token_review_jwt }}" \
+        kubernetes_host="{{ k8s_vault_kube_host }}" \
+        kubernetes_ca_cert="$K8S_CA_CERT" \
         issuer="{{ k8s_vault_k8s_issuer }}"
     vault policy write {{ k8s_vault_cluster_name }}_policy - <<EOF
     path "{{ k8s_vault_cluster_name }}/data/*" {
