@@ -3,9 +3,9 @@ debug: false
 
 minikube_exe_dir: /usr/local/bin
 # https://github.com/kubernetes/minikube/releases
-minikube_version: v1.29.0
+minikube_version: v1.30.1
 # https://kubernetes.io/releases/
-minikube_kubernetes_version: v1.26.2
+minikube_kubernetes_version: v1.26.3
 # Memory in MB
 minikube_memory: 6144
 minikube_cpus: 4
@@ -14,4 +14,4 @@ minikube_helm_version: v3.11.2
 # https://github.com/derailed/k9s/releases
 minikube_k9s_version: v0.27.3
 ## yq tool version to install https://github.com/mikefarah/yq/releases
-minikube_yq_version: 4.30.8
+minikube_yq_version: 4.33.3

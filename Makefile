@@ -108,10 +108,10 @@ endif
 ac-install-dependencies:  ## Install dependent ansible collections and roles
 	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
 	ansible-galaxy collection install \
-	-r requirements.yml -p ./ansible_collections
+	-r requirements.yml --force -p ./ansible_collections
 	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
 	ansible-galaxy role install \
-	-r requirements.yml -p ./ansible_collections
+	-r requirements.yml --force -p ./ansible_collections
 
 ac-clean-namespaces:
 	resources/scripts/clean-namespaces.sh $(CI_CLEAN_PAYLOAD)
@@ -173,7 +173,7 @@ gateway: ac-check-env ## gateway targets
 	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/gateway.mk
 
 binderhub: ac-check-env ## binderhub targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/binderhub.mk		
+	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/binderhub.mk
 
 ac-print-targets: ## Show Help
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {p=index($$1,":")} {printf "\033[36m%-30s\033[0m %s\n", substr($$1,p+1), $$2}';

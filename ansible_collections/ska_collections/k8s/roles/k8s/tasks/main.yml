@@ -19,7 +19,8 @@
     force: true
     state: present
   register: apt_res
-  retries: 15
+  retries: 60
+  delay: 10
   until: apt_res is success
 
 # Only attempt this for x86, as it can break some rpi4
@@ -28,13 +29,14 @@
     name: 'linux-image-extra-virtual'
     force: true
     state: present
-  when: ansible_architecture == 'x86_64' and k8s_install_drivers
+  when: ansible_architecture == 'x86_64' and k8s_install_ceph_drivers
 
-- name: Install CEPH dependent packages
+- name: Install CEPH dependent packages - common
   ansible.builtin.apt:
     name: 'ceph-common'
     force: true
     state: present
+  when: k8s_install_ceph_drivers
 
 - name: Check if firewalld service exists
   ansible.builtin.stat:
@@ -106,6 +108,7 @@
     state: present
   notify:
     - Restart kubelet
+  when: k8s_install_kubelet
 
 - name: Pin kube* versions
   ansible.builtin.dpkg_selections:
@@ -115,6 +118,7 @@
     - "kubectl"
     - "kubeadm"
     - "kubelet"
+  when: k8s_install_kubelet
 
 - name: Ensure /etc/NetworkManager/conf.d exists
   ansible.builtin.file:

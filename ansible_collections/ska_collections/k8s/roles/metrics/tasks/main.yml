@@ -5,7 +5,7 @@
     atomic: true
     chart_repo_url: https://prometheus-community.github.io/helm-charts
     chart_ref: kube-state-metrics
-    chart_version: "{{ kube_state_metrics_chart_version }}"
+    chart_version: "{{ k8s_state_metrics_chart_version }}"
     name: kube-state-metrics
     namespace: kube-system
     values:
@@ -23,3 +23,37 @@
     name: kube-state-metrics
     namespace: kube-system
     wait_timeout: 120
+
+- name: Check if "metrics-server is active"
+  ansible.builtin.command: kubectl get deployment metrics-server --namespace kube-system
+  changed_when: false
+  register: kubectl_metrics
+  ignore_errors: true
+
+- name: Activate metrics-server
+  when: "kubectl_metrics.rc and k8s_state_metrics"
+  tags: metrics-server
+  block:
+
+    # The following two tasks can be removed once all deployments are managed by Helm
+    - name: Remove legacy manifest-deployed metrics-server-nodeport Service
+      kubernetes.core.k8s:
+        kind: Service
+
+        name: metrics-server-nodeport
+        namespace: kube-system
+        state: absent
+
+    - name: Install metrics-server Helm chart
+      kubernetes.core.helm:
+        atomic: true
+        chart_repo_url: https://kubernetes-sigs.github.io/metrics-server/
+        chart_ref: metrics-server
+        chart_version: "{{ k8s_metrics_server_chart_version }}"
+        name: metrics-server
+        namespace: kube-system
+        update_repo_cache: true
+        force: true
+        values:
+          args:
+            - --kubelet-insecure-tls

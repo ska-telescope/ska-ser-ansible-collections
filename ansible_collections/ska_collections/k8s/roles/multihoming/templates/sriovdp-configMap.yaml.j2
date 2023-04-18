@@ -1,0 +1,14 @@
+# generates a ConfigMap entry per-node as per
+# https://github.com/k8snetworkplumbingwg/sriov-network-device-plugin/tree/abf6548c33286a1766586704c26c425e0206f1f1/docs/config-file
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sriovdp-config
+  namespace: kube-system
+data:
+  {% for host in groups['all'] %}{% if hostvars[host].sriov_dp_resource_list is defined -%}
+  {{ host }}.json: |
+    {
+      "resourceList": {{ hostvars[host].sriov_dp_resource_list | to_json }}
+    }
+  {% endif %}{% endfor -%}

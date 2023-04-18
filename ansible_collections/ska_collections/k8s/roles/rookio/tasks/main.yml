@@ -63,27 +63,31 @@
     namespace: "{{ k8s_rook_namespace }}"
   register: rook_operator_check
 
-- name: Start Rook
+- name: Deploy Rook IO
   # CAPO is not started
   when: "not rook_operator_check.resources"
   block:
     - name: Download Rook IO manifests
       ansible.builtin.get_url:
         url: "https://raw.githubusercontent.com/rook/rook/{{ k8s_rook_version }}/deploy/examples/{{ item }}"
-        dest: "/tmp/{{ item }}"
-        mode: "0664"
+        dest: "/tmp/rook-{{ item }}"
+        mode: 0664
       with_items:
         - "crds.yaml"
         - "common.yaml"
         - "operator.yaml"
 
+    - name: Apply Rook IO crds
+      kubernetes.core.k8s:
+        state: present
+        src: "/tmp/rook-crds.yaml"
+
     - name: Apply Rook IO manifests
       kubernetes.core.k8s:
         state: present
         apply: true
-        src: "/tmp/{{ item }}"
+        src: "/tmp/rook-{{ item }}"
       with_items:
-        - "crds.yaml"
         - "common.yaml"
         - "operator.yaml"
 

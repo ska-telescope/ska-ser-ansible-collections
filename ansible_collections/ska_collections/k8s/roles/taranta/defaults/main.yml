@@ -1,0 +1,13 @@
+---
+taranta_values:
+  global:
+    minikube: false
+  ingress:
+    enabled: true
+    hostname: "*"
+    tls:
+      enabled: false
+
+taranta_pvc_version: 1.4.0
+taranta_dashboard_version: 1.4.0
+taranta_auth_version: 0.1.6

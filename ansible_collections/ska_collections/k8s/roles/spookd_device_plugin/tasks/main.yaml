@@ -1,0 +1,6 @@
+---
+
+- name: Apply spookd manifest to the cluster
+  kubernetes.core.k8s:
+    state: present
+    template: spookd-device-plugin.yaml
