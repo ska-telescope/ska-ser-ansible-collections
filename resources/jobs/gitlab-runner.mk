@@ -5,16 +5,6 @@ ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/gitlab_runner/playbooks
 TESTS_DIR ?= ./ansible_collections/ska_collections/gitlab_runner/tests
-
-GITLAB_RUNNER_K8S_CLUSTER ?= localhost## subset of hosts from inventory to run against, default is set to localhost so that it works with local kubeconfig
-GITLAB_RUNNER_STORAGE_CLASS ?= block ## Minio shared cache StorageClass
-GITLAB_RUNNER_MINIO_RELEASE ?= minio-cache
-GITLAB_RUNNER_MINIO_BUCKET_NAME ?= cache
-GITLAB_RUNNER_MINIO_BUCKET_LOCATION ?= 
-GITLAB_RUNNER_GITLAB_VAULT_PREFIX ?= stfc
-GITLAB_RUNNER_K8S_NODE_LABEL ?= node-role.skatelescope.org/ci-worker
-GITLAB_RUNNER_TOKEN ?= xxx ## GitLab Registration Token
-GITLAB_RUNNER_TAG_LIST ?= ## Runner tags, if this is defined these values are used, else the values defined in the group_vars directory are used
 V ?= ## ansible-playbook debug options, i.e. -vvv
 GITLAB_RUNNER_LOCAL_DOCKER ?= 127.0.0.1
 
@@ -22,10 +12,6 @@ K8S_KUBECONFIG ?= /etc/clusterapi/$(CAPI_CLUSTER)-kubeconfig
 
 -include $(BASE_PATH)/PrivateRules.mak
 
-ifneq ($(GITLAB_RUNNER_TAG_LIST),)
-GITLAB_RUNNER_TAG_LIST_ARG = -e 'gitlab_tag_list="${GITLAB_RUNNER_TAG_LIST}"'
-else
-endif
 
 check_hosts:
 ifndef PLAYBOOKS_HOSTS
@@ -36,11 +22,6 @@ vars:
 	@echo "\033[36mGitlab_runner:\033[0m"
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
-	@echo "GITLAB_RUNNER_MINIO_RELEASE=$(GITLAB_RUNNER_MINIO_RELEASE)"
-	@echo "GITLAB_RUNNER_K8S_RELEASE_NAME=$(GITLAB_RUNNER_K8S_RELEASE_NAME)"
-	@echo "GITLAB_RUNNER_K8S_NODE_LABEL=$(GITLAB_RUNNER_K8S_NODE_LABEL)"
-	@echo "GITLAB_RUNNER_K8S_CLUSTER=$(GITLAB_RUNNER_K8S_CLUSTER)"
-	@echo "GITLAB_RUNNER_TAG_LIST=$(GITLAB_RUNNER_TAG_LIST)"
 
 install_runner_docker_executor: check_hosts ## Deploy gitlab_runner
 	ansible-playbook $(PLAYBOOKS_DIR)/install_runner_docker_executor.yml \
@@ -68,9 +49,6 @@ label_nodes:  ## Label worker nodes for CI
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	$(GITLAB_RUNNER_TAG_LIST_ARG) \
-	  --extra-vars="gitlab_runner_k8s_namespace=$(GITLAB_RUNNER_K8S_NAMESPACE)" \
-	  --extra-vars="gitlab_runner_k8s_release_name='$(GITLAB_RUNNER_K8S_RELEASE_NAME)'" \
-	  --extra-vars="gitlab_runner_k8s_node_label='$(GITLAB_RUNNER_K8S_NODE_LABEL)'" \
 	  $(V)
 
 k8s_runner: tidy  ## Deploy runners
@@ -78,10 +56,6 @@ k8s_runner: tidy  ## Deploy runners
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	$(GITLAB_RUNNER_TAG_LIST_ARG) \
-	-e "gitlab_runner_k8s_node_label='$(GITLAB_RUNNER_K8S_NODE_LABEL)'" \
-	-e "gitlab_runner_k8s_s3_bucket_name=$(GITLAB_RUNNER_MINIO_BUCKET_NAME)" \
-	-e "gitlab_runner_k8s_s3_bucket_location=$(GITLAB_RUNNER_MINIO_BUCKET_LOCATION)" \
-	-e "gitlab_vault_prefix=$(GITLAB_RUNNER_GITLAB_VAULT_PREFIX)" \
 	$(V)
 
 deploy_minio: tidy  ## Deploy Minio
@@ -89,9 +63,6 @@ deploy_minio: tidy  ## Deploy Minio
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	$(GITLAB_RUNNER_TAG_LIST_ARG) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars="gitlab_runner_minio_storage_class=$(GITLAB_RUNNER_STORAGE_CLASS)" \
-	--extra-vars="gitlab_runner_gitlab_s3_bucket_name=$(GITLAB_RUNNER_MINIO_BUCKET_NAME)" \
 	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	$(V)
 
@@ -100,10 +71,6 @@ test_minio: tidy  ## Test Minio
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	$(GITLAB_RUNNER_TAG_LIST_ARG) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars="gitlab_runner_minio_namespace=$(GITLAB_RUNNER_K8S_NAMESPACE) minio_release_name='$(GITLAB_RUNNER_MINIO_RELEASE)'" \
-	--extra-vars="gitlab_runner_minio_storage_class=$(GITLAB_RUNNER_STORAGE_CLASS)" \
-	--extra-vars="gitlab_runner_gitlab_s3_bucket_name=$(GITLAB_RUNNER_MINIO_BUCKET_NAME)" \
 	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	$(V)
 
@@ -112,9 +79,6 @@ show_minio: tidy  ## Show Mino chart
 	ANSIBLE_STDOUT_CALLBACK=yaml ansible-playbook $(PLAYBOOKS_DIR)/show_minio.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars="gitlab_runner_minio_namespace=$(GITLAB_RUNNER_K8S_NAMESPACE) minio_release_name='$(GITLAB_RUNNER_MINIO_RELEASE)'" \
-	--extra-vars="gitlab_runner_minio_storage_class=$(GITLAB_RUNNER_STORAGE_CLASS)" \
-	--extra-vars="gitlab_runner_gitlab_s3_bucket_name=$(GITLAB_RUNNER_MINIO_BUCKET_NAME)" \
 	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	$(V)
 
@@ -122,7 +86,6 @@ destroy_minio:  ## Delete minio
 	ansible-playbook $(PLAYBOOKS_DIR)/destroy_minio.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars="gitlab_runner_gitlab_s3_bucket_name=$(GITLAB_RUNNER_MINIO_BUCKET_NAME)" \
 	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	$(V)
 

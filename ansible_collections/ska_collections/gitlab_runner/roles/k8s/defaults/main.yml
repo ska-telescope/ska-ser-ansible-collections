@@ -16,7 +16,7 @@ gitlab_runner_k8s_metrics_port: 30931
 gitlab_runner_k8s_chart_repo: https://charts.gitlab.io
 gitlab_runner_k8s_chart_name: gitlab-runner
 gitlab_runner_k8s_chart_version: "0.51.1"
-gitlab_runner_k8s_tag_list: ska-ops-sandbox # auto-k8sv2,k8srunner,docker,docker-executor,engageska,ska
+gitlab_runner_k8s_tag_list: k8srunner # auto-k8sv2,k8srunner,docker,docker-executor,engageska,ska
 
 gitlab_runner_k8s_node_selector: "node-role.skatelescope.org/ci-worker"
 
@@ -31,11 +31,11 @@ gitlab_runner_k8s_metrics_node_port: 30931
 ## GitLab Config
 ################################################################################
 
+gitlab_runner_k8s_vault_prefix: stfc
 gitlab_runner_k8s_runner_concurrent_jobs: 20
-
-gitlab_runner_k8s_s3_access_key_secret_path: "{{ gitlab_vault_prefix }}/gitlab-runner/s3_access_key"
-gitlab_runner_k8s_s3_secret_key_secret_path: "{{ gitlab_vault_prefix }}/gitlab-runner/s3_secret_key"
-gitlab_runner_k8s_runner_registration_token: "{{ gitlab_vault_prefix }}/gitlab-runner/runner_registration_token"
+gitlab_runner_k8s_s3_access_key_secret_path: "{{ gitlab_runner_k8s_vault_prefix }}/gitlab-runner/s3_access_key"
+gitlab_runner_k8s_s3_secret_key_secret_path: "{{ gitlab_runner_k8s_vault_prefix }}/gitlab-runner/s3_secret_key"
+gitlab_runner_k8s_runner_registration_token: "{{ gitlab_runner_k8s_vault_prefix }}/gitlab-runner/runner_registration_token"
 gitlab_runner_k8s_vault_role: kube-role
 
 gitlab_runner_k8s_data_root: /var/lib/docker-for-gitlab  # Data root should be on separate volume
