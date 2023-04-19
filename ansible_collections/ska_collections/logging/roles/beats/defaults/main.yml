@@ -16,6 +16,17 @@ logging_filebeat_log_options:
 logging_filebeat_labels:
   org.ska.app.group: logging
 
+# ### Docker Resource Variables
+# logging_filebeat_server_cpus:
+logging_filebeat_server_memory: 512M
+# logging_filebeat_server_memory_swap:
+# logging_filebeat_server_memory_swappiness:
+
+# https://www.elastic.co/guide/en/beats/filebeat/current/configuring-internal-queue.html
+logging_filebeat_queue_events: 4096
+logging_filebeat_queue_flush_min_events: 2048
+logging_filebeat_queue_flush_timeout: 1s
+
 logging_filebeat_env_variables: {}
 logging_filebeat_env_defaults: {}
 

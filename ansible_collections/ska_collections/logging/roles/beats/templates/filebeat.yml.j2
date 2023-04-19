@@ -132,6 +132,12 @@ output:
     pipeline: {{ logging_filebeat_pipeline_name }}
 {% endif %}
 
+# queue configuration
+queue.mem:
+  events: "{{ logging_filebeat_queue_events }}"
+  flush.min_events: "{{ logging_filebeat_queue_flush_min_events }}"
+  flush.timeout: "{{ logging_filebeat_queue_flush_timeout }}"
+
 # ilm configuration
 # https://www.elastic.co/guide/en/beats/filebeat/master/ilm.html#setup-ilm-check_exists-option
 setup.ilm.enabled: true
