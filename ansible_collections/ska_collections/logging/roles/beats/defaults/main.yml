@@ -26,6 +26,8 @@ logging_filebeat_server_memory: 512M
 logging_filebeat_queue_events: 4096
 logging_filebeat_queue_flush_min_events: 2048
 logging_filebeat_queue_flush_timeout: 1s
+logging_filebeat_queue_disk_enabled: false
+logging_filebeat_queue_disk_max_size: 10GB
 
 logging_filebeat_env_variables: {}
 logging_filebeat_env_defaults: {}

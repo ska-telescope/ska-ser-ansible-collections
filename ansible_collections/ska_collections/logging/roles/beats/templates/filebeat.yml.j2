@@ -132,11 +132,17 @@ output:
     pipeline: {{ logging_filebeat_pipeline_name }}
 {% endif %}
 
-# queue configuration
+# queue memory configuration
 queue.mem:
   events: "{{ logging_filebeat_queue_events }}"
   flush.min_events: "{{ logging_filebeat_queue_flush_min_events }}"
   flush.timeout: "{{ logging_filebeat_queue_flush_timeout }}"
+
+{% if logging_filebeat_queue_disk_enabled|bool %}
+# queue disk configuration
+queue.disk:
+  max_size: "{{ logging_filebeat_queue_disk_max_size }}"
+{% endif %}
 
 # ilm configuration
 # https://www.elastic.co/guide/en/beats/filebeat/master/ilm.html#setup-ilm-check_exists-option
