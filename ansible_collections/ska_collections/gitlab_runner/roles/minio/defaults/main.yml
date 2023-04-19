@@ -18,3 +18,4 @@ gitlab_runner_minio_console_secret_key: "{{ lookup('ansible.builtin.env', 'GITLA
 gitlab_runner_minio_password: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_PASSWORD', default=secrets['gitlab_runner_minio_password']) | mandatory }}"
 gitlab_runner_minio_username: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_USERNAME', default=secrets['gitlab_runner_minio_username']) | mandatory }}"
 gitlab_runner_minio_secret_key: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_SECRET_KEY', default=secrets['gitlab_runner_minio_secret_key']) | mandatory }}"
+gitlab_runner_minio_s3_bucket_name: cache
