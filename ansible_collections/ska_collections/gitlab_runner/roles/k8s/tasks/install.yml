@@ -1,0 +1,23 @@
+---
+- name: Create Temp gitlab-runner config values file
+  ansible.builtin.tempfile:
+    suffix: -runner-values
+  register: gitlab_values_file
+
+- name: Template values file to {{ gitlab_values_file.path }}
+  ansible.builtin.template:
+    src: "templates/gitlab-runner-values-helm.yaml.j2"
+    dest: "{{ gitlab_values_file.path }}"
+    mode: 0644
+
+- name: Install Gitlab Runner Helm Chart
+  kubernetes.core.helm:
+    atomic: true
+    chart_repo_url: "{{ gitlab_runner_k8s_chart_repo }}"
+    chart_ref: "{{ gitlab_runner_k8s_chart_name }}"
+    chart_version: "{{ gitlab_runner_k8s_chart_version }}"
+    release_namespace: "{{ gitlab_runner_k8s_namespace }}"
+    release_name: "{{ gitlab_runner_k8s_release_name }}"
+    create_namespace: true
+    wait: true
+    values_files: "{{ gitlab_values_file.path }}"
