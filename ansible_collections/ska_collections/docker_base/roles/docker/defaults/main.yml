@@ -43,4 +43,5 @@ docker_default_address_pools:
   - base: "172.21.0.0/16"
     size: 24
 
-docker_insecure_registries: []
+docker_insecure_registries:
+  - "http://{{ nexus }}:{{ nexus_docker_hosted_port }}"
