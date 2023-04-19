@@ -146,14 +146,35 @@
         owner: root
         group: root
         mode: 0600
+        force: false
       with_items: "{{ pki_vault_secret.secret | dict2items }}"
       loop_control:
         label: "{{ openvpn_dir }}/pki/{{ item.key }}"
+
+    - name: Create index
+      ansible.builtin.copy:
+        content: ""
+        dest: "{{ openvpn_dir }}/pki/index.txt"
+        owner: root
+        group: root
+        mode: 0600
+        force: false
+
+    - name: Create index attributes
+      ansible.builtin.copy:
+        content: ""
+        dest: "{{ openvpn_dir }}/pki/index.txt.attr"
+        owner: root
+        group: root
+        mode: 0600
+        force: false
 
     - name: Update easyrsa db
       ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa update-db"
       args:
         chdir: "{{ openvpn_dir }}"
+      register: update_db
+      changed_when: update_db.rc == 0
 
 - name: Run easyrsa build-ca
   ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa build-ca nopass"
@@ -184,12 +205,6 @@
     chdir: "{{ openvpn_dir }}"
     creates: "{{ openvpn_dir }}/pki/issued/server.crt"
 
-- name: Run easyrsa build-client-full client nopass
-  ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa build-client-full client nopass"
-  args:
-    chdir: "{{ openvpn_dir }}"
-    creates: "{{ openvpn_dir }}/pki/issued/client.crt"
-
 - name: Run easyrsa gen-crl
   ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa gen-crl"
   args:
@@ -211,10 +226,8 @@
     - ca.crt
     - dh.pem
     - ta.key
-    - issued/client.crt
     - issued/server.crt
     - private/ca.key
-    - private/client.key
     - private/server.key
 
 - name: Place rc.local

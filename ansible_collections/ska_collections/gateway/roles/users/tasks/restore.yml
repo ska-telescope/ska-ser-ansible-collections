@@ -11,7 +11,7 @@
 
 - name: Set restore file
   ansible.builtin.set_fact:
-    users_restore_file: "{{ ('/' in ask_restore_file.user_input ) | ternary(ask_restore_file.user_input, users_default_restore_file) }}"
+    users_restore_file: "{{ ('/' in ask_restore_file.user_input) | ternary(ask_restore_file.user_input, users_default_restore_file) }}"
 
 - name: Check if restore file exists in localhost
   ansible.builtin.stat:
@@ -35,6 +35,7 @@
     remote_src: "{{ not restore_file_local.stat.exists }}"
     src: "{{ users_restore_file }}"
     dest: "{{ restore_dir }}.tgz"
+    mode: 0644
   become: false
 
 - name: Create restore directory

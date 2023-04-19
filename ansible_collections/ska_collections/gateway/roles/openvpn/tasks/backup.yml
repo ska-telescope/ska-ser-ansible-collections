@@ -1,0 +1,59 @@
+---
+- name: Set facts
+  ansible.builtin.set_fact:
+    backup_dir: "/tmp/openvpn-backup-{{ ansible_date_time.iso8601_basic_short }}"
+
+- name: Ensure openvpn dir exists
+  ansible.builtin.stat:
+    path: "{{ openvpn_dir }}"
+  register: openvpn_dir_exists
+
+- name: Abort if openvpn dir does not exist
+  ansible.builtin.fail:
+    msg: "{{ openvpn_dir }} does not exist"
+  when: not openvpn_dir_exists.stat.exists
+
+- name: Create backup directory
+  ansible.builtin.file:
+    path: "{{ backup_dir }}"
+    state: directory
+    mode: 0744
+
+- name: Synchronize client configs
+  ansible.posix.synchronize:
+    src: "{{ openvpn_dir }}/client-configs"
+    dest: "{{ backup_dir }}"
+    mode: pull
+    compress: true
+    delete: true
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Synchronize pki
+  ansible.posix.synchronize:
+    src: "{{ openvpn_dir }}/pki"
+    dest: "{{ backup_dir }}"
+    mode: pull
+    compress: true
+    delete: false
+    rsync_opts:
+      - --exclude="crl.pem"
+      - --exclude="*.old"
+      - --exclude="*.cnf"
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Compress backup
+  community.general.archive:
+    path: "{{ backup_dir }}"
+    dest: "{{ backup_dir }}.tgz"
+    format: gz
+    mode: 0644
+
+- name: Transfer backup to localhost
+  ansible.builtin.fetch:
+    src: "{{ backup_dir }}.tgz"
+    dest: "{{ backup_dir }}.tgz"
+    flat: true
+
+- name: Show backup location
+  ansible.builtin.debug:
+    msg: "OpenVPN backup at '{{ backup_dir }}.tgz'"

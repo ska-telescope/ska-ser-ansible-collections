@@ -40,9 +40,14 @@
     path: "{{ backup_dir }}"
     dest: "{{ backup_dir }}.tgz"
     format: gz
+    mode: 0644
 
 - name: Transfer backup to localhost
   ansible.builtin.fetch:
     src: "{{ backup_dir }}.tgz"
     dest: "{{ backup_dir }}.tgz"
-    flat: yes
+    flat: true
+
+- name: Show backup location
+  ansible.builtin.debug:
+    msg: "Users backup at '{{ backup_dir }}.tgz'"
