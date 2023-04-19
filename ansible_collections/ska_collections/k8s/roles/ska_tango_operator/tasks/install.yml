@@ -1,0 +1,14 @@
+---
+
+- name: Install the tango operator
+  kubernetes.core.helm:
+    atomic: true
+    chart_repo_url: "{{ k8s_operator_chart_url }}"
+    chart_ref: "{{ k8s_operator_chart_reference }}"
+    chart_version: "{{ k8s_operator_chart_version }}"
+    create_namespace: true
+    namespace: "{{ k8s_operator_namespace }}"
+    name: ska_tango_operator
+    wait: true
+    values:
+      loadBalancerClass: "{{ k8s_operator_class }}"
