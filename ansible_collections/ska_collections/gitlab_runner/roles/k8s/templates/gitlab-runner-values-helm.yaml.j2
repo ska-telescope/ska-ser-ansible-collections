@@ -114,13 +114,16 @@ runners:
 
     secret: s3access
 
-    cache: {}
+    cache:
+        secretName: s3access
 
     builds: {}
     
     services: {}
 
     helpers: {}
+
+    runnerRegistrationToken: "{{ gitlab_runner_registration_token }}"
     
 podSecurityContext:
     fsGroup: 65533

@@ -63,6 +63,7 @@ k8s_runner_helm: tidy  ## Deploy runners
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
+	--extra-vars "gitlab_runner_registration_token=$(GITLAB_RUNNER_REGISTRATION_TOKEN)" \
 	$(GITLAB_RUNNER_TAG_LIST_ARG)
 
 deploy_minio: tidy  ## Deploy Minio
