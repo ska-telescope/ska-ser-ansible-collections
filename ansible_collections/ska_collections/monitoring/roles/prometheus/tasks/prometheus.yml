@@ -215,3 +215,4 @@
     dump: "0"
     passno: "0"
     state: present
+  when: not is_swapfile.stat.exists
