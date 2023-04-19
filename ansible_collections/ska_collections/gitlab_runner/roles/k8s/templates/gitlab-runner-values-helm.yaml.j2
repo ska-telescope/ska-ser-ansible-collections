@@ -93,11 +93,11 @@ runners:
             Type = "s3"
             Shared = true
             [runners.cache.s3]
-            ServerAddress = "{{  gitlab_runner_k8s_s3_cache_address }}"
-            BucketName = "{{  gitlab_runner_k8s_s3_bucket_name }}"
-            BucketLocation = "{{  gitlab_runner_k8s_s3_bucket_location }}"
-            Insecure = true
-            AuthenticationType = "access-key"
+                ServerAddress = "{{  gitlab_runner_k8s_s3_cache_address }}"
+                BucketName = "{{  gitlab_runner_k8s_s3_bucket_name }}"
+                BucketLocation = "{{  gitlab_runner_k8s_s3_bucket_location }}"
+                Insecure = true
+                AuthenticationType = "access-key"
         [runners.kubernetes.volumes]
             [[runners.kubernetes.volumes.host_path]]
             name = "docker"
@@ -112,7 +112,7 @@ runners:
 
     protected: false
 
-    secret: s3access
+    secret: gitlab-runner-secret
 
     cache:
         secretName: s3access

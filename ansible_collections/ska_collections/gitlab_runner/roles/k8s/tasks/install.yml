@@ -1,4 +1,18 @@
 ---
+
+- name: Template secrets
+  ansible.builtin.template:
+    src: "templates/gitlab-runner-k8s-secrets.yaml.j2"
+    dest: "/tmp/gitlab-runner-k8s-secrets.yaml"
+    force: true
+    mode: 0755
+
+- name: Apply secret
+  kubernetes.core.k8s:
+    state: present
+    apply: true
+    src: "/tmp/gitlab-runner-k8s-secrets.yaml"
+
 - name: Create Temp gitlab-runner config values file
   ansible.builtin.tempfile:
     suffix: -runner-values
@@ -21,3 +35,11 @@
     create_namespace: true
     wait: true
     values_files: "{{ gitlab_values_file.path }}"
+
+# - name: Tidy up tmp files
+#   ansible.builtin.file:
+#     path: "{{ item }}"
+#     state: absent
+#   with_items:
+#     - "/tmp/gitlab-runner-k8s-secrets.yaml"
+#     - "{{ gitlab_values_file.path }}"
