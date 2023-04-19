@@ -4,21 +4,21 @@
             "grok": {
                 "field": "MESSAGE",
                 "ignore_failure": true,
-                "patterns": ["%{INT:ska_version}\\|%{DATA:ska_log_timestamp}\\|%{DATA:ska_severity}\\|%{DATA:ska_thread_id}\\|%{DATA:ska_function}\\|%{DATA:ska_line_loc}\\|%{DATA:ska_tags}\\|%{DATA:ska_log_message}$"]
+                "patterns": ["%{INT:ska_version}\\|%{DATA:ska_log_timestamp}\\|%{DATA:ska_severity}\\|%{DATA:ska_thread_id}\\|%{DATA:ska_function}\\|%{DATA:ska_line_loc}\\|%{DATA:ska_tags}\\|(?<ska_log_message>(.|\r|\n)*)$"]
             }
         },
         {
             "grok": {
                 "field": "message",
                 "ignore_failure": true,
-                "patterns": ["%{INT:ska_version}\\|%{DATA:ska_log_timestamp}\\|%{DATA:ska_severity}\\|%{DATA:ska_thread_id}\\|%{DATA:ska_function}\\|%{DATA:ska_line_loc}\\|%{DATA:ska_tags}\\|%{DATA:ska_log_message}$"]
+                "patterns": ["%{INT:ska_version}\\|%{DATA:ska_log_timestamp}\\|%{DATA:ska_severity}\\|%{DATA:ska_thread_id}\\|%{DATA:ska_function}\\|%{DATA:ska_line_loc}\\|%{DATA:ska_tags}\\|(?<ska_log_message>(.|\r|\n)*)$"]
             }
         },
         {
             "grok": {
                 "field": "log",
                 "ignore_failure": true,
-                "patterns": ["%{INT:ska_version}\\|%{DATA:ska_log_timestamp}\\|%{DATA:ska_severity}\\|%{DATA:ska_thread_id}\\|%{DATA:ska_function}\\|%{DATA:ska_line_loc}\\|%{DATA:ska_tags}\\|%{DATA:ska_log_message}$"]
+                "patterns": ["%{INT:ska_version}\\|%{DATA:ska_log_timestamp}\\|%{DATA:ska_severity}\\|%{DATA:ska_thread_id}\\|%{DATA:ska_function}\\|%{DATA:ska_line_loc}\\|%{DATA:ska_tags}\\|(?<ska_log_message>(.|\r|\n)*)$"]
             }
         },
         {
