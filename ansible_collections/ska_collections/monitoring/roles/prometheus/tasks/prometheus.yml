@@ -156,7 +156,10 @@
       - "--storage.tsdb.retention.time={{ prometheus_retention_time }}"
       - "--web.enable-lifecycle"
     user: root
-    memory: "{{ prometheus_server_memory }}"
+    memory: "{{ prometheus_server_memory | default(omit) }}"
+    cpus: "{{ prometheus_server_cpus | default(omit) }}"
+    memory_swap: "{{ prometheus_server_memory_swap | default(omit) }}"
+    memory_swappiness: "{{ prometheus_server_memory_swappiness | default(omit) }}"
     restart: true
     restart_policy: always
     ports:

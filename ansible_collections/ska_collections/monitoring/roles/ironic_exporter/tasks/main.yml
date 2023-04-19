@@ -19,6 +19,10 @@
     name: ironic_exporter
     image: "ironic_exporter:{{ ironic_exporter_version }}"
     state: started
+    cpus: "{{ ironic_exporter_server_cpus | default(omit) }}"
+    memory: "{{ ironic_exporter_server_memory | default(omit) }}"
+    memory_swap: "{{ ironic_exporter_server_memory_swap | default(omit) }}"
+    memory_swappiness: "{{ ironic_exporter_server_memory_swappiness | default(omit) }}"
     entrypoint:
       - "/bin/openstack-exporter"
       - "--log.level='debug'"

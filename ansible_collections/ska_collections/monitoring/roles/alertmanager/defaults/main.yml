@@ -12,3 +12,9 @@ alertmanager_data_dir: /alertmanager
 alerts_inhibit_rules: []
 
 alertmanager_docker_tags: 'v0.24.0'
+
+# ### Docker Resource Variables
+# alertmanager_server_cpus:
+# alertmanager_server_memory:
+# alertmanager_server_memory_swap:
+# alertmanager_server_memory_swappiness:

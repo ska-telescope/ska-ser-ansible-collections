@@ -46,6 +46,10 @@
     user: root
     restart: true
     restart_policy: always
+    cpus: "{{ grafana_server_cpus | default(omit) }}"
+    memory: "{{ grafana_server_memory | default(omit) }}"
+    memory_swap: "{{ grafana_server_memory_swap | default(omit) }}"
+    memory_swappiness: "{{ grafana_server_memory_swappiness | default(omit) }}"
     ports:
       - "3000:3000"
     volumes:

@@ -57,6 +57,10 @@
     user: root
     restart: true
     restart_policy: always
+    cpus: "{{ thanos_sidecar_server_cpus | default(omit) }}"
+    memory: "{{ thanos_sidecar_server_memory | default(omit) }}"
+    memory_swap: "{{ thanos_sidecar_server_memory_swap | default(omit) }}"
+    memory_swappiness: "{{ thanos_sidecar_server_memory_swappiness | default(omit) }}"
     ports:
       - "10901:10901"
     volumes:

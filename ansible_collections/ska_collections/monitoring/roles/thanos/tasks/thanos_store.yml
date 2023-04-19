@@ -54,6 +54,10 @@
     user: root
     restart: true
     restart_policy: always
+    cpus: "{{ thanos_store_server_cpus | default(omit) }}"
+    memory: "{{ thanos_store_server_memory | default(omit) }}"
+    memory_swap: "{{ thanos_store_server_memory_swap | default(omit) }}"
+    memory_swappiness: "{{ thanos_store_server_memory_swappiness | default(omit) }}"
     ports:
       - "19090:19090"
     volumes:
