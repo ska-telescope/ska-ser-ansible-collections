@@ -16,6 +16,9 @@ sudo ETCDCTL_API=3 /usr/bin/etcdctl --endpoints ${ENDPOINT} \
      --key=/etc/kubernetes/pki/etcd/healthcheck-client.key  \
      snapshot save ${SNAPSHOT}
 
+# print the status of the backup
+sudo ETCDCTL_API=3 etcdctl --write-out=table snapshot status ${SNAPSHOT}
+
 # compress backup
 gzip -9 ${SNAPSHOT}
 

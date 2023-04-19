@@ -1,9 +1,9 @@
-# - name: Install cron
-#   ansible.builtin.apt:
-#     pkg:
-#       - cron
-#     state: present
-#     update_cache: true
+- name: Install cron
+  ansible.builtin.apt:
+    pkg:
+      - cron
+    state: present
+    update_cache: true
 
 - name: Install aditional packages
   ansible.builtin.apt:
