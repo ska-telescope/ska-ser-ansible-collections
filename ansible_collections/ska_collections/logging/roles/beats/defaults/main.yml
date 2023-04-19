@@ -23,9 +23,9 @@ logging_filebeat_server_memory: 512M
 # logging_filebeat_server_memory_swappiness:
 
 # https://www.elastic.co/guide/en/beats/filebeat/current/configuring-internal-queue.html
-logging_filebeat_queue_events: 4096
-logging_filebeat_queue_flush_min_events: 2048
-logging_filebeat_queue_flush_timeout: 1s
+logging_filebeat_queue_mem_events: 4096
+logging_filebeat_queue_mem_flush_min_events: 2048
+logging_filebeat_queue_mem_flush_timeout: 1s
 logging_filebeat_queue_disk_enabled: false
 logging_filebeat_queue_disk_max_size: 10GB
 

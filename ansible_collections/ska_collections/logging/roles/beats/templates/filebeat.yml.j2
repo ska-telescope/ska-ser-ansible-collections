@@ -134,9 +134,9 @@ output:
 
 # queue memory configuration
 queue.mem:
-  events: "{{ logging_filebeat_queue_events }}"
-  flush.min_events: "{{ logging_filebeat_queue_flush_min_events }}"
-  flush.timeout: "{{ logging_filebeat_queue_flush_timeout }}"
+  events: "{{ logging_filebeat_queue_mem_events }}"
+  flush.min_events: "{{ logging_filebeat_queue_mem_flush_min_events }}"
+  flush.timeout: "{{ logging_filebeat_queue_mem_flush_timeout }}"
 
 {% if logging_filebeat_queue_disk_enabled|bool %}
 # queue disk configuration
