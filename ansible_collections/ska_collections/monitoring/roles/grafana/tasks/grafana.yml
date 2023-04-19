@@ -74,3 +74,5 @@
       GF_AUTH_AZUREAD_ALLOWED_DOMAINS: ""
       GF_AUTH_AZUREAD_ALLOWED_GROUPS: ""
       GF_AUTH_AZUREAD_ROLE_ATTRIBUTE_STRICT: 'false'
+      GF_QUOTA_ENABLED: "{{ grafana_quota_enabled }}"
+      GF_QUOTA_GLOBAL_SESSION: "{{ grafana_quota_global_session }}"

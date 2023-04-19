@@ -24,6 +24,8 @@ grafana_plugins:
   - natel-plotly-panel
   - fifemon-graphql-datasource
 grafana_disable_admin_account_creation: true
+grafana_quota_enabled: false
+grafana_quota_global_session: -1
 
 grafana_docker_tags: '9.0.0'
 
