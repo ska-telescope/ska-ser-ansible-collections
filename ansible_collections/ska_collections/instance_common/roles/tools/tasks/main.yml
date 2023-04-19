@@ -3,8 +3,6 @@
   ansible.builtin.set_fact:
     os_name: "{{ ansible_system | lower }}"
     os_binary: "{% if ansible_facts.architecture == 'x86_64' %}amd64{% else %}unknown{% endif %}"
-    os_arch: "{{ ansible_facts.architecture | lower }}"
-    k9s_arch: "{{ ansible_facts.architecture | lower }}"
   tags: [always]
 
 - name: Ensure that the apt cache is updated

@@ -2,30 +2,30 @@
 # https://linuxconfig.org/how-to-setup-a-openvpn-server-on-ubuntu-20-04
 # https://www.digitalocean.com/community/tutorials/how-to-set-up-and-configure-an-openvpn-server-on-ubuntu-20-04
 
-- name: Ensure /etc/openvpn/easy-rsa exists
+- name: Ensure easy-rsa exists
   ansible.builtin.file:
-    path: /etc/openvpn/easy-rsa
+    path: "{{ openvpn_dir }}"
     state: directory
-    mode: "0755"
+    mode: 0755
 
-- name: Ensure /etc/openvpn/easy-rsa/client-configs exists
+- name: Ensure client-configs exists
   ansible.builtin.file:
-    path: /etc/openvpn/easy-rsa/client-configs
+    path: "{{ openvpn_dir }}/client-configs"
     state: directory
-    mode: "0700"
+    mode: 0700
 
 - name: Place mkclient.sh
   ansible.builtin.copy:
-    dest: /etc/openvpn/easy-rsa/mkclient.sh
+    dest: "{{ openvpn_dir }}/mkclient.sh"
     content: |
       #!/bin/sh
 
-      if [ -f "/etc/openvpn/easy-rsa/pki/issued/$1.crt" ]; then
-        echo "Certificate already exists for $1 (/etc/openvpn/easy-rsa/pki/issued/$1.crt) - aborting!"
+      if [ -f "{{ openvpn_dir }}/pki/issued/$1.crt" ]; then
+        echo "Certificate already exists for $1 ({{ openvpn_dir }}/pki/issued/$1.crt) - aborting!"
         exit 1
       fi
 
-      cd /etc/openvpn/easy-rsa
+      cd {{ openvpn_dir }}
 
       # generate key and signing request
       export EASYRSA_CERT_EXPIRE={{ openvpn_client_cert_expires }} \
@@ -39,37 +39,38 @@
              EASYRSA_REQ_ORG="SKAO" \
              EASYRSA_REQ_OU="Systems Team"
 
-      /usr/share/easy-rsa/easyrsa --batch gen-req $1 nopass
+      {{ openvpn_easyrsa_path }}/easyrsa --batch gen-req $1 nopass
 
       # import signing request - not required on this server
-      #/usr/share/easy-rsa/easyrsa --batch import-req /etc/openvpn/easy-rsa/pki/reqs/$1.req $1
+      #{{ openvpn_easyrsa_path }}/easyrsa --batch import-req {{ openvpn_dir }}/pki/reqs/$1.req $1
 
       # sign request
-      /usr/share/easy-rsa/easyrsa --batch sign-req client $1
-    mode: "0755"
+      {{ openvpn_easyrsa_path }}/easyrsa --batch sign-req client $1
+    mode: 0755
 
 - name: Place revoke.sh
   ansible.builtin.copy:
-    dest: /etc/openvpn/easy-rsa/revoke.sh
+    dest: "{{ openvpn_dir }}/revoke.sh"
     content: |
       #!/bin/sh
 
       # revoke a certificate
-      cd /etc/openvpn/easy-rsa
-      /usr/share/easy-rsa/easyrsa --batch revoke $1
-      rm /etc/openvpn/easy-rsa/client-configs/$1.ovpn
-
-    mode: "0755"
+      cd {{ openvpn_dir }}
+      {{ openvpn_easyrsa_path }}/easyrsa --batch revoke $1
+      rm {{ openvpn_dir }}/client-configs/$1.ovpn
+      # update the crl
+      {{ openvpn_easyrsa_path }}/easyrsa gen-crl
+    mode: 0755
 
 - name: Place mkconfig.sh
   ansible.builtin.copy:
-    dest: /etc/openvpn/easy-rsa/mkconfig.sh
+    dest: "{{ openvpn_dir }}/mkconfig.sh"
     content: |
       #!/bin/bash
 
-      cd /etc/openvpn/easy-rsa
-      KEY_DIR=/etc/openvpn/easy-rsa/pki
-      OUTPUT_DIR=/etc/openvpn/easy-rsa/client-configs
+      cd {{ openvpn_dir }}
+      KEY_DIR={{ openvpn_dir }}/pki
+      OUTPUT_DIR={{ openvpn_dir }}/client-configs
       BASE_CONFIG=./base.conf
       mkdir -p ${OUTPUT_DIR} && chmod 700 ${OUTPUT_DIR}
 
@@ -84,27 +85,81 @@
           ${KEY_DIR}/ta.key \
           <(echo -e '</tls-crypt>') \
           > ${OUTPUT_DIR}/${1}.ovpn
-    mode: "0755"
+    mode: 0755
 
 - name: Place base.conf
   ansible.builtin.template:
     src: client.conf.j2
-    dest: "/etc/openvpn/easy-rsa/base.conf"
+    dest: "{{ openvpn_dir }}/base.conf"
     owner: root
     group: "{{ openvpn_group }}"
-    mode: "0640"
+    mode: 0640
 
 - name: Run easyrsa init-pki
   ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa init-pki"
   args:
-    chdir: /etc/openvpn/easy-rsa
-    creates: /etc/openvpn/easy-rsa/pki
+    chdir: "{{ openvpn_dir }}"
+    creates: "{{ openvpn_dir }}/pki"
+
+- name: Pull pki from vault
+  when: vault_config is defined and openvpn_pki_vault_secret
+  block:
+    - name: Get secret from vault
+      community.hashi_vault.vault_kv2_get:
+        url: "{{ vault_config.address }}"
+        engine_mount_point: "{{ vault_config.mount_point }}"
+        path: "{{ openvpn_pki_vault_secret }}"
+        token: "{{ vault_config.token }}"
+        token_validate: true
+      become: false
+      register: pki_vault_secret
+      delegate_to: localhost
+
+    - name: Ensure issued directory exists
+      ansible.builtin.file:
+        path: "{{ openvpn_dir }}/pki/issued"
+        state: directory
+        owner: root
+        group: root
+        mode: 0700
+
+    - name: Ensure private directory exists
+      ansible.builtin.file:
+        path: "{{ openvpn_dir }}/pki/private"
+        state: directory
+        owner: root
+        group: root
+        mode: 0700
+
+    - name: Ensure certs_by_serial exists
+      ansible.builtin.file:
+        path: "{{ openvpn_dir }}/pki/certs_by_serial"
+        state: directory
+        owner: root
+        group: root
+        mode: 0700
+
+    - name: Create pki files
+      ansible.builtin.copy:
+        content: "{{ item.value | b64decode }}"
+        dest: "{{ openvpn_dir }}/pki/{{ item.key }}"
+        owner: root
+        group: root
+        mode: 0600
+      with_items: "{{ pki_vault_secret.secret | dict2items }}"
+      loop_control:
+        label: "{{ openvpn_dir }}/pki/{{ item.key }}"
+
+    - name: Update easyrsa db
+      ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa update-db"
+      args:
+        chdir: "{{ openvpn_dir }}"
 
 - name: Run easyrsa build-ca
   ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa build-ca nopass"
   args:
-    chdir: /etc/openvpn/easy-rsa
-    creates: /etc/openvpn/easy-rsa/pki/ca.crt
+    chdir: "{{ openvpn_dir }}"
+    creates: "{{ openvpn_dir }}/pki/ca.crt"
   environment:
     EASYRSA_BATCH: "yes"
     EASYRSA_ALGO: "ec"
@@ -120,37 +175,37 @@
 - name: Run easyrsa gen-dh
   ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa gen-dh"
   args:
-    chdir: /etc/openvpn/easy-rsa
-    creates: /etc/openvpn/easy-rsa/pki/dh.pem
+    chdir: "{{ openvpn_dir }}"
+    creates: "{{ openvpn_dir }}/pki/dh.pem"
 
 - name: Run easyrsa build-server-full server nopass
   ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa build-server-full server nopass"
   args:
-    chdir: /etc/openvpn/easy-rsa
-    creates: /etc/openvpn/easy-rsa/pki/issued/server.crt
+    chdir: "{{ openvpn_dir }}"
+    creates: "{{ openvpn_dir }}/pki/issued/server.crt"
 
 - name: Run easyrsa build-client-full client nopass
   ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa build-client-full client nopass"
   args:
-    chdir: /etc/openvpn/easy-rsa
-    creates: /etc/openvpn/easy-rsa/pki/issued/client.crt
+    chdir: "{{ openvpn_dir }}"
+    creates: "{{ openvpn_dir }}/pki/issued/client.crt"
 
 - name: Run easyrsa gen-crl
   ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa gen-crl"
   args:
-    chdir: /etc/openvpn/easy-rsa
-    creates: /etc/openvpn/easy-rsa/pki/crl.pem
+    chdir: "{{ openvpn_dir }}"
+    creates: "{{ openvpn_dir }}/pki/crl.pem"
 
-- name: Run openvpn --genkey --secret /etc/openvpn/easy-rsa/pki/ta.key
-  ansible.builtin.command: openvpn --genkey --secret /etc/openvpn/easy-rsa/pki/ta.key
+- name: Run openvpn --genkey --secret
+  ansible.builtin.command: openvpn --genkey --secret "{{ openvpn_dir }}/pki/ta.key"
   args:
-    creates: /etc/openvpn/easy-rsa/pki/ta.key
+    creates: "{{ openvpn_dir }}/pki/ta.key"
 
 - name: Copy files to /etc/openvpn/server
   ansible.builtin.copy:
-    src: /etc/openvpn/easy-rsa/pki/{{ item }}
+    src: "{{ openvpn_dir }}/pki/{{ item }}"
     dest: /etc/openvpn/server/{{ item | basename }}
-    mode: "0640"
+    mode: 0640
     remote_src: true
   loop:
     - ca.crt
@@ -168,7 +223,7 @@
     dest: "/etc/rc.local"
     owner: root
     group: root
-    mode: "0755"
+    mode: 0755
 
 - name: Run rc.local once
   ansible.builtin.command: /etc/rc.local
@@ -180,7 +235,7 @@
     dest: "{{ openvpn_configuration_directory }}/server.conf"
     owner: root
     group: "{{ openvpn_group }}"
-    mode: "0640"
+    mode: 0640
   notify:
     - Restart openvpn
 
@@ -190,6 +245,6 @@
     dest: "{{ openvpn_configuration_directory }}/server2.conf"
     owner: root
     group: "{{ openvpn_group }}"
-    mode: "0640"
+    mode: 0640
   notify:
     - Restart openvpn
