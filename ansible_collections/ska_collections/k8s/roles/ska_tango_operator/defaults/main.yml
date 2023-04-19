@@ -6,4 +6,3 @@ k8s_operator_chart_version: 0.1.1
 k8s_operator_chart_reference: ska-tango-operator
 k8s_operator_namespace: ska_tango_operator
 k8s_operator_set_class: false
-
