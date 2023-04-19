@@ -2,3 +2,39 @@
 cron_file: gateway-cron
 cron_prometheus_ip: "{{ _ | mandatory('`cron_prometheus_ip` definition is mandatory') }}"
 cron_etcd_endpoint: "{{ _ | mandatory('`cron_etcd_endpoint` definition is mandatory') }}"
+
+#should be overridden with packages needed (ex: etcd-client for etcd backup script)
+cron_additional_packages: []
+
+#should be overridden with scripts needed
+cron_scripts:
+  - etcd_backup.sh
+  - monitor-skagitrunners-stfc.sh
+  - monitor-skavpn-stfc.sh
+
+#should be overridden with only the jobs needed
+cron_job_lines:
+  - name: etcd hourly backup
+    minute: "0"
+    hour: "*/1"
+    day: "*"
+    month: "*"
+    weekday: "*"
+    job: /usr/local/bin/etcd_backup.sh > /srv/logs/etcd_backup
+    user: root
+  - name: Monitor Gitlab Runners
+    minute: "*/5"
+    hour: "*"
+    day: "*"
+    month: "*"
+    weekday: "*"
+    job: /usr/local/bin/monitor-skagitrunners-stfc.sh >> /srv/logs/skagitrunners 2>&1
+    user: root
+  - name: Monitor VPN
+    minute: "*/5"
+    hour: "*"
+    day: "*"
+    month: "*"
+    weekday: "*"
+    job: /usr/local/bin/monitor-skavpn-stfc.sh > /srv/logs/skavpn 2>&1
+    user: root
