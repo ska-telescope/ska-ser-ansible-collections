@@ -10,5 +10,4 @@
     namespace: "{{ k8s_operator_namespace }}"
     name: ska_tango_operator
     wait: true
-    values:
-      loadBalancerClass: "{{ k8s_operator_class }}"
+

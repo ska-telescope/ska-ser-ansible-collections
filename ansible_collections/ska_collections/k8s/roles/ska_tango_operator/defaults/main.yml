@@ -1,9 +1,9 @@
 ---
 debug: false
 
-k8s_operator_chart_url: https://gitlab.com/api/v4/projects/41853306/packages/helm/api/release/charts
-k8s_operator_chart_version: 0.9.0
+k8s_operator_chart_url: https://artefact.skao.int/repository/helm-internal
+k8s_operator_chart_version: 0.1.1
 k8s_operator_chart_reference: ska-tango-operator
 k8s_operator_namespace: ska_tango_operator
 k8s_operator_set_class: false
-k8s_operator_class: ska_tango_operator  ## Find correct class
+
