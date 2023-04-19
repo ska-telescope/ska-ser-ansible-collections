@@ -1,0 +1,86 @@
+---
+- name: Set restore dir
+  ansible.builtin.set_fact:
+    restore_dir: "/tmp/users-restore-{{ ansible_date_time.iso8601_basic_short }}"
+
+- name: Ask for restore file path
+  ansible.builtin.pause:
+    prompt: "Set the path of restore file: [{{ users_default_restore_file }}]"
+    echo: true
+  register: ask_restore_file
+
+- name: Set restore file
+  ansible.builtin.set_fact:
+    users_restore_file: "{{ ('/' in ask_restore_file.user_input ) | ternary(ask_restore_file.user_input, users_default_restore_file) }}"
+
+- name: Check if restore file exists in localhost
+  ansible.builtin.stat:
+    path: "{{ users_restore_file }}"
+  become: false
+  delegate_to: localhost
+  register: restore_file_local
+
+- name: Check if restore file exists in remote
+  ansible.builtin.stat:
+    path: "{{ users_restore_file }}"
+  register: restore_file_host
+
+- name: Abort if restore file not found
+  ansible.builtin.fail:
+    msg: "Target restore file at '{{ users_restore_file }}' not found in host or localhost"
+  when: not restore_file_local.stat.exists and not restore_file_host.stat.exists
+
+- name: Copy restore file
+  ansible.builtin.copy:
+    remote_src: "{{ not restore_file_local.stat.exists }}"
+    src: "{{ users_restore_file }}"
+    dest: "{{ restore_dir }}.tgz"
+  become: false
+
+- name: Create restore directory
+  ansible.builtin.file:
+    path: "{{ restore_dir }}"
+    state: directory
+    mode: 0744
+
+- name: Decompress restore file
+  ansible.builtin.unarchive:
+    src: "{{ restore_dir }}.tgz"
+    dest: "{{ restore_dir }}"
+    remote_src: true
+    extra_opts: ["--gzip", "--strip-components=1"]
+
+- name: Find users
+  ansible.builtin.find:
+    path: "{{ restore_dir }}"
+    file_type: directory
+    recurse: false
+  register: user_dirs
+
+- name: Get users
+  ansible.builtin.set_fact:
+    users: "{{ ((users | default([])) + [(item.path | basename)]) | unique }}"
+  with_items: "{{ user_dirs.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+
+- name: Validate users to restore
+  ansible.builtin.pause:
+    prompt: "The following users will be restored:\n\n{{ users | join('\n') }}\n\nAre you sure? [yes/no]"
+    echo: true
+  register: validate_restore
+
+- name: Abort restore
+  ansible.builtin.fail:
+    msg: "Aborting users restore. To really do it, say 'yes' on the prompt"
+  when: validate_restore.user_input != 'yes'
+
+- name: Synchronize user directories
+  ansible.posix.synchronize:
+    src: "/home/{{ item }}"
+    dest: "{{ restore_dir }}/{{ item }}"
+    mode: push
+    compress: true
+    delete: false
+  with_items: "{{ users }}"
+  delegate_to: "{{ inventory_hostname }}"

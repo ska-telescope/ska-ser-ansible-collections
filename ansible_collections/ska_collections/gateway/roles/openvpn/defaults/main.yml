@@ -12,11 +12,11 @@ openvpn_role: server
 
 openvpn_client_cert_expires: 30
 
-openvpn_routes:
-  - ip: 192.168.99.0
-    mask: 255.255.255.0
-  - ip: 10.200.0.0
-    mask: 255.255.255.0
+openvpn_routes: "{{ _ | mandatory('openvpn_routes definition is mandatory') }}"
+#  - ip: 192.168.99.0
+#    mask: 255.255.255.0
+#  - ip: 10.200.0.0
+#    mask: 255.255.0.0
 
 openvpn_client:
 openvpn_client_email:

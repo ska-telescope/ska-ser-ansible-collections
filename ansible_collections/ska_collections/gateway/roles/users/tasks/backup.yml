@@ -1,0 +1,48 @@
+---
+- name: Get users
+  ansible.builtin.set_fact:
+    users: "{{ ((users | default([])) + [item.split()[-1]]) | unique }}"
+    backup_dir: "/tmp/users-backup-{{ ansible_date_time.iso8601_basic_short }}"
+  with_items: "{{ add_ssh_keys_admin }}"
+  when: "item.split()[-1] not in ['Generated-by-Nova', 'jump', 'admin', 'root', 'ubuntu']"
+  loop_control:
+    label: "{{ item.split()[-1] }}"
+
+- name: Validate users to backup
+  ansible.builtin.pause:
+    prompt: "The following users will be backed up:\n\n{{ users | join('\n') }}\n\nAre you sure? [yes/no]"
+    echo: true
+  register: validate_backup
+
+- name: Abort backup
+  ansible.builtin.fail:
+    msg: "Aborting users backup. To really do it, say 'yes' on the prompt"
+  when: validate_backup.user_input != 'yes'
+
+- name: Create backup directory
+  ansible.builtin.file:
+    path: "{{ backup_dir }}"
+    state: directory
+    mode: 0744
+
+- name: Synchronize user directories
+  ansible.posix.synchronize:
+    src: "/home/{{ item }}"
+    dest: "{{ backup_dir }}/{{ item }}"
+    mode: pull
+    compress: true
+    delete: true
+  with_items: "{{ users }}"
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Compress backup
+  community.general.archive:
+    path: "{{ backup_dir }}"
+    dest: "{{ backup_dir }}.tgz"
+    format: gz
+
+- name: Transfer backup to localhost
+  ansible.builtin.fetch:
+    src: "{{ backup_dir }}.tgz"
+    dest: "{{ backup_dir }}.tgz"
+    flat: yes
