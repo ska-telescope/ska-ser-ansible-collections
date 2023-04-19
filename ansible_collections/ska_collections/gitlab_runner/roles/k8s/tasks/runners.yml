@@ -59,6 +59,12 @@
     dest: "{{ temp_kustomize_dir.path }}/all.yaml"
     mode: 0644
 
+- name: Create files directory inside role
+  ansible.builtin.file:
+    path: "{{ role_path }}/files"
+    state: directory
+    mode: "0755"
+
 - name: Template runner-metrics.yaml file
   ansible.builtin.template:
     src: "templates/runner-metrics.yaml.j2"
@@ -70,10 +76,11 @@
     cd {{ temp_kustomize_dir.path }}
     kubectl kustomize .
   changed_when: true
+  register: kustomize_output
 
 - name: Copy file with owner and permissions
   ansible.builtin.copy:
-    src: "{{ temp_kustomize_dir.path }}/all.yaml"
+    content: "{{ kustomize_output.stdout }}"
     dest: "{{ role_path }}/files/generated_manifest.yaml"
     mode: 0644
 
