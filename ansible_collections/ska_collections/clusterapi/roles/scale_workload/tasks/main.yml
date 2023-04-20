@@ -1,0 +1,44 @@
+---
+- name: Scale ControlPlane
+  kubernetes.core.k8s_json_patch:
+    api_version: controlplane.cluster.x-k8s.io/v1beta1
+    kind: KubeadmControlPlane
+    name: "{{ capi_cluster }}-control-plane"
+    namespace: "{{ capi_kube_namespace }}"
+    patch:
+      - op: replace
+        path: /spec/replicas
+        value: "{{capi_controlplane_count}}"
+
+- name: Scale Workers
+  kubernetes.core.k8s_json_patch:
+    api_version: cluster.x-k8s.io/v1beta1
+    kind: MachineDeployment
+    name: "{{ capi_cluster }}-md-0"
+    namespace: "{{ capi_kube_namespace }}"
+    patch:
+      - op: replace
+        path: /spec/replicas
+        value: "{{ capi_worker_count }}"
+
+- name: Wait conditions
+  kubernetes.core.k8s_info:
+    api_version: "{{ item.api_version }}"
+    kind: "{{ item.kind }}"
+    name: "{{ item.name }}"
+    namespace: "{{ capi_kube_namespace }}"
+    wait: true
+    wait_timeout: 1200
+  register: deployment_status
+  until: (deployment_status.resources[0].status.readyReplicas | default(0) == item.quantity)
+  retries: 180
+  delay: 10
+  loop:
+    - kind: KubeadmControlPlane
+      api_version: controlplane.cluster.x-k8s.io/v1beta1
+      name: "{{ capi_cluster }}-control-plane"
+      quantity: "{{ capi_controlplane_count }}"
+    - kind: MachineDeployment
+      api_version: cluster.x-k8s.io/v1beta1
+      name: "{{ capi_cluster }}-md-0"
+      quantity: "{{ capi_worker_count }}"

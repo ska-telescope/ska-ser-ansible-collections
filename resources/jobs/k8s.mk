@@ -12,6 +12,7 @@ TESTS_DIR ?= ./ansible_collections/ska_collections/k8s/tests
 
 TAGS ?= all,metallb,externaldns,ping,ingress,rookio,standardprovisioner,metrics,binderhub,nvidia ## Ansible tags to run in post deployment processing
 CAPI_CLUSTER ?= capo-test
+CAPI_CLUSTER_HASH ?= debug
 K8S_KUBECONFIG ?= /etc/clusterapi/$(CAPI_CLUSTER)-kubeconfig
 
 .DEFAULT_GOAL := help
@@ -70,6 +71,7 @@ ifneq (,$(findstring ingress,$(TAGS)))
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
+	--extra-vars "capi_cluster_hash=$(CAPI_CLUSTER_HASH)" \
 	--tags "$(TAGS)" \
 	-vv
 endif
@@ -193,6 +195,7 @@ k8s-post-deployment-test:
 ifneq (,$(findstring ingress,$(TAGS)))
 	@ansible-playbook $(TESTS_DIR)/test-ingress.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "capi_cluster_hash=$(CAPI_CLUSTER_HASH)" \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 endif
 

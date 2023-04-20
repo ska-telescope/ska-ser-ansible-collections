@@ -22,7 +22,6 @@
         name: read-write-hostpath-pv
         kind: Pod
         wait: true
-        wait_timeout: 10
 
     - name: Get Logs
       kubernetes.core.k8s_log:
@@ -49,3 +48,5 @@
           - "'something' in log.log"
         fail_msg: "Read write failure on host path"
         success_msg: "Test complete"
+  environment:
+    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG') | mandatory }}"
