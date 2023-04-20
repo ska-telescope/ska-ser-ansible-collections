@@ -4,3 +4,9 @@ ironic_exporter_version: bang-108-support-bareironic
 ironic_golang_version: 1.18
 ironic_exporter_enabled: null
 ironic_clouds_file: /home/ubuntu/.config/openstack
+
+# ### Docker Resource Variables
+# ironic_exporter_server_cpus:
+# ironic_exporter_server_memory:
+# ironic_exporter_server_memory_swap:
+# ironic_exporter_server_memory_swappiness:
