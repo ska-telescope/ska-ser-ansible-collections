@@ -27,6 +27,17 @@ grafana_disable_admin_account_creation: true
 grafana_quota_enabled: false
 grafana_quota_global_session: -1
 
+grafana_ceph_enabled: true
+grafana_elasticstack_enabled: true
+grafana_kubernetes_enabled: true
+grafana_gitlab_runners_enabled: true
+grafana_cadvisor_enabled: true
+grafana_node_exporter_enabled: true
+grafana_openstack_exporter_enabled: true
+grafana_idrac_exporter_enabled: true
+grafana_riello_ups_exporter_enabled: true
+grafana_alerts_enabled: true
+
 grafana_docker_tags: '9.0.0'
 
 grafana_azuread_tenant_id: "{{ _ | mandatory('`grafana_azuread_tenant_id` definition is mandatory') }}"
