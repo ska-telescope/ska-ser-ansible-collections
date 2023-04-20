@@ -24,8 +24,11 @@ capi_calico_ipv4pool_ipip: Never
 capi_controlplane_count: 1
 capi_worker_count: 2
 capi_cluster_timeout: 1800
+capi_nvidia_driver_version: 470
 capi_dns_image_name: docker.io/coredns
 capi_dns_image_tag: 1.9.4
+capi_worker_labels:
+  - node-role.skatelescope.org/ci-worker=true
 
 capi_capo_template_version: v0.7.1
 capi_capo_template_name: cluster-template-capo.orig.yaml
@@ -53,7 +56,7 @@ capi_capo_openstack_security_groups:
   - name: default
 capi_capo_openstack_managed_network_cidr:
 
-capi_capo_worker_groups:
+capi_worker_groups:
   - name: md-0
 
 capi_cluster_extra_vars: {}

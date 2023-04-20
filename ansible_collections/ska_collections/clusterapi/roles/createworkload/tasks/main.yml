@@ -104,10 +104,12 @@
           (["OPENSTACK_WORKER", (idx | string), "FLAVOUR"] | join('_')): (item.flavour | default(capi_capo_node_machine_flavour)),
           (["OPENSTACK_WORKER", (idx | string), "SSH_KEY"] | join('_')): (item.ssh_key | default(capi_capo_openstack_ssh_key_name)),
           (["OPENSTACK_WORKER", (idx | string), "COUNT"] | join('_')): (item.count | default(capi_worker_count)),
-          (["OPENSTACK_WORKER", (idx | string), "LABELS"] | join('_')): ((item.labels | default([])) | join(',')),
+          (["OPENSTACK_WORKER", (idx | string), "LABELS"] | join('_')): ((item.labels | default(capi_worker_labels)) | join(',')),
+          (["WORKER", (idx | string), "NVIDIA_ENABLED"] | join('_')): ((item.nvidia_enabled | default(false)) | bool | lower),
+          (["WORKER", (idx | string), "NVIDIA_DRIVER_VERSION"] | join('_')): (item.nvidia_driver_version | default(capi_nvidia_driver_version)),
         }
       ) }}
-  with_items: "{{ capi_capo_worker_groups }}"
+  with_items: "{{ capi_worker_groups }}"
   loop_control:
     label: "{{ item.name }}"
     index_var: idx
@@ -146,10 +148,12 @@
         regex_replace('OPENSTACK_WORKER_FLAVOUR', [\"OPENSTACK_WORKER\", (idx | string), \"FLAVOUR\"] | join('_')) | \
         regex_replace('OPENSTACK_WORKER_SSH_KEY', [\"OPENSTACK_WORKER\", (idx | string), \"SSH_KEY\"] | join('_')) | \
         regex_replace('OPENSTACK_WORKER_COUNT', [\"OPENSTACK_WORKER\", (idx | string), \"COUNT\"] | join('_')) | \
-        regex_replace('OPENSTACK_WORKER_LABELS', [\"OPENSTACK_WORKER\", (idx | string), \"LABELS\"] | join('_')) \
+        regex_replace('OPENSTACK_WORKER_LABELS', [\"OPENSTACK_WORKER\", (idx | string), \"LABELS\"] | join('_')) | \
+        regex_replace('NVIDIA_ENABLED', [\"WORKER\", (idx | string), \"NVIDIA_ENABLED\"] | join('_')) | \
+        regex_replace('NVIDIA_DRIVER_VERSION', [\"WORKER\", (idx | string), \"NVIDIA_DRIVER_VERSION\"] | join('_')) \
       ] \
     }}"
-  with_items: "{{ capi_capo_worker_groups }}"
+  with_items: "{{ capi_worker_groups }}"
   loop_control:
     label: "{{ item.name }}"
     index_var: idx

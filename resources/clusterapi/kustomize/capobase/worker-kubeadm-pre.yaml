@@ -40,6 +40,8 @@
         --extra-vars "k8s_kubernetes_version=${K8S_VERSION}" \
         --extra-vars "nexus=${OCI_MIRROR_IP}" \
         --extra-vars "docker_allow_version_change=true" \
+        --extra-vars "docker_activate_nvidia=${NVIDIA_ENABLED}" \
+        --extra-vars "containerd_activate_nvidia=${NVIDIA_ENABLED}" \
         /usr/src/ska-ser-ansible-collections/ansible_collections/ska_collections/clusterapi/playbooks/\$1 \$${@:2}
       EOF
 
@@ -62,6 +64,16 @@
       echo "==================================================================="
       echo "worker preKubeadmCommands: deploy $(date)"
       set -x
+
+      if [ "${NVIDIA_ENABLED}" = "true" ]; then
+        ansible-galaxy role install \
+          -r /usr/src/ska-ser-ansible-collections/requirements.yml \
+          --force \
+          -p /usr/share/ansible/roles
+        /usr/src/ska-ser-ansible-collections/run-play.sh nvidia.yml -vv \
+          --extra-vars "nvidia_driver_branch=${NVIDIA_DRIVER_VERSION}" \
+          --extra-vars "nvidia_driver_skip_reboot=true"
+      fi
 
       /usr/src/ska-ser-ansible-collections/run-play.sh containerd.yml -vv
       /usr/src/ska-ser-ansible-collections/run-play.sh docker.yml -vv
