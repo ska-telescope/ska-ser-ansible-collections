@@ -18,7 +18,7 @@
 
     - name: Test metrics
       ansible.builtin.uri:
-        url: "http://{{ control_planes_list.resources[0].status.addresses[0].address }}:30931/metrics"
+        url: "http://{{ control_planes_list.resources[0].status.addresses[0].address }}:{{ gitlab_runner_k8s_metrics_port }}/metrics"
         method: GET
         status_code: [200]
         validate_certs: false
