@@ -48,7 +48,6 @@ grafana_azuread_client_id: "{{ _ | mandatory('`grafana_azuread_client_id` defini
 
 grafana_mid_eda_datasource_password:
 
-
 # ### Docker Resource Variables
 # grafana_server_cpus:
 # grafana_server_memory:
