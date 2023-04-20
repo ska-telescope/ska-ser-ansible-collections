@@ -1,0 +1,22 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: Install SKA Tango Operator
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+    k8s_kubeconfig: "/etc/kubernetes/admin.conf"
+
+  pre_tasks:
+    - name: Check k8s_kubeconfig
+      ansible.builtin.debug:
+        var: k8s_kubeconfig
+
+  tasks:
+    - name: Deploy SKA Tango Operator
+      ansible.builtin.import_role:
+        name: ska_collections.k8s.ska_tango_operator
+        tasks_from: install
+
+  tags:
+    - ska_tango_operator
