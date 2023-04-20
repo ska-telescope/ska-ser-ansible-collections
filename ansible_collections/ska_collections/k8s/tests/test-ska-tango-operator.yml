@@ -1,0 +1,26 @@
+- name: Test ping service
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+    k8s_operator_namespace: ska-tango-operator
+  tasks:
+    # this test must wait CAPI e2e Test MR
+    # for the moment, name is coded
+    - name: Get information about ingress controller
+      kubernetes.core.k8s_info:
+        kind: Service
+        wait: true
+        name: ingress-nginx-controller-lb-dcfed
+        namespace: ingress-nginx
+        wait_timeout: 10
+      register: ingress_nginx_controller
+
+    - name: Check ingress-nginx-controller
+      ansible.builtin.debug:
+        var: ingress_nginx_controller
+
+    - name: Test ska-tango-operator metrics
+      ansible.builtin.uri:
+        url: "http://{{ ingress_nginx_controller.resources[0].status.loadBalancer.ingress[0].ip }}:/{{ k8s_operator_namespace }}/metrics"
+        method: GET
+        status_code: [200]

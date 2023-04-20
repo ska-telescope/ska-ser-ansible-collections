@@ -8,5 +8,5 @@
     chart_version: "{{ k8s_operator_chart_version }}"
     create_namespace: true
     namespace: "{{ k8s_operator_namespace }}"
-    name: ska_tango_operator
+    name: "{{ k8s_operator_release_name }}"
     wait: true

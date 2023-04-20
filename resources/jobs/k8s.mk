@@ -172,6 +172,15 @@ ifneq (,$(findstring taranta,$(TAGS)))
 	-vv
 endif
 
+ifneq (,$(findstring ska_tango_operator,$(TAGS)))
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/ska_tango_operator.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
+	--tags "$(TAGS)" \
+	-vv
+endif
+
 k8s-velero-backups:  ## Configure Velero backups on Kubernetes
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/velero_backups.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
@@ -235,3 +244,10 @@ ifneq (,$(findstring ping,$(TAGS)))
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 endif
+
+ifneq (,$(findstring ska_tango_operator,$(TAGS)))
+	@ansible-playbook $(TESTS_DIR)/test-ska-tango-operator.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+endif
+
