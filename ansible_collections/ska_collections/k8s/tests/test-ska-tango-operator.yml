@@ -1,4 +1,4 @@
-- name: Test ping service
+- name: Test ska tango operator metrics
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
@@ -10,7 +10,7 @@
       kubernetes.core.k8s_info:
         kind: Service
         wait: true
-        name: ingress-nginx-controller-lb-dcfed
+        name: ingress-nginx-controller-lb-88aaa
         namespace: ingress-nginx
         wait_timeout: 10
       register: ingress_nginx_controller
