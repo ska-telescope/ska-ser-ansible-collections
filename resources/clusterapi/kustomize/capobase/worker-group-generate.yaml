@@ -1,0 +1,29 @@
+patch: |-
+    - op: add
+      path: /metadata/annotations
+      value:
+        worker-group: "{{ item.name }}"
+    - op: add
+      path: /metadata/labels
+      value:
+        worker-group: "{{ item.name }}"
+    - op: add
+      path: /metadata/name
+      value: ${CLUSTER_NAME}-{{ item.name }}
+    - op: add
+      path: /spec/template/metadata/labels
+      value:
+        worker-group: "{{ item.name }}"
+    - op: add
+      path: /spec/template/spec/failureDomain
+      value: ${OPENSTACK_FAILURE_DOMAIN}
+    - op: replace
+      path: /spec/template/spec/bootstrap/configRef/name
+      value: ${CLUSTER_NAME}-{{ item.name }}
+    - op: replace
+      path: /spec/template/spec/infrastructureRef/name
+      value: ${CLUSTER_NAME}-{{ item.name }}
+    - op: replace
+      path: /spec/replicas
+      value: "{{ item.count }}"
+  withItems: "{{ .Values.worker_groups }}"
