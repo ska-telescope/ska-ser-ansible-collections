@@ -17,7 +17,7 @@ route:
   routes:
   - receiver: 'slack-notifications-mvp'
     match_re:
-      namespace: integration.*|staging.*|ci.*|dp.*|shared.*|ops.*|sdp-.*
+      namespace: {{ alertmanager_mvp_channel_regex }}
 
 {% if alerts_inhibit_rules != [] %}
 inhibit_rules:
