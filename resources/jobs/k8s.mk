@@ -73,6 +73,13 @@ k8s-deploy-minikube:  ## Deploy Minikube single node cluster
 	--tags "$(TAGS)" \
 	-vv
 
+k8s-cron-etcd-backup:
+	ansible-playbook $(PLAYBOOKS_DIR)/gateway/playbooks/cron_add_configure_cronjob.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--tags "$(TAGS)" \
+	-vv	
+
 k8s-post-deployment:  ## Post deployment for workload cluster
 
 # If you want to run the CCM install you must explicitly add 'cloudprovider' to TAGS
