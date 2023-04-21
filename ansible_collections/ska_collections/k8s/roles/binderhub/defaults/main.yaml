@@ -1,6 +1,6 @@
 k8s_binderhub_singleuser: true
 k8s_binderhub_namespace: binderhub
-k8s_binderhub_helm_chart_version: "1.0.0-0.dev.git.3035.h32213a4"
+k8s_binderhub_helm_chart_version: "1.0.0-0.dev.git.3057.h0a4304c"
 k8s_binderhub_image:
 k8s_binderhub_transport: https
 k8s_binderhub_callback_url: "{{ k8s_binderhub_transport }}://{{ k8s_external_dns_entry }}/{{ k8s_binderhub_namespace }}/oauth_callback"
