@@ -165,7 +165,6 @@ test: check-hosts  # Test service deployments
 ifneq (,$(findstring ingress,$(TAGS)))
 	@ansible-playbook $(TESTS_DIR)/test-ingress.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "capi_cluster_hash=$(CAPI_CLUSTER_HASH)" \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 endif
 

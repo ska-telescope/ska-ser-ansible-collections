@@ -46,6 +46,7 @@
       ansible.builtin.uri:
         url: "http://{{ metallb_service.resources[0].status.loadBalancer.ingress[0].ip }}:{{ metallb_service.resources[0].spec.ports[0].port }}"
         method: GET
+        status_code: [200]
       register: test_result
       until: "test_result.status == 200"
       retries: 30

@@ -39,7 +39,6 @@
     - name: Remove legacy manifest-deployed metrics-server-nodeport Service
       kubernetes.core.k8s:
         kind: Service
-
         name: metrics-server-nodeport
         namespace: kube-system
         state: absent

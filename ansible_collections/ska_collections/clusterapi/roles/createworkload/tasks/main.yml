@@ -190,6 +190,7 @@
       delegate_to: localhost
 
     - name: Wait for workload cluster to be ready
+      when: capi_apply_wait | bool  # TODO: Test this and test piers own filter, swap with Piers' if both work
       block:
         - name: Wait Cluster
           kubernetes.core.k8s_info:
@@ -213,7 +214,6 @@
             wait_timeout: "{{ capi_capo_openstack_instance_create_timeout }}"
             wait_condition:
               type: Ready
-      when: capi_apply_wait | bool
 
 - name: Remove the temp template directory
   ansible.builtin.file:
