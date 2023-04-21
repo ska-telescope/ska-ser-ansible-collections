@@ -163,7 +163,6 @@ ifneq (,$(findstring ska_tango_operator,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/ska_tango_operator.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	--tags "$(TAGS)" \
 	-vv
 endif
