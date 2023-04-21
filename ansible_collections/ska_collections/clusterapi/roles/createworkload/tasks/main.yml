@@ -190,9 +190,9 @@
       delegate_to: localhost
 
     - name: Wait for workload cluster to be ready
-      when: capi_apply_wait | bool  # TODO: Test this and test piers own filter, swap with Piers' if both work
+      when: capi_apply_wait | bool
       block:
-        - name: Wait Cluster
+        - name: Wait for Cluster
           kubernetes.core.k8s_info:
             kind: Cluster
             api_version: cluster.x-k8s.io/v1beta1

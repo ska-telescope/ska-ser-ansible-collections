@@ -11,6 +11,7 @@ capi_kubeconfig: "/home/{{ ansible_user }}/.kube/config"
 capi_apply_manifest: false
 capi_apply_manifest_review_diff: false
 capi_apply_wait: true
+capi_apply_destroy_ask: true
 
 # https://github.com/kubernetes-sigs/cluster-api/releases
 capi_k8s_version: v1.25.7
