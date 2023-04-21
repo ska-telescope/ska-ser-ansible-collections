@@ -1,12 +1,4 @@
 ---
-- name: Check workload cluster
-  ansible.builtin.debug:
-    var: capi_cluster
-
-- name: Check kubeconfig
-  ansible.builtin.debug:
-    var: ansible_env.KUBECONFIG
-
 - name: Check if cluster is present
   kubernetes.core.k8s_info:
     api_version: cluster.x-k8s.io/v1beta1
@@ -34,13 +26,13 @@
 - name: Remove local cluster manifest file  # noqa: template-instead-of-copy
   ansible.builtin.file:
     state: absent
-    dest: "{{ playbook_dir }}/../../../../resources/clusterapi/manifests/{{ capi_cluster }}-cluster-manifest.yaml"
+    dest: "{{ capi_resources_dir }}/manifests/{{ capi_cluster }}-cluster-manifest.yaml"
   delegate_to: localhost
   when: not cluster_resource.failed
 
 - name: Remove local applied cluster manifest file  # noqa: template-instead-of-copy
   ansible.builtin.file:
     state: absent
-    dest: "{{ playbook_dir }}/../../../../resources/clusterapi/manifests/{{ capi_cluster }}-cluster-manifest.yaml.applied"
+    dest: "{{ capi_resources_dir }}/manifests/{{ capi_cluster }}-cluster-manifest.yaml.applied"
   delegate_to: localhost
   when: not cluster_resource.failed

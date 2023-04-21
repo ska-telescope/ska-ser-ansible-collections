@@ -1,5 +1,4 @@
 ---
-
 - name: Install persistent volume reclaimer from Helm chart
   kubernetes.core.helm:
     atomic: true

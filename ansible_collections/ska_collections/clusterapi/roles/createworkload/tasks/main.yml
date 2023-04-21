@@ -42,7 +42,7 @@
 
 - name: Generate kustomized template
   ansible.builtin.shell: |
-    cd {{ playbook_dir }}/../../../../resources/clusterapi/;
+    cd {{ capi_resources_dir }};
     kubectl kustomize ./kustomize/overlay/{{ capi_kustomize_overlay }}/ > /tmp/{{ capi_cluster }}-cluster-template.yaml
   changed_when: false
   delegate_to: localhost
@@ -63,7 +63,7 @@
 - name: Output cluster template file to local  # noqa: template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ slurped_cluster_template.content | b64decode }}"
-    dest: "{{ playbook_dir }}/../../../../resources/clusterapi/templates/{{ capi_cluster }}-cluster-template.yaml"
+    dest: "{{ capi_resources_dir }}/templates/{{ capi_cluster }}-cluster-template.yaml"
     mode: 0644
   delegate_to: localhost
 
@@ -133,25 +133,25 @@
 
 - name: Remove local manifest copy ./resources/clusterapi/manifests/*-cluster-manifest.yaml
   ansible.builtin.file:
-    path: "{{ playbook_dir }}/../../../../resources/clusterapi/manifests/{{ capi_cluster }}-cluster-manifest.yaml"
+    path: "{{ capi_resources_dir }}/manifests/{{ capi_cluster }}-cluster-manifest.yaml"
     state: absent
   delegate_to: localhost
 
 - name: Check if a previous manifest exists
   ansible.builtin.stat:
-    path: "{{ playbook_dir }}/../../../../resources/clusterapi/manifests/{{ capi_cluster }}-cluster-manifest.yaml.applied"
+    path: "{{ capi_resources_dir }}/manifests/{{ capi_cluster }}-cluster-manifest.yaml.applied"
   register: previous_cluster_manifest
   delegate_to: localhost
 
 - name: Output cluster manifest file  # noqa: template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ capi_cluster_manifest }}"
-    dest: "{{ playbook_dir }}/../../../../resources/clusterapi/manifests/{{ capi_cluster }}-cluster-manifest.yaml"
+    dest: "{{ capi_resources_dir }}/manifests/{{ capi_cluster }}-cluster-manifest.yaml"
     mode: 0644
   delegate_to: localhost
 
 - name: Apply cluster manifest
-  when: capi_apply_manifest
+  when: capi_apply_manifest | bool
   block:
     - name: Read previously applied manifest
       ansible.builtin.set_fact:
@@ -185,7 +185,7 @@
     - name: Output cluster manifest file  # noqa: template-instead-of-copy
       ansible.builtin.copy:
         content: "{{ capi_cluster_manifest }}"
-        dest: "{{ playbook_dir }}/../../../../resources/clusterapi/manifests/{{ capi_cluster }}-cluster-manifest.yaml.applied"
+        dest: "{{ capi_resources_dir }}/manifests/{{ capi_cluster }}-cluster-manifest.yaml.applied"
         mode: 0644
       delegate_to: localhost
 

@@ -3,7 +3,7 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-    nginx_ingress_lb_service_name: "ingress-nginx-controller-lb-{{ k8s_ingress_lb_suffix | default('test') }}"
+    nginx_ingress_lb_service_name: "ingress-nginx-controller-lb-{{ k8s_ingress_lb_suffix | default('default') }}"
   environment:
     KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tasks:

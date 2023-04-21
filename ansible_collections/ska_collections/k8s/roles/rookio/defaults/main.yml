@@ -17,7 +17,6 @@ k8s_rook_ceph_admin_secret:
 k8s_rook_ceph_mon_data:
 k8s_rook_ceph_monitors:
 k8s_rook_rbd_pool_name: "volumes"
-k8s_rook_rgw_pool_prefix: "default"
 k8s_rook_csi_rbd_node_secret_name: "csi-rbd-node"
 k8s_rook_csi_rbd_provisioner_secret_name: "csi-rbd-provisioner"
 k8s_rook_csi_cephfs_node_secret_name: "csi-cephfs-node"

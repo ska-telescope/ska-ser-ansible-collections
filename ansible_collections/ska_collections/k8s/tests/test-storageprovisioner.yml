@@ -32,9 +32,10 @@
     - name: Wait until Pod is running
       kubernetes.core.k8s_info:
         name: read-write-hostpath-test
+        namespace: default
         kind: Pod
         wait: true
-        wait_timeout: 60
+        wait_timeout: 120
       register: wait_test_pod
       failed_when: (wait_test_pod.resources) | length == 0
 

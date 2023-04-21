@@ -50,7 +50,7 @@
 - name: Output cluster template file  # noqa: template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ slurped_cluster_template.content | b64decode }}"
-    dest: "{{ playbook_dir }}/../../../../resources/clusterapi/kustomize/capobase/{{ capi_capo_template_name }}"
+    dest: "{{ capi_resources_dir }}/kustomize/capobase/{{ capi_capo_template_name }}"
     mode: 0644
   delegate_to: localhost
 

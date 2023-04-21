@@ -5,7 +5,6 @@
   vars:
     target_hosts: localhost
   become: true
-
   pre_tasks:
     - name: Refresh package cache
       ansible.builtin.apt:
@@ -18,7 +17,6 @@
     - name: Check mlnx_ofed_distro of haggaie.mlnx_ofed
       ansible.builtin.debug:
         var: mlnx_ofed_distro
-
   roles:
     - role: accelize.xilinx_xrt
       # not technically required as the role checks this, but for clarity...
@@ -29,6 +27,7 @@
       when: k8s_activate_nvidia
     - role: haggaie.mlnx_ofed
       when: activate_mellanox
-
+  environment:
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tags:
     - devices

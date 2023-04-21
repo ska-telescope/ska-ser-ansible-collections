@@ -79,35 +79,33 @@ SERVICE = clusterapi
 You can override all the required variables in group_vars/host_vars file as follows:
 
 ```
-base_path: "{{ lookup('ansible.builtin.env', 'BASE_PATH', default='') | mandatory }}"
-
 # Set the inventories output by clusterapi to go to the current
 # inventory dir
-capi_clusterinventory_output_dir: "{{ inventory_dir }}"
+capi_clusterinventory_output_dir: <path to where the generated inventory files should go>
 
 # Set the kubeconfig output directory to go to the resources
-capi_kubeconfig_output_dir: "{{ base_path }}/resources/kubeconfig"
+capi_kubeconfig_output_dir: <path to where the generated kubeconfigs should go>
 
 # Set the cluster structure
 capi_cluster: <cluster name>
-capi_capo_openstack_cloud_config: <path to clouds.yaml>
-capi_capo_openstack_cloud: <name of the target clouds in clouds.yaml>
-capi_capo_openstack_image_name: <image name>
-capi_capo_controlplane_machine_flavour: <controlplane node flavour>
-capi_capo_node_machine_flavour: <worker node flavour>
-capi_controlplane_count: <controlplane count>
-capi_worker_count: <worker node count>
+capi_capo_openstack_cloud_config: <path to the clouds.yaml file to use>
+capi_capo_openstack_cloud: <name of the cloud to use in clouds.yaml>
+capi_capo_openstack_image_name: <openastck image name>
+capi_capo_controlplane_machine_flavour: <openstack flavour to use for the controlplane>
+capi_capo_node_machine_flavour: <openstack flavour to use for the worker nodes>
+capi_controlplane_count: <controlplane machine count>
+capi_worker_count: <worker machine count>
 capi_capo_run_kubelet_install: true
 
 # Set the cluster's network settings
-capi_capo_os_network_name: <target network name>
-capi_capo_os_subnet_name: <target subnetwork name>
+capi_capo_os_network_name: <openstack network name to create cluster instances>
+capi_capo_os_subnet_name: <openstack network's subnet name to create cluster instances>
 
 # Set basic k8s variables to target the workload cluster when installing services using
 # the k8s collection
 k8s_kubernetes_version: "{{ capi_k8s_version }}"
-k8s_rook_ceph_conf_ini_file: "{{ base_path }}/ceph/ceph.conf"
-k8s_rook_ceph_conf_key_ring: "{{ base_path }}/ceph/ceph.client.admin.keyring"
+k8s_rook_ceph_conf_ini_file: <path to ceph.conf file containing ceph cluster configurations>
+k8s_rook_ceph_conf_key_ring: <path to ceph.client.admin.keyring file containing ceph cluster secrets>
 
 # This particular setting will make all `make playbooks k8s install XXX` targets
 # use the workload cluster's kubeconfig
@@ -166,6 +164,11 @@ The last major step is to apply the post deployment customisations.  These are s
 make playbooks k8s install
 make playbooks k8s test
 ```
+
+These targets use a target kubeconfig where to perform actions, in the following precedence:
+* `k8s_kubeconfig` variable - Settable in group_vars or host_vars
+* `KUBECONFIG` environment variable of the HOST - Settable with `KUBECONFIG=<path to kubeconfig> make playbooks k8s install`
+* `/etc/kubernetes/admin.conf` is the default value
 
 # Testing
 

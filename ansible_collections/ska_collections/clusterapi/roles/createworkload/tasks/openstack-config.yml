@@ -47,7 +47,7 @@
     not (capi_capo_auth_username and capi_capo_auth_password) and
     not (capi_capo_auth_application_credential_id and capi_capo_auth_application_credential_secret)
 
-- name: Enconde clouds yaml to base64
+- name: Encode clouds yaml to base64
   ansible.builtin.set_fact:
     capi_capo_ostack_cloud_yaml_b64: "{{ capi_capo_ostack_cloud_yaml | to_nice_yaml(indent=2) | b64encode }}"
 

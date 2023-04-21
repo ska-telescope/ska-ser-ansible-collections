@@ -1,8 +1,4 @@
 ---
-- name: Check kubeconfig
-  ansible.builtin.debug:
-    var: ansible_env.KUBECONFIG
-
 - name: Delete Calico Installation resource
   kubernetes.core.k8s:
     api_version: operator.tigera.io/v1
