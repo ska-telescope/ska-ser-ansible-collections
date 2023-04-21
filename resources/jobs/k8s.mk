@@ -58,10 +58,16 @@ ifneq (,$(findstring vault,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/vault_destroy.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
+endif
+
+install: check-hosts  ## Post installations for a kubernetes cluster
+
+ifneq (,$(findstring cloudprovider,$(TAGS))) # If you want to run the CCM install you must explicitly add 'cloudprovider' to TAGS
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/cloudprovider.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--tags "$(TAGS)"
 endif
 
 install: check-hosts  ## Post installations for a kubernetes cluster
@@ -143,6 +149,16 @@ ifneq (,$(findstring taranta,$(TAGS)))
 	--tags "$(TAGS)"
 endif
 
+ifneq (,$(findstring vault,$(TAGS)))
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/vault.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
+	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
+	--tags "$(TAGS)" \
+	-vv
+endif
+
 ifneq (,$(findstring multihoming,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/multihoming.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
@@ -169,16 +185,6 @@ ifneq (,$(findstring localpvs,$(TAGS)))
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--tags "$(TAGS)"
-endif
-
-ifneq (,$(findstring vault,$(TAGS)))
-	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/vault.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-	--tags "$(TAGS)" \
-	-vv
 endif
 
 test: check-hosts  # Test service deployments
