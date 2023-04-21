@@ -150,7 +150,7 @@ version = 2
         endpoint = ["{{ gitlab_nexus_mirror }}"]
         [plugins."io.containerd.grpc.v1.cri".registry.configs."registry.gitlab.com".tls]
         insecure_skip_verify = true
-            [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ nexus_hosted_cache }}"]
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ nexus_hosted_cache }}"]
         endpoint = ["{{ nexus_hosted_cache_url }}"]
 
     [plugins."io.containerd.grpc.v1.cri".x509_key_pair_streaming]

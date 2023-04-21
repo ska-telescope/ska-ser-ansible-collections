@@ -1,11 +1,9 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: "Apply the k8s metrics to cluster"
+- name: Apply the k8s metrics to cluster
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-    k8s_kubeconfig: "/etc/kubernetes/admin.conf"
-
   pre_tasks:
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:
@@ -13,6 +11,6 @@
   roles:
     - metrics
   environment:
-    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tags:
     - metrics

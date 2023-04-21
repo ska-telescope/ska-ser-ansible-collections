@@ -1,10 +1,5 @@
--include $(BASE_PATH)/PrivateRules.mak
-
-k8s-check-hosts:
-ifndef PLAYBOOKS_HOSTS
-	$(error PLAYBOOKS_HOSTS is undefined)
-endif
-
+.PHONY: check-hosts vars manual-deployment install test velero-backups-install help
+.DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
@@ -12,10 +7,12 @@ ANSIBLE_COLLECTIONS_PATHS ?=
 TESTS_DIR ?= ./ansible_collections/ska_collections/k8s/tests
 
 TAGS ?= all,metallb,externaldns,ping,ingress,rookio,standardprovisioner,metrics,binderhub,nvidia ## Ansible tags to run in post deployment processing
-CAPI_CLUSTER ?= capo-test
-K8S_KUBECONFIG ?= /etc/clusterapi/$(CAPI_CLUSTER)-kubeconfig
+-include $(BASE_PATH)/PrivateRules.mak
 
-.DEFAULT_GOAL := help
+check-hosts:
+ifndef PLAYBOOKS_HOSTS
+	$(error PLAYBOOKS_HOSTS is undefined)
+endif
 
 vars:
 	@echo "\033[36mclusterapi:\033[0m"
@@ -26,25 +23,25 @@ vars:
 	@echo "ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS)"
 	@echo "ANSIBLE_SSH_ARGS=$(ANSIBLE_SSH_ARGS)"
 
-k8s-get-kubeconfig:  ## Post deployment get workload kubeconfig
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/get-kubeconfig.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
-	--limit "management-cluster" -vv
-
-k8s-manual-deployment: ## Manual K8s deployment based on kubeadm
-
+manual-deployment: check-hosts  ## Manual K8s deployment based on kubeadm
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/k8s.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 
-k8s-device-integration:  ## Pre deployment of device integration for workload cluster
+deploy-minikube:  ## Deploy Minikube single node cluster
+	ansible-playbook $(PLAYBOOKS_DIR)/minikube/playbooks/minikube.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--tags "$(TAGS)"
 
-# pxh: must override mlnx_ofed_version and mlnx_ofed_distro here because of vars/main.yml
-# in 3rd party haggaie.mlnx_ofed
+install-base:  ## Install container base for Kubernetes servers
+	ansible-playbook $(PLAYBOOKS_DIR)/docker_base/playbooks/containers.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--tags "$(TAGS)"
+
+device-integration:  ## Deployment device integration to k8s cluster
 	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
 	ANSIBLE_ROLES_PATH=$(ANSIBLE_COLLECTIONS_PATHS) \
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/devices.yml \
@@ -53,203 +50,117 @@ k8s-device-integration:  ## Pre deployment of device integration for workload cl
 	--extra-vars "mlnx_ofed_version=5.9-0.5.6.0" \
 	--extra-vars "mlnx_ofed_distro=ubuntu22.04" \
 	--tags "$(TAGS)" \
-	-vv --flush-cache
+	--flush-cache
 
-k8s-install-base:  ## Install container base for Kubernetes servers
-	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
-	ansible-playbook $(PLAYBOOKS_DIR)/docker_base/playbooks/containers.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--tags "$(TAGS)" \
-	-vv
+install: check-hosts  ## Post installations for a kubernetes cluster
 
-k8s-deploy-minikube:  ## Deploy Minikube single node cluster
-	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
-	ansible-playbook $(PLAYBOOKS_DIR)/minikube/playbooks/minikube.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--tags "$(TAGS)" \
-	-vv
-
-k8s-cron-etcd-backup:
-	ansible-playbook $(PLAYBOOKS_DIR)/gateway/playbooks/cron_add_configure_cronjob.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--tags "$(TAGS)" \
-	-vv	
-
-k8s-post-deployment:  ## Post deployment for workload cluster
-
-# If you want to run the CCM install you must explicitly add 'cloudprovider' to TAGS
-ifneq (,$(findstring cloudprovider,$(TAGS)))
+ifneq (,$(findstring cloudprovider,$(TAGS))) # If you want to run the CCM install you must explicitly add 'cloudprovider' to TAGS
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/cloudprovider.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 endif
 
 ifneq (,$(findstring ingress,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/ingress.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 endif
 
 ifneq (,$(findstring standardprovisioner,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/standardprovisioner.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 endif
 
-#	# --extra-vars 'metallb_version=0.13.7 metallb_namespace=metallb-system metallb_addresses="10.100.10.1-10.100.253.254"'
 ifneq (,$(findstring metallb,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/metallb.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 endif
 
 ifneq (,$(findstring externaldns,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/externaldns.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 endif
 
 ifneq (,$(findstring ping,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/ping.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 endif
 
 ifneq (,$(findstring metrics,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/metrics.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 endif
 
-#	# ANSIBLE_EXTRA_VARS+= --extra-vars 'k8s_capi_ceph_conf_ini_file=<path to>/ceph.conf k8s_capi_ceph_conf_key_ring=<path to>/ceph.client.admin.keyring'
 ifneq (,$(findstring rookio,$(TAGS)))
-    # rookio is a target - avoid undefined ansible vars issue with tags
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/rookio.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 endif
 
 ifneq (,$(findstring binderhub,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/binderhub.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-	--extra-vars k8s_binderhub_oci_registry_password=$(BINDERHUB_OCI_REGISTRY_PASSWORD) \
-	--extra-vars k8s_binderhub_azuread_client_id=$(AZUREAD_CLIENT_ID) \
-	--extra-vars k8s_binderhub_azuread_client_secret=$(AZUREAD_CLIENT_SECRET) \
-	--extra-vars k8s_binderhub_azuread_tenant_id=$(AZUREAD_TENANT_ID) \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 endif
 
 ifneq (,$(findstring nvidia,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/nvidia.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 endif
 
 ifneq (,$(findstring taranta,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/taranta.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 endif
 
 ifneq (,$(findstring multihoming,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/multihoming.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 endif
 
 ifneq (,$(findstring spookd_device_plugin,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/spookd_device_plugin.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 endif
 
 ifneq (,$(findstring generic_device_plugin,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/generic_device_plugin.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 endif
 
 ifneq (,$(findstring localpvs,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/localpvs.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 endif
 
-k8s-velero-backups:  ## Configure Velero backups on Kubernetes
-	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/velero_backups.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-	--extra-vars "cloud_config=$(K8S_CLOUD_CONFIG)"
+test: check-hosts  # Test service deployments
 
-# Notes for velero restore
-# velero restore create test \
-# --from-backup  every6h-20221021144151 \
-# --existing-resource-policy=update \
-# --exclude-namespaces kube-system,ingress-nginx,kube-node-lease,kube-public,metallb-system,velero  \
-# --include-cluster-resources=true
-
-# check restore
-# velero restore describe test
-
-# get logs
-# kubectl -n velero logs $(kubectl -n velero get pods -l component=velero  -o name) > logs.txt
-
-
-# velero restore create test \
-# --from-backup  every6h-20230110020153 \
-# --existing-resource-policy=update \
-# --exclude-namespaces kube-system,ingress-nginx,kube-node-lease,kube-public,metallb-system,velero  \
-# --include-cluster-resources=true
-
-k8s-post-deployment-test:
 ifneq (,$(findstring ingress,$(TAGS)))
 	@ansible-playbook $(TESTS_DIR)/test-ingress.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
@@ -285,3 +196,19 @@ ifneq (,$(findstring ping,$(TAGS)))
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 endif
+
+ifneq (,$(findstring rookio,$(TAGS)))
+	@ansible-playbook $(TESTS_DIR)/test-rookio.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+endif
+
+velero-backups-install: check-hosts  ## Configure Velero backups on Kubernetes. Check the role README.md for how to operate with velero
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/velero_backups.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--tags "$(TAGS)"
+
+help:  ## Show Help
+	@echo "K8s targets - make playbooks k8s <target>:"
+	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

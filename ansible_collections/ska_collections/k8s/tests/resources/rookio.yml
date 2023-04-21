@@ -1,14 +1,28 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: read-write-nfss1-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: nfss1
+---
 apiVersion: v1
 kind: Pod
 metadata:
-  name: read-write-hostpath-test
+  name: read-write-nfss1-test
   namespace: default
 spec:
   restartPolicy: Never
   volumes:
     - name: vol
-      hostPath:
-        path: /cucumber
+      persistentVolumeClaim:
+        claimName: read-write-nfss1-pvc
   containers:
     - name: write-pv
       image: "registry.k8s.io/busybox"

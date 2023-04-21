@@ -16,6 +16,8 @@ This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/
 | [dns](./ansible_collections/ska_collections/dns/)                         | Install DNS                                                                            |
 | [openvpn](./ansible_collections/ska_collections/openvpn/)                 | Install openvpn                                                                        |
 | [metallb](./ansible_collections/ska_collections/metallb/)                 | Install metallb                                                                        |
+| [cluster](./ansible_collections/ska_collections/clusterapi/)              | Create kubernetes clusters using clusterapi                                            |
+| [k8s](./ansible_collections/ska_collections/k8s/)                         | Deploy kubernetes and services to a cluster                                            |
 
 ## TLDR
 
@@ -106,39 +108,3 @@ make <collection> <job> <VARS>
 
 These variables must be exported to your terminal shell, passed as
 command line arguments or add them to your a `PrivateRules.mak` file.
-
-## Tasks
-
-### RookIO
-
-In case you are redeploying the rook operator, you must first delete the existing rook operator deployment and the rook operator namespace.
-
-RookIO deployment is done by invoking the `k8s-post-deployment` target with the `TAGS=rookio`. This target will deploy the rook operator for an existing Ceph cluster.
-
-In order for this to work though, RookIO needs to be aware of the Ceph's cluster configuration. In order to do that, you need to:
-
-1. Obtain the Ceph's cluster configuration files `ceph.conf` and `ceph.client.admin.keyring`
-2. Place them in the `ceph` folder at the root of the infra machinery repo. The working folder should look like this:
-
-        ska-ser-infra-machinery:
-        └── ceph:
-            ├── ceph.client.admin.keyring
-            └── ceph.conf
-
-After the configuration is done, from the base infra machinery repo, run the following command:
-
-```
-TAGS=rookio make playbooks k8s k8s-post-deployment
-```
-## How to Contribute
-
-### Add/Update an Ansible Collection
-A collection can be added/updated to the [ansible_collections/ska_collections](./ansible_collections/ska_collections/) folder.
-
-### External dependencies
-Add any external dependency to a collection in the respective **requirements.yml** and **galaxy.yml** files.
-
-### Add/Update new variables
-Ansible variables that are datacentre specific should be added to the `group_vars` folder of the inventory directory (*PLAYBOOKS_ROOT_DIR*).
-
-Finally, the secret variables are defined in the respective [Makefile](./Makefile) and can be modified there. To assign proper values to these variables, please use a `PrivateRules.mak` file.

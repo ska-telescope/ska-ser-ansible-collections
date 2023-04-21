@@ -1,14 +1,11 @@
 #!/usr/bin/env ansible-playbook
 ---
-
 - name: Uninstall Calico
   hosts: "{{ target_hosts }}"
   become: true
   vars:
     target_hosts: localhost
-    k8s_kubeconfig: "/etc/kubernetes/admin.conf"
-    calico_version: 3.24.5 # last know install
-
+    calico_version: 3.24.5 # last known install
   pre_tasks:
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:
@@ -20,7 +17,6 @@
         name: kubernetes
 
   tasks:
-
     - name: Tidy up Calico manifests
       ansible.builtin.file:
         path: "/tmp/calico.yaml"
@@ -45,7 +41,6 @@
         var: calico_node_check
 
     - name: Start Calico
-      # Calico is started
       when: "calico_node_check.resources"
       block:
         - name: Apply Calico manifests
@@ -58,9 +53,7 @@
           ansible.builtin.file:
             path: "/tmp/calico.yaml"
             state: absent
-
   environment:
-    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
-
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tags:
     - calico-uninstall
