@@ -203,6 +203,10 @@
             wait_condition:
               type: Ready
 
+        - name: Get workload cluster kubeconfig
+          ansible.builtin.import_role:
+            name: ska_collections.clusterapi.kubeconfig
+
         - name: Wait MachineDeployment
           kubernetes.core.k8s_info:
             kind: MachineDeployment
