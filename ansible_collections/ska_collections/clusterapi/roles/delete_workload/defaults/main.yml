@@ -1,5 +1,0 @@
----
-debug: false
-
-capi_cluster: test-cluster
-capi_kube_namespace: default

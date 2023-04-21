@@ -3,6 +3,9 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
+    calico_test_nodes:
+      - "minikube"
+    calico_ipv4pool_cidr: 10.244.0.0/16
     calico_ip_autodetection_interface: "ens.*,eth.*"
     calico_test_pod_namespace: calico-test
     k8s_kubeconfig: "/etc/clusterapi/{{ capi_cluster }}-kubeconfig"
@@ -39,20 +42,10 @@
           namespace: calico-system
           name: csi-node-driver
 
-    - name: Get cluster node names
-      kubernetes.core.k8s_info:
-        kind: Node
-        api_version: v1
-      register: node_info
-
-    - name: Set cluster node name list
-      ansible.builtin.set_fact:
-        kubernetes_nodes: "{{ node_info.resources | map(attribute='metadata.name') | list }}"
-
     - name: Check Calico Node(s) Status
       ansible.builtin.include_tasks:
         file: "utils/checkCalicoNodeStatus.yml"
-      loop: "{{ kubernetes_nodes }}"
+      loop: "{{ calico_test_nodes }}"
 
     - name: Test the pod network
       block:
@@ -75,7 +68,7 @@
                 name: nginx
                 namespace: "{{ calico_test_pod_namespace }}"
               spec:
-                replicas: "{{ capi_worker_count }}"
+                replicas: 3
                 selector:
                   matchLabels:
                     app: nginx

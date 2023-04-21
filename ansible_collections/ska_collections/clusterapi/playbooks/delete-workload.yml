@@ -1,8 +1,0 @@
-#!/usr/bin/env ansible-playbook
----
-- name: Apply the delete_workload role
-  hosts: "{{ target_hosts }}"
-  vars:
-    target_hosts: localhost
-  roles:
-    - delete_workload

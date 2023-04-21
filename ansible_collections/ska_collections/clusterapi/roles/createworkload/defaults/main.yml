@@ -40,5 +40,3 @@ capi_capo_os_subnet_name: SKA-TechOps-ClusterAPI-Net1
 capi_capo_run_kubelet_install: false
 
 capi_cluster_extra_vars: {}
-
-clusterapi_createworkload_wait: true
