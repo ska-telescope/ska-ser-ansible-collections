@@ -296,3 +296,24 @@ jupyterhub:
     pathType: Prefix
     annotations:
       kubernetes.io/ingress.class: nginx
+
+imageCleaner:
+  enabled: true
+  image:
+    name: quay.io/jupyterhub/docker-image-cleaner
+    tag: 1.0.0-beta.3
+    pullPolicy: ""
+    pullSecrets: []
+  # delete an image at most every 5 seconds
+  delay: 5
+  # Interpret threshold values as percentage or bytes
+  imageGCThresholdType: "relative"
+  # when 80% of inodes are used,
+  # cull images until it drops below 60%
+  imageGCThresholdHigh: 80
+  imageGCThresholdLow: 60
+  # cull images on the host docker as well as dind
+  # configuration to use if `imageBuilderType: host` is configured
+  host:
+    dockerSocket: /var/run/docker.sock
+    dockerLibDir: /var/lib/docker
