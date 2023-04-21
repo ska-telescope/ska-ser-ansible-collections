@@ -187,6 +187,14 @@ ifneq (,$(findstring localpvs,$(TAGS)))
 	--tags "$(TAGS)"
 endif
 
+ifneq (,$(findstring ska_tango_operator,$(TAGS)))
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/ska_tango_operator.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--tags "$(TAGS)" \
+	-vv
+endif
+
 test: check-hosts  # Test service deployments
 
 ifneq (,$(findstring ingress,$(TAGS)))
@@ -234,6 +242,12 @@ endif
 
 ifneq (,$(findstring rookio,$(TAGS)))
 	@ansible-playbook $(TESTS_DIR)/test-rookio.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+endif
+
+ifneq (,$(findstring ska_tango_operator,$(TAGS)))
+	@ansible-playbook $(TESTS_DIR)/test-ska-tango-operator.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 endif
