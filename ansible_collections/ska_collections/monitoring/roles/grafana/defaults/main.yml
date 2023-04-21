@@ -24,6 +24,19 @@ grafana_plugins:
   - natel-plotly-panel
   - fifemon-graphql-datasource
 grafana_disable_admin_account_creation: true
+grafana_quota_enabled: false
+grafana_quota_global_session: -1
+
+grafana_ceph_enabled: true
+grafana_elasticstack_enabled: true
+grafana_kubernetes_enabled: true
+grafana_gitlab_runners_enabled: true
+grafana_cadvisor_enabled: true
+grafana_node_exporter_enabled: true
+grafana_openstack_exporter_enabled: true
+grafana_idrac_exporter_enabled: true
+grafana_riello_ups_exporter_enabled: true
+grafana_alerts_enabled: true
 
 grafana_docker_tags: '9.0.0'
 
@@ -34,3 +47,9 @@ grafana_azuread_client_id: "{{ _ | mandatory('`grafana_azuread_client_id` defini
 # secrets
 
 grafana_mid_eda_datasource_password:
+
+# ### Docker Resource Variables
+# grafana_server_cpus:
+# grafana_server_memory:
+# grafana_server_memory_swap:
+# grafana_server_memory_swappiness:

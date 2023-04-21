@@ -11,3 +11,9 @@ snmp_dell_idrac_auth_community: "{{ _ | mandatory('`snmp_dell_idrac_auth_communi
 snmp_riello_ups_auth_community: "{{ _ | mandatory('`snmp_riello_ups_auth_community` definition is mandatory') }}"
 
 snmp_shutdown_playbook_path: /home/ubuntu/kayobe/config/src/kayobe-config/etc/kayobe/ansible/
+
+# ### Docker Resource Variables
+# snmp_server_cpus:
+# snmp_server_memory:
+# snmp_server_memory_swap:
+# snmp_server_memory_swappiness:

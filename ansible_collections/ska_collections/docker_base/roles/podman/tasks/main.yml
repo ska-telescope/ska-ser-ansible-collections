@@ -68,7 +68,7 @@
       ansible.builtin.template:
         src: registries.conf.j2
         dest: "/etc/containers/registries.conf.d/mirror.conf"
-        mode: "0644"
+        mode: 0644
 
     - name: Check if /etc/containers/storage.conf exists
       ansible.builtin.stat:

@@ -68,6 +68,10 @@
     user: root
     restart: true
     restart_policy: always
+    cpus: "{{ thanos_compactor_server_cpus | default(omit) }}"
+    memory: "{{ thanos_compactor_server_memory | default(omit) }}"
+    memory_swap: "{{ thanos_compactor_server_memory_swap | default(omit) }}"
+    memory_swappiness: "{{ thanos_compactor_server_memory_swappiness | default(omit) }}"
     ports:
       - "19091:19091"
     volumes:

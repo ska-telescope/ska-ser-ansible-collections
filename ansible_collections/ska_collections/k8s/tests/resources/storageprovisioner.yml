@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: read-write-hostpath-pv
+  name: read-write-hostpath-test
   namespace: default
 spec:
   restartPolicy: Never

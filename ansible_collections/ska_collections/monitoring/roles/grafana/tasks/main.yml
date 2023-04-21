@@ -3,33 +3,43 @@
 
 - name: Task grafana_ceph
   ansible.builtin.include_tasks: grafana_ceph.yml
+  when: grafana_ceph_enabled
 
 - name: Task grafana_elasticstack
   ansible.builtin.include_tasks: grafana_elasticstack.yml
+  when: grafana_elasticstack_enabled
 
 - name: Task grafana_kubernetes
   ansible.builtin.include_tasks: grafana_kubernetes.yml
+  when: grafana_kubernetes_enabled
 
 - name: Task grafana_gitlab_runners
   ansible.builtin.include_tasks: grafana_gitlab_runners.yml
+  when: grafana_gitlab_runners_enabled
 
 - name: Task grafana_cadvisor
   ansible.builtin.include_tasks: grafana_cadvisor.yml
+  when: grafana_cadvisor_enabled
 
 - name: Task grafana_nodexporter
   ansible.builtin.include_tasks: grafana_nodexporter.yml
+  when: grafana_node_exporter_enabled
 
 - name: Task grafana_openstack_exporter
   ansible.builtin.include_tasks: grafana_openstack_exporter.yml
+  when: grafana_openstack_exporter_enabled
 
 - name: Task grafana_idrac_exporter
   ansible.builtin.include_tasks: grafana_idrac_exporter.yml
+  when: grafana_idrac_exporter_enabled
 
 - name: Task grafana_riello_ups_exporter
   ansible.builtin.include_tasks: grafana_riello_ups_exporter.yml
+  when: grafana_riello_ups_exporter_enabled
 
 - name: Task grafana_alerts
   ansible.builtin.include_tasks: grafana_alerts.yml
+  when: grafana_alerts_enabled
 
 - name: Grafana task
   ansible.builtin.include_tasks: grafana.yml

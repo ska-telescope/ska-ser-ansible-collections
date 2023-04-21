@@ -30,6 +30,10 @@
     image: "mvisonneau/gitlab-ci-pipelines-exporter:{{ prometheus_gitlab_ci_pipelines_exporter_tags }}"
     state: started
     command: run --config /etc/config.yml
+    cpus: "{{ prometheus_gitlab_ci_pipelines_exporter_server_cpus | default(omit) }}"
+    memory: "{{ prometheus_gitlab_ci_pipelines_exporter_server_memory | default(omit) }}"
+    memory_swap: "{{ prometheus_gitlab_ci_pipelines_exporter_server_memory_swap | default(omit) }}"
+    memory_swappiness: "{{ prometheus_gitlab_ci_pipelines_exporter_server_memory_swappiness | default(omit) }}"
     restart: true
     restart_policy: always
     ports:

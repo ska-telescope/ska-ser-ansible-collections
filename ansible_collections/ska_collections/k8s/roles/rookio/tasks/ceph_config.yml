@@ -1,64 +1,52 @@
 ---
 
-- name: "Check ceph.conf exists {{ k8s_capi_ceph_conf_ini_file }}"
+- name: "Check ceph.conf exists {{ k8s_rook_ceph_conf_ini_file }}"
   ansible.builtin.stat:
-    path: "{{ k8s_capi_ceph_conf_ini_file }}"
+    path: "{{ k8s_rook_ceph_conf_ini_file }}"
   register: check_ceph_conf
   delegate_to: localhost
 
 - name: Abort playbook on missing ceph.conf
   ansible.builtin.fail:
     msg: >
-      "Could not find ceph.conf file: {{ k8s_capi_ceph_conf_ini_file }}"
-  when: not check_ceph_conf.stat.exists and not (k8s_capi_capo_ceph_conf_global_fsid | default(''))
+      "Could not find ceph.conf file: {{ k8s_rook_ceph_conf_ini_file }}"
+  when: not check_ceph_conf.stat.exists and not k8s_rook_ceph_fsid
 
-- name: "Check ceph.conf exists {{ k8s_capi_ceph_conf_key_ring }}"
+- name: "Check ceph.conf exists {{ k8s_rook_ceph_conf_key_ring }}"
   ansible.builtin.stat:
-    path: "{{ k8s_capi_ceph_conf_key_ring }}"
+    path: "{{ k8s_rook_ceph_conf_key_ring }}"
   register: check_ceph_key_ring
   delegate_to: localhost
 
 - name: Abort playbook on missing ceph key ring file
   ansible.builtin.fail:
     msg: >
-      "Could not find ceph key ring file: {{ k8s_capi_ceph_conf_key_ring }}"
-  when: not check_ceph_key_ring.stat.exists and not (k8s_capi_ceph_external_admin_secret | default(''))
+      "Could not find ceph key ring file: {{ k8s_rook_ceph_conf_key_ring }}"
+  when: not check_ceph_key_ring.stat.exists and not k8s_rook_ceph_admin_secret
+
+- name: Read ceph conf
+  ansible.builtin.slurp:
+    src: "{{ k8s_rook_ceph_conf_ini_file }}"
+  register: ceph_conf_ini
+  delegate_to: localhost
+
+- name: Autodetect monitoring host key
+  ansible.builtin.set_fact:
+    mon_host_key: "{{ ('mon host' in (ceph_conf_ini.content | b64decode)) | ternary('mon host', 'mon_host') }}"
 
 - name: Get Ceph conf global section
   ansible.builtin.set_fact:
-    k8s_capi_capo_ceph_conf_global_fsid: "{% if (k8s_capi_capo_ceph_conf_global_fsid | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'fsid', section='global', file=k8s_capi_ceph_conf_ini_file) }}{% else %}{{ k8s_capi_capo_ceph_conf_global_fsid }}{% endif %}"  # noqa: yaml
-    # PXH: if there are errors - try swapping 'mon host' with 'mon_host' in lookup('ansible.builtin.ini', 'mon_host', section='global', file=k8s_capi_ceph_conf_ini_file)
-    k8s_capi_capo_ceph_conf_global_mon_host: "{% if (k8s_capi_capo_ceph_conf_global_mon_host | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'mon_host', section='global', file=k8s_capi_ceph_conf_ini_file) | ska_collections.k8s.cephmons }}{% else %}{{ k8s_capi_capo_ceph_conf_global_mon_host }}{% endif %}"  # noqa: yaml
-    k8s_capi_capo_ceph_conf_global_mons_data: "{% if (k8s_capi_capo_ceph_conf_global_mons_data | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'mon_host', section='global', file=k8s_capi_ceph_conf_ini_file) | ska_collections.k8s.cephmonsdata }}{% else %}{{ k8s_capi_capo_ceph_conf_global_mons_data }}{% endif %}"  # noqa: yaml
-    k8s_capi_capo_ceph_conf_global_monitors: "{% if (k8s_capi_capo_ceph_conf_global_monitors | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'mon_host', section='global', file=k8s_capi_ceph_conf_ini_file) | ska_collections.k8s.cephmonitors }}{% else %}{{ k8s_capi_capo_ceph_conf_global_monitors }}{% endif %}"  # noqa: yaml
-    k8s_capi_capo_ceph_key: "{% if (k8s_capi_capo_ceph_key | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=k8s_capi_ceph_conf_key_ring) }}{% else %}{{ k8s_capi_capo_ceph_key }}{% endif %}"  # noqa: yaml
-    k8s_capi_ceph_external_admin_secret: "{% if (k8s_capi_ceph_external_admin_secret | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=k8s_capi_ceph_conf_key_ring) }}{% else %}{{ k8s_capi_ceph_external_admin_secret }}{% endif %}"  # noqa: yaml
-    k8s_capi_ceph_external_admin_key: "{% if (k8s_capi_ceph_external_admin_key | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=k8s_capi_ceph_conf_key_ring) }}{% else %}{{ k8s_capi_ceph_external_admin_key }}{% endif %}"  # noqa: yaml
-    k8s_capi_ceph_csi_rbd_node_secret: "{% if (k8s_capi_ceph_csi_rbd_node_secret | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=k8s_capi_ceph_conf_key_ring) }}{% else %}{{ k8s_capi_ceph_csi_rbd_node_secret }}{% endif %}"  # noqa: yaml
-    k8s_capi_ceph_csi_rbd_provisioner_secret: "{% if (k8s_capi_ceph_csi_rbd_provisioner_secret | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=k8s_capi_ceph_conf_key_ring) }}{% else %}{{ k8s_capi_ceph_csi_rbd_provisioner_secret }}{% endif %}"  # noqa: yaml
-    k8s_capi_ceph_csi_cephfs_node_secret: "{% if (k8s_capi_ceph_csi_cephfs_node_secret | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=k8s_capi_ceph_conf_key_ring) }}{% else %}{{ k8s_capi_ceph_csi_cephfs_node_secret }}{% endif %}"  # noqa: yaml
-    k8s_capi_ceph_csi_cephfs_provisioner_secret: "{% if (k8s_capi_ceph_csi_cephfs_provisioner_secret | default('')) | length == 0 %}{{ lookup('ansible.builtin.ini', 'key', section='client.admin', file=k8s_capi_ceph_conf_key_ring) }}{% else %}{{ k8s_capi_ceph_csi_cephfs_provisioner_secret }}{% endif %}"  # noqa: yaml
+    rook_conf:
+      ceph_external_fsid: "{% if k8s_rook_ceph_fsid %}{{ k8s_rook_cep_fsid }}{% else %}{{ lookup('ansible.builtin.ini', 'fsid', section='global', file=k8s_rook_ceph_conf_ini_file) }}{% endif %}"  # noqa: yaml
+      ceph_admin_secret: "{%- if k8s_rook_ceph_admin_secret -%}{{ k8s_rook_ceph_admin_secret }}{%- else -%}{{ lookup('ansible.builtin.ini', 'key', section=k8s_rook_ceph_admin_user_name, file=k8s_rook_ceph_conf_key_ring) }}{%- endif -%}"  # noqa: yaml
+      ceph_mon_data: "{%- if k8s_rook_ceph_mon_data -%}{{ k8s_rook_ceph_mon_data }}{%- else -%}{{ lookup('ansible.builtin.ini', mon_host_key, section='global', file=k8s_rook_ceph_conf_ini_file) | ska_collections.k8s.cephmonsdata }}{%- endif -%}"  # noqa: yaml
+      ceph_monitors: "{%- if k8s_rook_ceph_mon_data -%}{{ k8s_rook_ceph_mon_data }}{%- else -%}{{ lookup('ansible.builtin.ini', mon_host_key, section='global', file=k8s_rook_ceph_conf_ini_file) | ska_collections.k8s.cephmonitors }}{%- endif -%}"  # noqa: yaml
+      csi_rbd_node_secret: "{%- if k8s_rook_ceph_admin_secret -%}{{ k8s_rook_ceph_admin_secret }}{%- else -%}{{ lookup('ansible.builtin.ini', 'key', section=k8s_rook_ceph_admin_user_name, file=k8s_rook_ceph_conf_key_ring) }}{%- endif -%}"  # noqa: yaml
+      csi_rbd_provisioner_secret: "{%- if k8s_rook_ceph_admin_secret -%}{{ k8s_rook_ceph_admin_secret }}{%- else -%}{{ lookup('ansible.builtin.ini', 'key', section=k8s_rook_ceph_admin_user_name, file=k8s_rook_ceph_conf_key_ring) }}{%- endif -%}"  # noqa: yaml
+      csi_cephfs_node_secret: "{%- if k8s_rook_ceph_admin_secret -%}{{ k8s_rook_ceph_admin_secret }}{%- else -%}{{ lookup('ansible.builtin.ini', 'key', section=k8s_rook_ceph_admin_user_name, file=k8s_rook_ceph_conf_key_ring) }}{%- endif -%}"  # noqa: yaml
+      csi_cephfs_provisioner_secret: "{%- if k8s_rook_ceph_admin_secret -%}{{ k8s_rook_ceph_admin_secret }}{%- else -%}{{ lookup('ansible.builtin.ini', 'key', section=k8s_rook_ceph_admin_user_name, file=k8s_rook_ceph_conf_key_ring) }}{%- endif -%}"  # noqa: yaml
 
-- name: "Show k8s_capi_ceph_external_admin_secret"
+- name: "Show rook configuration"
   ansible.builtin.debug:
-    var: k8s_capi_ceph_external_admin_secret
-
-- name: "Show k8s_capi_capo_ceph_conf_global_mon_host"
-  ansible.builtin.debug:
-    var: k8s_capi_capo_ceph_conf_global_mon_host
-
-- name: "Show k8s_capi_capo_ceph_conf_global_mons_data"
-  ansible.builtin.debug:
-    var: k8s_capi_capo_ceph_conf_global_mons_data
-
-- name: "Show k8s_capi_capo_ceph_conf_global_monitors"
-  ansible.builtin.debug:
-    var: k8s_capi_capo_ceph_conf_global_monitors
-
-- name: "Show k8s_capi_capo_ceph_key"
-  ansible.builtin.debug:
-    var: k8s_capi_capo_ceph_key
-
-- name: "Show k8s_capi_capo_ceph_conf_global_fsid"
-  ansible.builtin.debug:
-    var: k8s_capi_capo_ceph_conf_global_fsid
+    var: rook_conf
+  when: debug

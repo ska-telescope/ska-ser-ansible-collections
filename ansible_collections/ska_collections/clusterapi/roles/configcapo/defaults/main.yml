@@ -2,5 +2,6 @@
 debug: false
 
 capi_config_dir: /etc/clusterapi
+capi_resources_dir: "{{ playbook_dir }}/../../../../resources/clusterapi"
 capi_capo_template_version: v0.7.1
 capi_capo_template_name: cluster-template-capo.orig.yaml
