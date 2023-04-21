@@ -8,7 +8,6 @@
     calico_ipv4pool_cidr: 10.244.0.0/16
     calico_ip_autodetection_interface: "ens.*,eth.*"
     calico_test_pod_namespace: calico-test
-    k8s_kubeconfig: "/etc/clusterapi/{{ capi_cluster }}-kubeconfig"
   tasks:
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:
@@ -21,7 +20,6 @@
         name: "{{ item.name }}"
         wait: true
         wait_timeout: 300
-
       loop:
         - kind: Deployment
           namespace: calico-operator
