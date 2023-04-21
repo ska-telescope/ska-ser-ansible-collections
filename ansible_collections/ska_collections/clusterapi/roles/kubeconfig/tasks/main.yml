@@ -15,8 +15,8 @@
     kubectl_namespace: "{{ capi_kube_namespace }}"
     initpause: 10
     wait: 30
-    retries: 56
-    kubectl_kubeconfig: "/home/ubuntu/.kube/config"
+    retries: 60
+    kubectl_kubeconfig: "{{ capi_kubeconfig }}"
 
 - name: Save cluster kubeconfig credentials # noqa no-changed-when risky-shell-pipe
   ansible.builtin.shell: |
@@ -25,7 +25,7 @@
     base64 --decode
   register: workload_kubeconfig
   environment:
-    KUBECONFIG: "/home/ubuntu/.kube/config"
+    KUBECONFIG: "{{ capi_kubeconfig }}"
 
 - name: Fail if Workload KUBECONFIG Secret is NOT found
   ansible.builtin.fail:
@@ -49,17 +49,18 @@
 - name: Workload cluster kubeconfig
   ansible.builtin.debug:
     var: workload_kubeconfig.stdout
+  when: debug
 
 - name: "Remove workload local kubeconfig copy ./{{ capi_cluster }}-kubeconfig"  # noqa: name[template]
   ansible.builtin.file:
-    path: "{{ playbook_dir }}/../../../../../{{ capi_cluster }}-kubeconfig"
+    path: "{{ capi_kubeconfig_output_dir }}/{{ capi_cluster }}-kubeconfig"
     state: absent
   delegate_to: localhost
 
 - name: Output workload local kubeconfig copy  # noqa: template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ workload_kubeconfig.stdout }}"
-    dest: "{{ playbook_dir }}/../../../../../{{ capi_cluster }}-kubeconfig"
+    dest: "{{ capi_kubeconfig_output_dir }}/{{ capi_cluster }}-kubeconfig"
     mode: 0644
   delegate_to: localhost
 

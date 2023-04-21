@@ -17,10 +17,8 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-    k8s_kubeconfig: "/etc/kubernetes/admin.conf"
   become: true
   gather_facts: true
-
   tasks:
     - name: Destroy MetalLB
       ansible.builtin.import_role:
@@ -31,3 +29,5 @@
       ansible.builtin.import_role:
         name: ska_collections.k8s.externaldns
         tasks_from: destroy
+  environment:
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"

@@ -33,16 +33,17 @@
       set -x
 
       # check if we are running on one of the other nodes
-      MAP=`kubectl -n kube-system get configmap culsterapi-post-run -o yaml`
+      MAP=`kubectl -n kube-system get configmap clusterapi-post-run -o yaml`
       rc=$?
       if [[ $rc -eq 0 ]]; then
         echo "clusterapi post kubedm job allready running:"
         echo $MAP
         exit
       fi
+
       iface=`route | grep '^default'  | grep -o '[^ ]*$'`
       ip=`ip a show $iface | grep ' inet ' | awk '{print $2}'`
-      kubectl -n kube-system create configmap culsterapi-post-run \
+      kubectl -n kube-system create configmap clusterapi-post-run \
        --from-literal=on-host=$(hostname) \
        --from-literal=ip=$ip
 
@@ -63,5 +64,6 @@
         --extra-vars "capi_capo_openstack_cloud=${OPENSTACK_CLOUD}" \
         --tags "cloudprovider" \
         -vv
+
       echo "postKubeadmCommands: end $(date)"
       exit 0

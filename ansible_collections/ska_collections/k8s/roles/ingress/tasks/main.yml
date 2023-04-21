@@ -54,7 +54,7 @@
       controller:
         # set the name so that the svc and Octavia inherits
         # a unique one
-        name: "ingress-nginx-controller-{{ k8s_ingress_lb_suffix }}"
+        name: "controller-{{ k8s_ingress_lb_suffix }}"
         ingressClassResource:
           default: true
         extraArgs:
@@ -69,7 +69,7 @@
   kubernetes.core.k8s_info:
     kind: Deployment
     wait: true
-    name: "ingress-nginx-ingress-nginx-controller-{{ k8s_ingress_lb_suffix }}"
+    name: "ingress-nginx-controller-{{ k8s_ingress_lb_suffix }}"
     namespace: ingress-nginx
     wait_timeout: 120
 

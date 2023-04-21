@@ -19,6 +19,7 @@
 - name: Workload cluster inventory
   ansible.builtin.debug:
     var: workload_machines
+  when: debug
 
 - name: "Remove workload inventory copy {{ capi_config_dir }}/{{ capi_cluster }}-inventory"  # noqa: name[template]
   ansible.builtin.file:
@@ -45,14 +46,14 @@
 
 - name: "Remove workload local inventory copy ./{{ capi_cluster }}-inventory"  # noqa: name[template]
   ansible.builtin.file:
-    path: "{{ playbook_dir }}/../../../../../{{ capi_cluster }}-inventory"
+    path: "{{ capi_clusterinventory_output_dir }}/{{ capi_cluster }}-inventory"
     state: absent
   delegate_to: localhost
 
 - name: Output workload local inventory copy  # noqa: template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ capi_cluster_inventory }}"
-    dest: "{{ playbook_dir }}/../../../../../{{ capi_cluster }}-inventory"
+    dest: "{{ capi_clusterinventory_output_dir }}/{{ capi_cluster }}-inventory"
     mode: 0644
   delegate_to: localhost
 

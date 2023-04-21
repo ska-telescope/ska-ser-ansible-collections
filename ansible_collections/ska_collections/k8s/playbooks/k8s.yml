@@ -1,6 +1,6 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: "Apply the k8s role to the k8s nodes"
+- name: Apply the k8s role to the k8s nodes
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
@@ -10,7 +10,7 @@
   tags:
     - k8s
 
-- name: "Join nodes to the cluster"
+- name: Join nodes to the cluster
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
