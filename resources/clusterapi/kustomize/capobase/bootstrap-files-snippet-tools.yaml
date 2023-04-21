@@ -21,49 +21,37 @@
       echo "==================================================================="
       echo "Running the cluster initialisation: install prereq tools [happens on workers]"
       set -x
+
       apt update
       apt install -y --allow-change-held-packages gettext-base git ca-certificates net-tools python3-pip
       pip3 install ansible kubernetes
+
       cd /usr/src && \
       git clone --depth 1 https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections.git \
         --recurse-submodules \
         --branch ${COLLECTIONS_BRANCH}
-      cd ska-ser-ansible-collections
-      echo -e "[management-cluster]\nclusterapi\n127.0.0.1\n" > ansible_hosts
 
-      export THIS_BASE=$(pwd)
-      export ENVIRONMENT=stfc-techops
-      export PLAYBOOKS_HOSTS=clusterapi
+      cd ska-ser-ansible-collections
+
       cat <<EOF > run-play.sh
       #!/usr/bin/bash
       echo "run-play.sh args are: \$*"
       cd /usr/src/ska-ser-ansible-collections
-      export THIS_BASE=$(pwd)
-      export PLAYBOOKS_HOSTS=clusterapi
-      export ANSIBLE_COLLECTIONS_PATHS="$THIS_BASE:$HOME/.ansible/collections:/usr/share/ansible/collections"
+      export ANSIBLE_COLLECTIONS_PATHS="/usr/src/ska-ser-ansible-collections:$HOME/.ansible/collections:/usr/share/ansible/collections"
       export KUBECONFIG="/etc/kubernetes/admin.conf"
-      export OCI_MIRROR_IP=${OCI_MIRROR_IP}
-      export ANSIBLE_CONFIG="$THIS_BASE/datacentres/production/installation/ansible.cfg"
+      export ANSIBLE_CONFIG="/usr/src/ska-ser-ansible-collections/datacentres/production/installation/ansible.cfg"
       ansible-playbook \
         --connection=local \
-        --inventory 127.0.0.1, \
-        --limit 127.0.0.1 \
-         --become \
-         --extra-vars "capi_cluster=${CLUSTER_NAME}" \
-         --extra-vars "ansible_user=ubuntu" \
-         --extra-vars "k8s_kubeconfig=/etc/kubernetes/admin.conf" \
-         --extra-vars "docker_hub_mirror=http://${OCI_MIRROR_IP}:9082" \
-         --extra-vars "central_nexus_mirror=http://${OCI_MIRROR_IP}:9084" \
-         --extra-vars "gitlab_nexus_mirror=http://${OCI_MIRROR_IP}:9085" \
-         --extra-vars "nexus_hosted_cache=${OCI_MIRROR_IP}:9080" \
-         --extra-vars "nexus_hosted_cache_url=http://${OCI_MIRROR_IP}:9080" \
-         --extra-vars "{\"docker_registry_mirrors\": [\"http://${OCI_MIRROR_IP}:9082\"]}" \
-         --extra-vars "{\"docker_insecure_registries\": [\"http://${OCI_MIRROR_IP}:9080\"]}" \
-         --extra-vars "{\"podman_registry_mirrors\": [\"http://${OCI_MIRROR_IP}:9082\"]}" \
-         --extra-vars "docker_allow_version_change=true" \
-        $THIS_BASE/ansible_collections/ska_collections/clusterapi/playbooks/\$1 \
-         --inventory /usr/src/ska-ser-ansible-collections/ansible_hosts \$${@:2}
+        --limit localhost \
+        --become \
+        --extra-vars "capi_cluster=${CLUSTER_NAME}" \
+        --extra-vars "ansible_user=ubuntu" \
+        --extra-vars "k8s_kubeconfig=/etc/kubernetes/admin.conf" \
+        --extra-vars "nexus=${OCI_MIRROR_IP}" \
+        --extra-vars "docker_allow_version_change=true" \
+        /usr/src/ska-ser-ansible-collections/ansible_collections/ska_collections/clusterapi/playbooks/\$1 \$${@:2}
       EOF
+
       chmod a+x run-play.sh
       cat run-play.sh
 

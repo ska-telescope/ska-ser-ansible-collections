@@ -2,6 +2,8 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
+  environment:
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tasks:
     - name: Check storage-provisioner is running
       kubernetes.core.k8s_info:
@@ -11,42 +13,57 @@
         namespace: kube-system
         wait: true
         wait_timeout: 120
+      register: storage_provisioner_check
+      failed_when: (storage_provisioner_check.resources) | length == 0
 
-    - name: Apply pv host path pod
+    - name: Check standard storage class exist
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: StorageClass
+        name: standard
+      register: standard_sc_check
+      failed_when: (standard_sc_check.resources) | length == 0
+
+    - name: Deploy read-write Pod with hostPath volume
       kubernetes.core.k8s:
         state: present
         template: 'resources/storageprovisioner.yml'
 
-    - name: Wait Until Pod Is Running
+    - name: Wait until Pod is running
       kubernetes.core.k8s_info:
-        name: read-write-hostpath-pv
+        name: read-write-hostpath-test
+        namespace: default
         kind: Pod
         wait: true
+        wait_timeout: 120
+      register: wait_test_pod
+      failed_when: (wait_test_pod.resources) | length == 0
 
-    - name: Get Logs
+    - name: Get logs
       kubernetes.core.k8s_log:
-        name: read-write-hostpath-pv
+        name: read-write-hostpath-test
         namespace: default
         container: read-pv
       register: log
 
-    - name: Print log
+    - name: Print logs
       ansible.builtin.debug:
         var: log
+      when: debug
 
-    - name: Remove host path pod
+    - name: Remove test pod
       kubernetes.core.k8s:
         state: absent
         api_version: v1
         kind: Pod
         namespace: default
-        name: read-write-hostpath-pv
+        name: read-write-hostpath-test
 
-    - name: Check storage working
+    - name: Check storage is working
       ansible.builtin.assert:
         that:
           - "'something' in log.log"
-        fail_msg: "Read write failure on host path"
+        fail_msg: "Read write failure using host path volume"
         success_msg: "Test complete"
-  environment:
-    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG') | mandatory }}"
+  tags:
+    - standardprovisioner

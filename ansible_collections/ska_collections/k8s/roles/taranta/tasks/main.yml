@@ -1,0 +1,36 @@
+---
+
+- name: Create taranta namespace
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: taranta
+
+- name: Install ska-tango-taranta-dashboard-pvc Helm chart
+  kubernetes.core.helm:
+    atomic: true
+    chart_repo_url: https://artefact.skao.int/repository/helm-internal
+    chart_ref: ska-tango-taranta-dashboard-pvc
+    chart_version: "{{ taranta_pvc_version }}"
+    namespace: taranta
+    name: pvc
+    values: "{{ taranta_values }}"
+
+- name: Install ska-tango-taranta-dashboard Helm chart
+  kubernetes.core.helm:
+    atomic: true
+    chart_repo_url: https://artefact.skao.int/repository/helm-internal
+    chart_ref: ska-tango-taranta-dashboard
+    chart_version: "{{ taranta_dashboard_version }}"
+    namespace: taranta
+    name: dash
+    values: "{{ taranta_values }}"
+
+- name: Install ska-tango-taranta-auth Helm chart
+  kubernetes.core.helm:
+    atomic: true
+    chart_repo_url: https://artefact.skao.int/repository/helm-internal
+    chart_ref: ska-tango-taranta-auth
+    chart_version: "{{ taranta_auth_version }}"
+    namespace: taranta
+    name: auth
+    values: "{{ taranta_values }}"

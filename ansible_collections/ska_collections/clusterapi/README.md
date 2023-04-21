@@ -50,13 +50,14 @@ Playbooks can be found in the [playbooks/](./playbooks) folder in the following 
 
 | Name | Description |
 | ---- | ----------- |
-| [calico.yml](./playbooks/calico.yml) | Install Calico Pod Network |
+| [calico-install.yml](./playbooks/calico-install.yml) | Install Calico Pod Network |
 | [clusterapi.yml](./playbooks/clusterapi.yml) | Install and configure `cluserctl` and the CAPO provider on management cluster |
 | [containerd.yml](./playbooks/containerd.yml) | Install and configure containerd |
-| [createworkload.yml](./playbooks/createworkload.yml) | Generate workload cluster manifests and apply |
 | [docker.yml](./playbooks/docker.yml) | Install and configure Docker using `ska_collections.docker_base.docker` |
-| [get-inventory.yml](./playbooks/get-inventory.yml) | Extract workload cluster Ansible inventory |
-| [get-kubeconfig.yml](./playbooks/get-kubeconfig.yml) | Extract workload cluster `KUBECONFIG` |
+| [create-workload.yml](./playbooks/create-workload.yml) | Generate workload cluster manifests and apply |
+| [destroy-workload.yml](./playbooks/destroy-workload.yml) | Destroys the workload cluster |
+| [get-workload-inventory.yml](./playbooks/get-workload-inventory.yml) | Extract workload cluster Ansible inventory |
+| [get-workload-kubeconfig.yml](./playbooks/get-workload-kubeconfig.yml) | Extract workload cluster `KUBECONFIG` |
 | [imagebuilder.yml](./playbooks/imagebuilder.yml) | Build OS images for CAPO deployment |
 | [init-hosts.yml](./playbooks/init-hosts.yml) | Initialise hosts using `ska_collections.instance_common.init` |
 | [install-tools.yml](./playbooks/install-tools.yml) | Install tools such as Helm |
@@ -73,22 +74,43 @@ Setup `PrivateRules.mak` - the following highlights key variables that are likel
 DATACENTRE = stfc-techops
 ENVIRONMENT = production
 SERVICE = clusterapi
-
-# Always point to the management-cluster group
-PLAYBOOKS_HOSTS = management-cluster
-CAPI_CLUSTER = capo-examples
-
-# Ceph config
-ANSIBLE_EXTRA_VARS+= --extra-vars 'k8s_capi_ceph_conf_ini_file=$(THIS_BASE)/clusterapi/ceph/ceph.conf'
-ANSIBLE_EXTRA_VARS+= --extra-vars 'k8s_capi_ceph_conf_key_ring=$(THIS_BASE)/clusterapi/ceph/ceph.client.admin.keyring'
-ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_controlplane_count=3 capi_worker_count=3'
-
-# Cloud config
-ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_capo_openstack_cloud_config=$(THIS_BASE)/clouds-clusterapi.yaml'
-ANSIBLE_EXTRA_VARS+= --extra-vars 'capi_capo_openstack_cloud=skatechops'
-
 ```
 
+You can override all the required variables in group_vars/host_vars file as follows:
+
+```
+# Set the inventories output by clusterapi to go to the current
+# inventory dir
+capi_clusterinventory_output_dir: <path to where the generated inventory files should go>
+
+# Set the kubeconfig output directory to go to the resources
+capi_kubeconfig_output_dir: <path to where the generated kubeconfigs should go>
+
+# Set the cluster structure
+capi_cluster: <cluster name>
+capi_capo_openstack_cloud_config: <path to the clouds.yaml file to use>
+capi_capo_openstack_cloud: <name of the cloud to use in clouds.yaml>
+capi_capo_openstack_image_name: <openastck image name>
+capi_capo_controlplane_machine_flavour: <openstack flavour to use for the controlplane>
+capi_capo_node_machine_flavour: <openstack flavour to use for the worker nodes>
+capi_controlplane_count: <controlplane machine count>
+capi_worker_count: <worker machine count>
+capi_capo_run_kubelet_install: true
+
+# Set the cluster's network settings
+capi_capo_os_network_name: <openstack network name to create cluster instances>
+capi_capo_os_subnet_name: <openstack network's subnet name to create cluster instances>
+
+# Set basic k8s variables to target the workload cluster when installing services using
+# the k8s collection
+k8s_kubernetes_version: "{{ capi_k8s_version }}"
+k8s_rook_ceph_conf_ini_file: <path to ceph.conf file containing ceph cluster configurations>
+k8s_rook_ceph_conf_key_ring: <path to ceph.client.admin.keyring file containing ceph cluster secrets>
+
+# This particular setting will make all `make playbooks k8s install XXX` targets
+# use the workload cluster's kubeconfig
+k8s_kubeconfig: "/etc/clusterapi/{{ capi_cluster }}-kubeconfig"
+```
 ### First - Create VM Image
 
 Make sure the appropriate OS image has been generated for the Kubernetes version being deployed.  This can be generated with:
@@ -99,43 +121,54 @@ Note: see [imagebuilder/defaults/main.yml](https://gitlab.com/ska-telescope/sdi/
 
 ### Create management cluster
 
-Establish a single node management cluster based on Minikube:
-
-Deploy the host, generate the inventory and then provision the management cluster:
+Our management cluster is a single node cluster running minikube. First we need to deploy the host, generate the inventory and then provision the management cluster:
 ```
-make orch apply PLAYBOOKS_HOSTS=management-cluster TF_AUTO_APPROVE=true
-make orch generate-inventory PLAYBOOKS_HOSTS=management-cluster
-make playbooks clusterapi clusterapi-build-management-server
+make orch apply
+make orch generate-inventory
 ```
 
-This will have initialised a VM using Terraform, generated the required inventory, and then:
-* basic provisioning of host level tooling ready for Minikube
+Now, create a group in ansible and use a group_vars file, or use a host_vars file with the host's name, and add the appropriate values mentioned in "Basic Configuration". Afterwards, we can start the management cluster creation process:
+
+```
+make playbooks clusterapi build-management-cluster PLAYBOOKS_HOSTS=<management cluster>
+```
+
+This will have initialised an instance using Terraform, generated the required inventory, and then:
+* Basic provisioning of host level tooling ready for Minikube
 * Minikube and Kubernetes command line tools
 * Built a Minikube single node cluster
 * Installed clusterapi tools, initialised OpenStack Infrastructure Provider and retrieved the CAPO manifest template
 
 Build a workload cluster, and perform post deployment customisations:
-
 ```
-make playbooks clusterapi clusterapi-createworkload CAPI_APPLY=true PLAYBOOKS_HOSTS=clusterapi
-make playbooks k8s k8s-get-kubeconfig PLAYBOOKS_HOSTS=clusterapi
-make playbooks k8s k8s-post-deployment
-make playbooks clusterapi clusterapi-workload-inventory
+make playbooks clusterapi create-workload-cluster CAPI_APPLY=true PLAYBOOKS_HOSTS=<management cluster>
+```
 
+You can use the target without CAPI_APPLY=true to check the generated manifest if you want to validate it first.
+```
+make playbooks clusterapi create-workload-cluster PLAYBOOKS_HOSTS=<management cluster>
+
+# Get the workload cluster kubeconfig and inventory
+make playbooks clusterapi get-workload-cluster PLAYBOOKS_HOSTS=<management cluster>
 ```
 
 This will have:
-* generated the workload cluster manifest and applied it to the management cluster
-* waited for the cluster to have completed deployment and become viable
-* retieved the `KUBECONFIG`
-* generated the Ansible inventory equivalent to the current workload cluster state
+* Generated the workload cluster manifest and applied it to the management cluster
+* Waited for the cluster to have completed deployment and become viable
+* Retieved the `KUBECONFIG`
+* Generated the Ansible inventory equivalent to the current workload cluster state
 
 The last major step is to apply the post deployment customisations.  These are sourced from the `ska_collections.k8s` collection:
 
 ```
-make playbooks k8s k8s-post-deployment
-
+make playbooks k8s install
+make playbooks k8s test
 ```
+
+These targets use a target kubeconfig where to perform actions, in the following precedence:
+* `k8s_kubeconfig` variable - Settable in group_vars or host_vars
+* `KUBECONFIG` environment variable of the HOST - Settable with `KUBECONFIG=<path to kubeconfig> make playbooks k8s install`
+* `/etc/kubernetes/admin.conf` is the default value
 
 # Testing
 

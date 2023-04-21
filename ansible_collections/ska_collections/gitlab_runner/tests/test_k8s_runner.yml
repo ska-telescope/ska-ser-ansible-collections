@@ -2,6 +2,7 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
+    gitlab_runner_k8s_metrics_port: "30931"
   pre_tasks:
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:

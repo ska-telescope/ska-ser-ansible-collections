@@ -2,28 +2,50 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
+    nginx_ingress_lb_service_name: "ingress-nginx-controller-lb-{{ k8s_ingress_lb_suffix | default('default') }}"
+  environment:
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tasks:
-    - name: Test ping with external dns entry
-      ansible.builtin.uri:
-        url: "https://{{ prometheus_k8s_external_dns_entry }}:/ping"
-        method: GET
-        status_code: [200]
-        validate_certs: false
-      when: prometheus_k8s_external_dns_entry
-
-    - name: Retrieve nginx information
+    - name: Wait till nginx is created
       kubernetes.core.k8s_info:
         kind: Service
         wait: true
-        name: ingress-nginx-controller
+        name: "{{ nginx_ingress_lb_service_name }}"
         namespace: ingress-nginx
         wait_timeout: 10
       register: ingress_nginx_controller
-      when: not prometheus_k8s_external_dns_entry
+      failed_when: (ingress_nginx_controller.resources) | length == 0
+
+    - name: Wait till nginx loadbalancer ip is associated
+      kubernetes.core.k8s_info:
+        kind: Service
+        wait: true
+        name: "{{ nginx_ingress_lb_service_name }}"
+        namespace: ingress-nginx
+        wait_timeout: 10
+      register: ingress_nginx_controller
+      until: ingress_nginx_controller.resources[0].status.loadBalancer.ingress is defined
+      retries: 6
+      delay: 10
+      when: ingress_nginx_controller
 
     - name: Test ping ingress
       ansible.builtin.uri:
         url: "http://{{ ingress_nginx_controller.resources[0].status.loadBalancer.ingress[0].ip }}:/ping"
         method: GET
         status_code: [200]
-      when: not prometheus_k8s_external_dns_entry
+
+    - name: Show public dns to be used for testing
+      ansible.builtin.debug:
+        var: k8s_external_dns_entry
+      when: debug and (k8s_external_dns_entry is defined)
+
+    - name: Test ping with external dns entry
+      ansible.builtin.uri:
+        url: "https://{{ k8s_external_dns_entry }}:/ping"
+        method: GET
+        status_code: [200]
+        validate_certs: false
+      when: k8s_external_dns_entry is defined
+  tags:
+    - ping

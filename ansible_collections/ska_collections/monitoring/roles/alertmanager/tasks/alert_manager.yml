@@ -42,6 +42,10 @@
       - "--web.external-url={{ prometheus_alertmanager_url | default('http://' + ansible_default_ipv4.address + ':9093') }}"
       - "--cluster.advertise-address={{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] + ':9093' }}"
     state: started
+    cpus: "{{ alertmanager_server_cpus | default(omit) }}"
+    memory: "{{ alertmanager_server_memory | default(omit) }}"
+    memory_swap: "{{ alertmanager_server_memory_swap | default(omit) }}"
+    memory_swappiness: "{{ alertmanager_server_memory_swappiness | default(omit) }}"
     user: root
     restart: true
     restart_policy: always

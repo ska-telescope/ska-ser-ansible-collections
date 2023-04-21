@@ -5,7 +5,7 @@
 
 debug: false
 
-nexus: "{{ _ | mandatory('`nexus` definition is mandatory') }}"
+nexus: null  # Optional to set mirrors
 nexus_docker_hosted_port: 9080
 nexus_docker_group_port: 9082
 
@@ -37,10 +37,15 @@ docker_deb_pkgs:
   - "docker-ce"
   - "docker-ce-cli"
 
-docker_registry_mirrors: []
+# Default settings if `nexus` is set
+docker_default_mirrors:
+  - "http://{{ nexus }}:{{ nexus_docker_group_port }}"
+docker_default_registries:
+  - "http://{{ nexus }}:{{ nexus_docker_hosted_port }}"
+
+docker_registry_mirrors: "{{ nexus | ternary(docker_default_mirrors, []) }}"
+docker_insecure_registries: "{{ nexus | ternary(docker_default_registries, []) }}"
 
 docker_default_address_pools:
   - base: "172.21.0.0/16"
     size: 24
-
-docker_insecure_registries: []

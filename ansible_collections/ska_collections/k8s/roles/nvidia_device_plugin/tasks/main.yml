@@ -5,7 +5,7 @@
     repo_url: "https://nvidia.github.io/k8s-device-plugin"
 
 - name: Create RuntimeClass and deploy nvidia-device-plugin Helm chart
-  run_once: true
+  # run_once: true # this stopped it running on multiple clusters
   block:
     - name: Create RuntimeClass "nvidia"
       kubernetes.core.k8s:

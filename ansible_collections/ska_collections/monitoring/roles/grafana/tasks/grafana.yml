@@ -46,6 +46,10 @@
     user: root
     restart: true
     restart_policy: always
+    cpus: "{{ grafana_server_cpus | default(omit) }}"
+    memory: "{{ grafana_server_memory | default(omit) }}"
+    memory_swap: "{{ grafana_server_memory_swap | default(omit) }}"
+    memory_swappiness: "{{ grafana_server_memory_swappiness | default(omit) }}"
     ports:
       - "3000:3000"
     volumes:
@@ -70,3 +74,5 @@
       GF_AUTH_AZUREAD_ALLOWED_DOMAINS: ""
       GF_AUTH_AZUREAD_ALLOWED_GROUPS: ""
       GF_AUTH_AZUREAD_ROLE_ATTRIBUTE_STRICT: 'false'
+      GF_QUOTA_ENABLED: "'{{ grafana_quota_enabled }}'"
+      GF_QUOTA_GLOBAL_SESSION: "'{{ grafana_quota_global_session }}'"

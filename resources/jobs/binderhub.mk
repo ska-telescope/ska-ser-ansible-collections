@@ -7,8 +7,6 @@ PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/k8s/playbooks
 
 -include $(BASE_PATH)/PrivateRules.mak
 
-BINDERHUB_OCI_REGISTRY_PASSWORD ?=
-
 check_hosts:
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
@@ -23,11 +21,7 @@ vars:
 install: check_hosts ## Install Binderhub server
 	ansible-playbook $(PLAYBOOKS_DIR)/binderhub.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars k8s_binderhub_oci_registry_password=$(BINDERHUB_OCI_REGISTRY_PASSWORD) \
-	--extra-vars k8s_binderhub_azuread_client_id=$(AZUREAD_CLIENT_ID) \
-	--extra-vars k8s_binderhub_azuread_client_secret=$(AZUREAD_CLIENT_SECRET) \
-	--extra-vars k8s_binderhub_azuread_tenant_id=$(AZUREAD_TENANT_ID)
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 destroy: check_hosts ## Destroy Binderhub server
 	ansible-playbook $(PLAYBOOKS_DIR)/binderhub_destroy.yml \

@@ -5,6 +5,11 @@
     state: present
     update_cache: true
 
+- name: Install aditional packages
+  ansible.builtin.apt:
+    pkg: "{{ item }}"
+    state: present
+  with_items: "{{ cron_additional_packages }}"
 
 - name: Ensure logging directory exists
   ansible.builtin.file:
@@ -20,12 +25,7 @@
     src: "{{ playbook_dir }}/../roles/cron/files/{{ item }}"
     dest: "/usr/local/bin"
     mode: 0755
-  loop:
-    - clean_runner_namespaces.sh
-    - create_filebeat_metrics.sh
-    - etcd_backup.sh
-    - monitor-skagitrunners-stfc.sh
-    - monitor-skavpn-stfc.sh
+  with_items: "{{ cron_scripts }}"
 
   become: true
 

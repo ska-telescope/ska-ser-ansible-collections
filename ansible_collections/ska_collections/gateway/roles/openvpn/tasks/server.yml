@@ -56,7 +56,7 @@
 
       # revoke a certificate
       cd /etc/openvpn/easy-rsa
-      /usr/share/easy-rsa/easyrsa --batch revoke $1.crt
+      /usr/share/easy-rsa/easyrsa --batch revoke $1
       rm /etc/openvpn/easy-rsa/client-configs/$1.ovpn
 
     mode: "0755"

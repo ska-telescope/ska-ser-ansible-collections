@@ -1,0 +1,6 @@
+---
+
+- name: Apply generic-device-plugin manifest to the cluster
+  kubernetes.core.k8s:
+    state: present
+    template: generic-device-plugin.yaml

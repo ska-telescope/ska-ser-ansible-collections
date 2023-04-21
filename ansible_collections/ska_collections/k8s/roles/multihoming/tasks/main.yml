@@ -1,0 +1,56 @@
+---
+
+# Multus is a CNI "metaplugin", which allows pods to have multiple network attachments.
+# It detects the current (Calico) CNI configuration and configures that as a static
+# "delegate" plugin. Other delegates are configured by creating NetworkAttachmentDefinitions,
+# and associating them with Pods via the "k8s.v1.cni.cncf.io/networks" annotation.
+- name: Install Multus CNI
+  kubernetes.core.k8s:
+    template: "multus-daemonset-thick-plugin.yml"
+
+# NetworkAttachmentDefinitions define the CNI configurations that are available to pods
+# to select via the "k8s.v1.cni.cncf.io/networks" annotation. Each net-att-def may bed
+# associated with a specific extended resource via its "k8s.v1.cni.cncf.io/resourceName"
+# annotation. When Multus encounters a pod with the network annotation, it inspects the
+# corresponding net-att-def to see if it has an associated resourceName. If it does, it
+# inspects the resources allocated to the pod via the kubelet pod resources API, and if
+# a resource of that type has been allocated to the pod, passes its deviceID to the
+# CNI plugin so that it knows which device to attach. Whew, what a ride!
+- name: Create NetworkAttachmentDefinitions for SPS and SDN networks
+  kubernetes.core.k8s:
+    template: "sriov-networkattachmentdefinition.yaml"
+
+# SR-IOV CNI is a CNI plugin that handles attaching SR-IOV virtual functions to pods.
+# Similar to the host-device CNI plugin, but with a bit of extra VF sauce. In fact
+# host-device works fine to move VF network interfaces into Pods, but sriov-cni offers
+# more features and configurability.
+- name: Install SR-IOV CNI
+  kubernetes.core.k8s:
+    template: "sriov-cni-daemonset.yaml"
+
+# This is the ConfigMap that configures the selectors that the SR-IOV device plugin
+# will use to work out which devices to advertise on each node.
+- name: Create ConfigMap for SR-IOV device plugin
+  kubernetes.core.k8s:
+    definition: "{{ lookup('template', 'sriovdp-configMap.yaml.j2') | from_yaml }}"
+
+# Find all the nodes with the "sriov_dp_resource_list" var defined, and add a label to
+# them all. We'll then use this label as a nodeSelector for the SR-IOV device plugin.
+- name: Add node labels for SR-IOV nodes
+  tags: label_sriov_nodes
+  kubernetes.core.k8s:
+    state: patched
+    kind: Node
+    name: "{{ item }}"
+    definition:
+      metadata:
+        labels:
+          skao.int/sriov-device-plugin: "true"
+  loop: "{{ hostvars | dict2items | selectattr('value.sriov_dp_resource_list', 'defined') | map(attribute='key') }}"
+
+# This runs as a DaemonSet on each host which has a sriov_dp_resource_list var defined.
+# It inspects the host, then uses the selectors configured in its ConfigMap to work out
+# which devices should be advertised as extended resources on the node.
+- name: Install SR-IOV Network Device Plugin
+  kubernetes.core.k8s:
+    template: "sriovdp-daemonset.yaml"

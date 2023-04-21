@@ -10,7 +10,7 @@ gitlab_runner_k8s_namespace: gitlab
 gitlab_runner_k8s_release_name: "{{ _ | mandatory('`gitlab_runner_k8s_release_name` definition is mandatory') }}"
 gitlab_runner_k8s_kubeconfig_name: "{{ _ | mandatory('`gitlab_runner_k8s_kubeconfig_name` definition is mandatory') }}"
 gitlab_runner_k8s_runner_name: "{{ _ | mandatory('`gitlab_runner_k8s_runner_name` definition is mandatory') }}"
-gitlab_runner_k8s_metrics_port: "{{ _ | mandatory('`gitlab_runner_k8s_metrics_port` definition is mandatory') }}"
+gitlab_runner_k8s_metrics_port: "30931"
 gitlab_runner_k8s_registry_mirror: ""
 
 gitlab_runner_k8s_chart_repo: https://charts.gitlab.io

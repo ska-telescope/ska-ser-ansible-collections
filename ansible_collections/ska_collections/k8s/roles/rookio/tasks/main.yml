@@ -1,59 +1,34 @@
 ---
-- name: Stash etc/ceph vars to avoid overwriting by createworkload vars
-  ansible.builtin.set_fact:
-    local_ceph_conf_ini_file: "{{ k8s_capi_ceph_conf_ini_file }}"
-    local_ceph_conf_key_ring: "{{ k8s_capi_ceph_conf_key_ring }}"
-  tags: [always]
-
-- name: Load Ceph config
-  when: (k8s_capi_ceph_conf_ini_file|length) > 0 and
-    (k8s_capi_ceph_conf_key_ring|length) > 0
-  tags: [always]
-  block:
-    - name: Reset etc/ceph vars
-      ansible.builtin.set_fact:
-        k8s_capi_ceph_conf_ini_file: "{{ local_ceph_conf_ini_file }}"
-        k8s_capi_ceph_conf_key_ring: "{{ local_ceph_conf_key_ring }}"
-
-    - name: Check k8s_capi_ceph_conf_ini_file
-      ansible.builtin.debug:
-        var: k8s_capi_ceph_conf_ini_file
-
-    - name: Check k8s_capi_ceph_conf_key_ring
-      ansible.builtin.debug:
-        var: k8s_capi_ceph_conf_key_ring
-
-    - name: Include ceph config tasks
-      ansible.builtin.include_tasks: "ceph_config.yml"
+- name: Include ceph config tasks
+  ansible.builtin.include_tasks: "ceph_config.yml"
 
 - name: Setup environment
   ansible.builtin.set_fact:
-    k8s_capi_cluster_environment:
+    k8s_rook_cluster_environment:
       KUBE_NAMESPACE: "{{ k8s_kube_namespace }}"
       ROOK_NAMESPACE: "{{ k8s_rook_namespace }}"
-      ROOK_EXTERNAL_FSID: "{{ k8s_capi_capo_ceph_conf_global_fsid }}"
-      ROOK_EXTERNAL_ADMIN_SECRET: "{{ k8s_capi_ceph_external_admin_secret }}"
-      ROOK_EXTERNAL_ADMIN_KEY: "{{ k8s_capi_ceph_external_admin_key }}"
-      ROOK_EXTERNAL_CEPH_MON_DATA: "{{ k8s_capi_capo_ceph_conf_global_mons_data }}"
-      ROOK_EXTERNAL_CEPH_MONITORS: "{{ k8s_capi_capo_ceph_conf_global_monitors }}"
+      ROOK_EXTERNAL_FSID: "{{ rook_conf.ceph_external_fsid }}"
+      ROOK_EXTERNAL_ADMIN_USER_NAME: "{{ k8s_rook_ceph_admin_user_name }}"
+      ROOK_EXTERNAL_ADMIN_SECRET: "{{ rook_conf.ceph_admin_secret }}"
+      ROOK_EXTERNAL_CEPH_MON_DATA: "{{ rook_conf.ceph_mon_data }}"
+      ROOK_EXTERNAL_CEPH_MONITORS: "{{ rook_conf.ceph_monitors }}"
       RBD_POOL_NAME: "{{ k8s_rook_rbd_pool_name }}"
-      RGW_POOL_PREFIX: "{{ k8s_rook_rgw_pool_prefix }}"
       CSI_RBD_NODE_SECRET_NAME: "{{ k8s_rook_csi_rbd_node_secret_name }}"
       CSI_RBD_PROVISIONER_SECRET_NAME: "{{ k8s_rook_csi_rbd_provisioner_secret_name }}"
       CSI_CEPHFS_NODE_SECRET_NAME: "{{ k8s_rook_csi_cephfs_node_secret_name }}"
       CSI_CEPHFS_PROVISIONER_SECRET_NAME: "{{ k8s_rook_csi_cephfs_provisioner_secret_name }}"
-      CSI_RBD_NODE_SECRET: "{{ k8s_capi_ceph_csi_rbd_node_secret }}"
-      CSI_RBD_PROVISIONER_SECRET: "{{ k8s_capi_ceph_csi_rbd_provisioner_secret }}"
-      CSI_CEPHFS_NODE_SECRET: "{{ k8s_capi_ceph_csi_cephfs_node_secret }}"
-      CSI_CEPHFS_PROVISIONER_SECRET: "{{ k8s_capi_ceph_csi_cephfs_provisioner_secret }}"
+      CSI_RBD_NODE_SECRET: "{{ rook_conf.csi_rbd_node_secret }}"
+      CSI_RBD_PROVISIONER_SECRET: "{{ rook_conf.csi_rbd_provisioner_secret }}"
+      CSI_CEPHFS_NODE_SECRET: "{{ rook_conf.csi_cephfs_node_secret }}"
+      CSI_CEPHFS_PROVISIONER_SECRET: "{{ rook_conf.csi_cephfs_provisioner_secret }}"
       ROOK_VERSION: "{{ k8s_rook_version }}"
       KUBECONFIG: "{{ k8s_kubeconfig }}"
       NAMESPACE: "{{ k8s_rook_namespace }}"
-      ROOK_EXTERNAL_ADMIN_USER_NAME: "{{ k8s_rook_external_admin_user_name }}"
 
-- name: Check k8s_capi_cluster_environment
+- name: Check k8s_rook_cluster_environment
   ansible.builtin.debug:
-    var: k8s_capi_cluster_environment
+    var: k8s_rook_cluster_environment
+  when: debug
 
 - name: Check Rook is running
   kubernetes.core.k8s_info:
@@ -63,27 +38,29 @@
     namespace: "{{ k8s_rook_namespace }}"
   register: rook_operator_check
 
-- name: Start Rook
-  # CAPO is not started
-  when: "not rook_operator_check.resources"
+- name: Deploy Rook IO
   block:
     - name: Download Rook IO manifests
       ansible.builtin.get_url:
         url: "https://raw.githubusercontent.com/rook/rook/{{ k8s_rook_version }}/deploy/examples/{{ item }}"
-        dest: "/tmp/{{ item }}"
-        mode: "0664"
+        dest: "/tmp/rook-{{ item }}"
+        mode: 0664
       with_items:
         - "crds.yaml"
         - "common.yaml"
         - "operator.yaml"
 
+    - name: Apply Rook IO crds
+      kubernetes.core.k8s:
+        state: present
+        src: "/tmp/rook-crds.yaml"
+
     - name: Apply Rook IO manifests
       kubernetes.core.k8s:
         state: present
         apply: true
-        src: "/tmp/{{ item }}"
+        src: "/tmp/rook-{{ item }}"
       with_items:
-        - "crds.yaml"
         - "common.yaml"
         - "operator.yaml"
 
@@ -102,8 +79,8 @@
 - name: Download Rook import external cluster script
   ansible.builtin.get_url:
     url: "https://raw.githubusercontent.com/rook/rook/{{ k8s_rook_version }}/deploy/examples/import-external-cluster.sh"
-    dest: "/tmp/import-external-cluster.sh"
-    mode: "0664"
+    dest: "/tmp/rook-import-external-cluster.sh"
+    mode: 0664
 
 - name: Check Rook Config Secret exists
   kubernetes.core.k8s_info:
@@ -114,8 +91,8 @@
   register: rook_secret_check
 
 - name: Run import-external-cluster.sh to create Secrets, ConfigMaps and StorageClasses
-  ansible.builtin.command: /usr/bin/bash /tmp/import-external-cluster.sh
-  environment: "{{ k8s_capi_cluster_environment }}"
+  ansible.builtin.command: /usr/bin/bash /tmp/rook-import-external-cluster.sh
+  environment: "{{ k8s_rook_cluster_environment }}"
   changed_when: true # TODO make this accurate
   failed_when: false
 
@@ -123,11 +100,11 @@
   ansible.builtin.template:
     src: rookio-fix-secrets.sh.j2
     dest: "/tmp/rookio-fix-secrets.sh"
-    mode: "0744"
+    mode: 0744
 
 - name: Fix Rook secrets
   ansible.builtin.command: /usr/bin/bash /tmp/rookio-fix-secrets.sh
-  environment: "{{ k8s_capi_cluster_environment }}"
+  environment: "{{ k8s_rook_cluster_environment }}"
   changed_when: true # TODO make this accurate
   failed_when: false
 
@@ -161,6 +138,17 @@
       kubernetes.core.k8s:
         state: present
         template: "ceph-storageclasses.yaml.j2"
+
+- name: Check CephCluster is connected
+  kubernetes.core.k8s_info:
+    api_version: ceph.rook.io/v1
+    kind: CephCluster
+    name: "{{ k8s_rook_namespace }}"
+    namespace: "{{ k8s_rook_namespace }}"
+    wait: true
+    wait_timeout: 180
+    wait_condition:
+      type: Connected
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers

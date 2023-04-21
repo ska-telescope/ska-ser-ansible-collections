@@ -44,15 +44,19 @@
       ansible.builtin.set_fact:
         calico_interfaces_regex: "{{ calico_routes | community.general.json_query('[*].interface') | unique | regex_search(calico_possible_interfaces) }}"
 
-    - name: Check interfaces
-      ansible.builtin.fail:
-        msg: "No interface in {{ calico_ip_autodetection_interface }} is present in a routesV4 list"
-      when: calico_interfaces_regex == ""
-  always:
-    - name: Destroy CalicoNodeStatus resource
-      kubernetes.core.k8s:
-        api_version: v1
-        kind: CalicoNodeStatus
-        state: absent
-        namespace: calico-system
-        name: "calico-status-{{ item }}"
+- name: Find the pre defined interfaces in the interface list  # noqa: jinja[invalid]
+  ansible.builtin.set_fact:
+    calico_interfaces_regex: "{{ calico_routes | community.general.json_query('[*].interface') | unique | regex_search(calico_possible_interfaces) }}"
+
+- name: Check interfaces
+  ansible.builtin.fail:
+    msg: "No interface in {{ calico_ip_autodetection_interface }} is present in a routesV4 list"
+  when: calico_interfaces_regex == ""
+
+- name: Destroy CalicoNodeStatus resource
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: CalicoNodeStatus
+    state: absent
+    namespace: calico-system
+    name: "calico-status-{{ item }}"

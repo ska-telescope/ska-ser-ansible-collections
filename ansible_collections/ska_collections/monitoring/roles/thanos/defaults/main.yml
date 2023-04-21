@@ -23,3 +23,29 @@ thanos_s3_bucket: "skao-bkp-prometheus-metrics"
 thanos_retention_resolution_raw: "14d"
 thanos_retention_resolution_5m: "14d"
 thanos_retention_resolution_1h: "14d"
+
+# ### Docker Resource Variables
+# thanos_compactor_server_cpus:
+# thanos_compactor_server_memory:
+# thanos_compactor_server_memory_swap:
+# thanos_compactor_server_memory_swappiness:
+
+# thanos_query_frontend_server_cpus:
+# thanos_query_frontend_server_memory:
+# thanos_query_frontend_server_memory_swap:
+# thanos_query_frontend_server_memory_swappiness:
+
+# thanos_query_server_cpus:
+# thanos_query_server_memory:
+# thanos_query_server_memory_swap:
+# thanos_query_server_memory_swappiness:
+
+# thanos_sidecar_server_cpus:
+# thanos_sidecar_server_memory:
+# thanos_sidecar_server_memory_swap:
+# thanos_sidecar_server_memory_swappiness:
+
+# thanos_store_server_cpus:
+# thanos_store_server_memory:
+# thanos_store_server_memory_swap:
+# thanos_store_server_memory_swappiness:

@@ -1,21 +1,39 @@
+---
 - name: Test ingress controller
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-    k8s_ingress_lb_suffix: "{{ capi_cluster_hash | default('debug') }}"
+    nginx_ingress_lb_service_name: "ingress-nginx-controller-lb-{{ k8s_ingress_lb_suffix | default('default') }}"
+  environment:
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tasks:
-    - name: Wait till the nginx is created
+    - name: Wait till nginx is created
       kubernetes.core.k8s_info:
         kind: Service
         wait: true
-        name: ingress-nginx-controller-lb-{{ k8s_ingress_lb_suffix }}
+        name: "{{ nginx_ingress_lb_service_name }}"
         namespace: ingress-nginx
         wait_timeout: 10
       register: ingress_nginx_controller
+      failed_when: (ingress_nginx_controller.resources) | length == 0
+
+    - name: Wait till nginx loadbalancer ip is associated
+      kubernetes.core.k8s_info:
+        kind: Service
+        wait: true
+        name: "{{ nginx_ingress_lb_service_name }}"
+        namespace: ingress-nginx
+        wait_timeout: 10
+      register: ingress_nginx_controller
+      until: ingress_nginx_controller.resources[0].status.loadBalancer.ingress is defined
+      retries: 6
+      delay: 10
+      when: ingress_nginx_controller
 
     - name: Check ingress-nginx-controller
       ansible.builtin.debug:
         var: ingress_nginx_controller
+      when: debug
 
     - name: Apply test ingress
       kubernetes.core.k8s:
@@ -35,14 +53,15 @@
       ansible.builtin.uri:
         url: "http://{{ ingress_nginx_controller.resources[0].status.loadBalancer.ingress[0].ip }}/banana"
         method: GET
-      register: test_result
-      until: "test_result.status == 200"
-      retries: 30
+        status_code: [200]
+      register: test_ingress
+      until: test_ingress.status == 200
+      retries: 6
       delay: 10
 
     - name: Delete test ingress
       kubernetes.core.k8s:
         state: absent
         template: 'resources/ingress.yml'
-  environment:
-    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG') | mandatory }}"
+  tags:
+    - ingress
