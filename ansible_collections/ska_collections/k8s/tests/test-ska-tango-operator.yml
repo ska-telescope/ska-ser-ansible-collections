@@ -3,17 +3,17 @@
   vars:
     target_hosts: localhost
     k8s_operator_namespace: ska-tango-operator
+    nginx_ingress_lb_service_name: "ingress-nginx-controller-lb-{{ k8s_ingress_lb_suffix | default('default') }}"
   tasks:
-    # this test must wait CAPI e2e Test MR
-    # for the moment, name is coded
-    - name: Get information about ingress controller
+    - name: Wait till nginx is created
       kubernetes.core.k8s_info:
         kind: Service
         wait: true
-        name: ingress-nginx-controller-lb-88aaa
+        name: "{{ nginx_ingress_lb_service_name }}"
         namespace: ingress-nginx
         wait_timeout: 10
       register: ingress_nginx_controller
+      failed_when: (ingress_nginx_controller.resources) | length == 0
 
     - name: Check ingress-nginx-controller
       ansible.builtin.debug:
