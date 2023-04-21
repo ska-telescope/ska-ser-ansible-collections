@@ -17,7 +17,6 @@
   community.general.docker_container:
     name: "{{ logging_filebeat_name }}"
     user: "{{ logging_filebeat_user }}"
-    memory: "512M"
     hostname: "{{ inventory_hostname }}"
     network_mode: host
     privileged: true
@@ -25,6 +24,10 @@
     image: "{{ logging_filebeat_image }}"
     command: "filebeat -e -strict.perms=false -c /etc/filebeat.yml"
     state: started
+    cpus: "{{ logging_filebeat_server_cpus | default(omit) }}"
+    memory: "{{ logging_filebeat_server_memory | default(omit) }}"
+    memory_swap: "{{ logging_filebeat_server_memory_swap | default(omit) }}"
+    memory_swappiness: "{{ logging_filebeat_server_memory_swappiness | default(omit) }}"
     ulimits:
       - "memlock:-1:-1"
       - "nofile:65536:65536"

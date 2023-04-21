@@ -4,15 +4,20 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-    xilinx_xrt_install: false
-    k8s_activate_nvidia: false
-    activate_mellanox: false
   become: true
 
   pre_tasks:
     - name: Refresh package cache
       ansible.builtin.apt:
         update_cache: true
+
+    - name: Check mlnx_ofed_version of haggaie.mlnx_ofed
+      ansible.builtin.debug:
+        var: mlnx_ofed_version
+
+    - name: Check mlnx_ofed_distro of haggaie.mlnx_ofed
+      ansible.builtin.debug:
+        var: mlnx_ofed_distro
 
   roles:
     - role: accelize.xilinx_xrt

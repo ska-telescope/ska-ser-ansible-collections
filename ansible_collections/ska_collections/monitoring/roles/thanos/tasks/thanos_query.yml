@@ -76,6 +76,10 @@
     user: root
     restart: true
     restart_policy: always
+    cpus: "{{ thanos_query_server_cpus | default(omit) }}"
+    memory: "{{ thanos_query_server_memory | default(omit) }}"
+    memory_swap: "{{ thanos_query_server_memory_swap | default(omit) }}"
+    memory_swappiness: "{{ thanos_query_server_memory_swappiness | default(omit) }}"
     ports:
       - "9091:9091"
       - "10902:10902"

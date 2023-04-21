@@ -1,0 +1,20 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: "Apply the devices roles to the k8s nodes"
+  hosts: "{{ target_hosts }}"
+  become: true
+  vars:
+    target_hosts: localhost
+
+  pre_tasks:
+    - name: Check k8s_kubeconfig
+      ansible.builtin.debug:
+        var: k8s_kubeconfig
+
+  roles:
+    - role: multihoming
+
+  environment:
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
+  tags:
+    - multihoming
