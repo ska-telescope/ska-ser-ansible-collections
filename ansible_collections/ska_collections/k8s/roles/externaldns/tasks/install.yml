@@ -22,6 +22,15 @@
         create_namespace: true
         values_files:
           - "/tmp/externaldns.values.yaml"
+
+    # creating a separate SVC with external LB as upstream coredns
+    # does not enable loadBlanacerClass
+    - name: Apply LoadBalancer Service
+      kubernetes.core.k8s:
+        state: present
+        template: 'service.yaml.j2'
+      when: k8s_externaldns_coredns_lb_class
+
   always:
     - name: Remove values
       ansible.builtin.file:
