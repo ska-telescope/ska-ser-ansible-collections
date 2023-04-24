@@ -23,13 +23,13 @@
     tag: "{{ snmp_server_docker_tags }}"
     source: pull
 
-- name: Stop prometheus container
+- name: Stop snmp_exporter container
   community.docker.docker_container:
     name: snmp_exporter
     stop_timeout: 180
     state: absent
 
-- name: Start snmp container
+- name: Start snmp_exporter container
   community.docker.docker_container:
     name: snmp_exporter
     image: "prom/snmp-exporter:{{ snmp_server_docker_tags }}"
