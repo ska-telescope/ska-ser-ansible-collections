@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -5,7 +6,7 @@ metadata:
     app.kubernetes.io/instance: extdns
     app.kubernetes.io/name: coredns
     app.kubernetes.io/part-of: coredns
-  name: kube-service-extdns-extdns-coredns-lb
+  name: kube-service-extdns-extdns-coredns-metallb
   namespace: {{ k8s_externaldns_namespace }}
 spec:
   loadBalancerClass: {{ k8s_externaldns_coredns_lb_class }}

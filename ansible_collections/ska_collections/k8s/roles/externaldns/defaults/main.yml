@@ -7,3 +7,4 @@ k8s_externaldns_autoscaler_tag: 1.8.5
 k8s_externaldns_lb_suffix: "{{ capi_cluster | default('test') }}"
 k8s_externaldns_coredns_lb_class: ""
 k8s_externaldns_lb_ip: ""
+k8s_external_service_type: LoadBalancer
