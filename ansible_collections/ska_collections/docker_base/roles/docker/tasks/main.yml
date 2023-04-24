@@ -92,7 +92,7 @@
 - name: Install docker dependencies pip3
   ansible.builtin.pip:
     executable: pip3
-    name: docker-py
+    name: "{{ docker_python_pkg }}"
 
 - name: Create /etc/systemd/system/docker.service.d
   ansible.builtin.file:
