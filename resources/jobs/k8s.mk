@@ -35,6 +35,18 @@ deploy-minikube:  ## Deploy Minikube single node cluster
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--tags "$(TAGS)"
 
+deploy-singlenode:  ## Deploy singlenode single node cluster
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/singlenode.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--tags "$(TAGS)"
+
+calico-install:  ## Install Calico
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/calico-install.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--tags "$(TAGS)"
+
 install-base:  ## Install container base for Kubernetes servers
 	ansible-playbook $(PLAYBOOKS_DIR)/docker_base/playbooks/containers.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
@@ -86,7 +98,7 @@ ifneq (,$(findstring externaldns,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/externaldns.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--tags "$(TAGS)"
+	--tags "$(TAGS)" -vv
 endif
 
 ifneq (,$(findstring ping,$(TAGS)))

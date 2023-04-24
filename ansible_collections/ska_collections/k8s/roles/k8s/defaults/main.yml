@@ -1,6 +1,6 @@
 ---
 k8s_kubernetes_ubuntu_version: xenial
-k8s_kubernetes_version: 1.25.7
+k8s_kubernetes_version: 1.26.4
 k8s_kube_version: "{{ k8s_kubernetes_version }}-00"
 
 k8s_deb_repo_key_url: https://packages.cloud.google.com/apt/doc/apt-key.gpg

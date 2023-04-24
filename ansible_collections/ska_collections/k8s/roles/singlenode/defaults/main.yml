@@ -1,0 +1,27 @@
+---
+debug: false
+
+k8s_activate_containerd: true
+k8s_activate_nvidia: false
+k8s_ignore_nvidia_fail: false
+
+k8s_singlenode_pip_kubernetes_version: 22.6.0
+
+k8s_oidc_issuer_url: "https://gitlab.com"
+k8s_oidc_client_id: "xxxx"
+k8s_oidc_username_claim: "sub"
+
+k8s_dns_servers: [10.164.0.11]
+
+k8s_kubernetes_version: 1.26.4
+k8s_pod_network_cidr: 10.10.0.0/16
+
+k8s_dns_entry:
+k8s_external_dns_entry:
+
+k8s_cluster_api_address: "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
+k8s_cluster_hostname: a.b.c
+k8s_cluster_domain: a.b.c
+
+k8s_singlenode_haproxy_name: haproxy
+k8s_singlenode_haproxy_image: "haproxy:2.7"

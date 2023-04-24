@@ -1,0 +1,135 @@
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: "{{ k8s_cluster_api_address }}"
+  bindPort: 6443
+bootstrapTokens:
+  - groups:
+      - system:bootstrappers:kubeadm:default-node-token
+    ttl: 24h0m0s
+    usages:
+      - "signing"
+      - "authentication"
+nodeRegistration:
+  criSocket: "unix:///run/containerd/containerd.sock"
+  imagePullPolicy: "IfNotPresent"
+  name: "{{ ansible_hostname }}"
+  kubeletExtraArgs:
+    node-ip: "{{ k8s_cluster_api_address }}"
+  # Prevent kubeadm from adding a control plane taint, because this node is also a worker
+  taints: []
+#  kubeletExtraArgs:
+#    resolv-conf: /run/systemd/resolve/resolv.conf
+#    network-plugin: cni
+#    cgroup-driver: "cgroupfs"
+
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+apiServer:
+  certSANs:
+  - "127.0.0.1"
+  - "localhost"
+  - "{{ k8s_cluster_api_address }}"
+  - "{{ inventory_hostname }}"
+  - "{{ k8s_cluster_hostname }}"
+{% if k8s_dns_entry|bool %}
+  - "{{ k8s_dns_entry }}"
+{% endif %}
+{% if k8s_external_dns_entry|bool %}
+  - "{{ k8s_external_dns_entry }}"
+{% endif %}
+  extraArgs:
+    enable-admission-plugins: "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota"
+    authorization-mode: "Node,RBAC"
+    oidc-issuer-url: {{ k8s_oidc_issuer_url }}
+    oidc-username-claim: {{ k8s_oidc_username_claim }}
+    oidc-client-id: {{ k8s_oidc_client_id }}
+    service-account-issuer: "https://kubernetes.default.svc.{{ k8s_cluster_domain }}"
+    service-account-signing-key-file: "/etc/kubernetes/pki/sa.key"
+    service-account-key-file: "/etc/kubernetes/pki/sa.pub"
+# enable default tolerations to
+# https://dbafromthecold.com/2020/04/08/adjusting-pod-eviction-time-in-kubernetes/
+    enable-admission-plugins: "DefaultTolerationSeconds"
+    default-not-ready-toleration-seconds: "120"
+    default-unreachable-toleration-seconds: "120"
+  timeoutForControlPlane: "5m0s"
+clusterName: "kubernetes"
+certificatesDir: "/etc/kubernetes/pki"
+controlPlaneEndpoint: "{{ k8s_cluster_api_address }}:6443"
+# https://dbafromthecold.com/2020/04/08/adjusting-pod-eviction-time-in-kubernetes/
+controllerManager:
+  extraArgs:
+    "pod-eviction-timeout": "3m0s"
+    allocate-node-cidrs: "true"
+    leader-elect: "false"
+dns: {}
+networking:
+  dnsDomain: "{{ k8s_cluster_domain }}"
+  podSubnet: "{{ k8s_pod_network_cidr }}"
+  serviceSubnet: "10.96.0.0/12"
+scheduler:
+  extraArgs:
+    leader-elect: "false"
+etcd:
+  local:
+    dataDir: "/var/lib/k8s/etcd"
+    extraArgs:
+      proxy-refresh-interval: "70000"
+kubernetesVersion: "v{{ k8s_kubernetes_version }}"
+
+---
+# https://godoc.org/k8s.io/kubelet/config/v1beta1#KubeletConfiguration
+# https://kubernetes.io/docs/reference/config-api/kubelet-config.v1beta1/
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+maxPods: 250
+kubeAPIQPS: 10  # default 5
+kubeAPIBurst: 20 # default 10
+failSwapOn: false
+resolvConf: "/run/systemd/resolve/resolv.conf"
+clusterDNS:
+- "10.96.0.10"
+{% for item in k8s_dns_servers %}
+- "{{ item }}"
+{% endfor %}
+- "8.8.8.8"
+cgroupDriver: "systemd"
+hairpinMode: "hairpin-veth"
+runtimeRequestTimeout: "15m"
+clusterDomain: "{{ k8s_cluster_domain }}"
+# disable disk resource management by default
+staticPodPath: "/etc/kubernetes/manifests"
+imageGCHighThresholdPercent: 85
+imageGCLowThresholdPercent: 80
+evictionHard:
+  nodefs.available: "10%"
+  nodefs.inodesFree: "5%"
+  imagefs.available: "10%"
+  imagefs.inodesFree: "5%"
+  memory.available: "100Mi"
+evictionMinimumReclaim:
+  nodefs.available: "500Mi"
+  imagefs.available: "1Gi"
+  memory.available: "0Mi"
+systemReserved:
+  cpu: "100m"
+  memory: "128M"
+  ephemeral-storage: "2Gi"
+kubeReserved:
+  cpu: "100m"
+  memory: "128M"
+  ephemeral-storage: "2Gi"
+
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+clusterCIDR: "{{ k8s_pod_network_cidr }}"
+metricsBindAddress: "0.0.0.0"
+conntrack:
+  maxPerCore: 0
+# Skip setting "net.netfilter.nf_conntrack_tcp_timeout_established"
+  tcpEstablishedTimeout: "0s"
+# Skip setting "net.netfilter.nf_conntrack_tcp_timeout_close"
+  tcpCloseWaitTimeout: "0s"

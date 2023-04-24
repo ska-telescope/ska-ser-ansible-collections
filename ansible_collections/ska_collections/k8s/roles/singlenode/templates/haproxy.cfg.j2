@@ -1,0 +1,36 @@
+#############################
+#  nginx-proxy config
+#############################
+frontend front-nginx-http-proxy
+  bind *:80
+  mode http
+  option httplog
+  default_backend back-nginx-http-proxy
+  timeout client 1800s
+  timeout client-fin 50s
+
+backend back-nginx-http-proxy
+  mode http
+  option http-server-close
+  option dontlognull
+  balance roundrobin
+  server server1 {{ k8s_cluster_api_address }}:30080 check
+  timeout connect 10s
+  timeout server 1800s
+
+frontend front-nginx-https-proxy
+  bind *:443
+  mode tcp
+  option tcplog
+  option forwardfor
+  default_backend back-nginx-https-proxy
+  timeout client 1800s
+  timeout client-fin 50s
+
+backend back-nginx-https-proxy
+  mode tcp
+  option tcplog
+  balance roundrobin
+  server server1 {{ k8s_cluster_api_address }}:30443 check
+  timeout connect 10s
+  timeout server 1800s
