@@ -27,7 +27,7 @@
   "fiscalYearStartMonth": 0,
   "gnetId": 13524,
   "graphTooltip": 0,
-  "iteration": 1682420530847,
+  "iteration": 1682421573549,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -804,7 +804,12 @@
           "show": false
         },
         "showHeader": false,
-        "sortBy": []
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Time"
+          }
+        ]
       },
       "pluginVersion": "9.0.0",
       "targets": [
@@ -2028,7 +2033,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -2126,7 +2132,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -2225,7 +2232,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -2322,7 +2330,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -2430,7 +2439,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -2528,7 +2538,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -2625,7 +2636,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -2737,6 +2749,6 @@
   "timezone": "browser",
   "title": "RIELLO UPS (SNMP)",
   "uid": "gerljJoB",
-  "version": 4,
+  "version": 5,
   "weekStart": ""
 }
