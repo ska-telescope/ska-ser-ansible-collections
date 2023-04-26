@@ -1,0 +1,12 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Configure cronjob
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Configure cronjob
+      ansible.builtin.include_role:
+        name: cron
