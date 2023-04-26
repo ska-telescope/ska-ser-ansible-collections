@@ -59,7 +59,7 @@ k8s_runner: tidy  ## Deploy runners
 	$(V)
 
 deploy_k8s_runner_helm: tidy  ## Deploy runners
-	ansible-playbook $(PLAYBOOKS_DIR)/install_runner_gitlab_executor.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/install_runner_k8s_executor.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
@@ -67,7 +67,7 @@ deploy_k8s_runner_helm: tidy  ## Deploy runners
 	$(GITLAB_RUNNER_TAG_LIST_ARG)
 
 destroy_k8s_runner_helm: tidy  ## Destroy runners
-	ansible-playbook $(PLAYBOOKS_DIR)/destroy_runner_gitlab_executor.yml \
+	ansible-playbook $(PLAYBOOKS_DIR)/destroy_runner_k8s_executor.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
