@@ -41,21 +41,18 @@ docker_for_runners:  ## Install dockerd for runners
 	ansible-playbook $(PLAYBOOKS_DIR)/docker_for_runners.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	$(GITLAB_RUNNER_TAG_LIST_ARG) \
 	$(V)
 
 label_nodes:  ## Label worker nodes for CI
 	ansible-playbook $(PLAYBOOKS_DIR)/label_nodes.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	$(GITLAB_RUNNER_TAG_LIST_ARG) \
 	  $(V)
 
 k8s_runner: tidy  ## Deploy runners
 	ANSIBLE_STDOUT_CALLBACK=yaml ansible-playbook $(PLAYBOOKS_DIR)/generate_manifest_runner.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	$(GITLAB_RUNNER_TAG_LIST_ARG) \
 	$(V)
 
 deploy_k8s_runner_helm: tidy  ## Deploy runners
@@ -81,14 +78,12 @@ deploy_minio: tidy  ## Deploy Minio
 	ansible-playbook $(PLAYBOOKS_DIR)/deploy_minio.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	$(GITLAB_RUNNER_TAG_LIST_ARG) \
 	$(V)
 
 test_minio: tidy  ## Test Minio
 	ansible-playbook $(TESTS_DIR)/test_minio.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	$(GITLAB_RUNNER_TAG_LIST_ARG) \
 	$(V)
 
 # ANSIBLE_STDOUT_CALLBACK=yaml makes it nice to read
