@@ -40,7 +40,7 @@
       ansible.builtin.set_fact:
         calico_possible_interfaces: "{{ calico_ip_autodetection_interface.replace(',', '|') }}"
 
-    - name: Find the pre defined interfaces in the interface list
+    - name: Find the pre defined interfaces in the interface list  # noqa: jinja[invalid]
       ansible.builtin.set_fact:
         calico_interfaces_regex: "{{ calico_routes | community.general.json_query('[*].interface') | unique | regex_search(calico_possible_interfaces) }}"
 

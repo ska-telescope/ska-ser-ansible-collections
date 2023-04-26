@@ -1,0 +1,13 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Apply the singlenode role to the singlenode nodes
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  roles:
+    - ska_collections.instance_common.tools
+    - ska_collections.instance_common.k8s_tools
+    - ska_collections.k8s.singlenode
+  tags:
+    - singlenode

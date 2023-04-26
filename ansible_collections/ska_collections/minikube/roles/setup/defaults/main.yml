@@ -5,7 +5,7 @@ minikube_exe_dir: /usr/local/bin
 # https://github.com/kubernetes/minikube/releases
 minikube_version: v1.30.1
 # https://kubernetes.io/releases/
-minikube_kubernetes_version: v1.26.3
+minikube_kubernetes_version: v1.26.4
 # Memory in MB
 minikube_memory: 6144
 minikube_cpus: 4

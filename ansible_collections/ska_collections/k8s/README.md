@@ -24,6 +24,7 @@ Each role encompasses a individual component/service/integration to be deployed 
 | [k8s.metrics](./roles/metrics) | Install and configure kube-state-metrics and metrics-server | 4.11.0/ | 1.25.5+ |
 | [k8s.ping](./roles/ping) | Install ping test endpoint /ping/ | 1.10 | 1.25.5+ |
 | [k8s.rookio](./roles/rookio) | Install and configure Rook/Ceph integration and StorageClasses | release-1.10 | 1.25.5+ |
+| [k8s.singlenode](./roles/singlenode) | Install and configure a singlenode K8s cluster using `kubeadm` | _ | 1.26.4+ |
 | [k8s.standardprovisioner](./roles/standardprovisioner) | Install and configure hostpath provisioner and StorageClasses | v5 | 1.25.5+ |
 | [k8s.velero](./roles/velero) | Install and configure Velero based K8s backup to Swift | v1.9.2 | 1.25.5+ |
 
@@ -61,6 +62,7 @@ Installation playbooks for each component can be found in the [playbooks/](./pla
 | [ping.yml](./playbooks/ping.yml) | Install ping tester endpoint |
 | [rookio.yml](./playbooks/rookio.yml) | Install Rook/Ceph integration and StorageClasses |
 | [standardprovisioner.yml](./playbooks/standardprovisioner.yml) | Install hostpath provisioner and StorageClasses |
+| [singlenode.yml](./playbooks/singlenode.yml) | Install single node K8s cluster using `kubeadm` |
 | [velero_backups.yml](./playbooks/velero_backups.yml) | Install Velero Kubernetes backup integrated with Swift |
 
 In order to run these playbooks, it's needed to specify the Ansible Inventory location and the respective group/hosts ***target_hosts*** variable.
