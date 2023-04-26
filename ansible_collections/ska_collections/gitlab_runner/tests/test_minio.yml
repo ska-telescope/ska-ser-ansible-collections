@@ -4,13 +4,12 @@
     target_hosts: localhost
     gitlab_runner_minio_access_key: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_ACCESS_KEY', default=secrets['gitlab_runner_minio_access_key']) | mandatory }}"
     gitlab_runner_minio_secret_key: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_SECRET_KEY', default=secrets['gitlab_runner_minio_secret_key']) | mandatory }}"
-    gitlab_runner_minio_namespace: "gitlab"
   pre_tasks:
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:
         var: k8s_kubeconfig
   environment:
-    KUBECONFIG: "{{ k8s_kubeconfig | lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf') }}"
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tasks:
     - name: Create test script
       kubernetes.core.k8s:

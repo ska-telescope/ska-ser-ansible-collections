@@ -5,7 +5,7 @@
   vars:
     target_hosts: localhost
   environment:
-    KUBECONFIG: "{{ k8s_kubeconfig | lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf') }}"
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tasks:
     - name: Show MinIO
       ansible.builtin.import_role:

@@ -9,7 +9,7 @@
       ansible.builtin.debug:
         var: k8s_kubeconfig
   environment:
-    KUBECONFIG: "{{ k8s_kubeconfig | lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf') }}"
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tasks:
     - name: Label Nodes
       ansible.builtin.import_role:
