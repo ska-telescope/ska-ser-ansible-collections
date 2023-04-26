@@ -120,7 +120,7 @@ spec:
   identityRef:
     kind: Secret
     name: ${CLUSTER_NAME}-cloud-config
-  managedSecurityGroups: ${OPENSTACK_MANAGE_SECURITY_GROUPS}
+  managedSecurityGroups: ${OPENSTACK_MANAGED_SECURITY_GROUPS}
   network:
     name: ${OPENSTACK_NETWORK_NAME}
   subnet:

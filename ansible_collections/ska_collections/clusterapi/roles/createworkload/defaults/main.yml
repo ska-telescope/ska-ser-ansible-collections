@@ -50,7 +50,7 @@ capi_capo_run_kubelet_install: false
 capi_capo_openstack_enable_apiserver_lb: true
 capi_capo_openstack_enable_apiserver_floating_ip: false
 capi_capo_openstack_disable_port_security: true
-capi_capo_openstack_manage_security_groups: true
+capi_capo_openstack_managed_security_groups: true
 capi_capo_openstack_security_groups:
   - name: default
 capi_capo_openstack_managed_network_cidr:

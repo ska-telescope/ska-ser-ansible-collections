@@ -82,7 +82,7 @@
       OPENSTACK_ENABLE_APISERVER_LB: "{{ capi_capo_openstack_enable_apiserver_lb | bool }}"
       OPENSTACK_DISABLE_APISERVER_FLOATING_IP: "{{ not (capi_capo_openstack_enable_apiserver_floating_ip | bool) }}"
       OPENSTACK_DISABLE_PORT_SECURITY: "{{ capi_capo_openstack_disable_port_security | bool }}"
-      OPENSTACK_MANAGE_SECURITY_GROUPS: "{{ capi_capo_openstack_manage_security_groups | bool }}"
+      OPENSTACK_MANAGED_SECURITY_GROUPS: "{{ capi_capo_openstack_managed_security_groups | bool }}"
       OPENSTACK_MANAGED_NETWORK_NODE_CIDR: "{{ capi_capo_openstack_managed_network_cidr | default(omit) }}"
       OPENSTACK_SECURITY_GROUPS: "{{ capi_capo_openstack_security_groups | default([]) }}"
       CONTROL_PLANE_MACHINE_COUNT: "{{ capi_controlplane_count }}"
