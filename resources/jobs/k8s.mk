@@ -154,8 +154,6 @@ ifneq (,$(findstring vault,$(TAGS)))
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/vault.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
 	--tags "$(TAGS)" \
 	-vv
 endif
@@ -201,7 +199,6 @@ test: check-hosts  # Test service deployments
 ifneq (,$(findstring ingress,$(TAGS)))
 	@ansible-playbook $(TESTS_DIR)/test-ingress.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "capi_cluster_hash=$(CAPI_CLUSTER_HASH)" \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 endif
 

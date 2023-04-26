@@ -8,7 +8,7 @@ TESTS_DIR ?= ./ansible_collections/ska_collections/gitlab_runner/tests
 V ?= ## ansible-playbook debug options, i.e. -vvv
 GITLAB_RUNNER_LOCAL_DOCKER ?= 127.0.0.1
 
-K8S_KUBECONFIG ?= /etc/clusterapi/$(CAPI_CLUSTER)-kubeconfig
+K8S_KUBECONFIG ?=
 
 -include $(BASE_PATH)/PrivateRules.mak
 

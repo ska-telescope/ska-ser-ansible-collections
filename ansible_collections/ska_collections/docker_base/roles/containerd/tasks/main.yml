@@ -196,7 +196,7 @@
       ansible.builtin.file:
         path: /etc/systemd/system/containerd.service.d
         state: directory
-        mode: "0755"
+        mode: 0755
     - name: Add proxy env vars to systemd drop-in
       ansible.builtin.template:
         src: proxy.conf.j2

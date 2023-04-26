@@ -45,7 +45,7 @@
       ansible.builtin.get_url:
         url: "https://github.com/vmware-tanzu/velero/releases/download/{{ k8s_velero_version }}/{{ k8s_velero_archive }}"
         dest: "/tmp/{{ k8s_velero_archive }}"
-        mode: "0755"
+        mode: 0755
         tmp_dest: "/tmp/"
 
     - name: Unpack velero
@@ -54,7 +54,7 @@
         include: "velero-{{ k8s_velero_version }}-{{ os_name }}-{{ os_binary }}/velero"
         remote_src: true
         dest: "{{ k8s_velero_exe_dir }}/"
-        mode: "0755"
+        mode: 0755
         extra_opts:
           - "--strip-components=1"
       become: true

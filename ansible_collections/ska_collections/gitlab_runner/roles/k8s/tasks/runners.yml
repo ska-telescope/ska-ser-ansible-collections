@@ -14,7 +14,7 @@
   ansible.builtin.template:
     src: "templates/gitlab-runner-values.yaml.j2"
     dest: "{{ gitlab_values_file.path }}"
-    mode: '0644'
+    mode: 0644
 
 - name: Create Temp Kustomize Folder
   ansible.builtin.tempfile:
@@ -26,7 +26,7 @@
   ansible.builtin.template:
     src: "templates/kustomization.yaml.j2"
     dest: "{{ temp_kustomize_dir.path }}/kustomization.yaml"
-    mode: '0644'
+    mode: 0644
 
 # - name: Render templates
 #   kubernetes.core.helm_template:
@@ -63,13 +63,13 @@
   ansible.builtin.file:
     path: "{{ role_path }}/files"
     state: directory
-    mode: "0755"
+    mode: 0755
 
 - name: Template runner-metrics.yaml file
   ansible.builtin.template:
     src: "templates/runner-metrics.yaml.j2"
     dest: "{{ role_path }}/files/runner-metrics.yaml"
-    mode: '0644'
+    mode: 0644
 
 - name: Kustomize manifest
   ansible.builtin.shell: |
