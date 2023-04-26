@@ -1,0 +1,53 @@
+---
+# vars file for manifestgen
+
+debug: false
+
+gitlab_runner_k8s_node_label: node-role.skatelescope.org/ci-worker
+
+gitlab_runner_k8s_namespace: gitlab
+
+gitlab_runner_k8s_release_name: "{{ _ | mandatory('`gitlab_runner_k8s_release_name` definition is mandatory') }}"
+gitlab_runner_k8s_kubeconfig_name: "{{ _ | mandatory('`gitlab_runner_k8s_kubeconfig_name` definition is mandatory') }}"
+gitlab_runner_k8s_runner_name: "{{ _ | mandatory('`gitlab_runner_k8s_runner_name` definition is mandatory') }}"
+gitlab_runner_k8s_metrics_port: "30931"
+gitlab_runner_k8s_registry_mirror: ""
+
+gitlab_runner_k8s_chart_repo: https://charts.gitlab.io
+gitlab_runner_k8s_chart_name: gitlab-runner
+gitlab_runner_k8s_chart_version: "0.51.1"
+gitlab_runner_k8s_tag_list: k8srunner # auto-k8sv2,k8srunner,docker,docker-executor,engageska,ska
+
+gitlab_runner_k8s_node_selector: "node-role.skatelescope.org/ci-worker"
+
+# Minio details
+gitlab_runner_k8s_s3_cache_address: minio.gitlab.svc.cluster.local
+gitlab_runner_k8s_s3_bucket_name: cache
+gitlab_runner_k8s_s3_bucket_location: ""
+gitlab_runner_k8s_metrics_node_port: 30931
+
+
+###############################################################################
+## GitLab Config
+################################################################################
+
+gitlab_runner_k8s_vault_prefix: stfc
+gitlab_runner_k8s_runner_concurrent_jobs: 20
+gitlab_runner_k8s_s3_access_key_secret_path: "{{ gitlab_runner_k8s_vault_prefix }}/gitlab-runner/s3_access_key"
+gitlab_runner_k8s_s3_secret_key_secret_path: "{{ gitlab_runner_k8s_vault_prefix }}/gitlab-runner/s3_secret_key"
+gitlab_runner_k8s_runner_registration_token: "{{ gitlab_runner_k8s_vault_prefix }}/gitlab-runner/runner_registration_token"
+gitlab_runner_k8s_vault_role: kube-role
+gitlab_runner_k8s_s3_access_key_secret: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_K8S_S3_ACCESS_KEY_SECRET', default=secrets['gitlab_runner_k8s_s3_access_key_secret']) | mandatory }}"
+gitlab_runner_k8s_s3_secret_key_secret: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_K8S_S3_SECRET_KEY_SECRET', default=secrets['gitlab_runner_k8s_s3_secret_key_secret']) | mandatory }}"
+gitlab_runner_k8s_registration_token: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_K8S_REGISTRATION_TOKEN', default=secrets['gitlab_runner_k8s_registration_token']) | mandatory }}"
+
+gitlab_runner_k8s_data_root: /var/lib/docker-for-gitlab  # Data root should be on separate volume
+gitlab_runner_k8s_docker_driver: overlay2
+gitlab_runner_k8s_docker_repo: localhost:5000
+gitlab_runner_k8s_log_max_size: "10m"
+gitlab_runner_k8s_log_max_file: "3"
+gitlab_runner_k8s_log_driver: json-file
+gitlab_runner_k8s_log_options:
+  max-size: "{{ gitlab_runner_k8s_log_max_size }}"
+  max-file: "{{ gitlab_runner_k8s_log_max_file }}"
+  labels: "org.ska.app.group"

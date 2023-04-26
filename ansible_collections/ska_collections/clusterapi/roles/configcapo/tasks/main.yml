@@ -25,7 +25,7 @@
   ansible.builtin.file:
     path: "{{ capi_config_dir }}"
     state: directory
-    mode: "0755"
+    mode: 0755
   become: true
 
 - name: Tidy up CAPO template
@@ -38,7 +38,7 @@
   ansible.builtin.get_url:
     url: "https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/download/{{ capi_capo_template_version }}/cluster-template.yaml"
     dest: "{{ capi_config_dir }}/{{ capi_capo_template_name }}"
-    mode: '0644'
+    mode: 0644
   become: true
 
 - name: Copy clusterapi CAPO template back

@@ -1,0 +1,58 @@
+---
+
+- name: Destroy vault ServiceAccount
+  kubernetes.core.k8s:
+    state: absent
+    api_version: v1
+    kind: ServiceAccount
+    namespace: default
+    name: vault-auth
+
+- name: Destroy vault ClusterRoleBinding
+  kubernetes.core.k8s:
+    state: absent
+    api_version: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    name: role-tokenreview-binding
+    namespace: default
+
+- name: Template secret for vault
+  ansible.builtin.template:
+    src: "templates/secret.yaml.j2"
+    dest: "/tmp/secret.yaml"
+    force: true
+    mode: 0755
+
+- name: Apply secret for console
+  kubernetes.core.k8s:
+    state: absent
+    apply: true
+    src: "/tmp/secret.yaml"
+
+- name: Tidy up tmp file
+  ansible.builtin.file:
+    path: "/tmp/secret.yaml"
+    state: absent
+
+- name: Destroy Vault Helm chart
+  kubernetes.core.helm:
+    name: vault
+    namespace: vault
+    state: absent
+    wait: true
+
+- name: Destroy configure-vault-config
+  kubernetes.core.k8s:
+    state: absent
+    api_version: v1
+    kind: ConfigMap
+    name: configure-vault-config
+    namespace: default
+
+- name: Destroy configure-vault-config
+  kubernetes.core.k8s:
+    state: absent
+    api_version: batch/v1
+    kind: Job
+    name: configure-vault
+    namespace: default

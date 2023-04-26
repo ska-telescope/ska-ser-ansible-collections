@@ -1,0 +1,30 @@
+- name: Test gitlab runner metrics service
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  pre_tasks:
+    - name: Check k8s_kubeconfig
+      ansible.builtin.debug:
+        var: k8s_kubeconfig
+  environment:
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
+  tasks:
+    - name: Get Control Plane IP
+      kubernetes.core.k8s_info:
+        kind: Node
+        label_selectors:
+          - node-role.kubernetes.io/control-plane
+      register: control_planes_list
+
+    - name: Test metrics
+      ansible.builtin.uri:
+        url: "http://{{ control_planes_list.resources[0].status.addresses[0].address }}:{{ gitlab_runner_k8s_metrics_port }}/metrics"
+        method: GET
+        status_code: [200]
+        validate_certs: false
+        return_content: true
+      register: returned_metrics
+
+    - name: Check metrics returned
+      ansible.builtin.debug:
+        msg: "{{ returned_metrics }}"
