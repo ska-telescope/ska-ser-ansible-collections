@@ -14,7 +14,7 @@ capi_apply_wait: true
 capi_apply_destroy_ask: true
 
 # https://github.com/kubernetes-sigs/cluster-api/releases
-capi_k8s_version: 1.25.7
+capi_k8s_version: 1.26.4
 capi_k8s_version_full: "v{{ capi_k8s_version }}"
 capi_calico_version: 3.24.5
 capi_helm_version: v3.11.2
