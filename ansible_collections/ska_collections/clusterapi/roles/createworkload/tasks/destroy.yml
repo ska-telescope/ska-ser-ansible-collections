@@ -7,6 +7,18 @@
     namespace: "{{ capi_kube_namespace }}"
   register: cluster_resource
 
+- name: Validate workload cluster destroy
+  ansible.builtin.pause:
+    prompt: "Do you want to destroy this cluster? [yes/no]"
+    echo: true
+  register: validate_cluster_destroy
+  when: capi_apply_destroy_ask
+
+- name: Abort workload cluster destroy
+  ansible.builtin.fail:
+    msg: "Aborting workload cluster destroy. To really do it, say 'yes' on the prompt"
+  when: capi_apply_destroy_ask and validate_cluster_destroy.user_input != 'yes'
+
 - name: Show cluster resource
   ansible.builtin.debug:
     var: cluster_resource

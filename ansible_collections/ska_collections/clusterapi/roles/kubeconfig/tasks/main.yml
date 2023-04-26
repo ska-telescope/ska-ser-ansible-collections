@@ -8,15 +8,18 @@
     - ../configcapo/defaults/main.yml
   tags: [always]
 
-- name: Check Workload Cluster is running
-  ska_collections.clusterapi.wait_for_cluster:
+- name: Wait for Cluster
+  kubernetes.core.k8s_info:
+    kind: Cluster
+    api_version: cluster.x-k8s.io/v1beta1
+    namespace: "{{ capi_kube_namespace }}"
     name: "{{ capi_cluster }}"
-    phase: "{{ capi_machine_phase }}"
-    kubectl_namespace: "{{ capi_kube_namespace }}"
-    initpause: 10
-    wait: 30
-    retries: 60
-    kubectl_kubeconfig: "{{ capi_kubeconfig }}"
+    wait: true
+    wait_timeout: "{{ capi_cluster_timeout }}"
+    wait_condition:
+      type: Ready
+  environment:
+    KUBECONFIG: "{{ capi_kubeconfig }}"
 
 - name: Save cluster kubeconfig credentials # noqa no-changed-when risky-shell-pipe
   ansible.builtin.shell: |
