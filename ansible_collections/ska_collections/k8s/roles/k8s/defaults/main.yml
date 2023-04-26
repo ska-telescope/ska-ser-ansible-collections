@@ -1,4 +1,5 @@
 ---
+# pxh: we have to use xenial because of the upstream project
 k8s_kubernetes_ubuntu_version: xenial
 k8s_kubernetes_version: 1.26.4
 k8s_kube_version: "{{ k8s_kubernetes_version }}-00"
