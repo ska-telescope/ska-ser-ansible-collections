@@ -47,6 +47,7 @@
         --extra-vars "capi_cluster=${CLUSTER_NAME}" \
         --extra-vars "ansible_user=ubuntu" \
         --extra-vars "k8s_kubeconfig=/etc/kubernetes/admin.conf" \
+        --extra-vars "k8s_kubernetes_version=${K8S_VERSION}" \
         --extra-vars "nexus=${OCI_MIRROR_IP}" \
         --extra-vars "docker_allow_version_change=true" \
         /usr/src/ska-ser-ansible-collections/ansible_collections/ska_collections/clusterapi/playbooks/\$1 \$${@:2}

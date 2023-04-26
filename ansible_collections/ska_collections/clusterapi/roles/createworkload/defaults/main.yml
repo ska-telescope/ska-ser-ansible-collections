@@ -14,7 +14,8 @@ capi_apply_wait: true
 capi_apply_destroy_ask: true
 
 # https://github.com/kubernetes-sigs/cluster-api/releases
-capi_k8s_version: v1.25.7
+capi_k8s_version: 1.25.7
+capi_k8s_version_full: "v{{ capi_k8s_version }}"
 capi_calico_version: 3.24.5
 capi_helm_version: v3.11.2
 capi_cidr_block: 10.10.0.0/16
@@ -31,7 +32,7 @@ capi_capo_ostack_cloud_yaml: {}
 capi_capo_openstack_cloud: skatechops
 
 capi_capo_openstack_failure_domain: ceph
-capi_capo_openstack_image_name: "ubuntu-2204-kube-{{ capi_k8s_version }}"
+capi_capo_openstack_image_name: "ubuntu-2204-kube-{{ capi_k8s_version_full }}"
 capi_capo_openstack_instance_create_timeout: "{{ capi_cluster_timeout }}"
 capi_capo_controlplane_machine_flavour: l3.micro
 capi_capo_openstack_dns_servers: 192.168.99.162
