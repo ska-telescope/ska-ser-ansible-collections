@@ -43,9 +43,6 @@ apiServer:
   extraArgs:
     enable-admission-plugins: "NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota"
     authorization-mode: "Node,RBAC"
-    oidc-issuer-url: {{ k8s_oidc_issuer_url }}
-    oidc-username-claim: {{ k8s_oidc_username_claim }}
-    oidc-client-id: {{ k8s_oidc_client_id }}
     service-account-issuer: "https://kubernetes.default.svc.{{ k8s_cluster_domain }}"
     service-account-signing-key-file: "/etc/kubernetes/pki/sa.key"
     service-account-key-file: "/etc/kubernetes/pki/sa.pub"

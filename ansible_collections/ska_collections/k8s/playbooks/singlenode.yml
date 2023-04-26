@@ -6,7 +6,6 @@
     target_hosts: localhost
   become: true
   roles:
-  # pxh: change this when other NR is merged XXX
     - ska_collections.minikube.setup
     - singlenode
   tags:

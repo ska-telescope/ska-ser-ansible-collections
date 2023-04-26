@@ -170,7 +170,7 @@
 - name: Add proxy config
   ansible.builtin.template:
     src: haproxy.cfg.j2
-    dest: /etc/haproxy/haproxy-minikube.cfg
+    dest: /etc/haproxy/haproxy-singlenode.cfg
     mode: 0644
   become: true
 
@@ -203,5 +203,5 @@
       - "80:80"
       - "443:443"
     volumes:
-      - "/etc/haproxy/haproxy-minikube.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro"
+      - "/etc/haproxy/haproxy-singlenode.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro"
   become: true
