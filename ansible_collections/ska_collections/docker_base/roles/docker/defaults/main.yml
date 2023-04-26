@@ -37,6 +37,10 @@ docker_deb_pkgs:
   - "docker-ce"
   - "docker-ce-cli"
 
+# Set docker_python_pkg to 'docker' if cpus needs
+# to be set on any container from ansible
+docker_python_pkg: docker-py
+
 # Default settings if `nexus` is set
 docker_default_mirrors:
   - "http://{{ nexus }}:{{ nexus_docker_group_port }}"

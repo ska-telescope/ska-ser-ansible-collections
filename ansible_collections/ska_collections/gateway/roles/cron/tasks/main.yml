@@ -26,7 +26,6 @@
     dest: "/usr/local/bin"
     mode: 0755
   with_items: "{{ cron_scripts }}"
-
   become: true
 
 - name: Add cron job
@@ -41,4 +40,4 @@
     job: "{{ item.job }}"
     cron_file: "{{ cron_file }}"
   become: true
-  with_items: "{{ cron_job_lines }}"
+  with_items: "{{ cron_jobs }}"

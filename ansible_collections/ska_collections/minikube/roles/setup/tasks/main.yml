@@ -1,5 +1,4 @@
 ---
-
 - name: Calculate version vars
   ansible.builtin.set_fact:
     os_name: "{{ ansible_system | lower }}"
@@ -17,198 +16,54 @@
   until: apt_res is success
   become: true
 
-- name: Install jq package
-  ansible.builtin.apt:
-    name: "jq"
-    state: present
-  retries: 15
-  delay: 10
-  until: apt_res is success
-  become: true
-
-- name: Check if minikube exists
-  ansible.builtin.stat:
-    path: "{{ minikube_exe_dir }}/minikube"
-  register: stat_minikube
+- name: Install minikube
   tags: [minikube]
-
-- name: Check if the minikube version is installed
-  ansible.builtin.command: "{{ minikube_exe_dir }}/minikube version --short"
-  changed_when: false
-  register: minikube_version_check
-  ignore_errors: true
-  tags: [minikube]
-
-- name: Tidy up Minikube
-  ansible.builtin.file:
-    path: "{{ minikube_exe_dir }}/minikube"
-    state: absent
-  when: "not stat_minikube.stat.exists or
-    minikube_version_check.stdout.find(minikube_version) == -1"
-  tags: [minikube]
-  become: true
-
-- name: Minikube install
-  ansible.builtin.get_url:
-    url: "https://github.com/kubernetes/minikube/releases/download/{{ minikube_version }}/minikube-{{ os_name }}-{{ os_binary }}"
-    dest: "{{ minikube_exe_dir }}/minikube"
-    mode: "0755"
-  when: "not stat_minikube.stat.exists or
-    minikube_version_check.stdout.find(minikube_version) == -1"
-  tags: [minikube]
-  become: true
-
-- name: Check if kubectl exists
-  ansible.builtin.stat:
-    path: "{{ minikube_exe_dir }}/kubectl"
-  register: stat_kubectl
-  tags: [kubectl]
-
-- name: Check if the kubectl version is installed
-  ansible.builtin.command: "{{ minikube_exe_dir }}/kubectl  version --client --short 2>&1"
-  changed_when: false
-  register: kubectl_version_check
-  ignore_errors: true
-  tags: [kubectl]
-
-- name: Tidy up Kubectl
-  ansible.builtin.file:
-    path: "{{ minikube_exe_dir }}/kubectl"
-    state: absent
-  when: "not stat_kubectl.stat.exists or
-    kubectl_version_check.stdout.find(minikube_kubernetes_version) == -1"
-  tags: [kubectl]
-  become: true
-
-- name: Kubectl install
-  ansible.builtin.get_url:
-    url: "https://dl.k8s.io/release/{{ minikube_kubernetes_version }}/bin/{{ os_name }}/{{ os_binary }}/kubectl"
-    dest: "{{ minikube_exe_dir }}/kubectl"
-    mode: "0755"
-  when: "not stat_kubectl.stat.exists or
-    kubectl_version_check.stdout.find(minikube_kubernetes_version) == -1"
-  tags: [kubectl]
-  become: true
-
-- name: Check if helm exists
-  ansible.builtin.stat:
-    path: "{{ minikube_exe_dir }}/helm"
-  register: stat_helm
-  tags: [helm]
-
-- name: Check if the helm version
-  ansible.builtin.command: "{{ minikube_exe_dir }}/helm  version --short"
-  changed_when: false
-  register: helm_version_check
-  ignore_errors: true
-  tags: [helm]
-
-- name: Helm install
-  when: "not stat_helm.stat.exists or
-    helm_version_check.stdout.find(minikube_helm_version) == -1"
-  tags: [helm]
   block:
-    - name: Set helm_archive fact
-      ansible.builtin.set_fact:
-        helm_archive: "helm-{{ minikube_helm_version }}-{{ os_name }}-{{ os_binary }}.tar.gz"
+    - name: Check if minikube exists
+      ansible.builtin.stat:
+        path: "{{ minikube_exe_dir }}/minikube"
+      register: stat_minikube
 
-    - name: Download helm
-      ansible.builtin.get_url:
-        url: "https://get.helm.sh/{{ helm_archive }}"
-        dest: "/tmp/{{ helm_archive }}"
-        mode: "0755"
-        tmp_dest: "/tmp/"
+    - name: Check if the minikube version is installed
+      ansible.builtin.command: "{{ minikube_exe_dir }}/minikube version --short"
+      changed_when: false
+      register: minikube_version_check
+      ignore_errors: true
 
-    - name: Unpack helm
-      ansible.builtin.unarchive:
-        src: "/tmp/{{ helm_archive }}"
-        include: "{{ os_name }}-{{ os_binary }}/helm"
-        remote_src: true
-        dest: "{{ minikube_exe_dir }}/"
-        mode: "0755"
-        extra_opts:
-          - "--strip-components=1"
+    - name: Tidy up Minikube
+      ansible.builtin.file:
+        path: "{{ minikube_exe_dir }}/minikube"
+        state: absent
+      when: "not stat_minikube.stat.exists or
+        minikube_version_check.stdout.find(minikube_version) == -1"
       become: true
 
-    - name: Tidy up helm download
-      ansible.builtin.file:
-        path: "/tmp/{{ helm_archive }}"
-        state: absent
-
-- name: Check if k9s exists
-  ansible.builtin.stat:
-    path: "{{ minikube_exe_dir }}/k9s"
-  register: stat_k9s
-  tags: [k9s]
-
-- name: Check if the k9s version
-  ansible.builtin.command: "{{ minikube_exe_dir }}/k9s version --short"
-  changed_when: false
-  register: k9s_version_check
-  ignore_errors: true
-  tags: [k9s]
-
-- name: K9s install
-  when: "not stat_k9s.stat.exists or
-    k9s_version_check.stdout.find(minikube_k9s_version) == -1"
-  tags: [k9s]
-  block:
-    - name: Set k9s_archive fact
-      ansible.builtin.set_fact:
-        k9s_archive: "k9s_{{ os_name }}_{{ os_binary }}.tar.gz"
-
-    - name: Download k9s
+    - name: Minikube install
       ansible.builtin.get_url:
-        url: "https://github.com/derailed/k9s/releases/download/{{ minikube_k9s_version }}/{{ k9s_archive }}"
-        dest: "/tmp/{{ k9s_archive }}"
-        mode: "0755"
-        tmp_dest: "/tmp/"
-
-    - name: Unpack k9s
-      ansible.builtin.unarchive:
-        src: "/tmp/{{ k9s_archive }}"
-        include: "k9s"
-        remote_src: true
-        dest: "{{ minikube_exe_dir }}/"
-        mode: "0755"
+        url: "https://github.com/kubernetes/minikube/releases/download/{{ minikube_version }}/minikube-{{ os_name }}-{{ os_binary }}"
+        dest: "{{ minikube_exe_dir }}/minikube"
+        mode: 0755
+      when: "not stat_minikube.stat.exists or
+        minikube_version_check.stdout.find(minikube_version) == -1"
       become: true
 
-    - name: Tidy up k9s download
-      ansible.builtin.file:
-        path: "/tmp/{{ k9s_archive }}"
-        state: absent
+- name: Install generic tools
+  ansible.builtin.import_role:
+    name: ska_collections.instance_common.tools
+  vars:
+    tools_update_apt: false
+    tools_installation_dir: "{{ minikube_exe_dir }}"
+    tools_yq_version: "{{ minikube_yq_version }}"
 
-- name: Check if yq exists
-  ansible.builtin.stat:
-    path: "{{ minikube_exe_dir }}/yq"
-  register: stat_yq
-  tags: [yq]
-
-- name: Check if the yq version is installed
-  ansible.builtin.command: "{{ minikube_exe_dir }}/yq --version"
-  changed_when: false
-  register: yq_version_check
-  ignore_errors: true
-  tags: [yq]
-
-- name: Tidy up Yq
-  ansible.builtin.file:
-    path: "{{ minikube_exe_dir }}/yq"
-    state: absent
-  when: "not stat_yq.stat.exists or
-    yq_version_check.stdout.find(minikube_yq_version) == -1"
-  become: true
-  tags: [yq]
-
-- name: Yq install
-  ansible.builtin.get_url:
-    url: "https://github.com/mikefarah/yq/releases/download/v{{ minikube_yq_version }}/yq_{{ os_name }}_{{ os_binary }}"
-    dest: "{{ minikube_exe_dir }}/yq"
-    mode: "0755"
-  when: "not stat_yq.stat.exists or
-    yq_version_check.stdout.find(minikube_yq_version) == -1"
-  become: true
-  tags: [yq]
+- name: Install kubernetes tools
+  ansible.builtin.import_role:
+    name: ska_collections.instance_common.k8s_tools
+  vars:
+    k8stools_update_apt: false
+    k8stools_installation_dir: "{{ minikube_exe_dir }}"
+    k8stools_kubectl_version: "{{ minikube_kubernetes_version }}"
+    k8stools_helm_version: "{{ minikube_helm_version }}"
+    k8stools_k9s_version: "{{ minikube_k9s_version }}"
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers

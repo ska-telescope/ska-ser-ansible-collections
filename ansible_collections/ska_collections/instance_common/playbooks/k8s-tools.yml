@@ -1,0 +1,11 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Apply k8s-tools roles
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: Apply tools role
+      ansible.builtin.include_role:
+        name: ska_collections.instance_common.k8s_tools

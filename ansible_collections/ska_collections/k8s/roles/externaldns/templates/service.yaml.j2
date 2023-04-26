@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: extdns
+    app.kubernetes.io/name: coredns
+    app.kubernetes.io/part-of: coredns
+  name: kube-service-extdns-extdns-coredns-metallb
+  namespace: {{ k8s_externaldns_namespace }}
+spec:
+  loadBalancerClass: {{ k8s_externaldns_coredns_lb_class }}
+  allocateLoadBalancerNodePorts: true
+  ipFamilyPolicy: SingleStack
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ports:
+  - name: udp-53
+    nodePort: 30647
+    port: 53
+    protocol: UDP
+    targetPort: 53
+  selector:
+    app.kubernetes.io/instance: extdns
+    app.kubernetes.io/name: coredns
+  type: LoadBalancer
+  sessionAffinity: None
+{% if k8s_externaldns_lb_ip %}
+  loadBalancerIP: {{ k8s_externaldns_lb_ip }}
+{% endif %}

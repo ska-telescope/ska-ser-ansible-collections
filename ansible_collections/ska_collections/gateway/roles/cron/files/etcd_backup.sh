@@ -1,5 +1,5 @@
 #!/bin/sh
-
+set -x
 ENDPOINT={{ cron_etcd_endpoint }}:2379
 BACKUPDIR=/var/lib/backup
 DTE=`date +"%Y.%m.%d.%H%M%S"`

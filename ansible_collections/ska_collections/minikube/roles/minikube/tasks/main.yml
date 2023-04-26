@@ -1,5 +1,4 @@
 ---
-
 # load shared vars with setup
 - name: Include vars
   ansible.builtin.include_vars:
@@ -14,7 +13,6 @@
   become: true
   become_user: "{{ minikube_start_user }}"
   tags: [always]
-
 
 - name: Start Minikube
   # Minikube is not started - this actually works for both shutdown and uninstalled!!!
@@ -130,9 +128,19 @@
       become: true
       become_user: "{{ minikube_start_user }}"
 
+    - name: Find kubectl config in /etc/kubernetes
+      ansible.builtin.stat:
+        path: "/etc/kubernetes/admin.conf"
+      register: kubectl_etc_kubernetes
+
+    - name: Find kubectl config in ~/.kube/config
+      ansible.builtin.stat:
+        path: "/home/{{ ansible_user }}/.kube/config"
+      register: kubectl_home_kube
+
     - name: Retrieve kubectl config
       ansible.builtin.fetch:
-        src: "/etc/kubernetes/admin.conf"
+        src: "{{ kubectl_etc_kubernetes.stat.exists | ternary(kubectl_etc_kubernetes.stat.path, kubectl_home_kube.stat.path) }}"
         dest: "/tmp/admin.conf-{{ ansible_hostname }}"
         flat: true
       become: true
@@ -142,14 +150,14 @@
       ansible.builtin.file:
         path: "~/.kube"
         state: directory
-        mode: "0700"
+        mode: 0700
       become: false
 
     - name: Setup kubectl config
       ansible.builtin.copy:
         src: "/tmp/admin.conf-{{ ansible_hostname }}"
         dest: "~/.kube/config"
-        mode: "0600"
+        mode: 0600
       become: false
 
 - name: Add minikube service
@@ -159,7 +167,6 @@
   tags:
     - build
   block:
-
     - name: Add minikube service
       ansible.builtin.template:
         src: minikube.service.j2
@@ -178,7 +185,6 @@
   tags:
     - build
   block:
-
     - name: Get minikube IP
       ansible.builtin.command: "{{ minikube_exe_dir }}/minikube ip"
       changed_when: false
@@ -237,7 +243,6 @@
           - "/etc/haproxy/haproxy-minikube.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro"
       become: true
 
-
 - name: Destroy Minikube Instance
   # Minikube is started
   when: "minikube_run_check.rc == 0"
@@ -246,7 +251,6 @@
   tags:
     - destroy
   block:
-
     - name: "Remove container {{ minikube_haproxy_name }}"
       community.docker.docker_container:
         name: "{{ minikube_haproxy_name }}"

@@ -10,8 +10,13 @@
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:
         var: k8s_kubeconfig
-  roles:
-    - role: externaldns
+
+  tasks:
+    - name: Deploy ExternalDNS
+      ansible.builtin.import_role:
+        name: ska_collections.k8s.externaldns
+        tasks_from: install
+
   environment:
     KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tags:

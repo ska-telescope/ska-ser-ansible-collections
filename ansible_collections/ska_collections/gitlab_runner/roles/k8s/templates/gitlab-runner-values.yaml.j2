@@ -41,7 +41,7 @@ runners:
             fi
             if [[ ${CI_PROJECT_NAME} == "ska-skampi" ]] && [[ ${KUBE_NAMESPACE} == ci-* || ${KUBE_NAMESPACE} == integration-* ]]; then
                 echo "Applying Quotas to the SKAMPI pipeline namespace ${KUBE_NAMESPACE}."
-                kubectl describe namespace ${KUBE_NAMESPACE} > /dev/null 2>&1 && K_DESC=$? || K_DESC=$?
+                kubectl get namespace ${KUBE_NAMESPACE} > /dev/null 2>&1 && K_DESC=$? || K_DESC=$?
                 if [[ ${K_DESC} -eq 0 ]] && [[ ${KEEP_NAMESPACE} == "true" ]]; then
                     kubectl describe namespace ${KUBE_NAMESPACE};
                 else

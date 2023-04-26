@@ -5,4 +5,5 @@ k8s_ingress_lb_suffix: "default"
 k8s_ingress_nginx_chart_version: "4.5.2"
 k8s_ingress_old_nginx_version: 1.6.4
 k8s_ingress_lb_ip: ""
+k8s_ingress_lb_class: ""
 k8s_ingress_timeout: "300s"
