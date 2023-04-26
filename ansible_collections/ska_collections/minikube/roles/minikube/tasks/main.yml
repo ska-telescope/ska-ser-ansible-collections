@@ -245,7 +245,6 @@
 
 - name: Destroy Minikube Instance
   # Minikube is started
-  when: "minikube_run_check.rc == 0"
   become: true
   become_user: "{{ minikube_start_user }}"
   tags:
@@ -268,6 +267,8 @@
       ansible.builtin.shell: |
         set -o pipefail && crictl ps -a | awk '{print $1}' | grep -v CON | xargs crictl stop || true; \
         set -o pipefail && crictl ps -a | awk '{print $1}' | grep -v CON | xargs crictl rm -f || true
+      args:
+        executable: /bin/bash
       changed_when: false
       register: minikube_exec_check
 
@@ -296,6 +297,7 @@
         path: "{{ item }}"
         state: absent
       with_items:
+        - "/root/.minikube"
         - "/{{ minikube_start_user }}/.minikube"
         - "/var/lib/kubeadm.yaml"
         - "/data/minikube"

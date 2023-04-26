@@ -1,0 +1,207 @@
+---
+
+- name: Get the username running the deploy
+  become: false
+  ansible.builtin.command: whoami
+  delegate_to: localhost
+  register: username_on_the_host
+  changed_when: false
+
+- name: Username
+  ansible.builtin.debug:
+    var: username_on_the_host.stdout_lines[0]
+
+- name: Check if the nvidia driver is installed
+  ansible.builtin.command: nvidia-smi --query
+  changed_when: false
+  register: nvidia_driver_check
+  ignore_errors: true
+
+- name: Nvidia check
+  ansible.builtin.debug:
+    var: nvidia_driver_check.rc
+  when: debug|bool
+
+- name: Set the host grouping
+  ansible.builtin.set_fact:
+    host_grouping: "master"
+    current_hostname: "{{ hostvars[inventory_hostname].ansible_hostname }}"
+    nvidia_driver_exists: "{{ nvidia_driver_check.rc == 0 }}"
+
+- name: Debug vars
+  ansible.builtin.debug:
+    var: "{{ item }}"
+  with_items:
+    - host_grouping
+    - k8s_cluster_api_address
+    - k8s_cluster_hostname
+    - current_hostname
+  when: debug|bool
+
+- name: Check nvidia-driver installed when Nvidia support requested
+  ansible.builtin.fail:
+    msg: The Nvidia driver has not been found (nvidia-smi --query) - aborting.
+  when: k8s_activate_nvidia|bool and not k8s_ignore_nvidia_fail|bool and not nvidia_driver_exists|bool
+
+- name: Check if "Cluster is active" is enabled.
+  ansible.builtin.command: kubectl --kubeconfig=/etc/kubernetes/admin.conf version
+  changed_when: false
+  register: kubectl_version
+  ignore_errors: true
+
+- name: "Show kubectl_version"
+  ansible.builtin.debug:
+    var: kubectl_version
+  when: debug|bool
+
+- name: Ensure the /etc/kubernetes/kubeadm directory exists
+  ansible.builtin.file:
+    path: /etc/kubernetes/kubeadm
+    state: directory
+    mode: "0755"
+
+- name: Kubeadm config
+  ansible.builtin.template:
+    src: kubeadm-init-config.yaml.j2
+    dest: "/etc/kubernetes/kubeadm/kubeadm-init-config.yaml"
+    mode: "0644"
+
+- name: Ensure the /etc/kubernetes/manifests directory exists on first master
+  ansible.builtin.file:
+    path: /etc/kubernetes/manifests
+    state: directory
+    mode: "0755"
+
+- name: Init Cluster on the first master.
+  ansible.builtin.command: /usr/bin/kubeadm init
+    --config /etc/kubernetes/kubeadm/kubeadm-init-config.yaml
+    --ignore-preflight-errors=Swap,NumCPU,Mem
+    --upload-certs --v=5
+  when: "kubectl_version.stdout.find('Server Version:') == -1"
+  changed_when: false
+
+- name: Wait for API Server to come up
+  ansible.builtin.wait_for:
+    host: "{{ k8s_cluster_api_address }}"
+    port: 6443
+    delay: 10
+
+- name: Install kubernetes python package
+  ansible.builtin.pip:
+    name: "kubernetes=={{ k8s_singlenode_pip_kubernetes_version }}"
+
+- name: Retrieve kubectl config
+  ansible.builtin.fetch:
+    src: "/etc/kubernetes/admin.conf"
+    dest: "/tmp/admin.conf-{{ inventory_hostname }}"
+    flat: true
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Ensure the ~/.kube directory exists on all nodes
+  ansible.builtin.file:
+    path: "~/.kube"
+    state: directory
+    mode: "0700"
+
+- name: Setup kubectl config
+  ansible.builtin.copy:
+    src: "/tmp/admin.conf-{{ inventory_hostname }}"
+    dest: "~/.kube/config"
+    mode: "0600"
+
+- name: Ensure the ~/.kube directory exists on all nodes
+  ansible.builtin.file:
+    path: "~/.kube"
+    state: directory
+    mode: "0700"
+  become: false
+
+- name: Setup kubectl config
+  ansible.builtin.copy:
+    src: "/tmp/admin.conf-{{ inventory_hostname }}"
+    dest: "~/.kube/config"
+    mode: "0600"
+  become: false
+
+# https://github.com/kubernetes-csi/csi-driver-host-path
+- name: Install csi-hostpath-driver
+  kubernetes.core.k8s:
+    state: present
+    namespace: default
+    template: "{{ item }}"
+  with_items:
+    - rbac-external-attacher.yaml.j2
+    - rbac-external-provisioner.yaml.j2
+    - rbac-external-snapshotter.yaml.j2
+    - rbac-external-health-monitor-controller.yaml.j2
+    - rbac-external-resizer.yaml.j2
+    - rbac-hostpath.yaml.j2
+    - csi-hostpath-attacher.yaml.j2
+    - csi-hostpath-driverinfo.yaml.j2
+    - csi-hostpath-plugin.yaml.j2
+    - csi-hostpath-resizer.yaml.j2
+    - csi-hostpath-storageclass.yaml.j2
+
+# Storage is handled by:
+#  https://minikube.sigs.k8s.io/docs/tutorials/volume_snapshots_and_csi/#what-youll-need
+# data is located in /var/lib/csi-hostpath-data
+- name: Apply storage classes
+  kubernetes.core.k8s:
+    state: present
+    template: 'sc.yaml.j2'
+
+- name: Add GPU label to existing Node
+  kubernetes.core.k8s:
+    state: patched
+    kind: Node
+    name: "{{ ansible_hostname }}"
+    definition:
+      metadata:
+        labels:
+          nvidia.com/gpu: "true"
+
+- name: Make sure haproxy directory exists
+  ansible.builtin.file:
+    path: "/etc/haproxy"
+    state: directory
+    mode: 0755
+  become: true
+
+- name: Add proxy config
+  ansible.builtin.template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy-singlenode.cfg
+    mode: 0644
+  become: true
+
+- name: "Pull haproxy image {{ k8s_singlenode_haproxy_image }}"
+  community.docker.docker_image:
+    name: "{{ k8s_singlenode_haproxy_image }}"
+    source: pull
+  become: true
+
+- name: "Stop container {{ k8s_singlenode_haproxy_name }}"
+  community.docker.docker_container:
+    name: "{{ k8s_singlenode_haproxy_name }}"
+    state: absent
+  become: true
+
+- name: Start haproxy container
+  community.docker.docker_container:
+    name: "{{ k8s_singlenode_haproxy_name }}"
+    image: "{{ k8s_singlenode_haproxy_image }}"
+    command:
+      - "haproxy"
+      - "-f"
+      - "/usr/local/etc/haproxy/haproxy.cfg"
+    state: started
+    network_mode: host
+    user: root
+    restart: true
+    restart_policy: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/etc/haproxy/haproxy-singlenode.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro"
+  become: true
