@@ -13,7 +13,7 @@
         var: k8s_kubeconfig
 
   environment:
-    KUBECONFIG: "{{ k8s_kubeconfig | lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf') }}"
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tasks:
 
     - name: Destroy Vault

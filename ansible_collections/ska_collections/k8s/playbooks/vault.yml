@@ -13,7 +13,7 @@
   roles:
     - ska_collections.k8s.vault
   environment:
-    KUBECONFIG: "{{ k8s_kubeconfig | lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf') }}"
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
 
   tags:
     - vault
