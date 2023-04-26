@@ -103,7 +103,6 @@ capi_capo_os_subnet_name: <openstack network's subnet name to create cluster ins
 
 # Set basic k8s variables to target the workload cluster when installing services using
 # the k8s collection
-k8s_kubernetes_version: "{{ capi_k8s_version }}"
 k8s_rook_ceph_conf_ini_file: <path to ceph.conf file containing ceph cluster configurations>
 k8s_rook_ceph_conf_key_ring: <path to ceph.client.admin.keyring file containing ceph cluster secrets>
 

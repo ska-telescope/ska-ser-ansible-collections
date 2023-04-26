@@ -91,7 +91,6 @@
       OPENSTACK_CLOUD_YAML_B64: "{{ capi_capo_ostack_cloud_yaml_b64 }}"
       OPENSTACK_CLOUD_CACERT_B64: "{{ capi_capo_cacert_b64 }}"
       CLUSTER_API_OPENSTACK_INSTANCE_CREATE_TIMEOUT: "{{ capi_capo_openstack_instance_create_timeout }}"
-      BUNDLE_LOOKUP_TAG: "{{ capi_k8s_version }}"
       K8S_VERSION: "{{ capi_k8s_version }}"
       CALICO_VERSION: "{{ capi_calico_version }}"
       NETWORK_NAME: "{{ capi_capo_os_network_name }}"
@@ -109,7 +108,7 @@
   ansible.builtin.shell: |
     clusterctl generate cluster {{ capi_cluster }} \
       --target-namespace {{ capi_kube_namespace }} \
-      --kubernetes-version {{ capi_k8s_version }} \
+      --kubernetes-version {{ capi_k8s_version_full }} \
       --control-plane-machine-count {{ capi_controlplane_count }} \
       --worker-machine-count {{ capi_worker_count }} \
       --from {{ capi_config_dir }}/{{ capi_cluster }}-cluster-template.yaml > {{ capi_capo_template_dir.path }}/{{ capi_cluster }}.yaml;
