@@ -6,7 +6,7 @@
     target_hosts: localhost
   become: true
   roles:
-    - ska_collections.minikube.setup
-    - singlenode
+    - ska_collections.instance_common.k8s_tools
+    - ska_collections.k8s.singlenode
   tags:
     - singlenode
