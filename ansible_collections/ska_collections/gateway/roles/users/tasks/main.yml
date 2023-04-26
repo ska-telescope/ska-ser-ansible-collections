@@ -1,6 +1,5 @@
 ---
 # https://etherarp.net/ssh-jump-hosts/index.html
-
 - name: "Create user account : {{ jump_user }}"
   ansible.builtin.user:
     name: "{{ jump_user }}"

@@ -22,7 +22,6 @@
     path: "{{ openvpn_configuration_directory }}/server2.conf"
     state: absent
 
-
 - name: Remove openvpn packages
   ansible.builtin.package:
     name: "{{ openvpn_packages }}"

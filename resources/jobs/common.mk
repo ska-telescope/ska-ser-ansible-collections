@@ -38,6 +38,16 @@ update-hosts: check_hosts ## Update /etc/hosts entries with the full inventory i
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
+tools-install: check_hosts ## Install generic tools
+	ansible-playbook $(PLAYBOOKS_DIR)/tools.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+k8s-tools-install: check_hosts tools-install ## Install kubernetes tools
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s-tools.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
 setup-ca: check_hosts ## Setup a CA for self-signed certificates
 	ansible-playbook $(PLAYBOOKS_DIR)/setup-ca.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
@@ -45,16 +55,6 @@ setup-ca: check_hosts ## Setup a CA for self-signed certificates
 
 test-ca: check_hosts ## Test CA
 	ansible-playbook $(TESTS_DIR)/test-ca.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
-
-kubectl-install: check_hosts ## Install Kubectl
-	ansible-playbook $(PLAYBOOKS_DIR)/kubectl.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
-
-kubectl-update: check_hosts ## Update Kubectl version
-	ansible-playbook $(PLAYBOOKS_DIR)/kubectl-update.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 

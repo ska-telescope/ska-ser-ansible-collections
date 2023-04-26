@@ -26,12 +26,13 @@
       ansible.builtin.template:
         src: "openstack-ccm.yaml.j2"
         dest: "/tmp/openstack-ccm.values.yaml"
-        mode: "0644"
+        mode: 0644
 
     - name: Apply cloud controller manager chart
       kubernetes.core.helm:
         name: openstack-ccm
         chart_ref: cpo/openstack-cloud-controller-manager
+        chart_version: "{{ k8s_cloudprovider_chart_version }}"
         release_namespace: kube-system
         create_namespace: false
         update_repo_cache: true
@@ -76,6 +77,7 @@
   kubernetes.core.helm:
     name: cinder-csi
     chart_ref: cpo/openstack-cinder-csi
+    chart_version: "{{ k8s_cloudprovider_chart_version }}"
     release_namespace: kube-system
     create_namespace: false
     update_repo_cache: true

@@ -1,5 +1,4 @@
 ---
-
 kind: Pod
 apiVersion: v1
 metadata:
@@ -13,9 +12,7 @@ spec:
       image: hashicorp/http-echo
       args:
         - "-text=banana"
-
 ---
-
 kind: Service
 apiVersion: v1
 metadata:
@@ -26,9 +23,7 @@ spec:
     app: banana
   ports:
     - port: 5678
-
 ---
-
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

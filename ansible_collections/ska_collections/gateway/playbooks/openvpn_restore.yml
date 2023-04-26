@@ -1,13 +1,13 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: Configure cronjob
+- name: Restore OpenVPN PKI and credentials
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
   become: true
   gather_facts: true
-
   tasks:
-    - name: Configure cronjob
+    - name: Restore OpenVPN PKI and credentials
       ansible.builtin.include_role:
-        name: cron
+        name: openvpn
+        tasks_from: restore

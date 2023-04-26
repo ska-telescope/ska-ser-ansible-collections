@@ -39,6 +39,7 @@
       kubernetes.core.k8s:
         state: present
         template: 'resources/ingress.yml'
+        wait: true
 
     - name: Wait till pod is created
       kubernetes.core.k8s_info:

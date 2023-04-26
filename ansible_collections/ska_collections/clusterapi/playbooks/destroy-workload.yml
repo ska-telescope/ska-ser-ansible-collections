@@ -1,29 +1,5 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: Check workload cluster to destroy
-  hosts: "{{ target_hosts }}"
-  vars:
-    target_hosts: localhost
-  tasks:
-    - name: Check workload cluster
-      ansible.builtin.include_role:
-        name: ska_collections.clusterapi.createworkload
-        tasks_from: check-configs.yml
-        public: true
-
-- name: Check destroy workload
-  hosts: localhost
-  vars_prompt:
-    - name: ireallymeanit
-      prompt: "This will destroy the kubernetes cluster. Confirm? [yes,no]"
-      private: false
-  tasks:
-    - name: Abort playbook
-      ansible.builtin.fail:
-        msg: >
-          "Exiting destroy playbook. To really do it, say 'yes' on the prompt"
-      when: ireallymeanit != 'yes'
-
 - name: Destroy the workload cluster
   hosts: "{{ target_hosts }}"
   vars:

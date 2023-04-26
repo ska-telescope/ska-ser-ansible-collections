@@ -52,6 +52,16 @@ delete-client: check_hosts check_inputs ## Destroy openvpn server
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" --extra-vars "openvpn_client=$(OPENVPN_CLIENT)" \
 	--extra-vars "openvpn_client_email=$(OPENVPN_CLIENT_EMAIL)"
 
+backup: check_hosts ## Backup pki and generated credentials
+	ansible-playbook $(PLAYBOOKS_DIR)/openvpn_backup.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+restore: check_hosts ## Restore pki and generated credentials
+	ansible-playbook $(PLAYBOOKS_DIR)/openvpn_restore.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
 help: ## Show Help
 	@echo "openvpn targets - make playbooks openvpn <target>:"
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
