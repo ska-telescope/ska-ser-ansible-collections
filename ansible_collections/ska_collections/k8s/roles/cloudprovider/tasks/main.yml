@@ -18,14 +18,15 @@
 - name: Add cloud provider chart repo
   kubernetes.core.helm_repository:
     name: cpo
-    repo_url: "https://kubernetes.github.io/cloud-provider-openstack"
+    repo_url: https://kubernetes.github.io/cloud-provider-openstack
 
 - name: Deploy CCM chart with values
   block:
+    # This template uses the variables loaded from the openstack-config task above
     - name: Template openstack-ccm values yaml
       ansible.builtin.template:
-        src: "openstack-ccm.yaml.j2"
-        dest: "/tmp/openstack-ccm.values.yaml"
+        src: openstack-ccm.yaml.j2
+        dest: /tmp/openstack-ccm.values.yaml
         mode: 0644
 
     - name: Apply cloud controller manager chart
@@ -38,7 +39,7 @@
         update_repo_cache: true
         force: true
         values_files:
-          - "/tmp/openstack-ccm.values.yaml"
+          - /tmp/openstack-ccm.values.yaml
 
     # apply the CCM roles and bindings required for updating Ingress
     - name: Download Cloud Provider manifests
@@ -47,8 +48,8 @@
         dest: "/tmp/{{ item }}"
         mode: 0664
       with_items:
-        - "cloud-controller-manager-roles.yaml"
-        - "cloud-controller-manager-role-bindings.yaml"
+        - cloud-controller-manager-roles.yaml
+        - cloud-controller-manager-role-bindings.yaml
 
     - name: Apply Cloud Provider manifests
       kubernetes.core.k8s:
@@ -56,13 +57,13 @@
         apply: true
         src: "/tmp/{{ item }}"
       with_items:
-        - "cloud-controller-manager-roles.yaml"
-        - "cloud-controller-manager-role-bindings.yaml"
+        - cloud-controller-manager-roles.yaml
+        - cloud-controller-manager-role-bindings.yaml
 
   always:
     - name: Remove values
       ansible.builtin.file:
-        path: "/tmp/openstack-ccm.values.yaml"
+        path: /tmp/openstack-ccm.values.yaml
         state: absent
 
     - name: Tidy up Cloud Provider manifests
@@ -70,8 +71,8 @@
         path: "/tmp/{{ item }}"
         state: absent
       with_items:
-        - "cloud-controller-manager-roles.yaml"
-        - "cloud-controller-manager-role-bindings.yaml"
+        - cloud-controller-manager-roles.yaml
+        - cloud-controller-manager-role-bindings.yaml
 
 - name: Apply cloud provider cinder csi chart
   kubernetes.core.helm:
