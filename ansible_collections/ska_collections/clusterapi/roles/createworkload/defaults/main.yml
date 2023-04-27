@@ -47,6 +47,7 @@ capi_capo_os_network_name: SKA-TechOps-ClusterAPI1
 capi_capo_os_subnet_name: SKA-TechOps-ClusterAPI-Net1
 capi_capo_run_kubelet_install: false
 
+capi_capo_openstack_enable_service_lbs: true
 capi_capo_openstack_enable_apiserver_lb: true
 capi_capo_openstack_enable_apiserver_floating_ip: false
 capi_capo_openstack_disable_port_security: true

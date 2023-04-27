@@ -12,15 +12,6 @@
 - name: Include the OS Config
   ansible.builtin.include_tasks: openstack-config.yml
 
-- name: Encode Clusterapi cloud config and store as fact
-  ansible.builtin.set_fact:
-    capi_base64_cloud_config: "{{ slurped_cloud_config.content }}"
-
-- name: Show capi_base64_cloud_config
-  ansible.builtin.debug:
-    var: capi_base64_cloud_config
-  when: debug
-
 - name: Check if kubectl is installed locally
   block:
     - name: Try using kubectl
@@ -94,6 +85,7 @@
       IP_AUTODETECTION_METHOD: "{{ capi_calico_ip_autodetection_method }}"
       CALICO_IPV4POOL_IPIP: "{{ capi_calico_ipv4pool_ipip }}"
       RUN_KUBELET_INSTALL: "{% if capi_capo_run_kubelet_install %}yes{% else %}no{% endif %}"
+      CLOUDPROVIDER_ENABLE_SERVICE_CONTROLLER: "{{ capi_capo_openstack_enable_service_lbs | bool | lower }}"
 
 - name: Setup workers environment variables for templating
   ansible.builtin.set_fact:

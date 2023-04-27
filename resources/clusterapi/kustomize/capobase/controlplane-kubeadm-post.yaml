@@ -51,6 +51,7 @@
         --extra-vars "capi_cluster=${CLUSTER_NAME}" \
         --extra-vars "k8s_cloudprovider_wait=" \
         --extra-vars "k8s_cloudprovider_kubeconfig=$KUBECONFIG" \
+        --extra-vars "k8s_cloudprovider_enable_service_controller=${CLOUDPROVIDER_ENABLE_SERVICE_CONTROLLER}" \
         --extra-vars "capi_capo_openstack_cloud_config=/etc/kubernetes/clouds.yaml" \
         --extra-vars "capi_capo_openstack_cloud=${OPENSTACK_CLOUD}" \
         --tags "cloudprovider" \
