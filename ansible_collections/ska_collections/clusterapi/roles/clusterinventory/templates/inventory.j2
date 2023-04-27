@@ -1,7 +1,7 @@
 [{{ capi_cluster }}-masters]
 {% for machine in workload_machines['resources'] %}
 {% if 'cluster.x-k8s.io/control-plane' in machine['metadata']['labels'] %}
-{{ machine['metadata']['name'] }}  ansible_host={{ machine['status']['addresses'] | selectattr("type", "eq", "InternalIP") | map(attribute="address") | list | first }} ansible_user=ubuntu
+{{ machine['status']['nodeRef']['name'] }}  ansible_host={{ machine['status']['addresses'] | selectattr("type", "eq", "InternalIP") | map(attribute="address") | list | first }} ansible_user=ubuntu
 {% endif %}
 {% endfor %}
 
@@ -24,7 +24,7 @@
 [{{ worker_group }}]
 {% for machine in workload_machines['resources'] %}
 {% if 'cluster.x-k8s.io/deployment-name' in machine['metadata']['labels'] and machine['metadata']['labels']['cluster.x-k8s.io/deployment-name'] == worker_group %}
-{{ machine['metadata']['name'] }}  ansible_host={{ machine['status']['addresses'] | selectattr("type", "eq", "InternalIP") | map(attribute="address") | list | first }} ansible_user=ubuntu
+{{ machine['status']['nodeRef']['name'] }}  ansible_host={{ machine['status']['addresses'] | selectattr("type", "eq", "InternalIP") | map(attribute="address") | list | first }} ansible_user=ubuntu
 {% endif %}
 {% endfor %}
 
