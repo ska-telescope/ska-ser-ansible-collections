@@ -1,16 +1,7 @@
 - op: add
-  path: /spec/kubeadmConfigSpec/preKubeadmCommands/-
-  target:
-    kind: KubeadmControlPlane
-    name: ${CLUSTER_NAME}-control-plane
-  value:
-    '/usr/bin/bash /etc/kubernetes/initialise-install-tools.sh >>/tmp/capo-config.log 2>&1'
-
-- op: add
   path: /spec/kubeadmConfigSpec/files/-
   target:
     kind: KubeadmControlPlane
-    name: ${CLUSTER_NAME}-control-plane
   value:
     owner: root:root
     path: /etc/kubernetes/initialise-install-tools.sh
@@ -58,3 +49,44 @@
 
       echo "Finished."
       exit 0
+
+- op: add
+  path: /spec/kubeadmConfigSpec/files/-
+  target:
+    kind: KubeadmControlPlane
+  value:
+    owner: root:root
+    path: /etc/kubernetes/kubeadm-pre-deploy.sh
+    content: |
+      #!/usr/bin/bash
+      echo ""
+      echo "==================================================================="
+      echo "controlplane preKubeadmCommands: deploy $(date)"
+      set -x
+
+      /usr/src/ska-ser-ansible-collections/run-play.sh containerd.yml -vv
+      /usr/src/ska-ser-ansible-collections/run-play.sh docker.yml -vv
+
+      if [ "${RUN_KUBELET_INSTALL}" = "yes" ]; then
+        /usr/src/ska-ser-ansible-collections/run-play.sh k8s-setup.yml -vv
+      fi
+
+      /usr/src/ska-ser-ansible-collections/run-play.sh install-tools.yml --tags helm -vv
+
+      echo "preKubeadmCommands: end $(date)"
+      exit 0
+
+- op: add
+  path: /spec/kubeadmConfigSpec/preKubeadmCommands/-
+  target:
+    kind: KubeadmControlPlane
+  value:
+    '/usr/bin/bash /etc/kubernetes/initialise-install-tools.sh >>/tmp/capo-config.log 2>&1'
+
+- op: add
+  path: /spec/kubeadmConfigSpec/preKubeadmCommands/-
+  target:
+    kind: KubeadmControlPlane
+  value:
+    '/usr/bin/bash /etc/kubernetes/kubeadm-pre-deploy.sh >>/tmp/capo-config.log 2>&1'
+

@@ -24,6 +24,10 @@ capi_calico_ipv4pool_ipip: Never
 capi_controlplane_count: 1
 capi_worker_count: 2
 capi_cluster_timeout: 1800
+capi_nvidia_driver_version: 470
+capi_dns_image_name: docker.io/coredns
+capi_dns_image_tag: 1.9.4
+capi_worker_labels: []
 
 capi_capo_template_version: v0.7.1
 capi_capo_template_name: cluster-template-capo.orig.yaml
@@ -42,5 +46,16 @@ capi_capo_openstack_external_network_id: 5283f642-8bd8-48b6-8608-fa3006ff4539
 capi_capo_os_network_name: SKA-TechOps-ClusterAPI1
 capi_capo_os_subnet_name: SKA-TechOps-ClusterAPI-Net1
 capi_capo_run_kubelet_install: false
+
+capi_capo_openstack_enable_apiserver_lb: true
+capi_capo_openstack_enable_apiserver_floating_ip: false
+capi_capo_openstack_disable_port_security: true
+capi_capo_openstack_managed_security_groups: true
+capi_capo_openstack_security_groups:
+  - name: default
+capi_capo_openstack_managed_network_cidr:
+
+capi_worker_groups:
+  - name: md-0
 
 capi_cluster_extra_vars: {}

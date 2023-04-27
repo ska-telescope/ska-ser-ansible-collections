@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: minio-test-script
-  namespace: "{{ gitlab_runner_minio_namespace }}"
+  namespace: "{{ minio_namespace }}"
 data:
   test.sh: |
     mc alias set cache http://minio {{ gitlab_runner_minio_access_key }} {{ gitlab_runner_minio_secret_key }}
@@ -18,7 +18,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: "minio-pod-test-add-obj"
-  namespace: "{{ gitlab_runner_minio_namespace }}"
+  namespace: "{{ minio_namespace }}"
 spec:
   volumes:
     - name: config-volume
