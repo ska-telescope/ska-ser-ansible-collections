@@ -22,6 +22,8 @@ Each role encompasses a individual component/service/integration to be deployed 
 | [k8s.k8s](./roles/k8s) | Install and configure K8s OS dependencies on nodes | 1.25.5+/Ubuntu 22.04 | 1.25.5+ |
 | [k8s.metallb](./roles/metallb) | Install and configure MetalLB LoadBalancer (ARP/BGP)  | 0.13.7 | 1.25.5+ |
 | [k8s.metrics](./roles/metrics) | Install and configure kube-state-metrics and metrics-server | 4.11.0/ | 1.25.5+ |
+| [k8s.node_labels](./roles/node_labels) | Apply labels to Kubernetes nodes | - | 1.25.5+ |
+| [k8s.node_taints](./roles/node_taints) | Apply taints to Kubernetes nodes | - | 1.25.5+ |
 | [k8s.ping](./roles/ping) | Install ping test endpoint /ping/ | 1.10 | 1.25.5+ |
 | [k8s.rookio](./roles/rookio) | Install and configure Rook/Ceph integration and StorageClasses | release-1.10 | 1.25.5+ |
 | [k8s.singlenode](./roles/singlenode) | Install and configure a singlenode K8s cluster using `kubeadm` | _ | 1.26.4+ |
@@ -59,6 +61,8 @@ Installation playbooks for each component can be found in the [playbooks/](./pla
 | [metallb_destroy.yml](./playbooks/metallb_destroy.yml) | Uninstall MetalLB |
 | [metallb.yml](./playbooks/metallb.yml) | Install MetalLB LoadBalancer and, if needed, modify Port Security on OpenStack Inventory for MetalLB comms|
 | [metrics.yml](./playbooks/metrics.yml) | Install Containerd|
+| [node_labels.yml](./playbooks/node_labels.yml) | Apply labels to Kubernetes nodes |
+| [node_taints.yml](./playbooks/node_taints.yml) | Apply taints to Kubernetes nodes |
 | [ping.yml](./playbooks/ping.yml) | Install ping tester endpoint |
 | [rookio.yml](./playbooks/rookio.yml) | Install Rook/Ceph integration and StorageClasses |
 | [standardprovisioner.yml](./playbooks/standardprovisioner.yml) | Install hostpath provisioner and StorageClasses |
