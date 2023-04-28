@@ -1,0 +1,12 @@
+---
+- name: Add labels to Kubernetes nodes
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiversion: v1
+      kind: Node
+      metadata:
+        name: "{{ inventory_hostname }}"
+        labels: "{{ k8s_node_labels | items2dict }}"
+  delegate_to: "{{ groups['kubernetes-controlplane'][0] }}"
+  when: k8s_node_labels is defined and (k8s_node_labels | length > 0)
