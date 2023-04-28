@@ -1,0 +1,8 @@
+---
+# Define taints according to https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_taint_module.html#parameter-taints. Example:
+#
+# k8s_node_taints:
+# - key: node-role.skatelescope.org/gpu-worker
+#   value: "true"
+#   effect: NoSchedule
+k8s_node_taints: []
