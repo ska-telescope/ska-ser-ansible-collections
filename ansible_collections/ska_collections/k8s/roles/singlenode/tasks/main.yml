@@ -199,9 +199,6 @@
     user: root
     restart: true
     restart_policy: always
-    ports:
-      - "80:80"
-      - "443:443"
     volumes:
       - "/etc/haproxy/haproxy-singlenode.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro"
   become: true

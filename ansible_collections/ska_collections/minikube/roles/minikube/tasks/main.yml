@@ -235,10 +235,6 @@
         user: root
         restart: true
         restart_policy: always
-        ports:
-          - "80:80"
-          - "443:443"
-          - "6443:6443"
         volumes:
           - "/etc/haproxy/haproxy-minikube.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro"
       become: true
