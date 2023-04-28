@@ -1,7 +1,7 @@
 ---
 - name: Add taints to Kubernetes nodes
   kubernetes.core.k8s_taint:
-    name: "{{ current_hostname }}"
+    name: "{{ inventory_hostname }}"
     state: present
     taints: "{{ k8s_node_taints }}"
   delegate_to: "{{ groups['kubernetes-controlplane'][0] }}"

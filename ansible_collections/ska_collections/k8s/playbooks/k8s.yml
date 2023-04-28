@@ -18,7 +18,5 @@
   any_errors_fatal: true
   roles:
     - join
-    - taints
-    - labels
   tags:
     - join

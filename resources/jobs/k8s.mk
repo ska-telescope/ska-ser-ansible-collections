@@ -70,14 +70,19 @@ endif
 
 install: check-hosts  ## Post installations for a kubernetes cluster
 
-ifneq (,$(findstring cloudprovider,$(TAGS))) # If you want to run the CCM install you must explicitly add 'cloudprovider' to TAGS
-	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/cloudprovider.yml \
+ifneq (,$(findstring labels,$(TAGS)))
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/node_labels.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--tags "$(TAGS)"
 endif
 
-install: check-hosts  ## Post installations for a kubernetes cluster
+ifneq (,$(findstring taints,$(TAGS)))
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/node_taints.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--tags "$(TAGS)"
+endif
 
 ifneq (,$(findstring cloudprovider,$(TAGS))) # If you want to run the CCM install you must explicitly add 'cloudprovider' to TAGS
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/cloudprovider.yml \
