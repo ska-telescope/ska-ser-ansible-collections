@@ -84,11 +84,20 @@ runners:
             memory_request_overwrite_max_allowed = "8Gi"
             poll_timeout = 600
             namespace = "{{ gitlab_runner_k8s_namespace }}"
+            {% if gitlab_runner_k8s_runtime_class_name is defined %}
+            runtime_class_name = "{{ gitlab_runner_k8s_runtime_class_name }}"
+            {% endif %}
             privileged = true
             protected = false
             pull_policy = ["always", "if-not-present"]
         [runners.kubernetes.node_selector]
             "{{ gitlab_runner_k8s_node_selector }}" = "true"
+        {% if gitlab_runner_k8s_node_tolerations != [] %}
+        [runners.kubernetes.node_tolerations]
+        {% for note_toleration in gitlab_runner_k8s_node_tolerations %}
+            {{ note_toleration }}
+        {% endfor %}
+        {% endif %}
         [runners.cache]
             Type = "s3"
             Shared = true
