@@ -12,7 +12,20 @@
     KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tasks:
     - name: Deploy gitlab runner for k8s executor
-      ansible.builtin.import_role:
+      ansible.builtin.include_role:
         name: ska_collections.gitlab_runner.k8s
         tasks_from: install
+      vars:
+        gitlab_runner_k8s_runner_concurrent_jobs: "{{ item.runner_concurrent_jobs }}"
+        gitlab_runner_k8s_runner_name: "{{ item.runner_name }}"
+        gitlab_runner_k8s_release_name: "{{ item.release_name }}"
+        gitlab_runner_k8s_kubeconfig_name: "{{ item.kubeconfig_name }}"
+        gitlab_runner_k8s_namespace: "{{ item.namespace }}"
+        gitlab_runner_k8s_nodes: "{{ item.nodes }}"
+        gitlab_runner_k8s_vault_prefix: "{{ item.vault_prefix }}"
+        gitlab_runner_k8s_tag_list: "{{ item.tag_list }}"
+        gitlab_runner_k8s_runtime_class_name: "{{ item.runtime_class_name | default('') }}"
+        gitlab_runner_k8s_node_tolerations: "{{ item.node_tolerations | default([]) }}"
+        gitlab_runner_k8s_metrics_port: "{{ item.metrics_port }}"
+      with_items: "{{ gitlab_runner_k8s_runners }}"
   tags: k8s_executor

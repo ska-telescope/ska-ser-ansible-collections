@@ -12,7 +12,11 @@
     KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tasks:
     - name: Destroy gitlab runner for k8s executor
-      ansible.builtin.import_role:
+      ansible.builtin.include_role:
         name: ska_collections.gitlab_runner.k8s
         tasks_from: destroy
+      vars:
+        gitlab_runner_k8s_release_name: "{{ item.release_name }}"
+        gitlab_runner_k8s_namespace: "{{ item.namespace }}"
+      with_items: "{{ gitlab_runner_k8s_runners }}"
   tags: k8s_executor

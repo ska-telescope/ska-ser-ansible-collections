@@ -18,12 +18,13 @@
 
     - name: Test metrics
       ansible.builtin.uri:
-        url: "http://{{ control_planes_list.resources[0].status.addresses[0].address }}:{{ gitlab_runner_k8s_metrics_port }}/metrics"
+        url: "http://{{ control_planes_list.resources[0].status.addresses[0].address }}:{{ item.metrics_port }}/metrics"
         method: GET
         status_code: [200]
         validate_certs: false
         return_content: true
       register: returned_metrics
+      with_items: "{{ gitlab_runner_k8s_runners }}"
 
     - name: Check metrics returned
       ansible.builtin.debug:
