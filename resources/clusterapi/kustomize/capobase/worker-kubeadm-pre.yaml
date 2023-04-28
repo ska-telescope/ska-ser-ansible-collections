@@ -1,22 +1,12 @@
 - op: add
-  path: /spec/template/spec/preKubeadmCommands/-
-  target:
-    kind: KubeadmConfigTemplate
-    name: ${CLUSTER_NAME}-md-0
-  value:
-    '/usr/bin/bash /etc/kubernetes/initialise-install-tools.sh >>/tmp/capo-config.log 2>&1'
-
-- op: add
   path: /spec/template/spec/files/-
   target:
     kind: KubeadmConfigTemplate
-    name: ${CLUSTER_NAME}-md-0
   value:
     owner: root:root
     path: /etc/kubernetes/initialise-install-tools.sh
     content: |
       #!/usr/bin/bash
-
       echo ""
       echo "==================================================================="
       echo "Running the cluster initialisation: install prereq tools [happens on workers]"
@@ -50,6 +40,8 @@
         --extra-vars "k8s_kubernetes_version=${K8S_VERSION}" \
         --extra-vars "nexus=${OCI_MIRROR_IP}" \
         --extra-vars "docker_allow_version_change=true" \
+        --extra-vars "docker_activate_nvidia=${NVIDIA_ENABLED}" \
+        --extra-vars "containerd_activate_nvidia=${NVIDIA_ENABLED}" \
         /usr/src/ska-ser-ansible-collections/ansible_collections/ska_collections/clusterapi/playbooks/\$1 \$${@:2}
       EOF
 
@@ -58,3 +50,53 @@
 
       echo "Finished."
       exit 0
+
+- op: add
+  path: /spec/template/spec/files/-
+  target:
+    kind: KubeadmConfigTemplate
+  value:
+    owner: root:root
+    path: /etc/kubernetes/kubeadm-pre-deploy.sh
+    content: |
+      #!/usr/bin/bash
+      echo ""
+      echo "==================================================================="
+      echo "worker preKubeadmCommands: deploy $(date)"
+      set -x
+
+      if [ "${NVIDIA_ENABLED}" = "true" ]; then
+        ansible-galaxy role install \
+          -r /usr/src/ska-ser-ansible-collections/requirements.yml \
+          --force \
+          -p /usr/share/ansible/roles
+        /usr/src/ska-ser-ansible-collections/run-play.sh nvidia.yml -vv \
+          --extra-vars "nvidia_driver_branch=${NVIDIA_DRIVER_VERSION}" \
+          --extra-vars "nvidia_driver_skip_reboot=true"
+      fi
+
+      /usr/src/ska-ser-ansible-collections/run-play.sh containerd.yml -vv
+      /usr/src/ska-ser-ansible-collections/run-play.sh docker.yml -vv
+
+      if [ "${RUN_KUBELET_INSTALL}" = "yes" ]; then
+        /usr/src/ska-ser-ansible-collections/run-play.sh k8s-setup.yml -vv
+      fi
+
+      /usr/src/ska-ser-ansible-collections/run-play.sh install-tools.yml --tags helm -vv
+
+      echo "preKubeadmCommands: end $(date)"
+      exit 0
+
+- op: add
+  path: /spec/template/spec/preKubeadmCommands/-
+  target:
+    kind: KubeadmConfigTemplate
+  value:
+    '/usr/bin/bash /etc/kubernetes/initialise-install-tools.sh >>/tmp/capo-config.log 2>&1'
+
+- op: add
+  path: /spec/template/spec/preKubeadmCommands/-
+  target:
+    kind: KubeadmConfigTemplate
+  value:
+    '/usr/bin/bash /etc/kubernetes/kubeadm-pre-deploy.sh >>/tmp/capo-config.log 2>&1'

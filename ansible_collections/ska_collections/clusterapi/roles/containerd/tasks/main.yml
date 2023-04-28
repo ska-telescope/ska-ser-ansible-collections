@@ -1,4 +1,23 @@
 ---
+- name: Check if the nvidia driver is install
+  ansible.builtin.command: nvidia-smi --query
+  changed_when: false
+  register: nvidia_driver_check
+  ignore_errors: true
+
+- name: Nvidia check
+  ansible.builtin.debug:
+    var: nvidia_driver_check.rc
+  when: debug | bool
+
+- name: Set nvidia driver exists
+  ansible.builtin.set_fact:
+    nvidia_driver_exists: "{{ nvidia_driver_check.rc == 0 }}"
+
+- name: Check nvidia-driver installed when Nvidia support requested
+  ansible.builtin.fail:
+    msg: The Nvidia driver has not been found (nvidia-smi --query) - aborting.
+  when: containerd_activate_nvidia | bool and not containerd_ignore_nvidia_fail | bool and not nvidia_driver_exists | bool
 
 - name: Load containerd kernel drivers
   community.general.modprobe:

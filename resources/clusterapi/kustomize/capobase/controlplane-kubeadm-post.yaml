@@ -1,16 +1,7 @@
 - op: add
-  path: /spec/kubeadmConfigSpec/postKubeadmCommands/-
-  target:
-    kind: KubeadmControlPlane
-    name: ${CLUSTER_NAME}-control-plane
-  value:
-    '/usr/bin/bash /etc/kubernetes/kubeadm-post.sh >>/tmp/capo-config.log 2>&1'
-
-- op: add
   path: /spec/kubeadmConfigSpec/files/-
   target:
     kind: KubeadmControlPlane
-    name: ${CLUSTER_NAME}-control-plane
   value:
     owner: root:root
     path: /etc/kubernetes/kubeadm-post.sh
@@ -19,14 +10,14 @@
 
       echo ""
       echo "==================================================================="
-      echo "postKubeadmCommands [happens on controlplane] : start $(date)"
+      echo "controlplane postKubeadmCommands: start $(date)"
 
       export KUBECONFIG=/etc/kubernetes/admin.conf
       export CLUSTER_NAME=${CLUSTER_NAME}
       export OPENSTACK_CLOUD=${OPENSTACK_CLOUD}
 
       export CALICO_VERSION=${CALICO_VERSION}
-      export CALICO_IPV4POOL_CIDR=${CIDR_BLOCK}
+      export CALICO_IPV4POOL_CIDR=${POD_CIDR_BLOCK}
       export IP_AUTODETECTION_METHOD=${IP_AUTODETECTION_METHOD}
       export CALICO_IPV4POOL_IPIP=${CALICO_IPV4POOL_IPIP}
 
@@ -36,7 +27,7 @@
       MAP=`kubectl -n kube-system get configmap clusterapi-post-run -o yaml`
       rc=$?
       if [[ $rc -eq 0 ]]; then
-        echo "clusterapi post kubedm job allready running:"
+        echo "clusterapi post kubedm job already running:"
         echo $MAP
         exit
       fi
@@ -60,6 +51,7 @@
         --extra-vars "capi_cluster=${CLUSTER_NAME}" \
         --extra-vars "k8s_cloudprovider_wait=" \
         --extra-vars "k8s_cloudprovider_kubeconfig=$KUBECONFIG" \
+        --extra-vars "k8s_cloudprovider_enable_service_controller=${CLOUDPROVIDER_ENABLE_SERVICE_CONTROLLER}" \
         --extra-vars "capi_capo_openstack_cloud_config=/etc/kubernetes/clouds.yaml" \
         --extra-vars "capi_capo_openstack_cloud=${OPENSTACK_CLOUD}" \
         --tags "cloudprovider" \
@@ -67,3 +59,10 @@
 
       echo "postKubeadmCommands: end $(date)"
       exit 0
+
+- op: add
+  path: /spec/kubeadmConfigSpec/postKubeadmCommands/-
+  target:
+    kind: KubeadmControlPlane
+  value:
+    '/usr/bin/bash /etc/kubernetes/kubeadm-post.sh >>/tmp/capo-config.log 2>&1'

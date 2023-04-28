@@ -1,5 +1,4 @@
 ---
-
 - name: Ensure software-properties-common is installed
   ansible.builtin.apt:
     name: software-properties-common

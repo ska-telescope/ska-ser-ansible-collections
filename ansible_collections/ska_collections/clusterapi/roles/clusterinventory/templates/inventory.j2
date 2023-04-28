@@ -1,16 +1,34 @@
 [{{ capi_cluster }}-masters]
 {% for machine in workload_machines['resources'] %}
 {% if 'cluster.x-k8s.io/control-plane' in machine['metadata']['labels'] %}
-{{ machine['metadata']['name'] }}  ansible_host={{ machine['status']['addresses'] | selectattr("type", "eq", "InternalIP") | map(attribute="address") | list | first }} ansible_user=ubuntu
+{{ machine['status']['nodeRef']['name'] }}  ansible_host={{ machine['status']['addresses'] | selectattr("type", "eq", "InternalIP") | map(attribute="address") | list | first }} ansible_user=ubuntu
 {% endif %}
 {% endfor %}
 
-[{{ capi_cluster }}-workers]
+{% set worker_groups = [] %}
+{%- for machine in workload_machines['resources'] -%}
+{% if 'cluster.x-k8s.io/deployment-name' in machine['metadata']['labels'] %}
+{% set worker_group = machine['metadata']['labels']['cluster.x-k8s.io/deployment-name'] %}
+{% if worker_group not in worker_groups %}
+{% set _ = worker_groups.append(worker_group) %}
+{% endif %}
+{% endif %}
+{%- endfor -%}
+
+[{{ capi_cluster }}-workers:children]
+{% for worker_group in worker_groups %}
+{{ worker_group }}
+{% endfor %}
+
+{% for worker_group in worker_groups %}
+[{{ worker_group }}]
 {% for machine in workload_machines['resources'] %}
-{% if not 'cluster.x-k8s.io/control-plane' in machine['metadata']['labels'] %}
-{{ machine['metadata']['name'] }}  ansible_host={{ machine['status']['addresses'] | selectattr("type", "eq", "InternalIP") | map(attribute="address") | list | first }} ansible_user=ubuntu
+{% if 'cluster.x-k8s.io/deployment-name' in machine['metadata']['labels'] and machine['metadata']['labels']['cluster.x-k8s.io/deployment-name'] == worker_group %}
+{{ machine['status']['nodeRef']['name'] }}  ansible_host={{ machine['status']['addresses'] | selectattr("type", "eq", "InternalIP") | map(attribute="address") | list | first }} ansible_user=ubuntu
 {% endif %}
 {% endfor %}
+
+{% endfor -%}
 
 [{{ capi_cluster }}:children]
 {{ capi_cluster }}-masters

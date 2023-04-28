@@ -1,0 +1,15 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Apply the nvidia config role to nodes
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  roles:
+    - nvidia.nvidia_driver
+
+- name: Apply the nvidia_container_runtime config role to nodes
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  roles:
+    - ska_collections.k8s.nvidia_container_runtime

@@ -22,4 +22,7 @@ containerd_deb_dependencies:
   - gnupg-agent
   - python3-pip
 
+containerd_activate_nvidia: false
+containerd_ignore_nvidia_fail: false
+
 capi_containerd_version: 1.6.6-1
