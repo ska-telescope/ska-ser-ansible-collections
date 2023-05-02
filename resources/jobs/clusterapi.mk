@@ -30,8 +30,7 @@ vars:
 calico-install: check-hosts  ## Install Calico
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/calico-install.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--tags "$(TAGS)"
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 calico-uninstall: check-hosts  ## Uninstall Calico
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/calico-uninstall.yml \
