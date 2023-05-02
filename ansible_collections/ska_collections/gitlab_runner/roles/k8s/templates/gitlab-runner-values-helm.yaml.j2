@@ -147,8 +147,8 @@ tolerations: []
 envVars:
 - name: RUNNER_NAME
   value: "{{ gitlab_runner_k8s_runner_name }}"
-{% if gitlab_runner_envVars is defined %}
-{% for var in gitlab_runner_envVars %}
+{% if gitlab_runner_k8s_runner_env_vars is defined %}
+{% for var in gitlab_runner_k8s_runner_env_vars %}
 - name: {{ var.name }}
   value: {{ var.value }}
 {% endfor %}

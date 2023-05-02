@@ -27,5 +27,6 @@
         gitlab_runner_k8s_runtime_class_name: "{{ item.runtime_class_name | default('') }}"
         gitlab_runner_k8s_node_tolerations: "{{ item.node_tolerations | default([]) }}"
         gitlab_runner_k8s_metrics_port: "{{ item.metrics_port }}"
+        gitlab_runner_k8s_s3_cache_address: "{{ item.s3_cache_address | default("minio.gitlab.svc.cluster.local") }}"
       with_items: "{{ gitlab_runner_k8s_runners }}"
   tags: k8s_executor
