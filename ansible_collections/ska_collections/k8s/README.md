@@ -29,6 +29,7 @@ Each role encompasses a individual component/service/integration to be deployed 
 | [k8s.singlenode](./roles/singlenode) | Install and configure a singlenode K8s cluster using `kubeadm` | _ | 1.26.4+ |
 | [k8s.standardprovisioner](./roles/standardprovisioner) | Install and configure hostpath provisioner and StorageClasses | v5 | 1.25.5+ |
 | [k8s.velero](./roles/velero) | Install and configure Velero based K8s backup to Swift | v1.9.2 | 1.25.5+ |
+| [k8s.vault](./roles/vault) | Install and configure the Vault agent injector | v0.19.0 | 1.25.5+ |
 
 ## Installation
 
