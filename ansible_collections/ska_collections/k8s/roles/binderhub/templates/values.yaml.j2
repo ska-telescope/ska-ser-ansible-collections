@@ -1,5 +1,5 @@
 
-{% if k8s_binderhub_image is not none %}
+{# {% if k8s_binderhub_image is not none %}
 image:
   name: "{{ k8s_binderhub_image.name }}"
   tag: "{{ k8s_binderhub_image.tag }}"
@@ -8,7 +8,7 @@ image:
 registry:
   url: "{{ k8s_binderhub_oci_registry_host_full_url }}"
   username: "{{ k8s_binderhub_oci_registry_username }}"
-  password: "{{ k8s_binderhub_oci_registry_password }}"
+  password: "{{ k8s_binderhub_oci_registry_password }}" #}
 
 pdb:
   enabled: true
@@ -27,7 +27,6 @@ rbac:
 
 config:
   BinderHub:
-    use_registry: true
     image_prefix: "{{ k8s_binderhub_oci_registry_host }}/binderhub/ska-jupy-"
 {% if k8s_binderhub_singleuser %}
     auth_enabled: false
@@ -37,8 +36,15 @@ config:
     hub_url: "{{ k8s_binderhub_transport }}://{{ k8s_external_dns_entry }}/{{ k8s_binderhub_namespace }}/jupyterhub/"
     hub_url_local: "{{ k8s_binderhub_transport }}://proxy-public/{{ k8s_binderhub_namespace }}/jupyterhub/"
     base_url: "/{{ k8s_binderhub_namespace }}/"
+    build_node_selector: {}
+    use_registry: true
+  KubernetesBuildExecutor: {}
   DockerRegistry:
     token_url: "{{ k8s_binderhub_oci_registry_host_full_url }}/v2/token?service="
+
+extraConfig: {}
+
+extraFiles: {}
 
 # https://binderhub.readthedocs.io/en/latest/https.html
 service:
@@ -74,7 +80,6 @@ jupyterhub:
   cull:
     enabled: true
     users: true # cull authenticated users too
-    timeout: 7200
   hub:
     redirectToServer: false
     baseUrl: "/{{ k8s_binderhub_namespace }}/jupyterhub"
@@ -117,21 +122,23 @@ jupyterhub:
         scopes:
           - servers
           # we don't need admin:users if auth is not enabled!
-          - "admin:users"
-
+          - admin:users
     extraConfig:
-      hub_extra: |
-        c.JupyterHub.redirect_to_server = False
+      {# hub_extra: |
+        c.JupyterHub.redirect_to_server = False #}
 
       0-binderspawnermixin: |
         """
         Helpers for creating BinderSpawners
+
         FIXME:
         This file is defined in binderhub/binderspawner_mixin.py
         and is copied to helm-chart/binderhub/values.yaml
         by ci/check_embedded_chart_code.py
+
         The BinderHub repo is just used as the distribution mechanism for this spawner,
         BinderHub itself doesn't require this code.
+
         Longer term options include:
         - Move BinderSpawnerMixin to a separate Python package and include it in the Z2JH Hub
           image
@@ -141,41 +148,51 @@ jupyterhub:
         from tornado import web
         from traitlets import Bool, Unicode
         from traitlets.config import Configurable
+
+
         class BinderSpawnerMixin(Configurable):
             """
             Mixin to convert a JupyterHub container spawner to a BinderHub spawner
+
             Container spawner must support the following properties that will be set
             via spawn options:
             - image: Container image to launch
             - token: JupyterHub API token
             """
+
             def __init__(self, *args, **kwargs):
                 # Is this right? Is it possible to having multiple inheritance with both
                 # classes using traitlets?
                 # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
                 # https://github.com/ipython/traitlets/pull/175
                 super().__init__(*args, **kwargs)
+
             auth_enabled = Bool(
                 False,
                 help="""
                 Enable authenticated binderhub setup.
+
                 Requires `jupyterhub-singleuser` to be available inside the repositories
                 being built.
                 """,
                 config=True,
             )
+
             cors_allow_origin = Unicode(
                 "",
                 help="""
                 Origins that can access the spawned notebooks.
+
                 Sets the Access-Control-Allow-Origin header in the spawned
                 notebooks. Set to '*' to allow any origin to access spawned
                 notebook servers.
+
                 See also BinderHub.cors_allow_origin in binderhub config
                 for controlling CORS policy for the BinderHub API endpoint.
                 """,
                 config=True,
             )
+
             def get_args(self):
                 if self.auth_enabled:
                     args = super().get_args()
@@ -189,6 +206,7 @@ jupyterhub:
                     ]
                     if self.default_url:
                         args.append(f"--NotebookApp.default_url={self.default_url}")
+
                     if self.cors_allow_origin:
                         args.append("--NotebookApp.allow_origin=" + self.cors_allow_origin)
                     # allow_origin=* doesn't properly allow cross-origin requests to single files
@@ -196,7 +214,12 @@ jupyterhub:
                     if self.cors_allow_origin == "*":
                         args.append("--NotebookApp.allow_origin_pat=.*")
                     args += self.args
+                    # ServerApp compatibility: duplicate NotebookApp args
+                    for arg in list(args):
+                        if arg.startswith("--NotebookApp."):
+                            args.append(arg.replace("--NotebookApp.", "--ServerApp."))
                 return args
+
             def start(self):
                 if not self.auth_enabled:
                     if "token" not in self.user_options:
@@ -206,6 +229,7 @@ jupyterhub:
                 if "image" in self.user_options:
                     self.image = self.user_options["image"]
                 return super().start()
+
             def get_env(self):
                 env = super().get_env()
                 if "repo_url" in self.user_options:
@@ -219,13 +243,15 @@ jupyterhub:
                     if key in self.user_options:
                         env[key.upper()] = self.user_options[key]
                 return env
+
       00-binder: |
         # image & token are set via spawn options
         from kubespawner import KubeSpawner
+
         class BinderSpawner(BinderSpawnerMixin, KubeSpawner):
             pass
-        c.JupyterHub.spawner_class = BinderSpawner
 
+        c.JupyterHub.spawner_class = BinderSpawner
     services:
       binder:
         display: false
@@ -241,27 +267,35 @@ jupyterhub:
         ephemeral-storage: 1Gi
 
   singleuser:
-
-    # start notebook server with lab ui as default
-    # *if available*
+    # start jupyterlab server *if available*
+    # fallback on jupyter-notebook
     cmd:
       - python3
       - "-c"
       - |
         import os
         import sys
+
         try:
             import jupyterlab
+            import jupyterlab.labapp
             major = int(jupyterlab.__version__.split(".", 1)[0])
-        except Exception:
+        except Exception as e:
+            print("Failed to import jupyterlab: {e}", file=sys.stderr)
             have_lab = False
         else:
             have_lab = major >= 3
-        if have_lab and "NotebookApp.default_url" not in " ".join(sys.argv):
-            # if recent-enough lab is available, make it the default UI
-            sys.argv.insert(1, "--NotebookApp.default_url=/lab/")
+
+        if have_lab:
+          # technically, we could accept another jupyter-server-based frontend
+          print("Launching jupyter-lab", file=sys.stderr)
+          exe = "jupyter-lab"
+        else:
+          print("jupyter-lab not found, launching jupyter-notebook", file=sys.stderr)
+          exe = "jupyter-notebook"
+
         # launch the notebook server
-        os.execvp("jupyter-notebook", sys.argv)
+        os.execvp(exe, sys.argv)
     events: true
     memory:
       limit: 2G
