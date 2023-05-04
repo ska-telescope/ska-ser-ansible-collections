@@ -4,6 +4,7 @@ ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/ceph/playbooks
+TAGS ?= all
 
 -include $(BASE_PATH)/PrivateRules.mak
 
@@ -17,10 +18,15 @@ vars:
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
+setup: check_hosts ## Setup ceph cluster hosts
+	ansible-playbook $(PLAYBOOKS_DIR)/setup.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" --tags $(TAGS) -vv
+
 install: check_hosts ## Install ceph cluster
 	ansible-playbook $(PLAYBOOKS_DIR)/install.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" -vv
 
 destroy: check_hosts ## Destroy ceph cluster
 	@echo "ceph: destroy not implemented"

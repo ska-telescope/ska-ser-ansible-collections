@@ -1,0 +1,81 @@
+---
+- name: Setup hosts for ceph
+  hosts: "{{ target_hosts }}"
+  vars_prompt:
+  - name: "configure_ceph_hosts"
+    prompt: "Do you want to configure ceph LVMs (yes/no)?"
+    private: false
+  vars:
+    target_hosts: localhost
+    ceph_data_device: /dev/vdb
+    ceph_old_mount_path: /mnt
+    ceph_vg_name: ceph_data1
+    ceph_lv_name: ceph_data1
+  become: true
+  any_errors_fatal: true
+  tasks:
+
+    - name: Create LVMs? configure_ceph_hosts
+      ansible.builtin.debug:
+        msg: "{{ configure_ceph_hosts }}"
+
+    - name: Enable root login for cephadm
+      tags: [sshd]
+      block:
+
+        - name: Configure sshd to permit root login
+          lineinfile:
+            path: "/etc/ssh/sshd_config"
+            regex: "^(#)?{{item.key}}"
+            line: "{{item.key}} {{item.value}}"
+            state: present
+          loop:
+            - { key: "PermitRootLogin", value: "without-password" }
+
+        - name: Ssh service restart
+          service:
+            name: ssh
+            state: restarted
+
+    - name: Setup vg/lv
+      when: 'configure_ceph_hosts == "yes"'
+      tags: [lvm]
+      block:
+
+        - name: Unmount volume
+          ansible.posix.mount:
+            path: "{{ ceph_old_mount_path }}"
+            state: unmounted
+
+        - name: Remove volume from fstab
+          ansible.posix.mount:
+            path: "{{ ceph_old_mount_path }}"
+            state: absent_from_fstab
+
+        - name: Reboot to clear out everything
+          ansible.builtin.reboot:
+
+        - name: Wipe disk
+          ansible.builtin.shell: |
+            wipefs --all "{{ ceph_data_device }}"
+          changed_when: false
+
+        - name: Create Ceph data device
+          ansible.builtin.debug:
+            msg: "{{ ceph_data_device }}"
+
+        - name: Add data vg
+          community.general.lvg:
+            force: true
+            state: present
+            vg: "{{ ceph_vg_name }}"
+            pvs: "{{ ceph_data_device }}"
+
+        - name: Create data lv
+          community.general.lvol:
+            lv: "{{ ceph_lv_name }}"
+            vg: "{{ ceph_vg_name }}"
+            size: "100%FREE"
+            state: present
+            active: true
+            shrink: false

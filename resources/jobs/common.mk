@@ -5,6 +5,7 @@ ANSIBLE_EXTRA_VARS ?=
 INVENTORY ?= $(PLAYBOOKS_ROOT_DIR)
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections/instance_common/playbooks
 TESTS_DIR ?= ./ansible_collections/ska_collections/instance_common/tests
+LIMIT ?=
 
 -include $(BASE_PATH)/PrivateRules.mak
 
@@ -36,7 +37,7 @@ apt: check_hosts ## Run apt tasks
 update-hosts: check_hosts ## Update /etc/hosts entries with the full inventory information
 	ansible-playbook $(PLAYBOOKS_DIR)/update-hosts.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" $(LIMIT)
 
 tools-install: check_hosts ## Install generic tools
 	ansible-playbook $(PLAYBOOKS_DIR)/tools.yml \
