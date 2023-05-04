@@ -48,7 +48,7 @@ ingress:
 {% else %}
     enabled: true
 {% endif %}
-  pathSuffix: "{{ k8s_binderhub_namespace }}/(.*)"
+  pathSuffix: "{{ k8s_binderhub_namespace }}"
   pathType: Prefix
   annotations:
     kubernetes.io/ingress.class: nginx
@@ -104,9 +104,11 @@ jupyterhub:
         scopes:
           - self
           - "access:services"
+          - "servers"
           - "admin:servers"
-          - "delete:servers"
-    
+        groups:
+          - "admin-group"
+
     resources:
       requests:
         cpu: 100m     # 100m = 0.1 CPU
