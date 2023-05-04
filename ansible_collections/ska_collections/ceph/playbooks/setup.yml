@@ -2,9 +2,9 @@
 - name: Setup hosts for ceph
   hosts: "{{ target_hosts }}"
   vars_prompt:
-  - name: "configure_ceph_hosts"
-    prompt: "Do you want to configure ceph LVMs (yes/no)?"
-    private: false
+    - name: "configure_ceph_hosts"
+      prompt: "Do you want to configure ceph LVMs (yes/no)?"
+      private: false
   vars:
     target_hosts: localhost
     ceph_data_device: /dev/vdb
@@ -24,16 +24,16 @@
       block:
 
         - name: Configure sshd to permit root login
-          lineinfile:
+          ansible.builtin.lineinfile:
             path: "/etc/ssh/sshd_config"
-            regex: "^(#)?{{item.key}}"
-            line: "{{item.key}} {{item.value}}"
+            regex: "^(#)?{{ item.key }}"
+            line: "{{ item.key }} {{ item.value }}"
             state: present
           loop:
             - { key: "PermitRootLogin", value: "without-password" }
 
         - name: Ssh service restart
-          service:
+          ansible.builtin.service:
             name: ssh
             state: restarted
 
