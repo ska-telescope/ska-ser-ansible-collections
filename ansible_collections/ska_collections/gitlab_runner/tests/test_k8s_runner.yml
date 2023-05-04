@@ -29,3 +29,4 @@
     - name: Check metrics returned
       ansible.builtin.debug:
         msg: "{{ returned_metrics }}"
+      when: debug
