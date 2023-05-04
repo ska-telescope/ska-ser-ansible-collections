@@ -11,6 +11,7 @@ Tested with the current Ansible 6.5.x releases.
 | Name | Description | Version | OS Requirements | Dependencies |
 | ---- | ----------- | ------- | --- | ---|
 | [ceph.installation](./roles/installation) | Install and configure Ceph | 20.10.18 | Ubuntu 18+ (LTS) | [stackhpc.cephadm](https://galaxy.ansible.com/stackhpc/cephadm) v1.10.0
+| [ceph.setup](./roles/setup) | Setup sshd and LVMs for VMs | 20.10.18 | Ubuntu 22.04+ (LTS) | [stackhpc.cephadm](https://galaxy.ansible.com/stackhpc/cephadm) v1.10.0
 
 ## Installation
 
@@ -34,6 +35,7 @@ Installation playbooks for each engine can be found in the [playbooks/](./playbo
 | Name | Description |
 | ---- | ----------- |
 | [install.yml](./playbooks/install.yml) | Install Ceph |
+| [setup.yml](./playbooks/setup.yml) | Setup host SSH and LVMs for Ceph on VMs |
 
 In order to run these playbooks, it's needed to specify the Ansible Inventory location and the respective group/hosts ***target_hosts*** variable.
 
