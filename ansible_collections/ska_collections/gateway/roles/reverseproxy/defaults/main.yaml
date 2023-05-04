@@ -9,7 +9,9 @@ kibana_basepath: "/kibana"
 prometheus_port: 9090
 alertmanager_port: 9093
 
-reverseproxy_kubernetes_haproxy_server: null
+reverseproxy_kubernetes_api_server: null
+reverseproxy_kubernetes_ingress_server: "{{ reverseproxy_kubernetes_api_server }}"
+reverseproxy_kubernetes_minio_server: "{{ reverseproxy_kubernetes_api_server }}"
 reverseproxy_thanos_sidecar_server: null
 reverseproxy_grafana_server: null
 reverseproxy_kibana_server: null
@@ -51,6 +53,7 @@ reverseproxy_oauth2proxy_client_id: "{{ _ | mandatory('`reverseproxy_oauth2proxy
 reverseproxy_oauth2proxy_tenant_id: "{{ _ | mandatory('`reverseproxy_oauth2proxy_tenant_id` definition is mandatory') }}"
 
 reverseproxy_use_self_signed_cert: false
+reverseproxy_tls_vault_secret:
 reverseproxy_tls_certs_dir: /etc/pki/tls
 reverseproxy_tls_ca_crt_path: "{{ reverseproxy_tls_certs_dir }}/{{ reverseproxy_dns_name }}-ca.crt"
 reverseproxy_tls_crt_path: "{{ reverseproxy_tls_certs_dir }}/{{ reverseproxy_dns_name }}.crt"

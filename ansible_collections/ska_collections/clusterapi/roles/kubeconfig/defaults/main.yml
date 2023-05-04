@@ -1,6 +1,9 @@
 ---
 debug: false
 
+capi_kubeconfig: "/home/{{ ansible_user }}/.kube/config"
 capi_cluster: capi-cluster
 capi_kube_namespace: default
 capi_machine_phase: Provisioned
+capi_cluster_timeout: 1800
+capi_kubeconfig_output_dir: "{{ playbook_dir }}/../../../../.."

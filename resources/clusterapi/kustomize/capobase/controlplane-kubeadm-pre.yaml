@@ -1,0 +1,92 @@
+- op: add
+  path: /spec/kubeadmConfigSpec/files/-
+  target:
+    kind: KubeadmControlPlane
+  value:
+    owner: root:root
+    path: /etc/kubernetes/initialise-install-tools.sh
+    content: |
+      #!/usr/bin/bash
+
+      echo ""
+      echo "==================================================================="
+      echo "Running the cluster initialisation: install prereq tools"
+      set -x
+
+      apt update
+      apt install -y --allow-change-held-packages gettext-base git ca-certificates net-tools python3-pip
+      pip3 install ansible kubernetes
+
+      cd /usr/src && \
+      git clone --depth 1 https://gitlab.com/ska-telescope/sdi/ska-ser-ansible-collections.git \
+        --recurse-submodules \
+        --branch ${COLLECTIONS_BRANCH}
+
+      cd ska-ser-ansible-collections
+
+      cat <<EOF > run-play.sh
+      #!/usr/bin/bash
+      echo "run-play.sh args are: \$*"
+      cd /usr/src/ska-ser-ansible-collections
+      export ANSIBLE_COLLECTIONS_PATHS="/usr/src/ska-ser-ansible-collections:$HOME/.ansible/collections:/usr/share/ansible/collections"
+      export KUBECONFIG="/etc/kubernetes/admin.conf"
+      export ANSIBLE_CONFIG="/usr/src/ska-ser-ansible-collections/datacentres/production/installation/ansible.cfg"
+      ansible-playbook \
+        --connection=local \
+        --limit localhost \
+        --become \
+        --extra-vars "capi_cluster=${CLUSTER_NAME}" \
+        --extra-vars "ansible_user=ubuntu" \
+        --extra-vars "k8s_kubeconfig=/etc/kubernetes/admin.conf" \
+        --extra-vars "k8s_kubernetes_version=${K8S_VERSION}" \
+        --extra-vars "nexus=${OCI_MIRROR_IP}" \
+        --extra-vars "docker_allow_version_change=true" \
+        /usr/src/ska-ser-ansible-collections/ansible_collections/ska_collections/clusterapi/playbooks/\$1 \$${@:2}
+      EOF
+
+      chmod a+x run-play.sh
+      cat run-play.sh
+
+      echo "Finished."
+      exit 0
+
+- op: add
+  path: /spec/kubeadmConfigSpec/files/-
+  target:
+    kind: KubeadmControlPlane
+  value:
+    owner: root:root
+    path: /etc/kubernetes/kubeadm-pre-deploy.sh
+    content: |
+      #!/usr/bin/bash
+      echo ""
+      echo "==================================================================="
+      echo "controlplane preKubeadmCommands: deploy $(date)"
+      set -x
+
+      /usr/src/ska-ser-ansible-collections/run-play.sh containerd.yml -vv
+      /usr/src/ska-ser-ansible-collections/run-play.sh docker.yml -vv
+
+      if [ "${RUN_KUBELET_INSTALL}" = "yes" ]; then
+        /usr/src/ska-ser-ansible-collections/run-play.sh k8s-setup.yml -vv
+      fi
+
+      /usr/src/ska-ser-ansible-collections/run-play.sh install-tools.yml --tags helm -vv
+
+      echo "preKubeadmCommands: end $(date)"
+      exit 0
+
+- op: add
+  path: /spec/kubeadmConfigSpec/preKubeadmCommands/-
+  target:
+    kind: KubeadmControlPlane
+  value:
+    '/usr/bin/bash /etc/kubernetes/initialise-install-tools.sh >>/tmp/capo-config.log 2>&1'
+
+- op: add
+  path: /spec/kubeadmConfigSpec/preKubeadmCommands/-
+  target:
+    kind: KubeadmControlPlane
+  value:
+    '/usr/bin/bash /etc/kubernetes/kubeadm-pre-deploy.sh >>/tmp/capo-config.log 2>&1'
+

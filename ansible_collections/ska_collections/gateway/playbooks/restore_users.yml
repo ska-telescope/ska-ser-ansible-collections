@@ -1,0 +1,13 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Restore Users
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Restore user accounts
+      ansible.builtin.include_role:
+        name: users
+        tasks_from: restore

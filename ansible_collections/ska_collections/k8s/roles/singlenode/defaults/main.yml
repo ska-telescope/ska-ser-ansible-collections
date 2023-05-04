@@ -1,0 +1,28 @@
+---
+debug: false
+
+k8s_activate_containerd: true
+k8s_activate_nvidia: false
+k8s_ignore_nvidia_fail: false
+
+k8s_singlenode_pip_kubernetes_version: 22.6.0
+
+k8s_dns_servers: [10.164.0.11]
+
+k8s_kubernetes_version: 1.26.4
+k8s_pod_network_cidr: 10.10.0.0/16
+
+# internal LAN DNS name
+k8s_dns_entry: a.b.c.local
+# external TLS/SSL DNS name
+k8s_external_dns_entry: a.b.skao.int
+
+k8s_cluster_api_address: "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
+k8s_cluster_hostname: "{{ inventory_hostname }}"
+
+# cluster domain name - maps both internal and external SVC names
+# see metallb and externaldns
+k8s_cluster_domain: b.skao.int
+
+k8s_singlenode_haproxy_name: haproxy
+k8s_singlenode_haproxy_image: "haproxy:2.7"

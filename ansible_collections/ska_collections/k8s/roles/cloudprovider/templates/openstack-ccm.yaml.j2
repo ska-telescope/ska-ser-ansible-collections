@@ -37,6 +37,8 @@ cloudConfig:
     internal-lb: true
     create-monitor: true
 
+enabledControllers: {{ k8s_cloudprovider_controllers }}
+
 # ensure the daemonset is free of these taints - modelled on the chart values.yaml
 tolerations:
   - key: node.cloudprovider.kubernetes.io/uninitialized
@@ -44,10 +46,6 @@ tolerations:
     effect: NoSchedule
   - key: node-role.kubernetes.io/control-plane
     effect: NoSchedule
-
-#  - key: node-role.kubernetes.io/etcd
-#    value: "true"
-#    effect: NoExecute
 
 cluster:
     name: {{ capi_cluster }}

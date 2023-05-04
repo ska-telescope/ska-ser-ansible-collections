@@ -1,0 +1,57 @@
+- name: Template values file
+  ansible.builtin.template:
+    src: "templates/minio-values.yaml.j2"
+    dest: "values.yaml"
+    force: true
+    mode: 0755
+
+- name: Render templates
+  kubernetes.core.helm_template:
+    chart_ref: "{{ gitlab_runner_minio_chart_name }}"
+    chart_repo_url: "{{ gitlab_runner_minio_chart_repo }}"
+    chart_version: "{{ gitlab_runner_minio_chart_version }}"
+    release_namespace: "{{ gitlab_runner_minio_namespace }}"
+    values_files: "values.yaml"
+  register: tmp_minio_operator_chart
+
+- name: Template users file
+  ansible.builtin.template:
+    src: "templates/bucket-with-users.yaml.j2"
+    dest: "bucket-with-users.yaml"
+    force: true
+    mode: 0755
+
+- name: "Output minio tenant users"
+  ansible.builtin.shell: |
+    cat bucket-with-users.yaml
+  register: tmp_minio_add_users
+  changed_when: true
+
+- name: Template minio tenant service file
+  ansible.builtin.template:
+    src: "templates/tenant-service.yaml.j2"
+    dest: "tenant-service.yaml"
+    force: true
+    mode: 0755
+
+- name: "Output minio tenant service users"
+  ansible.builtin.shell: |
+    cat tenant-service.yaml
+  register: tmp_minio_tenant_service
+  changed_when: true
+
+- name: Tidy up tmp files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "tenant-service.yaml"
+    - "values.yaml"
+    - "bucket-with-users.yaml"
+
+- name: Output helm templates
+  ansible.builtin.debug:
+    msg:
+      - "Operator: {{ tmp_minio_operator_chart.stdout }}"
+      - "Tenant Service: {{ tmp_minio_tenant_service.stdout }}"
+      - "Users: {{ tmp_minio_add_users.stdout }}"

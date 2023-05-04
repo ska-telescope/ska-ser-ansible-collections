@@ -1,0 +1,150 @@
+imagePullPolicy: IfNotPresent
+gitlabUrl: https://gitlab.com/
+
+unregisterRunners: true
+
+terminationGracePeriodSeconds: 3600
+
+concurrent: {{ gitlab_runner_k8s_runner_concurrent_jobs }}
+
+checkInterval: 3
+
+logLevel: info
+
+rbac:
+    create: true
+
+    rules: []
+    clusterWideAccess: false
+
+    podSecurityPolicy:
+        enabled: false
+        resourceNames:
+        - gitlab-runner
+
+metrics:
+    enabled: true
+
+service:
+  enabled: true
+  type: NodePort
+  metrics:
+    nodePort: "{{ gitlab_runner_k8s_metrics_port }}"
+
+runners:
+    config: |
+        [[runners]]
+        pre_build_script = """
+            echo "This is a pre-build script for SKA."
+            echo "Project: ${CI_PROJECT_NAME}"
+            echo "Namespace: ${KUBE_NAMESPACE}"
+            echo "Agent: ${SKA_AGENT_NAME}"
+            if [[ -n "${SKA_AGENT_NAME}" ]]; then
+            echo "Agent configuration detected, setting context and creating namespace."
+            # kubectl config use-context ${SKA_AGENT_URL}:${SKA_AGENT_NAME}
+            # kubectl config set-context --current --namespace=${KUBE_NAMESPACE}
+            cp ${{ gitlab_runner_k8s_kubeconfig_name }} $KUBECONFIG # kubeconfig_name - Gitlab SKAO Group CI/CD file
+            fi
+            if [[ ${CI_PROJECT_NAME} == "ska-skampi" ]] && [[ ${KUBE_NAMESPACE} == ci-* || ${KUBE_NAMESPACE} == integration-* ]]; then
+                echo "Applying Quotas to the SKAMPI pipeline namespace ${KUBE_NAMESPACE}."
+                kubectl get namespace ${KUBE_NAMESPACE} > /dev/null 2>&1 && K_DESC=$? || K_DESC=$?
+                if [[ ${K_DESC} -eq 0 ]] && [[ ${KEEP_NAMESPACE} == "true" ]]; then
+                    kubectl describe namespace ${KUBE_NAMESPACE};
+                else
+                    kubectl delete --ignore-not-found namespace ${KUBE_NAMESPACE}
+                    kubectl create namespace ${KUBE_NAMESPACE};
+                fi
+                if [[ -n "${KUBE_NAMESPACE_SDP}" ]]; then
+                    kubectl describe namespace ${KUBE_NAMESPACE_SDP} > /dev/null 2>&1 && K_DESC=$? || K_DESC=$?
+                    if [[ ${K_DESC} -eq 0 ]] && [[ ${KEEP_NAMESPACE} == "true" ]] ; then
+                        kubectl describe namespace ${KUBE_NAMESPACE_SDP}
+                    else
+                        kubectl delete --ignore-not-found namespace ${KUBE_NAMESPACE_SDP}
+                        kubectl create namespace ${KUBE_NAMESPACE_SDP}
+                    fi
+                fi
+                kubectl apply -f resources/namespace_with_quotas.yaml --namespace=${KUBE_NAMESPACE}
+            else
+                echo "Nothing changed. You can ignore messages above this line."
+                if [[ ${CI_PROJECT_NAME} == "ska-skampi" ]] && [[ ${KUBE_NAMESPACE} != staging* ]]; then
+                    echo "Non-standard SKAMPI namespace detected, please contact System team."
+                fi
+            fi
+        """
+        [runners.kubernetes]
+            name = "{{ gitlab_runner_k8s_runner_name }}"
+            image = "ubuntu:22.04"
+            helper_cpu_request = "100m"
+            helper_memory_request = "128Mi"
+            service_cpu_request = "100m"
+            service_memory_request = "128Mi"
+            cpu_request = "1000m"
+            memory_request = "2Gi"
+            cpu_request_overwrite_max_allowed = "3000m"
+            memory_request_overwrite_max_allowed = "8Gi"
+            poll_timeout = 600
+            namespace = "{{ gitlab_runner_k8s_namespace }}"
+            privileged = true
+            protected = false
+            pull_policy = ["always", "if-not-present"]
+        [runners.kubernetes.node_selector]
+            "{{ gitlab_runner_k8s_node_selector }}" = "true"
+        [runners.cache]
+            Type = "s3"
+            Shared = true
+            [runners.cache.s3]
+                ServerAddress = "{{  gitlab_runner_k8s_s3_cache_address }}"
+                BucketName = "{{  gitlab_runner_k8s_s3_bucket_name }}"
+                BucketLocation = "{{  gitlab_runner_k8s_s3_bucket_location }}"
+                Insecure = true
+                AuthenticationType = "access-key"
+        [runners.kubernetes.volumes]
+            [[runners.kubernetes.volumes.host_path]]
+            name = "docker"
+            mount_path = "/var/run/docker.sock"
+            host_path  = "/var/run/docker.sock"
+
+    locked: false
+
+    tags: "{{ gitlab_runner_k8s_tag_list }}"
+
+    runUntagged: false
+
+    protected: false
+
+    secret: gitlab-runner-secret
+
+    cache:
+        secretName: s3access
+
+    builds: {}
+    
+    services: {}
+
+    helpers: {}
+
+    runnerRegistrationToken: "{{ gitlab_runner_registration_token }}"
+    
+podSecurityContext:
+    fsGroup: 65533
+    runAsUser: 100
+
+resources: {}
+affinity: {}
+nodeSelector: 
+    {{ gitlab_runner_k8s_node_selector }}: 'true'
+
+tolerations: []
+envVars:
+- name: RUNNER_NAME
+  value: "{{ gitlab_runner_k8s_runner_name }}"
+{% if gitlab_runner_envVars is defined %}
+{% for var in gitlab_runner_envVars %}
+- name: {{ var.name }}
+  value: {{ var.value }}
+{% endfor %}
+{% endif %}
+
+hostAliases: []
+podLabels: {}
+configMaps: {}

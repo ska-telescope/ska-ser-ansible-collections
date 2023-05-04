@@ -1,40 +1,62 @@
 ---
 debug: false
+capi_config_dir: /etc/clusterapi
+capi_resources_dir: "{{ playbook_dir }}/../../../../resources/clusterapi"
+
+capi_cluster: test-cluster
+capi_kube_namespace: default
+capi_collections_branch: main
+capi_kustomize_overlay: capo
+capi_kubeconfig: "/home/{{ ansible_user }}/.kube/config"
+capi_apply_manifest: false
+capi_apply_manifest_review_diff: false
+capi_apply_wait: true
+capi_apply_destroy_ask: true
+
+# https://github.com/kubernetes-sigs/cluster-api/releases
+capi_k8s_version: 1.26.4
+capi_k8s_version_full: "v{{ capi_k8s_version }}"
+capi_calico_version: 3.24.5
+capi_helm_version: v3.11.2
+capi_cidr_block: 10.10.0.0/16
+capi_calico_ip_autodetection_method: ens.*,eth.*
+capi_calico_ipv4pool_ipip: Never
+capi_controlplane_count: 1
+capi_worker_count: 2
+capi_cluster_timeout: 1800
+capi_nvidia_driver_version: 470
+capi_dns_image_name: docker.io/coredns
+capi_dns_image_tag: 1.9.4
+capi_worker_labels: []
 
 capi_capo_template_version: v0.7.1
 capi_capo_template_name: cluster-template-capo.orig.yaml
-capi_capo_ostack_cloud_yaml: {}
-
-capi_capo_openstack_cloud: skatechops
 capi_capo_openstack_cloud_config: ~/.config/openstack/clouds.yaml
-
-capi_config_dir: /etc/clusterapi
-
-capi_collections_branch: main
-capi_oci_mirror_ip: 192.168.99.204
-capi_kustomize_overlay: capo
-capi_cluster: test-cluster
-capi_kube_namespace: default
-# https://github.com/kubernetes-sigs/cluster-api/releases
-capi_k8s_version: v1.25.7
-capi_controlplane_count: 1
-capi_worker_count: 2
-capi_cidr_block: 10.10.0.0/16
-capi_calico_version: 3.24.5
-capi_calico_ip_autodetection_method: ens.*,eth.*
-capi_calico_ipv4pool_ipip: Never
-capi_helm_version: v3.11.2
+capi_capo_ostack_cloud_yaml: {}
+capi_capo_openstack_cloud: skatechops
 
 capi_capo_openstack_failure_domain: ceph
-capi_capo_openstack_image_name: "ubuntu-2204-kube-{{ capi_k8s_version }}"
-capi_capo_openstack_instance_create_timeout: 15
+capi_capo_openstack_image_name: "ubuntu-2204-kube-{{ capi_k8s_version_full }}"
+capi_capo_openstack_instance_create_timeout: "{{ capi_cluster_timeout }}"
 capi_capo_controlplane_machine_flavour: l3.micro
-capi_capo_openstack_dns_servers: 192.168.99.194
+capi_capo_openstack_dns_servers: 192.168.99.162
 capi_capo_node_machine_flavour: l3.tiny
 capi_capo_openstack_ssh_key_name: ska-techops
 capi_capo_openstack_external_network_id: 5283f642-8bd8-48b6-8608-fa3006ff4539
 capi_capo_os_network_name: SKA-TechOps-ClusterAPI1
 capi_capo_os_subnet_name: SKA-TechOps-ClusterAPI-Net1
 capi_capo_run_kubelet_install: false
+
+capi_capo_openstack_enable_service_lbs: true
+capi_capo_openstack_enable_apiserver_lb: true
+capi_capo_openstack_enable_apiserver_floating_ip: false
+capi_capo_openstack_disable_port_security: true
+capi_capo_openstack_managed_security_groups: true
+capi_capo_openstack_security_groups:
+  - name: default
+capi_capo_openstack_managed_network_cidr:
+
+capi_worker_groups:
+  - name: md-0
 
 capi_cluster_extra_vars: {}

@@ -9,18 +9,20 @@ cron_additional_packages: []
 # should be overridden with scripts needed
 cron_scripts:
   - etcd_backup.sh
-  - monitor-skagitrunners-stfc.sh
-  - monitor-skavpn-stfc.sh
+  - monitor-skagitrunners.sh
+  - monitor-skavpn.sh
 
-# should be overridden with only the jobs needed
-cron_job_lines:
+cron_runners_notification_url: https://heartbeat.uptimerobot.com/m787767935-6c18b1c3356566b927f3484dc8bc662b536dde5d
+cron_vpn_notification_url: https://heartbeat.uptimerobot.com/m787767907-af27b857315cf9a7195e6a82213f5790549e845e
+
+cron_jobs:
   - name: etcd hourly backup
     minute: "0"
     hour: "*/1"
     day: "*"
     month: "*"
     weekday: "*"
-    job: /usr/local/bin/etcd_backup.sh > /srv/logs/etcd_backup
+    job: /usr/local/bin/etcd_backup.sh > /srv/logs/etcd_backup 2>&1
     user: root
   - name: Monitor Gitlab Runners
     minute: "*/5"
@@ -28,7 +30,7 @@ cron_job_lines:
     day: "*"
     month: "*"
     weekday: "*"
-    job: /usr/local/bin/monitor-skagitrunners-stfc.sh >> /srv/logs/skagitrunners 2>&1
+    job: /usr/local/bin/monitor-skagitrunners.sh >> /srv/logs/skagitrunners 2>&1
     user: root
   - name: Monitor VPN
     minute: "*/5"
@@ -36,5 +38,5 @@ cron_job_lines:
     day: "*"
     month: "*"
     weekday: "*"
-    job: /usr/local/bin/monitor-skavpn-stfc.sh > /srv/logs/skavpn 2>&1
+    job: /usr/local/bin/monitor-skavpn.sh > /srv/logs/skavpn 2>&1
     user: root

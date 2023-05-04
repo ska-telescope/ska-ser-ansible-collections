@@ -1,0 +1,4 @@
+- name: Add label to nodes
+  ansible.builtin.command: "kubectl label nodes {{ item }} {{ gitlab_runner_k8s_node_label }}=true --overwrite"
+  changed_when: true
+  with_items: "{{ gitlab_runner_k8s_nodes }}"

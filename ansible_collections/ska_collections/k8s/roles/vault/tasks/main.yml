@@ -1,0 +1,119 @@
+---
+
+- name: Create vault ServiceAccount
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: vault-auth
+        namespace: default
+
+- name: Template secret for vault
+  ansible.builtin.template:
+    src: "templates/secret.yaml.j2"
+    dest: "/tmp/secret.yaml"
+    force: true
+    mode: 0755
+
+- name: Apply secret for console
+  kubernetes.core.k8s:
+    state: present
+    apply: true
+    src: "/tmp/secret.yaml"
+
+- name: Tidy up tmp file
+  ansible.builtin.file:
+    path: "/tmp/secret.yaml"
+    state: absent
+
+- name: Create vault ClusterRoleBinding
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: role-tokenreview-binding
+        namespace: default
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: system:auth-delegator
+      subjects:
+        - kind: ServiceAccount
+          name: vault-auth
+          namespace: default
+
+- name: Install Vault Helm chart
+  kubernetes.core.helm:
+    wait: true
+    timeout: "{{ k8s_vault_timeout }}"
+    chart_repo_url: https://helm.releases.hashicorp.com
+    chart_ref: vault
+    chart_version: "{{ k8s_vault_chart_version }}"
+    create_namespace: true
+    namespace: vault
+    name: vault
+    values:
+      csi:
+        enabled: true
+        extraArgs:
+          - -vault-mount={{ k8s_vault_csi_extra_args_vault_mount }}
+      injector:
+        authPath: "{{ k8s_vault_injector_auth_path }}"
+        enabled: true
+        externalVaultAddr: "{{ k8s_vault_injector_external_vault_addr }}"
+      server:
+        affinity: ""
+        ha:
+          enabled: false
+
+- name: Get secret
+  args:
+    executable: /bin/bash
+  ansible.builtin.shell: |
+    set -o pipefail
+    kubectl get secret vault-auth-token --output='jsonpath={ .data.token }' | base64 --decode
+  changed_when: false
+  register: k8s_vault_token_review_jwt_shell
+
+- name: Get ca cert
+  args:
+    executable: /bin/bash
+  ansible.builtin.shell: |
+    set -o pipefail
+    kubectl config view --raw --minify --flatten --output='jsonpath={.clusters[].cluster.certificate-authority-data}' | base64 --decode
+  changed_when: false
+  register: k8s_vault_kube_ca_cert_shell
+
+- name: Get kube host
+  ansible.builtin.shell: |
+    kubectl config view --raw --minify --flatten --output='jsonpath={.clusters[].cluster.server}'
+  changed_when: false
+  register: k8s_vault_kube_host_shell
+
+- name: Set facts for configure Vault
+  ansible.builtin.set_fact:
+    k8s_vault_token_review_jwt: "{{ k8s_vault_token_review_jwt_shell.stdout }}"
+    k8s_vault_kube_ca_cert: "{{ k8s_vault_kube_ca_cert_shell.stdout }}"
+    k8s_vault_kube_host: "{{ k8s_vault_kube_host_shell.stdout }}"
+
+- name: Template configure job for vault
+  ansible.builtin.template:
+    src: "templates/configure_vault.yaml.j2"
+    dest: "/tmp/configure_vault.yaml"
+    force: true
+    mode: 0755
+
+- name: Apply configure job
+  kubernetes.core.k8s:
+    state: present
+    apply: true
+    src: "/tmp/configure_vault.yaml"
+
+- name: Tidy up tmp file
+  ansible.builtin.file:
+    path: "/tmp/configure_vault.yaml"
+    state: absent

@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: {{ gitlab_runner_k8s_namespace }}
+patches:
+  - patch: |-
+      - op: remove
+        path: /spec/template/spec/containers/0/volumeMounts/0
+      - op: remove
+        path: /spec/template/spec/volumes/2/projected
+      - op: add
+        path: /spec/template/spec/volumes/2/emptyDir
+        value: {"medium": "Memory" }
+    target:
+      group: apps
+      version: v1
+      kind: Deployment
+resources:
+  - all.yaml

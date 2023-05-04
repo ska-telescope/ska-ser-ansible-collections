@@ -1,9 +1,8 @@
 ---
-
 - name: Clusterapi OS cloud config
   ansible.builtin.import_role:
     name: ska_collections.clusterapi.createworkload
-    tasks_from: os_config
+    tasks_from: openstack-config
 
 - name: Check Workload Cluster is Provisioned or Running
   ska_collections.clusterapi.wait_for_cluster:
@@ -12,43 +11,45 @@
     kubectl_namespace: "{{ capi_kube_namespace }}"
     initpause: 3
     wait: 30
-    retries: 56
+    retries: 60
     kubectl_kubeconfig: "{{ k8s_cloudprovider_kubeconfig }}"
   when: k8s_cloudprovider_wait
 
 - name: Add cloud provider chart repo
   kubernetes.core.helm_repository:
     name: cpo
-    repo_url: "https://kubernetes.github.io/cloud-provider-openstack"
+    repo_url: https://kubernetes.github.io/cloud-provider-openstack
 
 - name: Deploy CCM chart with values
   block:
+    # This template uses the variables loaded from the openstack-config task above
     - name: Template openstack-ccm values yaml
       ansible.builtin.template:
-        src: "openstack-ccm.yaml.j2"
-        dest: "/tmp/openstack-ccm.values.yaml"
-        mode: "0644"
+        src: openstack-ccm.yaml.j2
+        dest: /tmp/openstack-ccm.values.yaml
+        mode: 0644
 
     - name: Apply cloud controller manager chart
       kubernetes.core.helm:
         name: openstack-ccm
         chart_ref: cpo/openstack-cloud-controller-manager
+        chart_version: "{{ k8s_cloudprovider_chart_version }}"
         release_namespace: kube-system
         create_namespace: false
         update_repo_cache: true
         force: true
         values_files:
-          - "/tmp/openstack-ccm.values.yaml"
+          - /tmp/openstack-ccm.values.yaml
 
     # apply the CCM roles and bindings required for updating Ingress
     - name: Download Cloud Provider manifests
       ansible.builtin.get_url:
         url: "https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/master/manifests/controller-manager/{{ item }}"
         dest: "/tmp/{{ item }}"
-        mode: '0664'
+        mode: 0664
       with_items:
-        - "cloud-controller-manager-roles.yaml"
-        - "cloud-controller-manager-role-bindings.yaml"
+        - cloud-controller-manager-roles.yaml
+        - cloud-controller-manager-role-bindings.yaml
 
     - name: Apply Cloud Provider manifests
       kubernetes.core.k8s:
@@ -56,13 +57,13 @@
         apply: true
         src: "/tmp/{{ item }}"
       with_items:
-        - "cloud-controller-manager-roles.yaml"
-        - "cloud-controller-manager-role-bindings.yaml"
+        - cloud-controller-manager-roles.yaml
+        - cloud-controller-manager-role-bindings.yaml
 
   always:
     - name: Remove values
       ansible.builtin.file:
-        path: "/tmp/openstack-ccm.values.yaml"
+        path: /tmp/openstack-ccm.values.yaml
         state: absent
 
     - name: Tidy up Cloud Provider manifests
@@ -70,18 +71,14 @@
         path: "/tmp/{{ item }}"
         state: absent
       with_items:
-        - "cloud-controller-manager-roles.yaml"
-        - "cloud-controller-manager-role-bindings.yaml"
-
-  # https://github.com/kubernetes/cloud-provider-openstack/blob/master/examples/cinder-csi-plugin/block/block.yaml
-  # helm repo add cpo https://kubernetes.github.io/cloud-provider-openstack
-  # helm repo update
-  # helm upgrade --create-namespace --namespace kube-system --install cinder-csi cpo/openstack-cinder-csi
+        - cloud-controller-manager-roles.yaml
+        - cloud-controller-manager-role-bindings.yaml
 
 - name: Apply cloud provider cinder csi chart
   kubernetes.core.helm:
     name: cinder-csi
     chart_ref: cpo/openstack-cinder-csi
+    chart_version: "{{ k8s_cloudprovider_chart_version }}"
     release_namespace: kube-system
     create_namespace: false
     update_repo_cache: true
@@ -117,7 +114,7 @@
     kubectl_namespace: "{{ capi_kube_namespace }}"
     initpause: 3
     wait: 30
-    retries: 56
+    retries: 60
     kubectl_kubeconfig: "{{ k8s_cloudprovider_kubeconfig }}"
   when: k8s_cloudprovider_wait
 

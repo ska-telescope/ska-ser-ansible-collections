@@ -12,17 +12,22 @@ metadata:
   annotations:
     service.beta.kubernetes.io/openstack-internal-load-balancer: "true"
 spec:
+{% if k8s_ingress_lb_class %}
+  loadBalancerClass: {{ k8s_ingress_lb_class }}
+{% endif %}
   ports:
   - appProtocol: http
     name: http
     port: 80
     protocol: TCP
     targetPort: http
+    nodePort: 30080
   - appProtocol: https
     name: https
     port: 443
     protocol: TCP
     targetPort: https
+    nodePort: 30443
   selector:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: ingress-nginx

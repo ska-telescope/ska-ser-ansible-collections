@@ -1,4 +1,23 @@
 ---
+- name: Check if the nvidia driver is install
+  ansible.builtin.command: nvidia-smi --query
+  changed_when: false
+  register: nvidia_driver_check
+  ignore_errors: true
+
+- name: Nvidia check
+  ansible.builtin.debug:
+    var: nvidia_driver_check.rc
+  when: debug | bool
+
+- name: Set nvidia driver exists
+  ansible.builtin.set_fact:
+    nvidia_driver_exists: "{{ nvidia_driver_check.rc == 0 }}"
+
+- name: Check nvidia-driver installed when Nvidia support requested
+  ansible.builtin.fail:
+    msg: The Nvidia driver has not been found (nvidia-smi --query) - aborting.
+  when: containerd_activate_nvidia | bool and not containerd_ignore_nvidia_fail | bool and not nvidia_driver_exists | bool
 
 - name: Load containerd kernel drivers
   community.general.modprobe:
@@ -135,7 +154,7 @@
       ansible.builtin.file:
         path: /etc/systemd/system/containerd.service.d
         state: directory
-        mode: "0755"
+        mode: 0755
     - name: Add proxy env vars to systemd drop-in
       ansible.builtin.template:
         src: proxy.conf.j2
@@ -187,7 +206,7 @@
       ansible.builtin.get_url:
         url: "https://github.com/kubernetes-sigs/cri-tools/releases/download/{{ crictl_version }}/{{ crictl_archive }}"
         dest: "/tmp/{{ crictl_archive }}"
-        mode: "0755"
+        mode: 0755
         tmp_dest: "/tmp/"
 
     - name: Unpack crictl
@@ -195,7 +214,7 @@
         src: "/tmp/{{ crictl_archive }}"
         remote_src: true
         dest: /usr/local/bin
-        mode: "0755"
+        mode: 0755
 
     - name: Tidy up crictl download
       ansible.builtin.file:

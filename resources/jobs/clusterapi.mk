@@ -1,26 +1,21 @@
--include $(BASE_PATH)/PrivateRules.mak
-
-clusterapi-check-hosts:
-ifndef PLAYBOOKS_HOSTS
-	$(error PLAYBOOKS_HOSTS is undefined)
-endif
+.PHONY: check-hosts vars calico-install calico-uninstall calico-uninstall-manifest calico-test \
+install-base management-cluster install build-management-cluster create-workload-cluster get-workload-kubeconfig \
+get-workload-inventory get-workload-cluster destroy-workload-cluster destroy-management-cluster imagebuilder help
+.DEFAULT_GOAL := help
 ANSIBLE_PLAYBOOK_ARGUMENTS ?=
 ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
 TESTS_DIR ?= ./ansible_collections/ska_collections/clusterapi/tests
 
-CAPI_CLUSTER_TYPE ?= capo
-CAPI_APPLY ?= false ## Apply workload cluster: true or false - default: false
-CAPI_AC_BRANCH ?= main ## Ansible Collections branch to apply to workload cluster
-CAPI_CLUSTER ?= capo-test ## Name of workload cluster to create
-CAPI_TAGS ?= all ## Ansible tags to run in post deployment processing
+-include $(BASE_PATH)/PrivateRules.mak
 
-.DEFAULT_GOAL := clusterapi
-
-clusterapi-check-cluster-type:
-ifndef CAPI_CLUSTER_TYPE
-	$(error CAPI_CLUSTER_TYPE is undefined - MUST be 'capo')
+check-hosts:
+ifndef PLAYBOOKS_HOSTS
+	$(error PLAYBOOKS_HOSTS is undefined)
 endif
+
+CAPI_APPLY ?= false ## Apply workload cluster: true or false - default: false
+CAPI_TAGS ?= all ## Ansible tags to run in post deployment processing
 
 vars:
 	@echo "\033[36mclusterapi:\033[0m"
@@ -29,116 +24,84 @@ vars:
 	@echo "ANSIBLE_PLAYBOOK_ARGUMENTS=$(ANSIBLE_PLAYBOOK_ARGUMENTS)"
 	@echo "ANSIBLE_EXTRA_VARS=$(ANSIBLE_EXTRA_VARS)"
 	@echo "ANSIBLE_SSH_ARGS=$(ANSIBLE_SSH_ARGS)"
-	@echo "CAPI_CLUSTER=$(CAPI_CLUSTER)"
 	@echo "CAPI_APPLY=$(CAPI_APPLY)"
-	@echo "CAPI_AC_BRANCH=$(CAPI_AC_BRANCH)"
+	@echo "CAPI_TAGS=$(CAPI_TAGS)"
 
-calico-install: clusterapi-check-hosts  ## Install Calico
-	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
+calico-install: check-hosts  ## Install Calico
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/calico-install.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "k8s_kubeconfig=$(KUBECONFIG)" \
-	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
-	--tags "$(TAGS)"
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-calico-uninstall: clusterapi-check-hosts  ## Uninstall Calico
-	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
+calico-uninstall: check-hosts  ## Uninstall Calico
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/calico-uninstall.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) k8s_kubeconfig=$(KUBECONFIG)"
-
-calico-test: clusterapi-check-hosts ## Test calico network
-	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
-	ansible-playbook $(TESTS_DIR)/calico.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) k8s_kubeconfig=$(KUBECONFIG)"
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
 calico-uninstall-manifest:  ## Uninstall calico deployed using manifest
 	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/calico-uninstall-manifest.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
-	--extra-vars "k8s_kubeconfig=$(K8S_KUBECONFIG)" \
-	--tags "$(TAGS)" \
-	-vv
+	--tags "$(TAGS)"
 
-clusterapi-install-base: clusterapi-check-hosts  ## Install base for management server
-	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
+calico-test: check-hosts ## Test calico network
+	ansible-playbook $(TESTS_DIR)/calico.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+install-base: check-hosts  ## Install base for management server
 	ansible-playbook $(PLAYBOOKS_DIR)/docker_base/playbooks/containers.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=management-cluster" \
-	--limit "management-cluster"
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-clusterapi-management: clusterapi-check-hosts  ## Install Minikube management cluster
-	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
+create-management-cluster: check-hosts  ## Install Minikube management cluster
 	ansible-playbook $(PLAYBOOKS_DIR)/minikube/playbooks/minikube.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=management-cluster" \
-	--limit "management-cluster" --tags "build" -vv
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--tags "build"
 
-clusterapi: clusterapi-check-hosts  ## Install clusterapi component
-	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
+install: check-hosts  ## Install clusterapi component
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/clusterapi.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=management-cluster" \
-	--limit "management-cluster"
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-clusterapi-build-management-server:  ## Complete steps for building clusterapi management server
-	make clusterapi clusterapi-install-base
-	make clusterapi clusterapi-management
-	make clusterapi clusterapi
+build-management-cluster: install-base create-management-cluster install ## Complete steps for building clusterapi management server
 
-clusterapi-createworkload: clusterapi-check-cluster-type  ## Template workload manifest and deploy
-	ANSIBLE_CONFIG="$(PLAYBOOKS_ROOT_DIR)/ansible.cfg" \
-	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)" \
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/createworkload.yml \
+# Leaving CAPI_APPLY so that we can easily not run the apply to check the manifest
+# while we make the playbooks mature
+create-workload-cluster: check-hosts  ## Template workload manifest and deploy the cluster
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/create-workload.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=management-cluster" \
-	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
-	--extra-vars "capi_kustomize_overlay=$(CAPI_CLUSTER_TYPE)" \
-	--extra-vars '{"cluster_apply": $(CAPI_APPLY)}' \
-	--extra-vars 'capi_collections_branch=$(CAPI_AC_BRANCH)' \
-	--limit "management-cluster" -vv
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS) " \
+	--extra-vars "capi_apply_manifest=$(CAPI_APPLY)"
 
-clusterapi-workload-kubeconfig: clusterapi-check-cluster-type  ## Post deployment get workload kubeconfig
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/get-kubeconfig.yml \
+get-workload-kubeconfig: check-hosts  ## Get workload cluster kubeconfig
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/get-workload-kubeconfig.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
-	--limit "management-cluster" -vv
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-clusterapi-workload-inventory: clusterapi-check-cluster-type  ## Post deployment get workload inventory
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/get-inventory.yml \
+get-workload-inventory: check-hosts  ## Get workload cluster inventory
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/get-workload-inventory.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
-	--limit "management-cluster" -vv
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-clusterapi-post-deployment: clusterapi-check-cluster-type  ## Post deployment for workload cluster
+get-workload-cluster: check-hosts get-workload-kubeconfig get-workload-inventory  ## Gets kubeconfig and inventory of the cluster
 
-	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/calico-install.yml \
+destroy-workload-cluster: check-hosts  ## Destroy the workload cluster
+	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/destroy-workload.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=management-cluster" \
-	--extra-vars "capi_cluster=$(CAPI_CLUSTER)" \
-	--limit "management-cluster" \
-	--tags "$(CAPI_TAGS)" \
-	-vv
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-clusterapi-destroy-management:  ## Destroy Minikube management cluster
+destroy-management-cluster:  ## Destroy the management cluster
 	ansible-playbook $(PLAYBOOKS_DIR)/minikube/playbooks/minikube.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--limit "management-cluster" --tags "destroy"
+	--tags "destroy"
 
-clusterapi-imagebuilder:  ## Build and upload OS Image Builder Kubernetes image
+imagebuilder:  ## Build and upload OS Image Builder Kubernetes image
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/imagebuilder.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
-	--limit "management-cluster" -v
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+help: ## Show Help
+	@echo "Clusterapi targets - make playbooks clusterapi <target>:"
+	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

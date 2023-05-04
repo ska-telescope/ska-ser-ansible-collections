@@ -1,0 +1,13 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Configure User Access
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Add User accounts
+      ansible.builtin.include_role:
+        name: users

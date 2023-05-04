@@ -1,10 +1,11 @@
 unqualified-search-registries = ["docker.io"]
 
 {% for registry in podman_upstream_registries -%}
+{% if registry.mirrors and (registry.mirrors | length) > 0 %}
 [[registry]]
-location = "{{ registry }}"
+location = "{{ registry.name }}"
 
-{% for mirror in podman_registry_mirrors -%}
+{% for mirror in registry.mirrors -%}
 [[registry.mirror]]
 {% set prefix, domain = mirror.split('://') %}
 location = "{{ domain }}"
@@ -13,4 +14,5 @@ insecure = true
 {% endif %}
 {% endfor %}
 
+{% endif %}
 {% endfor %}

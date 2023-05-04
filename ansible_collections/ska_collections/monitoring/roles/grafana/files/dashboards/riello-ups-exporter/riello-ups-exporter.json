@@ -27,14 +27,14 @@
   "fiscalYearStartMonth": 0,
   "gnetId": 13524,
   "graphTooltip": 0,
-  "iteration": 1678965268337,
+  "iteration": 1682421573549,
   "links": [],
   "liveNow": false,
   "panels": [
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "P5DCFC7561CCDE821"
       },
       "description": "",
       "fieldConfig": {
@@ -85,6 +85,34 @@
             "uid": "P5DCFC7561CCDE821"
           },
           "editorMode": "code",
+          "exemplar": false,
+          "expr": "sysName{job=\"snmp_ups\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "range": false,
+          "refId": "H"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sysLocation{job=\"snmp_ups\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "range": false,
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
           "expr": "rupsIdentName",
           "format": "table",
           "instant": true,
@@ -123,13 +151,41 @@
             "type": "prometheus",
             "uid": "P5DCFC7561CCDE821"
           },
-          "editorMode": "code",
+          "editorMode": "builder",
           "expr": "rupsIdentAgentSoftwareVersion",
           "format": "table",
           "instant": true,
           "interval": "",
           "legendFormat": "",
           "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sysDescr{job=\"snmp_ups\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "range": false,
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sysContact{job=\"snmp_ups\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "range": false,
+          "refId": "G"
         }
       ],
       "transformations": [
@@ -147,23 +203,50 @@
               "Time 2": true,
               "Time 3": true,
               "Time 4": true,
+              "Time 5": true,
+              "Time 6": true,
+              "Time 7": true,
+              "Time 8": true,
               "Value #A": true,
               "Value #B": true,
               "Value #C": true,
               "Value #D": true,
+              "Value #E": true,
+              "Value #F": true,
+              "Value #G": true,
+              "Value #H": true,
               "__name__ 1": true,
               "__name__ 2": true,
               "__name__ 3": true,
               "__name__ 4": true,
+              "__name__ 5": true,
+              "__name__ 6": true,
+              "__name__ 7": true,
+              "__name__ 8": true,
               "instance 1": true,
               "instance 2": true,
               "instance 3": true,
               "instance 4": true,
+              "instance 5": true,
+              "instance 6": true,
+              "instance 7": true,
+              "instance 8": true,
               "job": true,
-              "job 1": true
+              "job 1": true,
+              "sysDescr": false,
+              "sysLocation": false
             },
             "indexByName": {},
-            "renameByName": {}
+            "renameByName": {
+              "instance 1": "Name",
+              "rupsIdentAgentSoftwareVersion": "Agent Software Version",
+              "rupsIdentModel": "Model",
+              "rupsIdentUPSSoftwareVersion": "UPS Software Version",
+              "sysContact": "Contact",
+              "sysDescr": "System  Description",
+              "sysLocation": "Location",
+              "sysName": "Name"
+            }
           }
         }
       ],
@@ -177,41 +260,58 @@
       },
       "fieldConfig": {
         "defaults": {
-          "mappings": [],
-          "max": 100,
-          "min": 0,
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "rgba(50, 172, 45, 0.97)",
+                  "text": "0"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "N/A"
+                }
+              },
+              "type": "special"
+            }
+          ],
           "thresholds": {
-            "mode": "percentage",
+            "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "rgba(50, 172, 45, 0.97)",
                 "value": null
-              },
-              {
-                "color": "orange",
-                "value": 70
-              },
-              {
-                "color": "red",
-                "value": 85
               }
             ]
           },
-          "unit": "percent"
+          "unit": "timeticks"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 4,
-        "w": 2,
+        "w": 3,
         "x": 0,
         "y": 2
       },
-      "id": 15,
+      "id": 67,
       "links": [],
       "maxDataPoints": 100,
       "options": {
-        "orientation": "auto",
+        "colorMode": "value",
+        "fieldOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -219,8 +319,8 @@
           "fields": "",
           "values": false
         },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "text": {},
+        "textMode": "auto"
       },
       "pluginVersion": "9.0.0",
       "targets": [
@@ -230,19 +330,18 @@
             "uid": "P5DCFC7561CCDE821"
           },
           "editorMode": "code",
-          "expr": "rupsOutputPercentLoad{rupsOutputLineIndex=\"1\"}",
-          "format": "time_series",
+          "expr": "sysUpTime",
           "instant": true,
           "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "L{{rupsOutputLineIndex}}",
-          "metric": "apcupsd_battery_cumulative_time_on_seconds_total",
+          "intervalFactor": 2,
+          "legendFormat": "",
+          "metric": "apcupsd_battery_time_on_seconds",
           "refId": "A",
           "step": 600
         }
       ],
-      "title": "UPS load L1",
-      "type": "gauge"
+      "title": "System Up Time",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -251,41 +350,56 @@
       },
       "fieldConfig": {
         "defaults": {
-          "mappings": [],
-          "max": 100,
-          "min": 0,
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "text": "No transfers since turnon"
+                }
+              },
+              "type": "value"
+            }
+          ],
           "thresholds": {
-            "mode": "percentage",
+            "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#299c46",
                 "value": null
               },
               {
-                "color": "orange",
-                "value": 70
+                "color": "rgba(237, 129, 40, 0.89)",
+                "value": 30
               },
               {
-                "color": "red",
-                "value": 85
+                "color": "#d44a3a",
+                "value": 35
               }
             ]
           },
-          "unit": "percent"
+          "unit": "celsius"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 4,
-        "w": 2,
-        "x": 2,
+        "w": 3,
+        "x": 3,
         "y": 2
       },
-      "id": 61,
+      "id": 19,
       "links": [],
       "maxDataPoints": 100,
       "options": {
-        "orientation": "auto",
+        "colorMode": "value",
+        "fieldOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -293,8 +407,7 @@
           "fields": "",
           "values": false
         },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "textMode": "value"
       },
       "pluginVersion": "9.0.0",
       "targets": [
@@ -304,99 +417,20 @@
             "uid": "P5DCFC7561CCDE821"
           },
           "editorMode": "code",
-          "expr": "rupsOutputPercentLoad{rupsOutputLineIndex=\"2\"}",
+          "expr": "rupsBatteryTemperature",
           "format": "time_series",
           "instant": true,
           "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "L{{rupsOutputLineIndex}}",
-          "metric": "apcupsd_battery_cumulative_time_on_seconds_total",
-          "refId": "A",
-          "step": 600
+          "legendFormat": "",
+          "refId": "A"
         }
       ],
-      "title": "UPS load L2",
-      "type": "gauge"
+      "title": "Battery temperature",
+      "transformations": [],
+      "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "max": 100,
-          "min": 0,
-          "thresholds": {
-            "mode": "percentage",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 70
-              },
-              {
-                "color": "red",
-                "value": 85
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 2,
-        "x": 4,
-        "y": 2
-      },
-      "id": 62,
-      "links": [],
-      "maxDataPoints": 100,
-      "options": {
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true
-      },
-      "pluginVersion": "9.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P5DCFC7561CCDE821"
-          },
-          "editorMode": "code",
-          "expr": "rupsOutputPercentLoad{rupsOutputLineIndex=\"3\"}",
-          "format": "time_series",
-          "instant": true,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "L{{rupsOutputLineIndex}}",
-          "metric": "apcupsd_battery_cumulative_time_on_seconds_total",
-          "refId": "A",
-          "step": 600
-        }
-      ],
-      "title": "UPS load L3",
-      "type": "gauge"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "P5DCFC7561CCDE821"
-      },
+      "datasource": {},
       "fieldConfig": {
         "defaults": {
           "mappings": [
@@ -632,48 +666,121 @@
       },
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
           "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "align": "auto",
+            "displayMode": "auto",
+            "filterable": false,
+            "inspect": false
           },
-          "mappings": [],
+          "mappings": [
+            {
+              "options": {
+                "1.3.6.1.4.1.5491.10.1.6.3.1": {
+                  "index": 0,
+                  "text": "Battery Bad"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.10": {
+                  "index": 9,
+                  "text": "Bypass Bad"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.11": {
+                  "index": 10,
+                  "text": "Output Off As Requested"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.12": {
+                  "index": 11,
+                  "text": "Ups Off As Requested"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.13": {
+                  "index": 12,
+                  "text": "Charger Failed"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.14": {
+                  "index": 13,
+                  "text": "Ups Output Off"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.15": {
+                  "index": 14,
+                  "text": "Ups System Off"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.16": {
+                  "index": 15,
+                  "text": "Fan Failure"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.17": {
+                  "index": 16,
+                  "text": "Fuse Failure"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.18": {
+                  "index": 17,
+                  "text": "General Fault"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.19": {
+                  "index": 18,
+                  "text": "Diagnostic Test Failed"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.2": {
+                  "index": 1,
+                  "text": "On Battery"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.20": {
+                  "index": 19,
+                  "text": "Communications Lost"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.21": {
+                  "index": 20,
+                  "text": "Awaiting Power"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.22": {
+                  "index": 21,
+                  "text": "Shutdown Pending"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.23": {
+                  "index": 22,
+                  "text": "Shutdown Imminent"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.24": {
+                  "index": 23,
+                  "text": "Test In Progress"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.3": {
+                  "index": 2,
+                  "text": "Low Battery"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.4": {
+                  "index": 3,
+                  "text": "Depleted Battery"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.5": {
+                  "index": 4,
+                  "text": "Temp Bad"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.6": {
+                  "index": 5,
+                  "text": "Input Bad"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.7": {
+                  "index": 6,
+                  "text": "Output Bad"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.8": {
+                  "index": 7,
+                  "text": "Output Overload"
+                },
+                "1.3.6.1.4.1.5491.10.1.6.3.9": {
+                  "index": 8,
+                  "text": "On Bypass"
+                }
+              },
+              "type": "value"
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           }
@@ -688,32 +795,66 @@
       },
       "id": 66,
       "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
+        "footer": {
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "showHeader": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Time"
+          }
+        ]
       },
+      "pluginVersion": "9.0.0",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P5DCFC7561CCDE821"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "rupsAlarmsDescr",
-          "legendFormat": "{{label_name}}",
+          "expr": "rupsAlarmDescr",
+          "format": "table",
+          "hide": false,
+          "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
       "title": "Alarm Descriptions",
-      "type": "timeseries"
+      "transformations": [
+        {
+          "id": "seriesToColumns",
+          "options": {
+            "byField": "job"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": false,
+              "Value": true,
+              "__name__": true,
+              "instance": true,
+              "job": true,
+              "rupsAlarmDescr": false,
+              "rupsAlarmId": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "rupsAlarmDescr": "Description"
+            }
+          }
+        }
+      ],
+      "type": "table"
     },
     {
       "datasource": {
@@ -722,56 +863,41 @@
       },
       "fieldConfig": {
         "defaults": {
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "text": "No transfers since turnon"
-                }
-              },
-              "type": "value"
-            }
-          ],
+          "mappings": [],
+          "max": 100,
+          "min": 0,
           "thresholds": {
-            "mode": "absolute",
+            "mode": "percentage",
             "steps": [
               {
-                "color": "#299c46",
+                "color": "green",
                 "value": null
               },
               {
-                "color": "rgba(237, 129, 40, 0.89)",
-                "value": 30
+                "color": "orange",
+                "value": 70
               },
               {
-                "color": "#d44a3a",
-                "value": 35
+                "color": "red",
+                "value": 85
               }
             ]
           },
-          "unit": "celsius"
+          "unit": "percent"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
+        "w": 2,
         "x": 0,
         "y": 6
       },
-      "id": 19,
+      "id": 15,
       "links": [],
       "maxDataPoints": 100,
       "options": {
-        "colorMode": "value",
-        "fieldOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
-        },
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
+        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -779,7 +905,8 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value"
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
       },
       "pluginVersion": "9.0.0",
       "targets": [
@@ -789,17 +916,167 @@
             "uid": "P5DCFC7561CCDE821"
           },
           "editorMode": "code",
-          "expr": "rupsBatteryTemperature",
+          "expr": "rupsOutputPercentLoad{rupsOutputLineIndex=\"1\"}",
           "format": "time_series",
           "instant": true,
           "interval": "",
-          "legendFormat": "",
-          "refId": "A"
+          "intervalFactor": 1,
+          "legendFormat": "L{{rupsOutputLineIndex}}",
+          "metric": "apcupsd_battery_cumulative_time_on_seconds_total",
+          "refId": "A",
+          "step": 600
         }
       ],
-      "title": "Battery temperature",
-      "transformations": [],
-      "type": "stat"
+      "title": "UPS load L1",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 2,
+        "x": 2,
+        "y": 6
+      },
+      "id": 61,
+      "links": [],
+      "maxDataPoints": 100,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "expr": "rupsOutputPercentLoad{rupsOutputLineIndex=\"2\"}",
+          "format": "time_series",
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "L{{rupsOutputLineIndex}}",
+          "metric": "apcupsd_battery_cumulative_time_on_seconds_total",
+          "refId": "A",
+          "step": 600
+        }
+      ],
+      "title": "UPS load L2",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 2,
+        "x": 4,
+        "y": 6
+      },
+      "id": 62,
+      "links": [],
+      "maxDataPoints": 100,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "expr": "rupsOutputPercentLoad{rupsOutputLineIndex=\"3\"}",
+          "format": "time_series",
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "L{{rupsOutputLineIndex}}",
+          "metric": "apcupsd_battery_cumulative_time_on_seconds_total",
+          "refId": "A",
+          "step": 600
+        }
+      ],
+      "title": "UPS load L3",
+      "type": "gauge"
     },
     {
       "datasource": {
@@ -851,8 +1128,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 4,
+        "w": 4,
+        "x": 6,
         "y": 6
       },
       "id": 53,
@@ -905,6 +1182,7 @@
       },
       "fieldConfig": {
         "defaults": {
+          "decimals": 1,
           "mappings": [
             {
               "options": {
@@ -933,7 +1211,7 @@
               }
             ]
           },
-          "unit": "m"
+          "unit": "clocks"
         },
         "overrides": []
       },
@@ -973,7 +1251,7 @@
             "uid": "P5DCFC7561CCDE821"
           },
           "editorMode": "code",
-          "expr": "rupsEstimatedMinutesRemaining",
+          "expr": "rupsEstimatedMinutesRemaining*60",
           "instant": true,
           "interval": "",
           "intervalFactor": 2,
@@ -983,7 +1261,7 @@
           "step": 600
         }
       ],
-      "title": "Estimated uptime on batteries",
+      "title": "Autonomy",
       "type": "stat"
     },
     {
@@ -996,6 +1274,7 @@
           "color": {
             "mode": "palette-classic"
           },
+          "decimals": 1,
           "mappings": [
             {
               "options": {
@@ -1063,7 +1342,7 @@
             "uid": "P5DCFC7561CCDE821"
           },
           "editorMode": "code",
-          "expr": "rupsInputFrequency",
+          "expr": "rupsInputFrequency/10",
           "instant": true,
           "interval": "",
           "legendFormat": "L{{rupsInputLineIndex}}",
@@ -1159,7 +1438,7 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 6,
+        "w": 8,
         "x": 0,
         "y": 11
       },
@@ -1219,8 +1498,8 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 7,
-        "w": 6,
-        "x": 6,
+        "w": 8,
+        "x": 8,
         "y": 11
       },
       "hiddenSeries": false,
@@ -1355,8 +1634,8 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 6,
-        "x": 12,
+        "w": 8,
+        "x": 16,
         "y": 11
       },
       "id": 29,
@@ -1387,7 +1666,7 @@
           "refId": "A"
         }
       ],
-      "title": "Capacity",
+      "title": "Charge",
       "type": "timeseries"
     },
     {
@@ -1540,6 +1819,7 @@
               "mode": "off"
             }
           },
+          "decimals": 1,
           "links": [],
           "mappings": [],
           "thresholds": {
@@ -1587,7 +1867,7 @@
             "uid": "P5DCFC7561CCDE821"
           },
           "editorMode": "code",
-          "expr": "rupsInputCurrent",
+          "expr": "rupsInputCurrent/10",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "L{{rupsInputLineIndex}}",
@@ -1638,6 +1918,7 @@
               "mode": "off"
             }
           },
+          "decimals": 1,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1652,7 +1933,7 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "rothz"
         },
         "overrides": []
       },
@@ -1683,7 +1964,7 @@
             "uid": "P5DCFC7561CCDE821"
           },
           "editorMode": "code",
-          "expr": "rupsInputFrequency",
+          "expr": "rupsInputFrequency/10",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -1691,7 +1972,7 @@
           "refId": "A"
         }
       ],
-      "title": "Frequency (HZ)",
+      "title": "Frequency",
       "type": "timeseries"
     },
     {
@@ -1701,310 +1982,6 @@
         "w": 24,
         "x": 0,
         "y": 26
-      },
-      "id": 59,
-      "panels": [],
-      "title": "Bypass",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "decimals": 0,
-          "links": [],
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "volt"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 0,
-        "y": 27
-      },
-      "id": 55,
-      "links": [],
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.3.6",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P5DCFC7561CCDE821"
-          },
-          "editorMode": "code",
-          "expr": "rupsBypassVoltage",
-          "interval": "",
-          "intervalFactor": 2,
-          "legendFormat": "L{{rupsBypassLineIndex}}",
-          "metric": "apcupsd_battery_nominal_volts",
-          "range": true,
-          "refId": "A",
-          "step": 120
-        }
-      ],
-      "title": "Voltage",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "links": [],
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "amp"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 8,
-        "y": 27
-      },
-      "id": 56,
-      "links": [],
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.3.6",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P5DCFC7561CCDE821"
-          },
-          "editorMode": "code",
-          "expr": "rupsBypassCurrent",
-          "interval": "",
-          "intervalFactor": 2,
-          "legendFormat": "L{{rupsBypassLineIndex}}",
-          "metric": "apcupsd_battery_nominal_volts",
-          "range": true,
-          "refId": "A",
-          "step": 120
-        }
-      ],
-      "title": "Current",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 16,
-        "y": 27
-      },
-      "id": 57,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.3.6",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P5DCFC7561CCDE821"
-          },
-          "editorMode": "code",
-          "expr": "rupsBypassFrequency",
-          "format": "time_series",
-          "instant": false,
-          "interval": "",
-          "legendFormat": "L{{rupsBypassLineIndex}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Frequency (HZ)",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 34
       },
       "id": 46,
       "panels": [],
@@ -2073,7 +2050,7 @@
         "h": 7,
         "w": 6,
         "x": 0,
-        "y": 35
+        "y": 27
       },
       "id": 48,
       "links": [],
@@ -2172,7 +2149,7 @@
         "h": 7,
         "w": 6,
         "x": 6,
-        "y": 35
+        "y": 27
       },
       "id": 26,
       "options": {
@@ -2248,6 +2225,7 @@
               "mode": "off"
             }
           },
+          "decimals": 1,
           "links": [],
           "mappings": [],
           "thresholds": {
@@ -2271,7 +2249,7 @@
         "h": 7,
         "w": 6,
         "x": 12,
-        "y": 35
+        "y": 27
       },
       "id": 50,
       "links": [],
@@ -2295,7 +2273,7 @@
             "uid": "P5DCFC7561CCDE821"
           },
           "editorMode": "code",
-          "expr": "rupsOutputCurrent",
+          "expr": "rupsOutputCurrent/10",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "L{{rupsOutputLineIndex}}",
@@ -2346,6 +2324,7 @@
               "mode": "off"
             }
           },
+          "decimals": 1,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -2360,7 +2339,7 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "rothz"
         },
         "overrides": []
       },
@@ -2368,7 +2347,7 @@
         "h": 7,
         "w": 6,
         "x": 18,
-        "y": 35
+        "y": 27
       },
       "id": 52,
       "options": {
@@ -2391,7 +2370,7 @@
             "uid": "P5DCFC7561CCDE821"
           },
           "editorMode": "code",
-          "expr": "rupsOutputFrequency",
+          "expr": "rupsOutputFrequency/10",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -2399,7 +2378,313 @@
           "refId": "A"
         }
       ],
-      "title": "Frequency (HZ)",
+      "title": "Frequency",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 34
+      },
+      "id": 59,
+      "panels": [],
+      "title": "Bypass",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "volt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 35
+      },
+      "id": 55,
+      "links": [],
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.3.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "expr": "rupsBypassVoltage",
+          "interval": "",
+          "intervalFactor": 2,
+          "legendFormat": "L{{rupsBypassLineIndex}}",
+          "metric": "apcupsd_battery_nominal_volts",
+          "range": true,
+          "refId": "A",
+          "step": 120
+        }
+      ],
+      "title": "Voltage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 1,
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "amp"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 35
+      },
+      "id": 56,
+      "links": [],
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.3.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "expr": "rupsBypassCurrent/10",
+          "interval": "",
+          "intervalFactor": 2,
+          "legendFormat": "L{{rupsBypassLineIndex}}",
+          "metric": "apcupsd_battery_nominal_volts",
+          "range": true,
+          "refId": "A",
+          "step": 120
+        }
+      ],
+      "title": "Current",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "rothz"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 35
+      },
+      "id": 57,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.3.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "expr": "rupsBypassFrequency/10",
+          "format": "time_series",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "L{{rupsBypassLineIndex}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Frequency",
       "type": "timeseries"
     }
   ],
@@ -2414,7 +2699,7 @@
     "list": [
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "Thanos",
           "value": "Thanos"
         },
@@ -2434,7 +2719,7 @@
     ]
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-4h",
     "to": "now"
   },
   "timepicker": {
@@ -2464,6 +2749,6 @@
   "timezone": "browser",
   "title": "RIELLO UPS (SNMP)",
   "uid": "gerljJoB",
-  "version": 1,
+  "version": 5,
   "weekStart": ""
 }

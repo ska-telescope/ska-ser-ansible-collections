@@ -1,10 +1,15 @@
 ---
 debug: false
 
-k8s_cloudprovider_config: /etc/kubernetes/cloud.conf
-k8s_cloudprovider_config_ini: /etc/clusterapi/cloud-provider.ini
 k8s_cloudprovider_wait: true
 k8s_cloudprovider_kubeconfig: /home/ubuntu/.kube/config
+k8s_cloudprovider_chart_version: 2.26.0
+k8s_cloudprovider_enable_service_controller: true
+
+k8s_cloudprovider_controllers:
+  - cloud-node
+  - cloud-node-lifecycle
+  - "{{ (k8s_cloudprovider_enable_service_controller | bool) | ternary('service', '') }}"
 
 k8s_cloudprovider_storage_classes:
   - apiVersion: storage.k8s.io/v1

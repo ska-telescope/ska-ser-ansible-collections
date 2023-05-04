@@ -22,11 +22,11 @@ parameters:
 
   # The secrets contain Ceph admin credentials. These are generated automatically by the operator
   # in the same namespace as the cluster.
-  csi.storage.k8s.io/provisioner-secret-name: rook-csi-cephfs-provisioner
+  csi.storage.k8s.io/provisioner-secret-name: rook-{{ k8s_rook_csi_cephfs_provisioner_secret_name }}
   csi.storage.k8s.io/provisioner-secret-namespace: {{ k8s_rook_namespace }} # namespace:cluster
-  csi.storage.k8s.io/controller-expand-secret-name: rook-csi-cephfs-provisioner
+  csi.storage.k8s.io/controller-expand-secret-name: rook-{{ k8s_rook_csi_cephfs_provisioner_secret_name }}
   csi.storage.k8s.io/controller-expand-secret-namespace: {{ k8s_rook_namespace }} # namespace:cluster
-  csi.storage.k8s.io/node-stage-secret-name: rook-csi-cephfs-node
+  csi.storage.k8s.io/node-stage-secret-name: rook-{{ k8s_rook_csi_cephfs_node_secret_name }}
   csi.storage.k8s.io/node-stage-secret-namespace: {{ k8s_rook_namespace }} # namespace:cluster
 
   # (optional) The driver can use either ceph-fuse (fuse) or ceph kernel client (kernel)
@@ -63,11 +63,11 @@ parameters:
 
   # The secrets contain Ceph admin credentials. These are generated automatically by the operator
   # in the same namespace as the cluster.
-  csi.storage.k8s.io/provisioner-secret-name: rook-csi-cephfs-provisioner
+  csi.storage.k8s.io/provisioner-secret-name: rook-{{ k8s_rook_csi_cephfs_provisioner_secret_name }}
   csi.storage.k8s.io/provisioner-secret-namespace: {{ k8s_rook_namespace }} # namespace:cluster
-  csi.storage.k8s.io/controller-expand-secret-name: rook-csi-cephfs-provisioner
+  csi.storage.k8s.io/controller-expand-secret-name: rook-{{ k8s_rook_csi_cephfs_provisioner_secret_name }}
   csi.storage.k8s.io/controller-expand-secret-namespace: {{ k8s_rook_namespace }} # namespace:cluster
-  csi.storage.k8s.io/node-stage-secret-name: rook-csi-cephfs-node
+  csi.storage.k8s.io/node-stage-secret-name: rook-{{ k8s_rook_csi_cephfs_node_secret_name }}
   csi.storage.k8s.io/node-stage-secret-namespace: {{ k8s_rook_namespace }} # namespace:cluster
 
   # (optional) The driver can use either ceph-fuse (fuse) or ceph kernel client (kernel)
@@ -108,11 +108,11 @@ parameters:
 
   # The secrets contain Ceph admin credentials. These are generated automatically by the operator
   # in the same namespace as the cluster.
-  csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+  csi.storage.k8s.io/provisioner-secret-name: rook-{{ k8s_rook_csi_rbd_provisioner_secret_name }}
   csi.storage.k8s.io/provisioner-secret-namespace: {{ k8s_rook_namespace }} # namespace:cluster
-  csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
+  csi.storage.k8s.io/controller-expand-secret-name: rook-{{ k8s_rook_csi_rbd_provisioner_secret_name }}
   csi.storage.k8s.io/controller-expand-secret-namespace: {{ k8s_rook_namespace }} # namespace:cluster
-  csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
+  csi.storage.k8s.io/node-stage-secret-name: rook-{{ k8s_rook_csi_rbd_node_secret_name }}
   csi.storage.k8s.io/node-stage-secret-namespace: {{ k8s_rook_namespace }} # namespace:cluster
   # Specify the filesystem type of the volume. If not specified, csi-provisioner
   # will set default as 'ext4'.
@@ -149,11 +149,11 @@ parameters:
 
   # The secrets contain Ceph admin credentials. These are generated automatically by the operator
   # in the same namespace as the cluster.
-  csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+  csi.storage.k8s.io/provisioner-secret-name: rook-{{ k8s_rook_csi_rbd_provisioner_secret_name }}
   csi.storage.k8s.io/provisioner-secret-namespace: {{ k8s_rook_namespace }} # namespace:cluster
-  csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
+  csi.storage.k8s.io/controller-expand-secret-name: rook-{{ k8s_rook_csi_rbd_provisioner_secret_name }}
   csi.storage.k8s.io/controller-expand-secret-namespace: {{ k8s_rook_namespace }} # namespace:cluster
-  csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
+  csi.storage.k8s.io/node-stage-secret-name: rook-{{ k8s_rook_csi_rbd_node_secret_name }}
   csi.storage.k8s.io/node-stage-secret-namespace: {{ k8s_rook_namespace }} # namespace:cluster
   # Specify the filesystem type of the volume. If not specified, csi-provisioner
   # will set default as 'ext4'.

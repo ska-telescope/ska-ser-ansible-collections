@@ -66,7 +66,7 @@
   ansible.builtin.file:
     path: /etc/kubernetes/kubeadm
     state: directory
-    mode: "0755"
+    mode: 0755
   when: inventory_hostname in groups['kubernetes-workers']
     or inventory_hostname in groups['kubernetes-controlplane']
 
@@ -81,7 +81,7 @@
   ansible.builtin.file:
     path: /etc/kubernetes/manifests
     state: directory
-    mode: "0755"
+    mode: 0755
   when: inventory_hostname == groups['kubernetes-controlplane'][0]
 
 - name: Kube-vip manifest
@@ -296,7 +296,7 @@
   ansible.builtin.file:
     path: /etc/kubernetes/manifests
     state: directory
-    mode: "0755"
+    mode: 0755
   when: "inventory_hostname in groups['kubernetes-workers']"
 
 - name: Check workers joining

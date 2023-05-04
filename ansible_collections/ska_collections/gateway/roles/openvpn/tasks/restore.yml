@@ -1,0 +1,84 @@
+---
+- name: Set restore dir
+  ansible.builtin.set_fact:
+    restore_dir: "/tmp/openvpn-restore-{{ ansible_date_time.iso8601_basic_short }}"
+
+- name: Ask for restore file path
+  ansible.builtin.pause:
+    prompt: "Set the path of restore file: [{{ openvpn_default_restore_file }}]"
+    echo: true
+  register: ask_restore_file
+
+- name: Set restore file
+  ansible.builtin.set_fact:
+    openvpn_restore_file: "{{ ('/' in ask_restore_file.user_input) | ternary(ask_restore_file.user_input, openvpn_default_restore_file) }}"
+
+- name: Check if restore file exists in localhost
+  ansible.builtin.stat:
+    path: "{{ openvpn_restore_file }}"
+  become: false
+  delegate_to: localhost
+  register: restore_file_local
+
+- name: Check if restore file exists in remote
+  ansible.builtin.stat:
+    path: "{{ openvpn_restore_file }}"
+  register: restore_file_host
+
+- name: Abort if restore file not found
+  ansible.builtin.fail:
+    msg: "Target restore file at '{{ openvpn_restore_file }}' not found in host or localhost"
+  when: not restore_file_local.stat.exists and not restore_file_host.stat.exists
+
+- name: Copy restore file
+  ansible.builtin.copy:
+    remote_src: "{{ not restore_file_local.stat.exists }}"
+    src: "{{ openvpn_restore_file }}"
+    dest: "{{ restore_dir }}.tgz"
+    mode: 0644
+  become: false
+
+- name: Create restore directory
+  ansible.builtin.file:
+    path: "{{ restore_dir }}"
+    state: directory
+    mode: 0744
+
+- name: Decompress restore file
+  ansible.builtin.unarchive:
+    src: "{{ restore_dir }}.tgz"
+    dest: "{{ restore_dir }}"
+    remote_src: true
+    extra_opts: ["--gzip", "--strip-components=1"]
+
+- name: Synchronize client-configs
+  ansible.posix.synchronize:
+    src: "{{ restore_dir }}/client-configs"
+    dest: "{{ openvpn_dir }}"
+    mode: push
+    compress: true
+    delete: false
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Synchronize pki
+  ansible.posix.synchronize:
+    src: "{{ restore_dir }}/pki"
+    dest: "{{ openvpn_dir }}"
+    mode: push
+    compress: true
+    delete: false
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Update easyrsa db
+  ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa update-db"
+  args:
+    chdir: "{{ openvpn_dir }}"
+  register: update_db
+  changed_when: update_db.rc == 0
+
+- name: Update easyrsa crl
+  ansible.builtin.command: "{{ openvpn_easyrsa_path }}/easyrsa gen-crl"
+  args:
+    chdir: "{{ openvpn_dir }}"
+  register: gen_crl
+  changed_when: gen_crl.rc == 0

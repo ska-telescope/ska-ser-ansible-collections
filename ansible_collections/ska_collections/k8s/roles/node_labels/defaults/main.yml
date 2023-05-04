@@ -1,0 +1,7 @@
+---
+# Define labels as objects containing a key and a value. Example:
+#
+# k8s_node_labels:
+# - key: node-role.skatelescope.org/ci-worker
+#   value: "true"
+k8s_node_labels: []

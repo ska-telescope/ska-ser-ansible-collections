@@ -1,0 +1,177 @@
+---
+# https://etherarp.net/ssh-jump-hosts/index.html
+- name: "Create user account : {{ jump_user }}"
+  ansible.builtin.user:
+    name: "{{ jump_user }}"
+    shell: /bin/false
+    append: false
+    create_home: true
+    home: "/home/{{ jump_user }}"
+
+- name: Setup jump restrictions in /etc/ssh/sshd_config
+  ansible.builtin.blockinfile:
+    path: /etc/ssh/sshd_config
+    block: |
+      Match User {{ jump_user }}
+          ForceCommand /bin/false
+          PasswordAuthentication no
+          PubkeyAuthentication yes
+          GatewayPorts no
+          X11Forwarding no
+          PermitTunnel no
+          PermitTTY no
+          AllowAgentForwarding no
+          AllowTCPForwarding yes
+          PermitOpen *:22
+
+# Add in fail2ban
+- name: Fail2Ban
+  ansible.builtin.apt:
+    pkg:
+      - fail2ban
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Create ~/.ssh/
+  ansible.builtin.file:
+    path: "/home/{{ jump_user }}/.ssh"
+    state: directory
+    owner: "{{ jump_user }}"
+    group: "{{ jump_user }}"
+    mode: "0700"
+
+- name: Add admin ssh key to jump
+  ansible.builtin.lineinfile:
+    line: "{{ item }}"
+    dest: /home/{{ jump_user }}/.ssh/authorized_keys
+    regex: "{{ item.split()[1] | regex_escape() }}"  # use the hash to match
+    create: true
+    owner: "{{ jump_user }}"
+    group: "{{ jump_user }}"
+    mode: 0600
+  with_items: "{{ add_ssh_keys_admin }}"
+  become: true
+
+- name: Add team ssh key to jump
+  ansible.builtin.lineinfile:
+    line: "{{ item }}"
+    dest: /home/{{ jump_user }}/.ssh/authorized_keys
+    regex: "{{ item.split()[1] | regex_escape() }}"  # use the hash to match
+    create: true
+    owner: "{{ jump_user }}"
+    group: "{{ jump_user }}"
+    mode: 0600
+  with_items: "{{ add_jump_ssh_keys }}"
+  become: true
+
+- name: Add admin ssh key to ubuntu
+  ansible.builtin.lineinfile:
+    line: "{{ item }}"
+    dest: /home/ubuntu/.ssh/authorized_keys
+    regex: "{{ item.split()[1] | regex_escape() }}"  # use the hash to match
+    create: true
+    owner: "ubuntu"
+    group: "ubuntu"
+    mode: 0600
+  with_items: "{{ add_ssh_keys_admin }}"
+  become: true
+
+# create admin accounts
+- name: User name
+  ansible.builtin.set_fact:
+    user_name: "{{ item.split()[-1] }}"
+  register: user_name_result
+  with_items: "{{ add_ssh_keys_admin }}"
+
+- name: Make user namelist
+  ansible.builtin.set_fact:
+    user_names: "{{ user_name_result.results | map(attribute='ansible_facts.user_name') | list | reject('equalto', 'Generated-by-Nova') | list }}"
+
+- name: List of user to create
+  ansible.builtin.debug:
+    var: user_names
+
+- name: Create user account
+  ansible.builtin.user:
+    name: "{{ item }}"
+    shell: /bin/bash
+    groups: "{{ groups_to_add }}"
+    append: true
+  with_items: "{{ user_names }}"
+
+- name: Create ~/.ssh/
+  ansible.builtin.file:
+    path: "/home/{{ item }}/.ssh"
+    state: directory
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: "0700"
+  with_items: "{{ user_names }}"
+
+- name: Add to authorized_keys
+  ansible.builtin.lineinfile:
+    line: "{{ item }}"
+    path: "/home/{{ item.split()[-1] }}/.ssh/authorized_keys"
+    regex: "{{ item.split()[1] | regex_escape() }}"  # use the hash to match
+    create: true
+    owner: "{{ item.split()[-1] }}"
+    group: "{{ item.split()[-1] }}"
+    mode: 0600
+  loop: "{{ add_ssh_keys_admin }}"
+  when: "not item.split()[-1] == 'Generated-by-Nova'"
+
+- name: Add to sudoers
+  ansible.builtin.lineinfile:
+    line: "{{ item }} ALL=(ALL) NOPASSWD:ALL"
+    path: "/etc/sudoers.d/99-systems-team"
+    regex: "{{ item }}"
+    create: true
+    owner: "root"
+    group: "root"
+    mode: 0440
+  with_items: "{{ user_names }}"
+
+- name: Remove user name var
+  ansible.builtin.set_fact:
+    user_name: "{{ item.split()[-1] }}"
+  register: user_name_result
+  loop: "{{ remove_ssh_keys | flatten(levels=1) if remove_ssh_keys is iterable else [] }}"
+  when: remove_ssh_keys is iterable
+
+- name: Remove make user namelist var
+  ansible.builtin.set_fact:
+    user_names: "{{ user_name_result.results | map(attribute='ansible_facts.user_name') | list | reject('equalto', 'Generated-by-Nova') | list }}"
+
+- name: List of user to remove
+  ansible.builtin.debug:
+    var: user_names
+
+- name: Remove user account
+  ansible.builtin.user:
+    name: "{{ item }}"
+    state: absent
+  with_items: "{{ user_names }}"
+
+- name: Remove from sudoers
+  ansible.builtin.lineinfile:
+    path: "/etc/sudoers.d/99-systems-team"
+    regex: "{{ item }}"
+    state: absent
+  with_items: "{{ user_names }}"
+
+- name: Remove ssh key - ubuntu
+  ansible.builtin.lineinfile:
+    line: "{{ item }}"
+    dest: /home/ubuntu/.ssh/authorized_keys
+    state: absent
+  loop: "{{ remove_ssh_keys | flatten(levels=1) if remove_ssh_keys is iterable else [] }}"
+  when: remove_ssh_keys is iterable
+
+- name: "Remove ssh key - {{ jump_user }}"
+  ansible.builtin.lineinfile:
+    line: "{{ item }}"
+    dest: /home/{{ jump_user }}/.ssh/authorized_keys
+    state: absent
+  loop: "{{ remove_ssh_keys | flatten(levels=1) if remove_ssh_keys is iterable else [] }}"
+  when: remove_ssh_keys is iterable

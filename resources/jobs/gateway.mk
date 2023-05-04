@@ -17,12 +17,22 @@ vars:
 	@echo "INVENTORY=$(INVENTORY)"
 	@echo "PLAYBOOKS_HOSTS=$(PLAYBOOKS_HOSTS)"
 
-jumphost: check_hosts ## Add ubuntu users and configure jumphost
-	ansible-playbook $(PLAYBOOKS_DIR)/jumphost_configure_user_access.yml \
+users: check_hosts ## Add ubuntu users and configure jumphost
+	ansible-playbook $(PLAYBOOKS_DIR)/configure_users.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-cronjob: check_hosts ## Add ubuntu users and configure jumphost
-	ansible-playbook $(PLAYBOOKS_DIR)/cron_add_configure_cronjob.yml \
+users-backup: check_hosts ## Backup users
+	ansible-playbook $(PLAYBOOKS_DIR)/backup_users.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+users-restore: check_hosts ## Restore users
+	ansible-playbook $(PLAYBOOKS_DIR)/restore_users.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+cronjobs: check_hosts ## Add ubuntu users and configure jumphost
+	ansible-playbook $(PLAYBOOKS_DIR)/create_cronjobs.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"

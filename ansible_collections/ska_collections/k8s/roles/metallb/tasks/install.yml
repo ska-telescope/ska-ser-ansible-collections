@@ -1,5 +1,4 @@
 ---
-
 - name: Install MetalLB Helm Chart
   kubernetes.core.helm:
     atomic: true
@@ -11,9 +10,9 @@
     name: metallb
     wait: true
     values:
-      loadBalancerClass: "{{ k8s_metallb_class }}"
+      loadBalancerClass: "{{ k8s_metallb_set_class | ternary(k8s_metallb_class, omit) }}"
 
 - name: Apply MetalLB config
   kubernetes.core.k8s:
     state: present
-    template: 'metallb-config.yaml.j2'
+    template: metallb-config.yaml.j2

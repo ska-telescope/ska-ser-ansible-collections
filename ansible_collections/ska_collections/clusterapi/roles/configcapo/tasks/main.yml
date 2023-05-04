@@ -25,7 +25,7 @@
   ansible.builtin.file:
     path: "{{ capi_config_dir }}"
     state: directory
-    mode: "0755"
+    mode: 0755
   become: true
 
 - name: Tidy up CAPO template
@@ -38,12 +38,8 @@
   ansible.builtin.get_url:
     url: "https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/download/{{ capi_capo_template_version }}/cluster-template.yaml"
     dest: "{{ capi_config_dir }}/{{ capi_capo_template_name }}"
-    mode: '0644'
+    mode: 0644
   become: true
-
-- name: Find the local running user
-  ansible.builtin.set_fact:
-    whoami: "{{ lookup('env', 'USER') }}"
 
 - name: Copy clusterapi CAPO template back
   ansible.builtin.slurp:
@@ -54,7 +50,7 @@
 - name: Output cluster template file  # noqa: template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ slurped_cluster_template.content | b64decode }}"
-    dest: "{{ playbook_dir }}/../../../../resources/clusterapi/kustomize/capobase/{{ capi_capo_template_name }}"
+    dest: "{{ capi_resources_dir }}/kustomize/capobase/{{ capi_capo_template_name }}"
     mode: 0644
   delegate_to: localhost
 

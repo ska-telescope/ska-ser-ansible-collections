@@ -3,11 +3,7 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-    calico_test_nodes:
-      - "minikube"
-    calico_ipv4pool_cidr: 10.244.0.0/16
     calico_ip_autodetection_interface: "ens.*,eth.*"
-    calico_test_pod_namespace: calico-test
   tasks:
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:
@@ -20,6 +16,7 @@
         name: "{{ item.name }}"
         wait: true
         wait_timeout: 300
+
       loop:
         - kind: Deployment
           namespace: calico-operator
@@ -40,93 +37,63 @@
           namespace: calico-system
           name: csi-node-driver
 
+    - name: Get cluster node names
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Node
+      register: node_info
+
+    - name: Set cluster node name list
+      ansible.builtin.set_fact:
+        kubernetes_nodes: "{{ node_info.resources | map(attribute='metadata.name') | list }}"
+
     - name: Check Calico Node(s) Status
       ansible.builtin.include_tasks:
         file: "utils/checkCalicoNodeStatus.yml"
-      loop: "{{ calico_test_nodes }}"
+      loop: "{{ kubernetes_nodes }}"
 
-    - name: Test the pod network
+    - name: Test the Pod network
       block:
-        - name: Create namespace "{{ calico_test_pod_namespace }}"
+        - name: Deploy a test pod
           kubernetes.core.k8s:
-            state: present
-            definition:
-              apiVersion: v1
-              kind: Namespace
-              metadata:
-                name: "{{ calico_test_pod_namespace }}"
-
-        - name: Create Nginx deployment
-          kubernetes.core.k8s:
-            state: present
-            definition:
-              apiVersion: apps/v1
-              kind: Deployment
-              metadata:
-                name: nginx
-                namespace: "{{ calico_test_pod_namespace }}"
-              spec:
-                replicas: 3
-                selector:
-                  matchLabels:
-                    app: nginx
-                template:
-                  metadata:
-                    labels:
-                      app: nginx
-                  spec:
-                    containers:
-                      - name: nginx
-                        image: nginx
-                        ports:
-                          - containerPort: 80
-        - name: Wait and Get Nginx pod IP addresses
-          kubernetes.core.k8s_info:
-            kind: Pod
-            namespace: "{{ calico_test_pod_namespace }}"
-            label_selectors: "app=nginx"
-            wait: true
-          register: nginx_pods
-
-        - name: Deploy a curl pod
-          kubernetes.core.k8s:
-            kind: Pod
             api_version: v1
+            kind: Pod
+            namespace: default
             wait: true
             definition:
               metadata:
-                name: curl-test
-                namespace: "{{ calico_test_pod_namespace }}"
+                name: calico-test
+                namespace: default
               spec:
                 containers:
                   - name: curl
                     image: curlimages/curl
                     command: ["sleep", "infinity"]
 
-        - name: Run curl command to each ngix pod
-          kubernetes.core.k8s_exec:
-            namespace: "{{ calico_test_pod_namespace }}"
-            pod: curl-test
-            command: "curl -sS http://{{ item }}"
-          loop: "{{ nginx_pods.resources | community.general.json_query('[*].status.podIP') }}"
-          register: command_status
-          ignore_errors: true
-
-        - name: Check command status
-          ansible.builtin.fail:
-            msg: "Something went wrong with the network: {{ command_status.results }}"
-          when: item != 0
-          loop: "{{ command_status.results | community.general.json_query('[*].rc') }}"
-      always:
-        - name: Delete namespace "{{ calico_test_pod_namespace }}"
-          kubernetes.core.k8s:
+        - name: Check test pod is running
+          kubernetes.core.k8s_info:
+            api_version: v1
+            kind: Pod
+            name: calico-test
+            namespace: default
             wait: true
-            state: absent
-            definition:
-              apiVersion: v1
-              kind: Namespace
-              metadata:
-                name: "{{ calico_test_pod_namespace }}"
+            wait_timeout: 120
+          register: pod_check
+          failed_when: (pod_check.resources) | length == 0
 
+        - name: Fail if POD doesn't have a valid IP provided by Calico
+          ansible.builtin.fail:
+            msg: "Pod does not have valid Pod IP"
+          when: not ("cni.projectcalico.org/podIP" in pod_check.resources[0].metadata.annotations and pod_check.resources[0].status.podIP)
+      always:
+        - name: Remove test pod
+          kubernetes.core.k8s:
+            state: absent
+            api_version: v1
+            kind: Pod
+            namespace: default
+            name: calico-test
+            delete_options:
+              propagationPolicy: "Foreground"
   environment:
-    KUBECONFIG: "{{ lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig) | mandatory }}"
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"

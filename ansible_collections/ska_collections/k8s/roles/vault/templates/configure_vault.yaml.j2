@@ -1,0 +1,59 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configure-vault-config
+  namespace: default
+data:
+  ca_cert: |
+    {{ k8s_vault_kube_ca_cert | indent(width=4) }}
+
+  configure-vault.sh: |
+    export VAULT_ADDR="{{ k8s_vault_injector_external_vault_addr }}"
+    vault login "{{ k8s_vault_login_token }}"
+    export K8S_CA_CERT="$(cat /tmp/data/ca_cert)"
+    vault auth enable --path={{ k8s_vault_cluster_name }} kubernetes
+    vault write auth/{{ k8s_vault_cluster_name }}/config \
+        token_reviewer_jwt="{{ k8s_vault_token_review_jwt }}" \
+        kubernetes_host="{{ k8s_vault_kube_host }}" \
+        kubernetes_ca_cert="$K8S_CA_CERT" \
+        issuer="{{ k8s_vault_k8s_issuer }}"
+    vault policy write {{ k8s_vault_cluster_name }}_policy - <<EOF
+    path "{{ k8s_vault_cluster_name }}/data/*" {
+        capabilities = ["read"]
+    }
+    EOF
+    vault write auth/{{ k8s_vault_cluster_name }}/role/kube-role \
+        bound_service_account_names=* \
+        bound_service_account_namespaces=* \
+        policies={{ k8s_vault_cluster_name }}_policy \
+        ttl=24h
+    vault secrets enable -version=2 -path={{ k8s_vault_cluster_name }} kv
+    vault kv put {{ k8s_vault_cluster_name }}/test-injection key=123
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: configure-vault
+  namespace: default
+spec:
+  template:
+    spec:
+      volumes:
+      - name: config-volume
+        configMap:
+          name: configure-vault-config
+          defaultMode: 0777
+      restartPolicy: Never
+      containers:
+      - image: hashicorp/vault
+        name: configure-vault
+        command: 
+          - sh
+        args:
+          - -c
+          - "/tmp/data/configure-vault.sh"
+        volumeMounts:
+          - name: config-volume
+            mountPath: /tmp/data

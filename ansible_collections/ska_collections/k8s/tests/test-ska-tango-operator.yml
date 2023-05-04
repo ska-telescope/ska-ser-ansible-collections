@@ -1,0 +1,30 @@
+- name: Test ska tango operator metrics
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+    k8s_operator_namespace: ska-tango-operator
+    nginx_ingress_lb_service_name: "ingress-nginx-controller-lb-{{ k8s_ingress_lb_suffix | default('default') }}"
+  environment:
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
+  tags:
+    - ska_tango_operator
+  tasks:
+    - name: Wait till nginx is created
+      kubernetes.core.k8s_info:
+        kind: Service
+        wait: true
+        name: "{{ nginx_ingress_lb_service_name }}"
+        namespace: ingress-nginx
+        wait_timeout: 120
+      register: ingress_nginx_controller
+      failed_when: (ingress_nginx_controller.resources) | length == 0
+
+    - name: Check ingress-nginx-controller
+      ansible.builtin.debug:
+        var: ingress_nginx_controller
+
+    - name: Test ska-tango-operator metrics
+      ansible.builtin.uri:
+        url: "http://{{ ingress_nginx_controller.resources[0].status.loadBalancer.ingress[0].ip }}:/{{ k8s_operator_namespace }}/metrics"
+        method: GET
+        status_code: [200]

@@ -1,21 +1,39 @@
 ---
 debug: false
 
-podman_deb_podman_version: "3.4.4+ds1-1ubuntu1"
-podman_deb_buildah_version: "1.23.1+ds1-2"
-podman_deb_skopeo_version: "1.4.1+ds1-1"
-nexus: "{{ _ | mandatory('`nexus` definition is mandatory') }}"
+nexus: null  # Optional to set mirrors
+nexus_docker_hosted_port: 9080
 nexus_docker_group_port: 9082
+nexus_central_proxy_port: 9084
+nexus_gitlab_proxy_port: 9085
 
-podman_deb_pkgs:
+podman_version: 3
+podman_v3_deb_pkgs:
   - "crun=0.17+dfsg-1.1"
   - "podman=3.4.4+ds1-1ubuntu1"
   - "buildah=1.23.1+ds1-2"
   - "skopeo=1.4.1+ds1-1"
 
-podman_registry_mirrors: []
+podman_v4_deb_pkgs:
+  - "crun=100:1.7-1"
+  - "podman=100:4.5.0-1"
+  - "buildah=100:1.30.0-1"
+  - "skopeo=100:1.12.0-1"
+
+podman_deb_pkgs: "{{ (podman_version == 3) | ternary(podman_v3_deb_pkgs, podman_v4_deb_pkgs) }}"
+
+# Default settings if `nexus` is set
+podman_default_docker_mirrors:
+  - "http://{{ nexus }}:{{ nexus_docker_group_port }}"
+podman_default_central_mirrors:
+  - "http://{{ nexus }}:{{ nexus_central_proxy_port }}"
+podman_default_gitlab_mirrors:
+  - "http://{{ nexus }}:{{ nexus_gitlab_proxy_port }}"
 
 podman_upstream_registries:
-  - docker.io
-  - artefact.skao.int
-  - registry.gitlab.com
+  - name: docker.io
+    mirrors: "{{ nexus | ternary(podman_default_docker_mirrors, []) }}"
+  - name: artefact.skao.int
+    mirrors: "{{ nexus | ternary(podman_default_central_mirrors, []) }}"
+  - name: registry.gitlab.com
+    mirrors: "{{ nexus | ternary(podman_default_gitlab_mirrors, []) }}"

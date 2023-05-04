@@ -1,0 +1,93 @@
+- name: Test rookio provided storage
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+    k8s_rook_namespace: rook-ceph
+  environment:
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
+  tasks:
+    - name: Check rook-ceph-operator is running
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Deployment
+        name: rook-ceph-operator
+        namespace: "{{ k8s_rook_namespace }}"
+        wait: true
+        wait_timeout: 60
+      register: rook_operator_check
+      failed_when: (rook_operator_check.resources) | length == 0
+
+    - name: Check CephCluster is connected
+      kubernetes.core.k8s_info:
+        api_version: ceph.rook.io/v1
+        kind: CephCluster
+        name: "{{ k8s_rook_namespace }}"
+        namespace: "{{ k8s_rook_namespace }}"
+        wait: true
+        wait_timeout: 60
+        wait_condition:
+          type: Connected
+
+    - name: Check nfss1 storage class exist
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: StorageClass
+        name: nfss1
+      register: nfss1_sc_check
+      failed_when: (nfss1_sc_check.resources) | length == 0
+
+    - name: Deploy read-write Pod with nfss1 volume
+      kubernetes.core.k8s:
+        state: present
+        template: 'resources/rookio.yml'
+
+    - name: Wait until Pod is running
+      kubernetes.core.k8s_info:
+        name: read-write-nfss1-test
+        namespace: default
+        kind: Pod
+        wait: true
+        wait_timeout: 60
+      register: wait_test_pod
+      failed_when: (wait_test_pod.resources) | length == 0
+
+    - name: Get logs
+      kubernetes.core.k8s_log:
+        name: read-write-nfss1-test
+        namespace: default
+        container: read-pv
+      register: log
+
+    - name: Print logs
+      ansible.builtin.debug:
+        var: log
+      when: debug
+
+    - name: Remove test pod
+      kubernetes.core.k8s:
+        state: absent
+        api_version: v1
+        kind: Pod
+        namespace: default
+        name: read-write-nfss1-test
+        delete_options:
+          propagationPolicy: "Foreground"
+
+    - name: Check storage is working
+      ansible.builtin.assert:
+        that:
+          - "'something' in log.log"
+        fail_msg: "Read write failure using host path volume"
+        success_msg: "Test complete"
+
+    - name: Remove pvc
+      kubernetes.core.k8s:
+        state: absent
+        api_version: v1
+        kind: PersistentVolumeClaim
+        namespace: default
+        name: read-write-nfss1-pvc
+        delete_options:
+          propagationPolicy: "Foreground"
+  tags:
+    - rookio

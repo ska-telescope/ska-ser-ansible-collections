@@ -12,11 +12,11 @@ events {
 }
 
 stream {
-{% if reverseproxy_kubernetes_haproxy_server is not none %}
+{% if reverseproxy_kubernetes_api_server is not none %}
     upstream kubernetes_api {
         # Our web server, listening for SSL traffic
         # Note the web server will expect traffic
-        server {{ hostvars[reverseproxy_kubernetes_haproxy_server].ip }}:{{ kubernetes_haproxy_api_port }};
+        server {{ hostvars[reverseproxy_kubernetes_api_server].ip | default(reverseproxy_kubernetes_api_server) }}:{{ kubernetes_haproxy_api_port }};
     }
 
     server {
@@ -27,7 +27,7 @@ stream {
 
 {% if reverseproxy_thanos_sidecar_server is not none %}
     upstream thanos_sidecar {
-        server {{ hostvars[reverseproxy_thanos_sidecar_server].ip }}:{{ thanos_sidecar_port }} max_fails=3 fail_timeout=10s;
+        server {{ hostvars[reverseproxy_thanos_sidecar_server].ip | default(reverseproxy_thanos_sidecar_server) }}:{{ thanos_sidecar_port }} max_fails=3 fail_timeout=10s;
     }
 
     server {
@@ -196,7 +196,7 @@ http {
           proxy_ssl_session_reuse off;
 
           # Fix the “It appears that your reverse proxy set up is broken" error.
-          proxy_pass          http://{{ hostvars[reverseproxy_kibana_server].ip }}:{{ kibana_port }}{{ kibana_basepath }}/;
+          proxy_pass          http://{{ hostvars[reverseproxy_kibana_server].ip | default(reverseproxy_kibana_server) }}:{{ kibana_port }}{{ kibana_basepath }}/;
           proxy_http_version 1.1;
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection "upgrade";
@@ -268,7 +268,7 @@ http {
 
           # Fix the “It appears that your reverse proxy set up is broken" error.
           rewrite  ^/grafana/(.*)  /$1 break;
-          proxy_pass          http://{{ hostvars[reverseproxy_grafana_server].ip }}:{{ grafana_port }}/;
+          proxy_pass          http://{{ hostvars[reverseproxy_grafana_server].ip | default(reverseproxy_grafana_server) }}:{{ grafana_port }}/;
           proxy_http_version 1.1;
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection "upgrade";
@@ -340,7 +340,7 @@ http {
 
           # Fix the “It appears that your reverse proxy set up is broken" error.
           rewrite  ^/prometheus/(.*)  /$1 break;
-          proxy_pass          https://{{ hostvars[reverseproxy_prometheus_server].ip }}:{{ prometheus_port }}/;
+          proxy_pass          https://{{ hostvars[reverseproxy_prometheus_server].ip | default(reverseproxy_prometheus_server) }}:{{ prometheus_port }}/;
           proxy_http_version 1.1;
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection "upgrade";
@@ -412,7 +412,7 @@ http {
 
           # Fix the “It appears that your reverse proxy set up is broken" error.
           rewrite  ^/alertmanager/(.*)  /$1 break;
-          proxy_pass          http://{{ hostvars[reverseproxy_alertmanager_server].ip }}:{{ alertmanager_port }}/;
+          proxy_pass          http://{{ hostvars[reverseproxy_alertmanager_server].ip | default(reverseproxy_alertmanager_server) }}:{{ alertmanager_port }}/;
           proxy_http_version 1.1;
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection "upgrade";
@@ -424,7 +424,7 @@ http {
         }
 {% endif %}
 
-{% if reverseproxy_kubernetes_haproxy_server is not none %}
+{% if reverseproxy_kubernetes_ingress_server is not none %}
         ## default proxy everything to k8s Ingress
         location / {
 {% if reverseproxy_oauth2proxy_enabled %}
@@ -478,7 +478,7 @@ http {
           proxy_ssl_session_reuse off;
 
           # Fix the “It appears that your reverse proxy set up is broken" error.
-          proxy_pass          http://{{ hostvars[reverseproxy_kubernetes_haproxy_server].ip }}:{{ kubernetes_haproxy_ingress_port }};
+          proxy_pass          http://{{ hostvars[reverseproxy_kubernetes_ingress_server].ip | default(reverseproxy_kubernetes_ingress_server) }}:{{ kubernetes_haproxy_ingress_port }};
           proxy_http_version 1.1;
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection "upgrade";
@@ -539,7 +539,7 @@ http {
         # To disable buffering
         proxy_buffering off;
 
-{% if reverseproxy_kubernetes_haproxy_server is not none %}
+{% if reverseproxy_kubernetes_minio_server is not none %}
         ## default proxy everything to k8s Ingress
         location / {
 
@@ -553,7 +553,7 @@ http {
           proxy_ssl_session_reuse off;
 
           # Fix the “It appears that your reverse proxy set up is broken" error.
-          proxy_pass          http://{{ hostvars[reverseproxy_kubernetes_haproxy_server].ip }}:{{ kubernetes_haproxy_minio_port }};
+          proxy_pass          http://{{ hostvars[reverseproxy_kubernetes_minio_server].ip | default(reverseproxy_kubernetes_minio_server) }}:{{ kubernetes_haproxy_minio_port }};
           proxy_http_version 1.1;
           proxy_set_header Connection "";
           chunked_transfer_encoding off;

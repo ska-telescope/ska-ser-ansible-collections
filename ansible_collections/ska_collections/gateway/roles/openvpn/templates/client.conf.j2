@@ -10,7 +10,7 @@
 # The hostname/IP and port of the server.
 client
 dev tun
-remote {{ fixed_ip }} 1194
+remote {{ openvpn_server_ip }} 1194
 proto udp
 resolv-retry infinite
 nobind

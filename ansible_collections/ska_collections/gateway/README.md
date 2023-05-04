@@ -11,7 +11,7 @@ Tested with the current Ansible 6.5.x releases.
 | Name | Description | Version | OS Requirements | Dependencies |
 | ---- | ----------- | ------- | --- | ---|
 | [gateway.cron](./roles/cron) | Install and configure cronjobs | latest | Ubuntu 18+ (LTS) | 
-| [gateway.jumphost](./roles/cron) | Configure User Accounts and ssh keys | latest | Ubuntu 18+ (LTS) | 
+| [gateway.users](./roles/users) | Configure User Accounts and ssh keys | latest | Ubuntu 18+ (LTS) | 
 | [gateway.openvpn](./roles/openvpn) | Install and configure openvpn | 2.4.4 (Bionic), 2.4.7 (Focal), 2.6.0 (Jammy) | Ubuntu 18+ (LTS) | -
 | [reverseproxy.reverseproxy](./roles/reverseproxy) | Install Reverse Proxy | | Ubuntu 18+ (LTS) | |
 | [dns](./roles/dns) | Install and configure dnsmasq | 2.79 (Bionic), 2.80 (Focal), 2.86 (Jammy) | Ubuntu 18+ (LTS) | -
@@ -36,8 +36,8 @@ Installation playbooks for each engine can be found in the [playbooks/](./playbo
 
 | Name | Description |
 | ---- | ----------- |
-| [cron_add_configure_cronjob.yml](./playbooks/add_configure_cronjob.yml) | Install and Configure Cron |
-| [jumphost_configure_user_access.yml](./playbooks/configure_user_access.yml) | Configure User Account access to gateway |
+| [create_cronjobs.yml](./playbooks/create_cronjobs.yml) | Install and Configure Cron |
+| [configure_users.yml](./playbooks/configure_users.yml) | Configure User Account access to gateway |
 | [openvpn_server.yml](./playbooks/openvpn_server.yml) | Deploy Openvpn Server |
 | [openvpn_add_client.yml](./playbooks/openvpn_add_client.yml) | Adds new client to openvpn server |
 | [openvpn_remove_client.yml](./playbooks/openvpn_remove_client.yml) | Configure User Account access to gateway |

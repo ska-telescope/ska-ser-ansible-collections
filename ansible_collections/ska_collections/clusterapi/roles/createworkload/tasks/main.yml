@@ -10,15 +10,7 @@
 # https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/openstack-cloud-controller-manager/using-openstack-cloud-controller-manager.md#global
 
 - name: Include the OS Config
-  ansible.builtin.include_tasks: os_config.yml
-
-- name: Encode Clusterapi cloud config and store as fact
-  ansible.builtin.set_fact:
-    capi_base64_cloud_config: "{{ slurped_cloud_config.content }}"
-
-- name: Show capi_base64_cloud_config
-  ansible.builtin.debug:
-    var: capi_base64_cloud_config
+  ansible.builtin.include_tasks: openstack-config.yml
 
 - name: Check if kubectl is installed locally
   block:
@@ -41,29 +33,16 @@
 
 - name: Generate kustomized template
   ansible.builtin.shell: |
-    cd {{ playbook_dir }}/../../../../resources/clusterapi/;
     kubectl kustomize ./kustomize/overlay/{{ capi_kustomize_overlay }}/ > /tmp/{{ capi_cluster }}-cluster-template.yaml
   changed_when: false
   delegate_to: localhost
+  args:
+    chdir: "{{ capi_resources_dir }}"
 
 - name: Load CAPO Cluster Template
   ansible.builtin.slurp:
     src: "/tmp/{{ capi_cluster }}-cluster-template.yaml"
   register: slurped_cluster_template
-  delegate_to: localhost
-
-- name: Output cluster template file to server  # noqa: template-instead-of-copy
-  ansible.builtin.copy:
-    content: "{{ slurped_cluster_template.content | b64decode }}"
-    dest: "{{ capi_config_dir }}/{{ capi_cluster }}-cluster-template.yaml"
-    mode: 0644
-  become: true
-
-- name: Output cluster template file to local  # noqa: template-instead-of-copy
-  ansible.builtin.copy:
-    content: "{{ slurped_cluster_template.content | b64decode }}"
-    dest: "{{ playbook_dir }}/../../../../resources/clusterapi/templates/{{ capi_cluster }}-cluster-template.yaml"
-    mode: 0644
   delegate_to: localhost
 
 - name: Create temporary template directory
@@ -72,88 +51,230 @@
     suffix: capo-template
   register: capi_capo_template_dir
 
-
-# capo-cluster-template: kustomize/base/cluster-template.orig.yaml capo-vars ## generate the cluster manifest template
-# 	kubectl kustomize ./kustomize/overlay/$(KUSTOMIZE_OVERLAY)/ > $(THIS_BASE)/$(CAPO_CLUSTER)-template.yaml
-
 - name: Setup environment
   ansible.builtin.set_fact:
     capi_cluster_environment:
       COLLECTIONS_BRANCH: "{{ capi_collections_branch }}"
-      OCI_MIRROR_IP: "{{ capi_oci_mirror_ip }}"
+      OCI_MIRROR_IP: "{{ nexus }}"
       KUBE_NAMESPACE: "{{ capi_kube_namespace }}"
       OPENSTACK_FAILURE_DOMAIN: "{{ capi_capo_openstack_failure_domain }}"
       OPENSTACK_IMAGE_NAME: "{{ capi_capo_openstack_image_name }}"
       OPENSTACK_CLOUD: "{{ capi_capo_openstack_cloud }}"
       OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR: "{{ capi_capo_controlplane_machine_flavour }}"
-      OPENSTACK_DNS_NAMESERVERS: "{{ capi_capo_openstack_dns_servers }}"
-      OPENSTACK_NODE_MACHINE_FLAVOR: "{{ capi_capo_node_machine_flavour }}"
+      OPENSTACK_DNS_NAMESERVERS: "{{ [capi_capo_openstack_dns_servers] | flatten }}"
       OPENSTACK_SSH_KEY_NAME: "{{ capi_capo_openstack_ssh_key_name }}"
-      CAPO_CLOUD: "{{ capi_capo_openstack_cloud }}"
       OPENSTACK_EXTERNAL_NETWORK_ID: "{{ capi_capo_openstack_external_network_id }}"
-      OPENSTACK_CLOUD_YAML_B64: "{{ capi_base64_capo_ostack_cloud_yaml }}"
-      OPENSTACK_CLOUD_CACERT_B64: "{{ capi_openstack_cloud_cacert_b64 }}"
-      CLUSTER_API_OPENSTACK_INSTANCE_CREATE_TIMEOUT: "{{ capi_capo_openstack_instance_create_timeout }}"
-      BUNDLE_LOOKUP_TAG: "{{ capi_k8s_version }}"
+      OPENSTACK_CLOUD_YAML_B64: "{{ capi_capo_ostack_cloud_yaml_b64 }}"
+      OPENSTACK_CLOUD_CACERT_B64: "{{ capi_capo_cacert_b64 }}"
       K8S_VERSION: "{{ capi_k8s_version }}"
+      OPENSTACK_MACHINE_CREATION_TIMEOUT: "{{ capi_capo_openstack_instance_create_timeout }}"
+      OPENSTACK_NETWORK_NAME: "{{ capi_capo_os_network_name }}"
+      OPENSTACK_SUBNET_NAME: "{{ capi_capo_os_subnet_name }}"
+      OPENSTACK_ENABLE_APISERVER_LB: "{{ capi_capo_openstack_enable_apiserver_lb | bool }}"
+      OPENSTACK_DISABLE_APISERVER_FLOATING_IP: "{{ not (capi_capo_openstack_enable_apiserver_floating_ip | bool) }}"
+      OPENSTACK_DISABLE_PORT_SECURITY: "{{ capi_capo_openstack_disable_port_security | bool }}"
+      OPENSTACK_MANAGED_SECURITY_GROUPS: "{{ capi_capo_openstack_managed_security_groups | bool }}"
+      OPENSTACK_MANAGED_NETWORK_NODE_CIDR: "{{ capi_capo_openstack_managed_network_cidr | default(omit) }}"
+      OPENSTACK_SECURITY_GROUPS: "{{ capi_capo_openstack_security_groups | default([]) }}"
+      CONTROL_PLANE_MACHINE_COUNT: "{{ capi_controlplane_count }}"
+      DNS_IMAGE_NAME: "{{ capi_dns_image_name }}"
+      DNS_IMAGE_TAG: "{{ capi_dns_image_tag }}"
+      POD_CIDR_BLOCK: "{{ capi_cidr_block }}"
       CALICO_VERSION: "{{ capi_calico_version }}"
-      NETWORK_NAME: "{{ capi_capo_os_network_name }}"
-      SUBNET_NAME: "{{ capi_capo_os_subnet_name }}"
-      CIDR_BLOCK: "{{ capi_cidr_block }}"
       CALICO_IPV4POOL_CIDR: "{{ capi_cidr_block }}"
       IP_AUTODETECTION_METHOD: "{{ capi_calico_ip_autodetection_method }}"
       CALICO_IPV4POOL_IPIP: "{{ capi_calico_ipv4pool_ipip }}"
-      HELM_VERSION: "{{ capi_helm_version }}"
-      CONTROL_PLANE_COUNT: "{{ capi_controlplane_count }}"
-      WORKER_COUNT: "{{ capi_worker_count }}"
       RUN_KUBELET_INSTALL: "{% if capi_capo_run_kubelet_install %}yes{% else %}no{% endif %}"
+      CLOUDPROVIDER_ENABLE_SERVICE_CONTROLLER: "{{ capi_capo_openstack_enable_service_lbs | bool | lower }}"
 
-- name: Generate Cluster Instance
+- name: Setup workers environment variables for templating
+  ansible.builtin.set_fact:
+    capi_cluster_workers_environment: >
+      {{ (capi_cluster_workers_environment | default({})) | combine(
+        {
+          (["OPENSTACK_WORKER", (idx | string), "NAME"] | join('_')): item.name,
+          (["OPENSTACK_WORKER", (idx | string), "FLAVOUR"] | join('_')): (item.flavour | default(capi_capo_node_machine_flavour)),
+          (["OPENSTACK_WORKER", (idx | string), "SSH_KEY"] | join('_')): (item.ssh_key | default(capi_capo_openstack_ssh_key_name)),
+          (["OPENSTACK_WORKER", (idx | string), "COUNT"] | join('_')): (item.count | default(capi_worker_count)),
+          (["OPENSTACK_WORKER", (idx | string), "LABELS"] | join('_')): ((item.labels | default(capi_worker_labels)) | join(',')),
+          (["WORKER", (idx | string), "NVIDIA_ENABLED"] | join('_')): ((item.nvidia_enabled | default(false)) | bool | lower),
+          (["WORKER", (idx | string), "NVIDIA_DRIVER_VERSION"] | join('_')): (item.nvidia_driver_version | default(capi_nvidia_driver_version)),
+        }
+      ) }}
+  with_items: "{{ capi_worker_groups }}"
+  loop_control:
+    label: "{{ item.name }}"
+    index_var: idx
+
+- name: Show workers
+  ansible.builtin.debug:
+    var: capi_cluster_workers_environment
+  when: debug
+
+- name: Split kustomized manifest into multiple documents
+  ansible.builtin.set_fact:
+    resource_manifests: "{{ slurped_cluster_template.content | b64decode | split('---') | map('trim') | select | list }}"
+
+- name: Strip worker component resources
+  ansible.builtin.set_fact:
+    cluster_template_manifests: "{{ (cluster_template_manifests | default([])) + [item] }}"
+  when: "not 'capi.skao.int/component: worker' in item and (item | length) > 1"
+  with_items: "{{ resource_manifests }}"
+  loop_control:
+    label: "{{ item.split('\n') | first }}"
+
+- name: Get worker component resources
+  ansible.builtin.set_fact:
+    worker_base_template_manifests: "{{ (worker_base_template_manifests | default([])) + [item] }}"
+  when: "'capi.skao.int/component: worker' in item and (item | length) > 1"
+  with_items: "{{ resource_manifests }}"
+  loop_control:
+    label: "{{ item.split('\n') | first }}"
+
+- name: Add worker component resources
+  ansible.builtin.set_fact:
+    cluster_template_manifests: "{{ cluster_template_manifests +
+      [ \
+        (worker_base_template_manifests | join('\n---\n')) | \
+        regex_replace('OPENSTACK_WORKER_NAME', [\"OPENSTACK_WORKER\", (idx | string), \"NAME\"] | join('_')) | \
+        regex_replace('OPENSTACK_WORKER_FLAVOUR', [\"OPENSTACK_WORKER\", (idx | string), \"FLAVOUR\"] | join('_')) | \
+        regex_replace('OPENSTACK_WORKER_SSH_KEY', [\"OPENSTACK_WORKER\", (idx | string), \"SSH_KEY\"] | join('_')) | \
+        regex_replace('OPENSTACK_WORKER_COUNT', [\"OPENSTACK_WORKER\", (idx | string), \"COUNT\"] | join('_')) | \
+        regex_replace('OPENSTACK_WORKER_LABELS', [\"OPENSTACK_WORKER\", (idx | string), \"LABELS\"] | join('_')) | \
+        regex_replace('NVIDIA_ENABLED', [\"WORKER\", (idx | string), \"NVIDIA_ENABLED\"] | join('_')) | \
+        regex_replace('NVIDIA_DRIVER_VERSION', [\"WORKER\", (idx | string), \"NVIDIA_DRIVER_VERSION\"] | join('_')) \
+      ] \
+    }}"
+  with_items: "{{ capi_worker_groups }}"
+  loop_control:
+    label: "{{ item.name }}"
+    index_var: idx
+
+- name: Output cluster template file to server  # noqa: template-instead-of-copy
+  ansible.builtin.copy:
+    content: "{{ cluster_template_manifests | join('\n---\n') }}"
+    dest: "{{ capi_config_dir }}/{{ capi_cluster }}-cluster-template.yaml"
+    mode: 0644
+  become: true
+
+- name: Output cluster template file to local  # noqa: template-instead-of-copy
+  ansible.builtin.copy:
+    content: "{{ cluster_template_manifests | join('\n---\n') }}"
+    dest: "{{ capi_resources_dir }}/templates/{{ capi_cluster }}-cluster-template.yaml"
+    mode: 0644
+  delegate_to: localhost
+
+- name: Generate cluster
   ansible.builtin.shell: |
     clusterctl generate cluster {{ capi_cluster }} \
       --target-namespace {{ capi_kube_namespace }} \
-      --kubernetes-version {{ capi_k8s_version }} \
-      --control-plane-machine-count {{ capi_controlplane_count }} \
-      --worker-machine-count {{ capi_worker_count }} \
+      --kubernetes-version {{ capi_k8s_version_full }} \
       --from {{ capi_config_dir }}/{{ capi_cluster }}-cluster-template.yaml > {{ capi_capo_template_dir.path }}/{{ capi_cluster }}.yaml;
-  environment: "{{ capi_cluster_environment | combine(capi_cluster_extra_vars) }}"
+  environment: "{{ capi_cluster_environment | combine(capi_cluster_workers_environment) | combine(capi_cluster_extra_vars) }}"
   changed_when: false
   register: capi_capo_template_result
 
 - name: Show capi_capo_template_result
   ansible.builtin.debug:
     var: capi_capo_template_result
+  when: debug
 
-- name: Slurp CAPO Cluster instance manifest
+- name: Slurp CAPO cluster manifest
   ansible.builtin.slurp:
     src: "{{ capi_capo_template_dir.path }}/{{ capi_cluster }}.yaml"
   register: slurped_cluster_instance_manifest
 
-- name: Unpack CAPO Cluster manifest
+- name: Unpack CAPO cluster manifest
   ansible.builtin.set_fact:
     capi_cluster_manifest: "{{ slurped_cluster_instance_manifest.content | b64decode }}"
 
 - name: Remove local manifest copy ./resources/clusterapi/manifests/*-cluster-manifest.yaml
   ansible.builtin.file:
-    path: "{{ playbook_dir }}/../../../../resources/clusterapi/manifests/{{ capi_cluster }}-cluster-manifest.yaml"
+    path: "{{ capi_resources_dir }}/manifests/{{ capi_cluster }}-cluster-manifest.yaml"
     state: absent
   delegate_to: localhost
 
-- name: Output cluster instance manifest file  # noqa: template-instead-of-copy
+- name: Check if a previous manifest exists
+  ansible.builtin.stat:
+    path: "{{ capi_resources_dir }}/manifests/{{ capi_cluster }}-cluster-manifest.yaml.applied"
+  register: previous_cluster_manifest
+  delegate_to: localhost
+
+- name: Output cluster manifest file  # noqa: template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ capi_cluster_manifest }}"
-    dest: "{{ playbook_dir }}/../../../../resources/clusterapi/manifests/{{ capi_cluster }}-cluster-manifest.yaml"
+    dest: "{{ capi_resources_dir }}/manifests/{{ capi_cluster }}-cluster-manifest.yaml"
     mode: 0644
   delegate_to: localhost
 
-- name: Apply Cluster Template from remote clusterapi server
-  when: cluster_apply
+- name: Apply cluster manifest
+  when: capi_apply_manifest | bool
   block:
+    - name: Read previously applied manifest
+      ansible.builtin.set_fact:
+        capi_previous_cluster_manifest: "{{ lookup('ansible.builtin.file', previous_cluster_manifest.stat.path) }}"
+      when: previous_cluster_manifest.stat.exists
+
+    - name: Show manifest differences
+      ansible.utils.fact_diff:
+        before: "{{ capi_previous_cluster_manifest }}"
+        after: "{{ capi_cluster_manifest }}"
+      when: previous_cluster_manifest.stat.exists
+
+    - name: Validate manifest changes
+      ansible.builtin.pause:
+        prompt: "Do you want to apply this manifest? [yes/no]"
+        echo: true
+      register: validate_manifest_apply
+      when: previous_cluster_manifest.stat.exists and capi_apply_manifest_review_diff
+
+    - name: Abort manifest changes before apply
+      ansible.builtin.fail:
+        msg: "Aborting manifest apply. To really do it, say 'yes' on the prompt"
+      when: previous_cluster_manifest.stat.exists and capi_apply_manifest_review_diff and validate_manifest_apply.user_input != 'yes'
+
     - name: Apply CAPO Cluster manifest
       kubernetes.core.k8s:
         state: present
         apply: true
         src: "{{ capi_capo_template_dir.path }}/{{ capi_cluster }}.yaml"
+
+    - name: Output cluster manifest file  # noqa: template-instead-of-copy
+      ansible.builtin.copy:
+        content: "{{ capi_cluster_manifest }}"
+        dest: "{{ capi_resources_dir }}/manifests/{{ capi_cluster }}-cluster-manifest.yaml.applied"
+        mode: 0644
+      delegate_to: localhost
+
+    - name: Wait for workload cluster to be ready
+      when: capi_apply_wait | bool
+      block:
+        - name: Wait for Cluster
+          kubernetes.core.k8s_info:
+            kind: Cluster
+            api_version: cluster.x-k8s.io/v1beta1
+            namespace: "{{ capi_kube_namespace }}"
+            name: "{{ capi_cluster }}"
+            wait: true
+            wait_timeout: "{{ capi_capo_openstack_instance_create_timeout }}"
+            wait_condition:
+              type: Ready
+
+        - name: Get workload cluster kubeconfig
+          ansible.builtin.import_role:
+            name: ska_collections.clusterapi.kubeconfig
+
+        - name: Wait MachineDeployment
+          kubernetes.core.k8s_info:
+            kind: MachineDeployment
+            api_version: cluster.x-k8s.io/v1beta1
+            namespace: "{{ capi_kube_namespace }}"
+            label_selectors:
+              - "cluster.x-k8s.io/cluster-name = {{ capi_cluster }}"
+            wait: true
+            wait_timeout: "{{ capi_capo_openstack_instance_create_timeout }}"
+            wait_condition:
+              type: Ready
 
 - name: Remove the temp template directory
   ansible.builtin.file:

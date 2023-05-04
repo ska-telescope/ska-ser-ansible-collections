@@ -1,0 +1,16 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Create the workload cluster
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  pre_tasks:
+    - name: Check workload cluster
+      ansible.builtin.include_role:
+        name: ska_collections.clusterapi.createworkload
+        tasks_from: check-configs.yml
+        public: true
+  roles:
+    - createworkload
+  environment:
+    KUBECONFIG: "{{ capi_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default=k8s_kubeconfig)) }}"

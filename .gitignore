@@ -10,9 +10,10 @@ ansible-thoteam.nexus3-oss/
 **/tests/e2e/inventory.yml
 ansible_collections/ska_collections/monitoring/roles/prometheus/files/*.json
 ansible_collections/ska_collections/clusterapi/playbooks/bootstrap*
-resources/clusterapi/manifests/*.yaml
-resources/clusterapi/templates/*.yaml
+resources/clusterapi/manifests/*.yaml*
+resources/clusterapi/templates/*.yaml*
 ansible_collections/accelize.xilinx_xrt/
 ansible_collections/haggaie.mlnx_ofed/
 ansible_collections/nvidia.nvidia_driver/
-
+ansible_collections/ska_collections/gitlab_runner/roles/k8s/files/runner_manifest.yaml
+ansible_collections/ska_collections/gitlab_runner/roles/k8s/files/runner-metrics.yaml
