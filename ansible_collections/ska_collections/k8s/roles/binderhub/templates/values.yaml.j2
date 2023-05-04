@@ -98,15 +98,15 @@ jupyterhub:
         oauth_no_confirm: true
         oauth_redirect_uri: "{{ k8s_binderhub_callback_url }}"
         oauth_client_id: service-binderhub
-        admin: true
-        display: false
 {% endif %}
     loadRoles:
       user:
         scopes:
           - self
           - "access:services"
-
+          - "admin:servers"
+          - "delete:servers"
+    
     resources:
       requests:
         cpu: 100m     # 100m = 0.1 CPU
@@ -120,7 +120,9 @@ jupyterhub:
   singleuser:
     # start jupyterlab server *if available*
     # fallback on jupyter-notebook
-    
+    cmd:
+      - jupyterhub-singleuser
+
     memory:
       limit: 2G
       guarantee: 2G
