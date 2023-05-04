@@ -8,7 +8,7 @@ k8s_metallb_set_class: false
 k8s_metallb_class: metallb
 
 k8s_metallb_tolerations:
-- effect: NoSchedule
-  operator: Exists
-- effect: NoExecute
-  operator: Exists
+  - effect: NoSchedule
+    operator: Exists
+  - effect: NoExecute
+    operator: Exists
