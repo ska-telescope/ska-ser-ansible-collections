@@ -1,5 +1,5 @@
 ---
-- name: Add taints to Kubernetes nodes
+- name: Add taints to Kubernetes nodes  # noqa: args[module]
   kubernetes.core.k8s_taint:
     name: "{{ inventory_hostname }}"
     state: present
