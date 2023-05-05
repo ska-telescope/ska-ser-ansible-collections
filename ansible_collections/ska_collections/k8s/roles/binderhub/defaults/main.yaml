@@ -1,7 +1,7 @@
-k8s_binderhub_singleuser: "false"
+k8s_binderhub_singleuser: false
 k8s_binderhub_namespace: binderhub
-k8s_binderhub_helm_chart_version: "1.0.0-0.dev.git.3098.h9e2e544"
-k8s_binderhub_jupyterhub_image_version: "2.0.0"
+k8s_binderhub_helm_chart_version: "1.0.0-0.dev.git.3098.h9e2e544" # This chart won't be supported in future
+k8s_binderhub_jupyterhub_image_version: "2.0.1-0.dev.git.6105.hb969fa50" # default coming with the binderhub chart is 2.0.0 but it doesn't work with CORS
 
 # k8s_binderhub_image:
 k8s_binderhub_transport: http # only using IP address currently
