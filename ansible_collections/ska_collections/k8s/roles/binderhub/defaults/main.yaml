@@ -1,4 +1,4 @@
-k8s_binderhub_singleuser: false
+k8s_binderhub_singleuser: "false"
 k8s_binderhub_namespace: binderhub
 k8s_binderhub_helm_chart_version: "1.0.0-0.dev.git.3098.h9e2e544"
 # k8s_binderhub_image:
@@ -8,12 +8,13 @@ k8s_binderhub_oci_registry_host: "{{ nexus }}:9080"
 k8s_binderhub_oci_registry_host_full_url: http://{{ k8s_binderhub_oci_registry_host }}
 k8s_binderhub_oci_registry_username: publisher
 k8s_binderhub_oci_registry_password: "{{ lookup('ansible.builtin.env', 'K8S_BINDERHUB_OCI_REGISTRY_PASSWORD', default=secrets['k8s_binderhub_oci_registry_password']) | mandatory }}"
-
 k8s_binderhub_jupyterhub_callback_url: "https://{{ k8s_external_dns_entry }}/{{ k8s_binderhub_namespace }}/jupyterhub/hub/oauth_callback"
 k8s_binderhub_jupyterhub_named_server_limit_per_user: 5
 k8s_external_dns_entry: sdhp.stfc.skao.int
 k8s_dns_entry: sdhp.skao.stfc
 
-k8s_binderhub_azuread_client_id: "{{ lookup('ansible.builtin.env', 'AZUREAD_CLIENT_ID', default=secrets['azuread_client_id']) | mandatory }}"
-k8s_binderhub_azuread_client_secret: "{{ lookup('ansible.builtin.env', 'AZUREAD_CLIENT_SECRET', default=secrets['azuread_client_secret']) | mandatory }}"
-k8s_binderhub_azuread_tenant_id: "{{ lookup('ansible.builtin.env', 'AZUREAD_TENANT_ID', default=secrets['azuread_tenant_id']) | mandatory }}"
+k8s_binderhub_azuread_client_id: "{{ lookup('ansible.builtin.env', 'AZUREAD_CLIENT_ID', default=secrets['azuread_client_id']) }}"
+k8s_binderhub_azuread_client_secret: "{{ lookup('ansible.builtin.env', 'AZUREAD_CLIENT_SECRET', default=secrets['azuread_client_secret']) }}"
+k8s_binderhub_gitlab_client_id: "{{ lookup('ansible.builtin.env', 'GITLAB_CLIENT_ID', default=secrets['gitlab_client_id']) }}"
+k8s_binderhub_gitlab_client_secret: "{{ lookup('ansible.builtin.env', 'GITLAB_CLIENT_SECRET', default=secrets['gitlab_client_secret']) }}"
+k8s_binderhub_azuread_tenant_id: "{{ lookup('ansible.builtin.env', 'AZUREAD_TENANT_ID', default=secrets['azuread_tenant_id']) }}"
