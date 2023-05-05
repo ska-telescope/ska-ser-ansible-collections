@@ -15,6 +15,4 @@ k8s_dns_entry: sdhp.skao.stfc
 
 k8s_binderhub_azuread_client_id: "{{ lookup('ansible.builtin.env', 'AZUREAD_CLIENT_ID', default=secrets['azuread_client_id']) }}"
 k8s_binderhub_azuread_client_secret: "{{ lookup('ansible.builtin.env', 'AZUREAD_CLIENT_SECRET', default=secrets['azuread_client_secret']) }}"
-k8s_binderhub_gitlab_client_id: "{{ lookup('ansible.builtin.env', 'GITLAB_CLIENT_ID', default=secrets['gitlab_client_id']) }}"
-k8s_binderhub_gitlab_client_secret: "{{ lookup('ansible.builtin.env', 'GITLAB_CLIENT_SECRET', default=secrets['gitlab_client_secret']) }}"
 k8s_binderhub_azuread_tenant_id: "{{ lookup('ansible.builtin.env', 'AZUREAD_TENANT_ID', default=secrets['azuread_tenant_id']) }}"
