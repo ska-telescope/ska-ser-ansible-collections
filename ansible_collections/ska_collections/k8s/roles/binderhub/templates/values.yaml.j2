@@ -70,6 +70,8 @@ jupyterhub:
     enabled: true
     users: true # cull authenticated users too
   hub:
+    image:
+      tag: {{ k8s_binderhub_jupyterhub_image_version }}
     redirectToServer: false
     baseUrl: "/{{ k8s_binderhub_namespace }}/jupyterhub"
 {% if k8s_binderhub_singleuser %}
@@ -81,14 +83,17 @@ jupyterhub:
     db:
       pvc:
         storageClassName: nfss1
-
     config:
 {% if k8s_binderhub_singleuser %}
       JupyterHub:
         authenticator_class: jupyterhub.auth.DummyAuthenticator
       BinderSpawner:
+        auth_enabled: false
+        cors_allow_origin: "*"
 {% else %}
       BinderSpawner:
+        auth_enabled: true
+        cors_allow_origin: "*"
       JupyterHub:
         authenticator_class: azuread
       AzureAdOAuthenticator:
