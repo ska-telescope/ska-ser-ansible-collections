@@ -130,6 +130,22 @@ jupyterhub:
         scopes:
           - self
           - "access:services"
+{% if k8s_binderhub_singleuser %}
+          - "access:servers"
+
+    extraConfig:
+      binder: |
+        from kubespawner import KubeSpawner
+
+        class BinderSpawner(KubeSpawner):
+          def start(self):
+            if 'image' in self.user_options:
+              # binder service sets the image spec via user options
+              self.image = self.user_options['image']
+            return super().start()
+        c.JupyterHub.spawner_class = BinderSpawner
+{% endif %}
+
     resources:
       requests:
         cpu: 100m     # 100m = 0.1 CPU

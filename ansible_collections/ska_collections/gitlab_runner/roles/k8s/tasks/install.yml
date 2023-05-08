@@ -1,5 +1,14 @@
 ---
 
+- name: "Create namespace {{ gitlab_runner_k8s_namespace }}"
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ gitlab_runner_k8s_namespace }}"
+
 - name: Template secrets
   ansible.builtin.template:
     src: "templates/gitlab-runner-k8s-secrets.yaml.j2"

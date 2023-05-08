@@ -18,8 +18,8 @@
         create_namespace: true
         values_files: "/tmp/binderhub.values.yaml"
         update_repo_cache: true
-  # always:
-  #   - name: Remove values
-  #     ansible.builtin.file:
-  #       path: "/tmp/binderhub.values.yaml"
-  #       state: absent
+  always:
+    - name: Remove values
+      ansible.builtin.file:
+        path: "/tmp/binderhub.values.yaml"
+        state: absent

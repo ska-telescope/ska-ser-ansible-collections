@@ -11,6 +11,8 @@
     wait: true
     values:
       loadBalancerClass: "{{ k8s_metallb_set_class | ternary(k8s_metallb_class, omit) }}"
+      speaker:
+        tolerations: "{{ k8s_metallb_tolerations }}"
 
 - name: Apply MetalLB config
   kubernetes.core.k8s:
