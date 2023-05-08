@@ -11,4 +11,3 @@
     chart_version: "{{ timescaledb_version }}"
     namespace: "{{ timescaledb_namespace }}"
     values: "{{ timescaledb_values }}"
-
