@@ -90,8 +90,22 @@ jupyterhub:
       BinderSpawner:
         auth_enabled: false
         cors_allow_origin: "*"
+{% elif k8s_binderhub_azuread_enabled %}
+      BinderSpawner:
+        auth_enabled: true
+        cors_allow_origin: "*"
+      JupyterHub:
+        authenticator_class: azuread
+      AzureAdOAuthenticator:
+        client_id: "{{ k8s_binderhub_azuread_client_id }}"
+        client_secret: "{{ k8s_binderhub_azuread_client_secret }}"
+        oauth_callback_url: "{{ k8s_binderhub_jupyterhub_callback_url }}"
+        tenant_id: "{{ k8s_binderhub_azuread_tenant_id }}"
+    services:
+      binder:
+        oauth_redirect_uri: "{{ k8s_binderhub_callback_url }}"
+        oauth_client_id: service-binderhub
 {% else %}
-{% if k8s_binderhub_gitlab_enabled %}
       BinderSpawner:
         auth_enabled: true
         cors_allow_origin: "*"
@@ -107,23 +121,6 @@ jupyterhub:
       binder:
         oauth_redirect_uri: "{{ k8s_binderhub_callback_url }}"
         oauth_client_id: service-binderhub
-{% endif %}
-{% if k8s_binderhub_azuread_enabled %}
-      BinderSpawner:
-        auth_enabled: true
-        cors_allow_origin: "*"
-      JupyterHub:
-        authenticator_class: azuread
-      AzureAdOAuthenticator:
-        client_id: "{{ k8s_binderhub_azuread_client_id }}"
-        client_secret: "{{ k8s_binderhub_azuread_client_secret }}"
-        oauth_callback_url: "{{ k8s_binderhub_jupyterhub_callback_url }}"
-        tenant_id: "{{ k8s_binderhub_azuread_tenant_id }}"
-    services:
-      binder:
-        oauth_redirect_uri: "{{ k8s_binderhub_callback_url }}"
-        oauth_client_id: service-binderhub
-{% endif %}
 {% endif %}
     loadRoles:
       user:

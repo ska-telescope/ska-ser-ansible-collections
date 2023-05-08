@@ -13,14 +13,16 @@ k8s_binderhub_oci_registry_password: "{{ lookup('ansible.builtin.env', 'K8S_BIND
 k8s_binderhub_jupyterhub_callback_url: "https://{{ k8s_external_dns_entry }}/{{ k8s_binderhub_namespace }}/jupyterhub/hub/oauth_callback"
 k8s_binderhub_jupyterhub_named_server_limit_per_user: 5
 k8s_binderhub_azuread_enabled: true
-k8s_binderhub_gitlab_enabled: false
+k8s_external_dns_entry: sdhp.stfc.skao.int
+k8s_dns_entry: sdhp.skao.stfc
+
+# BANG-165: Used when k8s_binderhub_azuread_enabled is set to true
+k8s_binderhub_azuread_client_id: "{{ lookup('ansible.builtin.env', 'AZUREAD_CLIENT_ID', default=secrets['azuread_client_id']) }}"
+k8s_binderhub_azuread_client_secret: "{{ lookup('ansible.builtin.env', 'AZUREAD_CLIENT_SECRET', default=secrets['azuread_client_secret']) }}"
+k8s_binderhub_azuread_tenant_id: "{{ lookup('ansible.builtin.env', 'AZUREAD_TENANT_ID', default=secrets['azuread_tenant_id']) }}"
+
+# BANG-165: Used when k8s_binderhub_azuread_enabled is set to false
 k8s_binderhub_gitlab_client_id: "{{ lookup('ansible.builtin.env', 'K8S_BINDERHUB_GITLAB_CLIENT_ID', default=secrets['k8s_binderhub_gitlab_client_id']) }}"
 k8s_binderhub_gitlab_client_secret: "{{ lookup('ansible.builtin.env', 'K8S_BINDERHUB_GITLAB_CLIENT_SECRET', default=secrets['k8s_binderhub_gitlab_client_secret']) }}"
 k8s_binderhub_gitlab_allowed_groups:
   - "ska-telescope"
-k8s_external_dns_entry: sdhp.stfc.skao.int
-k8s_dns_entry: sdhp.skao.stfc
-
-k8s_binderhub_azuread_client_id: "{{ lookup('ansible.builtin.env', 'AZUREAD_CLIENT_ID', default=secrets['azuread_client_id']) }}"
-k8s_binderhub_azuread_client_secret: "{{ lookup('ansible.builtin.env', 'AZUREAD_CLIENT_SECRET', default=secrets['azuread_client_secret']) }}"
-k8s_binderhub_azuread_tenant_id: "{{ lookup('ansible.builtin.env', 'AZUREAD_TENANT_ID', default=secrets['azuread_tenant_id']) }}"
