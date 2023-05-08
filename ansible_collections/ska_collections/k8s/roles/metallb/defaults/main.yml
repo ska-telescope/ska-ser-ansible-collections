@@ -6,3 +6,9 @@ k8s_metallb_namespace: metallb-system
 k8s_metallb_addresses: 10.100.10.1-10.100.253.254
 k8s_metallb_set_class: false
 k8s_metallb_class: metallb
+
+k8s_metallb_tolerations:
+  - effect: NoSchedule
+    operator: Exists
+  - effect: NoExecute
+    operator: Exists

@@ -1,16 +1,20 @@
-k8s_binderhub_singleuser: true
+k8s_binderhub_singleuser: false
 k8s_binderhub_namespace: binderhub
-# k8s_binderhub_helm_chart_version: "0.2.0-n966.h248f390" # previous to K8s scheduler upgrade
-# from https://jupyterhub.github.io/helm-chart
-# and see https://github.com/jupyterhub/helm-chart
-k8s_binderhub_helm_chart_version: "1.0.0-0.dev.git.3057.h0a4304c"
-k8s_binderhub_image:
-k8s_binderhub_transport: https
+k8s_binderhub_helm_chart_version: "1.0.0-0.dev.git.3098.h9e2e544" # This chart won't be supported in future
+k8s_binderhub_jupyterhub_image_version: "2.0.1-0.dev.git.6105.hb969fa50" # default coming with the binderhub chart is 2.0.0 but it doesn't work with CORS
+
+# k8s_binderhub_image:
+k8s_binderhub_transport: http # only using IP address currently
 k8s_binderhub_callback_url: "{{ k8s_binderhub_transport }}://{{ k8s_external_dns_entry }}/{{ k8s_binderhub_namespace }}/oauth_callback"
-k8s_binderhub_oci_registry_host: artefact.skao.int
-k8s_binderhub_oci_registry_host_full_url: https://{{ k8s_binderhub_oci_registry_host }}
+k8s_binderhub_oci_registry_host: "{{ nexus }}:9080"
+k8s_binderhub_oci_registry_host_full_url: http://{{ k8s_binderhub_oci_registry_host }}
 k8s_binderhub_oci_registry_username: publisher
-k8s_binderhub_jupyterhub_callback_url: "{{ k8s_binderhub_transport }}://{{ k8s_external_dns_entry }}/{{ k8s_binderhub_namespace }}/jupyterhub/hub/oauth_callback"
+k8s_binderhub_oci_registry_password: "{{ lookup('ansible.builtin.env', 'K8S_BINDERHUB_OCI_REGISTRY_PASSWORD', default=secrets['k8s_binderhub_oci_registry_password']) | mandatory }}"
+k8s_binderhub_jupyterhub_callback_url: "https://{{ k8s_external_dns_entry }}/{{ k8s_binderhub_namespace }}/jupyterhub/hub/oauth_callback"
 k8s_binderhub_jupyterhub_named_server_limit_per_user: 5
-k8s_external_dns_entry: "<tenant>.stfc.skao.int"
-k8s_dns_entry: "<tenant>.skao.stfc"
+k8s_external_dns_entry: sdhp.stfc.skao.int
+k8s_dns_entry: sdhp.skao.stfc
+
+k8s_binderhub_azuread_client_id: "{{ lookup('ansible.builtin.env', 'AZUREAD_CLIENT_ID', default=secrets['azuread_client_id']) }}"
+k8s_binderhub_azuread_client_secret: "{{ lookup('ansible.builtin.env', 'AZUREAD_CLIENT_SECRET', default=secrets['azuread_client_secret']) }}"
+k8s_binderhub_azuread_tenant_id: "{{ lookup('ansible.builtin.env', 'AZUREAD_TENANT_ID', default=secrets['azuread_tenant_id']) }}"

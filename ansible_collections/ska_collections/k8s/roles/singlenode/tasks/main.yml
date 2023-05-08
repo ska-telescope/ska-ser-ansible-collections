@@ -195,7 +195,6 @@
       - "-f"
       - "/usr/local/etc/haproxy/haproxy.cfg"
     state: started
-    network_mode: host
     user: root
     restart: true
     restart_policy: always

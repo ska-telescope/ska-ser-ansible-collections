@@ -47,6 +47,7 @@ spec:
   kubeadmConfigSpec:
     clusterConfiguration:
       apiServer:
+        certSANs: ${APISERVER_EXTRA_SANS}
         extraArgs:
           cloud-provider: external
         extraVolumes: []
@@ -138,7 +139,7 @@ spec:
     pods:
       cidrBlocks:
       - ${POD_CIDR_BLOCK}
-    serviceDomain: cluster.local
+    serviceDomain: ${SERVICE_DOMAIN}
   controlPlaneRef:
     apiVersion: controlplane.cluster.x-k8s.io/v1beta1
     kind: KubeadmControlPlane
