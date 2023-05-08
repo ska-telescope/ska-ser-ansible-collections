@@ -111,8 +111,9 @@ jupyterhub:
         scopes:
           - self
           - "access:services"
+{% if k8s_binderhub_singleuser %}
+          - "access:servers"
 
-{% if not k8s_binderhub_singleuser %}
     extraConfig:
       binder: |
         from kubespawner import KubeSpawner
