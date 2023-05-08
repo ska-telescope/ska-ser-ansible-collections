@@ -12,6 +12,9 @@
     KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   tasks:
     - name: Label Nodes
-      ansible.builtin.import_role:
+      ansible.builtin.include_role:
         name: ska_collections.gitlab_runner.k8s
         tasks_from: label-nodes
+      vars:
+        gitlab_runner_k8s_nodes: "{{ item.nodes }}"
+      with_items: "{{ gitlab_runner_k8s_runners }}"

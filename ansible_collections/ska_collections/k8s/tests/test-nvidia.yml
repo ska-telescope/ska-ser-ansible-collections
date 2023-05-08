@@ -30,7 +30,23 @@
         state: present
         template: 'resources/nvidia.yml'
         wait: true
+        wait_condition:
+          type: Initialized
         wait_timeout: 60
+
+    - name: Check container execution status
+      kubernetes.core.k8s_info:
+        kind: Pod
+        name: "{{ k8s_nvidia_test_pod_name }}"
+        namespace: "{{ k8s_nvidia_test_pod_namespace }}"
+      register: nvidia_pod
+      retries: 3
+      until: "(nvidia_pod.resources | length) > 0 and nvidia_pod.resources[0].status.phase == 'Succeeded'"
+      delay: 10
+
+    - name: Print container execution status
+      ansible.builtin.debug:
+        msg: "{{ nvidia_pod.resources[0].status.containerStatuses[0] }}"
 
     - name: Clean up Nvidia GPU test pod
       kubernetes.core.k8s:
