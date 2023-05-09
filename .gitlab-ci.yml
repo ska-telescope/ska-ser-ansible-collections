@@ -23,6 +23,9 @@ include:
   # Ansible - lint only
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/ansible-lint.gitlab-ci.yml'
+  # Python - lint only
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/python-lint.gitlab-ci.yml'
 #  # Docs
 #  - project: 'ska-telescope/templates-repository'
 #    file: 'gitlab-ci/includes/docs.gitlab-ci.yml'

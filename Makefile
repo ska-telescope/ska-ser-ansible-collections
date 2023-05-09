@@ -19,6 +19,10 @@ ANSIBLE_EXTRA_VARS ?=
 
 -include .make/base.mk
 -include .make/ansible.mk
+-include .make/python.mk
+
+PYTHON_LINT_TARGET=./ansible_collections/ska_collections/clusterapi/playbooks/filter_plugins
+PYTHON_SWITCHES_FOR_BLACK=--exclude .yml --exclude .yaml
 
 -include $(BASE_PATH)/PrivateRules.mak
 
