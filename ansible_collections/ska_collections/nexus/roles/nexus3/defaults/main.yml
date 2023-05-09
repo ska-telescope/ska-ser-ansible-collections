@@ -534,37 +534,37 @@ nexus_repos_apt_ubuntu_proxy:
     remote_url: http://archive.ubuntu.com/ubuntu/
     distribution: bionic
     maximum_component_age: -1
-    maximum_metadata_age: -1
+    maximum_metadata_age: 1440
     negative_cache_ttl: 60
   - name: ubuntu-focal-proxy
     remote_url: http://archive.ubuntu.com/ubuntu/
     distribution: focal
     maximum_component_age: -1
-    maximum_metadata_age: -1
+    maximum_metadata_age: 1440
     negative_cache_ttl: 60
   - name: ubuntu-jammy-proxy
     remote_url: http://archive.ubuntu.com/ubuntu/
     distribution: jammy
     maximum_component_age: -1
-    maximum_metadata_age: -1
+    maximum_metadata_age: 1440
     negative_cache_ttl: 60
   - name: ubuntu-security-bionic-proxy
     remote_url: http://security.ubuntu.com/ubuntu/
     distribution: bionic
     maximum_component_age: -1
-    maximum_metadata_age: -1
+    maximum_metadata_age: 1440
     negative_cache_ttl: 60
   - name: ubuntu-security-focal-proxy
     remote_url: http://security.ubuntu.com/ubuntu/
     distribution: focal
     maximum_component_age: -1
-    maximum_metadata_age: -1
+    maximum_metadata_age: 1440
     negative_cache_ttl: 60
   - name: ubuntu-security-jammy-proxy
     remote_url: http://security.ubuntu.com/ubuntu/
     distribution: jammy
     maximum_component_age: -1
-    maximum_metadata_age: -1
+    maximum_metadata_age: 1440
     negative_cache_ttl: 60
 
 nexus_repos_apt_ceph_clouds_proxy:
@@ -572,19 +572,19 @@ nexus_repos_apt_ceph_clouds_proxy:
     remote_url: http://ceph.clouds.archive.ubuntu.com/ubuntu/
     distribution: bionic
     maximum_component_age: -1
-    maximum_metadata_age: -1
+    maximum_metadata_age: 1440
     negative_cache_ttl: 60
   - name: ceph-clouds-ubuntu-focal-proxy
     remote_url: http://ceph.clouds.archive.ubuntu.com/ubuntu/
     distribution: focal
     maximum_component_age: -1
-    maximum_metadata_age: -1
+    maximum_metadata_age: 1440
     negative_cache_ttl: 60
   - name: ceph-clouds-ubuntu-jammy-proxy
     remote_url: http://ceph.clouds.archive.ubuntu.com/ubuntu/
     distribution: jammy
     maximum_component_age: -1
-    maximum_metadata_age: -1
+    maximum_metadata_age: 1440
     negative_cache_ttl: 60
 
 nexus_repos_apt_hosted: []
