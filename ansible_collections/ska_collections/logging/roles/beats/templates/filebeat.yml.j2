@@ -134,11 +134,10 @@ output:
 
 {% if not logging_filebeat_queue_disk_enabled|bool %}
 # queue memory configuration
-queue
-    mem:
-    events: "{{ logging_filebeat_queue_mem_events }}"
-    flush.min_events: "{{ logging_filebeat_queue_mem_flush_min_events }}"
-    flush.timeout: "{{ logging_filebeat_queue_mem_flush_timeout }}"
+queue.mem:
+  events: "{{ logging_filebeat_queue_mem_events }}"
+  flush.min_events: "{{ logging_filebeat_queue_mem_flush_min_events }}"
+  flush.timeout: "{{ logging_filebeat_queue_mem_flush_timeout }}"
 {% endif %}
 {% if logging_filebeat_queue_disk_enabled|bool %}
 # queue disk configuration
