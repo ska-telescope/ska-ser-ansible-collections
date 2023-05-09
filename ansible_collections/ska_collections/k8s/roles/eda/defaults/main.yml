@@ -1,0 +1,5 @@
+---
+
+timescaledb_namespace: ska-tango-archiver
+timescaledb_version: 0.1.1
+timescaledb_values: {}
