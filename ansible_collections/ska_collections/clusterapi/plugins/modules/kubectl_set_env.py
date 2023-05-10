@@ -326,10 +326,9 @@ class Kubectl:
             "\n RC: {rc} / {cmd} \n "
             "STDOUT: {stdout} \n "
             "STDERR: {stderr} \n"
-        ).format(rc=p.returncode,
-                 cmd=repr(local_cmd),
-                 stdout=stdout,
-                 stderr=stderr)
+        ).format(
+            rc=p.returncode, cmd=repr(local_cmd), stdout=stdout, stderr=stderr
+        )
 
         return (p.returncode, stdout, stderr)
 
@@ -341,8 +340,7 @@ def set_env(connector, name, envvars):
     rc, stdout, err = connector.exec_command(cmd)
     if not rc == 0:
         raise AnsibleError(
-            "set env call failed - rc: %d out: %s err: %s"
-            % (rc, stdout, err)
+            "set env call failed - rc: %d out: %s err: %s" % (rc, stdout, err)
         )
 
     return rc, stdout, err
@@ -378,8 +376,10 @@ def main():
         rc, stdout, err = set_env(
             connector,
             module.params["name"],
-            ["{k}={v}".format(k=k, v=v)
-             for k, v in module.params["envvars"].items()],
+            [
+                "{k}={v}".format(k=k, v=v)
+                for k, v in module.params["envvars"].items()
+            ],
         )
         changed = True
     except Exception as e:

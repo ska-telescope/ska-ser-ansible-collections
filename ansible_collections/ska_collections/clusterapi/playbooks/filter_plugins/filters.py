@@ -94,7 +94,7 @@ class FilterModule:
             **{
                 "all": {
                     "children": {
-                        cluster: {"children": clusters[cluster_children]}
+                        cluster: {"children": cluster_children}
                         for cluster, cluster_children in clusters.items()
                     }
                 }

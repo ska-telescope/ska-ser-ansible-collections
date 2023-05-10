@@ -16,20 +16,13 @@
       - "cluster.x-k8s.io/cluster-name = {{ capi_cluster }}"
   register: workload_machines
 
-- name: Get Machine templates from machines
-  kubernetes.core.k8s_info:
-    kind: Machine
-    api_version: cluster.x-k8s.io/v1beta1
-    label_selectors:
-      - "cluster.x-k8s.io/cluster-name = {{ capi_cluster }}"
-  register: workload_machines
-
 - name: Show machines
   ansible.builtin.debug:
     var: workload_machines
   when: debug
 
 - name: Create workload cluster inventory in yaml format
+  when: capi_clusterinventory_output_yaml
   block:
     - name: Create inventory and set inventory suffix
       ansible.builtin.set_fact:
@@ -47,9 +40,9 @@
         dest: "{{ capi_config_dir }}/{{ capi_cluster }}{{ inventory_suffix }}"
         mode: 0600
       become: true
-  when: capi_clusterinventory_output_yaml
 
 - name: Create workload cluster inventory in ini format
+  when: not capi_clusterinventory_output_yaml
   block:
     - name: Set inventory suffix
       ansible.builtin.set_fact:
@@ -61,7 +54,6 @@
         dest: "{{ capi_config_dir }}/{{ capi_cluster }}{{ inventory_suffix }}"
         mode: 0600
       become: true
-  when: not capi_clusterinventory_output_yaml
 
 - name: Slurp CAPO Cluster instance manifest
   ansible.builtin.slurp:
