@@ -64,7 +64,13 @@ def generate_targets_from_inventory(inventory):
                 host_vars = variable_manager.get_vars(host=host)
 
                 hostname = host_vars['inventory_hostname']
-                IP = host_vars['ip']
+                IP = ''
+                if 'ip' in host_vars:
+                    IP = host_vars['ip']
+                elif 'ansible_host' in host_vars:
+                    IP = host_vars['ansible_host']
+                if IP == '': 
+                    continue
 
                 for exporter_name, details in EXPORTERS.items():
                     result_of_check = check_port(IP, details["port"])
