@@ -24,6 +24,8 @@ address=/{{ server.name }}/{{ server.address }}
 {% if not server == "localhost" %}
 {% if hostvars[server].ip is defined %}
 address=/{{ hostvars[server].inventory_hostname }}.{{ dns_addvertise_domain }}/{{ hostvars[server].ip }}
+{% elif hostvars[server].ansible_host is defined %}
+address=/{{ hostvars[server].inventory_hostname }}.{{ dns_addvertise_domain }}/{{ hostvars[server].ansible_host }}
 {% endif %}
 {% endif %}
 {% endfor %}
