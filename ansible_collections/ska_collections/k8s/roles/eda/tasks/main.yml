@@ -1,4 +1,4 @@
---- 
+---
 
 - name: Install ska-tango-archiver-timescaledb Helm chart
   become: true
