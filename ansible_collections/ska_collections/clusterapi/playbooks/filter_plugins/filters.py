@@ -29,7 +29,7 @@ def get_machine_inventory(machine):
         group_name,
         machine_name,
         {
-            "ansible_host": machine_name,
+            "ansible_host": machine_ip,
             "ansible_user": "ubuntu",
             "ansible_python_interpreter": "python3",
             "ansible_ssh_host": machine_ip,
