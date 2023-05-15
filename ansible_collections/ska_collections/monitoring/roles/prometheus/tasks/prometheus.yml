@@ -37,6 +37,18 @@
   ansible.builtin.include_tasks: k8s_sa.yml
   when: kubeconfig
 
+- name: Set fact about shard_index
+  ansible.builtin.set_fact:
+    shard_index: "{{ my_idx }}"
+  when: inventory_hostname == item
+  loop: "{{ ansible_play_hosts }}"
+  loop_control:
+    index_var: my_idx
+
+- name: Output shard_index
+  ansible.builtin.debug:
+    msg: "{{ shard_index }}"
+
 - name: Generate Prometheus configuration
   become: true
   ansible.builtin.template:
