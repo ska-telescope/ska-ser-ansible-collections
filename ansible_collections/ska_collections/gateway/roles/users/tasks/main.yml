@@ -39,7 +39,7 @@
     state: directory
     owner: "{{ jump_user }}"
     group: "{{ jump_user }}"
-    mode: "0700"
+    mode: 0700
 
 - name: Add admin ssh key to jump
   ansible.builtin.lineinfile:
@@ -106,7 +106,7 @@
     state: directory
     owner: "{{ item }}"
     group: "{{ item }}"
-    mode: "0700"
+    mode: 0700
   with_items: "{{ user_names }}"
 
 - name: Add to authorized_keys
