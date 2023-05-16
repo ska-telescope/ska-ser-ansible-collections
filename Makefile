@@ -13,6 +13,7 @@ ANSIBLE_LINT_PARAMETERS=--exclude ./ansible_collections/ska_collections/monitori
 	--exclude ./ansible_collections/stackhpc \
 	--skip-list "yaml[line-length],galaxy[no-changelog]"
 PLAYBOOKS_HOSTS ?=
+DELEGATE_HOSTS ?=
 ANSIBLE_CONFIG ?=
 ANSIBLE_SSH_ARGS ?=
 ANSIBLE_EXTRA_VARS ?=

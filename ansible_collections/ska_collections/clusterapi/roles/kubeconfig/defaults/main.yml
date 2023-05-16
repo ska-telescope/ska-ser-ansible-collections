@@ -7,3 +7,6 @@ capi_kube_namespace: default
 capi_machine_phase: Provisioned
 capi_cluster_timeout: 1800
 capi_kubeconfig_output_dir: "{{ playbook_dir }}/../../../../.."
+capi_kubeconfig_mode: '0644'
+capi_kubeconfig_owner: null
+capi_kubeconfig_group: null

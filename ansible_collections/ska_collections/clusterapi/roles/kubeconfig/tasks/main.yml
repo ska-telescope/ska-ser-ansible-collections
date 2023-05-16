@@ -46,7 +46,7 @@
   ansible.builtin.copy:
     content: "{{ workload_kubeconfig.stdout }}"
     dest: "{{ capi_config_dir }}/{{ capi_cluster }}-kubeconfig"
-    mode: 0644
+    mode: 0600
   become: true
 
 - name: Workload cluster kubeconfig
@@ -56,16 +56,24 @@
 
 - name: "Remove workload local kubeconfig copy ./{{ capi_cluster }}-kubeconfig"  # noqa: name[template]
   ansible.builtin.file:
-    path: "{{ capi_kubeconfig_output_dir }}/{{ capi_cluster }}-kubeconfig"
+    path: "{{ hostvars[item]['capi_kubeconfig_output_dir'] | default(capi_kubeconfig_output_dir) }}/{{ capi_cluster }}-kubeconfig"
     state: absent
-  delegate_to: localhost
+  with_inventory_hostnames: "{{ delegate_hosts }}"
+  delegate_to: "{{ item }}"
+  become: "{{ item != 'localhost' }}"
 
 - name: Output workload local kubeconfig copy  # noqa: template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ workload_kubeconfig.stdout }}"
-    dest: "{{ capi_kubeconfig_output_dir }}/{{ capi_cluster }}-kubeconfig"
-    mode: 0644
-  delegate_to: localhost
+    dest: "{{ hostvars[item]['capi_kubeconfig_output_dir'] | default(capi_kubeconfig_output_dir) }}/{{ capi_cluster }}-kubeconfig"
+    mode: "{{ hostvars[item]['capi_kubeconfig_mode'] | default(capi_kubeconfig_mode) }}"
+    owner: "{{ (hostvars[item]['capi_kubeconfig_owner'] | default(capi_kubeconfig_owner)) |
+    default(omit if item == 'localhost' else hostvars[item]['ansible_user'], true) }}"
+    group: "{{ (hostvars[item]['capi_kubeconfig_group'] | default(capi_kubeconfig_group)) |
+    default(omit if item == 'localhost' else hostvars[item]['ansible_user'], true) }}"
+  with_inventory_hostnames: "{{ delegate_hosts }}"
+  delegate_to: "{{ item }}"
+  become: "{{ item != 'localhost' }}"
 
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers
