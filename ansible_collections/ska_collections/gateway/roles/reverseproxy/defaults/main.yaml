@@ -49,7 +49,7 @@ reverseproxy_oauth2proxy_log_options:
 reverseproxy_labels:
   org.ska.app.group: reverseproxy
 
-reverseproxy_dns_name: "{{ lookup('ansible.builtin.env', 'REVERSEPROXY_DNS_NAME', default=secrets['reverseproxy_dns_name']) | mandatory('`reverseproxy_dns_name` definition is mandatory') }}"
+reverseproxy_dns_name: "{{ _ | mandatory('`reverseproxy_dns_name` definition is mandatory') }}"
 reverseproxy_oauth2proxy_client_id: "{{ lookup('ansible.builtin.env', 'REVERSEPROXY_OAUTH2PROXY_CLIENT_ID', default=secrets['reverseproxy_oauth2proxy_client_id']) | mandatory('`reverseproxy_oauth2proxy_client_id` definition is mandatory') }}"
 reverseproxy_oauth2proxy_tenant_id: "{{ lookup('ansible.builtin.env', 'REVERSEPROXY_OAUTH2PROXY_TENANT_ID', default=secrets['reverseproxy_oauth2proxy_tenant_id']) | mandatory('`reverseproxy_oauth2proxy_tenant_id` definition is mandatory') }}"
 reverseproxy_oauth2proxy_gitlab_allowed_groups: "ska-telescope"
