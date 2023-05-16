@@ -16,27 +16,48 @@
       - "cluster.x-k8s.io/cluster-name = {{ capi_cluster }}"
   register: workload_machines
 
-- name: Workload cluster inventory
+- name: Show machines
   ansible.builtin.debug:
     var: workload_machines
   when: debug
 
-- name: "Remove workload inventory copy {{ capi_config_dir }}/{{ capi_cluster }}-inventory"  # noqa: name[template]
-  ansible.builtin.file:
-    path: "{{ capi_config_dir }}/{{ capi_cluster }}-inventory"
-    state: absent
-  become: true
+- name: Create workload cluster inventory in yaml format
+  when: capi_clusterinventory_output_yaml
+  block:
+    - name: Create inventory and set inventory suffix
+      ansible.builtin.set_fact:
+        cluster_inventory: "{{ workload_machines.resources | get_cluster_inventory }}"
+        inventory_suffix: ".inventory.yml"
 
-- name: Write clusterapi inventory
-  ansible.builtin.template:
-    src: inventory.j2
-    dest: "{{ capi_config_dir }}/{{ capi_cluster }}-inventory"
-    mode: 0600
-  become: true
+    - name: Show inventory
+      ansible.builtin.debug:
+        var: cluster_inventory
+      when: debug
+
+    - name: Write workload cluster inventory
+      ansible.builtin.copy:
+        content: "{{ cluster_inventory | to_nice_yaml(indent=2) }}"
+        dest: "{{ capi_config_dir }}/{{ capi_cluster }}{{ inventory_suffix }}"
+        mode: 0600
+      become: true
+
+- name: Create workload cluster inventory in ini format
+  when: not capi_clusterinventory_output_yaml
+  block:
+    - name: Set inventory suffix
+      ansible.builtin.set_fact:
+        inventory_suffix: "-inventory"
+
+    - name: Write workload cluster inventory
+      ansible.builtin.template:
+        src: inventory.j2
+        dest: "{{ capi_config_dir }}/{{ capi_cluster }}{{ inventory_suffix }}"
+        mode: 0600
+      become: true
 
 - name: Slurp CAPO Cluster instance manifest
   ansible.builtin.slurp:
-    src: "{{ capi_config_dir }}/{{ capi_cluster }}-inventory"
+    src: "{{ capi_config_dir }}/{{ capi_cluster }}{{ inventory_suffix }}"
   register: slurped_inventory
   become: true
 
@@ -44,16 +65,16 @@
   ansible.builtin.set_fact:
     capi_cluster_inventory: "{{ slurped_inventory.content | b64decode }}"
 
-- name: "Remove workload local inventory copy ./{{ capi_cluster }}-inventory"  # noqa: name[template]
+- name: "Remove workload local inventory copy ./{{ capi_cluster }}{{ inventory_suffix }}"  # noqa: name[template]
   ansible.builtin.file:
-    path: "{{ capi_clusterinventory_output_dir }}/{{ capi_cluster }}-inventory"
+    path: "{{ capi_clusterinventory_output_dir }}/{{ capi_cluster }}{{ inventory_suffix }}"
     state: absent
   delegate_to: localhost
 
 - name: Output workload local inventory copy  # noqa: template-instead-of-copy
   ansible.builtin.copy:
     content: "{{ capi_cluster_inventory }}"
-    dest: "{{ capi_clusterinventory_output_dir }}/{{ capi_cluster }}-inventory"
+    dest: "{{ capi_clusterinventory_output_dir }}/{{ capi_cluster }}{{ inventory_suffix }}"
     mode: 0644
   delegate_to: localhost
 

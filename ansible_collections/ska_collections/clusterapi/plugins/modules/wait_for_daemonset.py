@@ -10,7 +10,6 @@ import time
 # These are required for the yaml parsing to work
 import ansible.module_utils.common.yaml  # noqa F401
 import yaml  # noqa F401
-
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_bytes
 from ansible.module_utils.basic import AnsibleModule
@@ -404,14 +403,18 @@ def main():
         module.exit_json(changed=changed, result=result)
     else:
         module.fail_json(
-            msg=("Failed to wait for DaemonSet: [%s/%s] "
-                 "desired [%d] != ready [%d] for tries [%d] - %s")
-            % (module.params["kubectl_namespace"],
-               module.params["name"],
-               desired,
-               ready,
-               tries,
-               repr(result))
+            msg=(
+                "Failed to wait for DaemonSet: [%s/%s] "
+                "desired [%d] != ready [%d] for tries [%d] - %s"
+            )
+            % (
+                module.params["kubectl_namespace"],
+                module.params["name"],
+                desired,
+                ready,
+                tries,
+                repr(result),
+            )
         )
 
 

@@ -4,3 +4,4 @@ debug: false
 capi_cluster: capi-cluster
 capi_kube_namespace: default
 capi_clusterinventory_output_dir: "{{ playbook_dir }}/../../../../.."
+capi_clusterinventory_output_yaml: false
