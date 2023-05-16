@@ -37,6 +37,7 @@ reverseproxy_redis_name: o2predis
 reverseproxy_redis_image: redis:7.0.8
 reverseproxy_redis_port: 6379
 reverseproxy_oauth2proxy_enabled: true
+reverseproxy_oauth2proxy_azuread_enabled: true # deploy azuread oauth by default, if set to false will fallback to gitlab
 reverseproxy_oauth2proxy_name: oauth2proxy
 reverseproxy_oauth2proxy_image: quay.io/oauth2-proxy/oauth2-proxy:v7.2.1
 reverseproxy_oauth2proxy_port: 4180
@@ -48,9 +49,10 @@ reverseproxy_oauth2proxy_log_options:
 reverseproxy_labels:
   org.ska.app.group: reverseproxy
 
-reverseproxy_dns_name: "{{ _ | mandatory('`reverseproxy_dns_name` definition is mandatory') }}"
-reverseproxy_oauth2proxy_client_id: "{{ _ | mandatory('`reverseproxy_oauth2proxy_client_id` definition is mandatory') }}"
-reverseproxy_oauth2proxy_tenant_id: "{{ _ | mandatory('`reverseproxy_oauth2proxy_tenant_id` definition is mandatory') }}"
+reverseproxy_dns_name: "{{ lookup('ansible.builtin.env', 'REVERSEPROXY_DNS_NAME', default=secrets['reverseproxy_dns_name']) | mandatory('`reverseproxy_dns_name` definition is mandatory') }}"
+reverseproxy_oauth2proxy_client_id: "{{ lookup('ansible.builtin.env', 'REVERSEPROXY_OAUTH2PROXY_CLIENT_ID', default=secrets['reverseproxy_oauth2proxy_client_id']) | mandatory('`reverseproxy_oauth2proxy_client_id` definition is mandatory') }}"
+reverseproxy_oauth2proxy_tenant_id: "{{ lookup('ansible.builtin.env', 'REVERSEPROXY_OAUTH2PROXY_TENANT_ID', default=secrets['reverseproxy_oauth2proxy_tenant_id']) | mandatory('`reverseproxy_oauth2proxy_tenant_id` definition is mandatory') }}"
+reverseproxy_oauth2proxy_gitlab_allowed_groups: "ska-telescope"
 
 reverseproxy_use_self_signed_cert: false
 reverseproxy_tls_vault_secret:
@@ -66,5 +68,5 @@ certificates_dir: /etc/pki/tls/private
 
 # Secrets
 
-reverseproxy_oauth2proxy_client_secret: "{{ _ | mandatory('`reverseproxy_oauth2proxy_client_secret` definition is mandatory') }}"
-reverseproxy_oauth2proxy_cookie_secret: "{{ _ | mandatory('`reverseproxy_oauth2proxy_cookie_secret` definition is mandatory') }}"
+reverseproxy_oauth2proxy_client_secret: "{{ lookup('ansible.builtin.env', 'REVERSEPROXY_OAUTH2PROXY_CLIENT_SECRET', default=secrets['reverseproxy_oauth2proxy_client_secret']) | mandatory('`reverseproxy_oauth2proxy_client_secret` definition is mandatory') }}"
+reverseproxy_oauth2proxy_cookie_secret: "{{ lookup('ansible.builtin.env', 'REVERSEPROXY_OAUTH2PROXY_COOKIE_SECRET', default=secrets['reverseproxy_oauth2proxy_cookie_secret']) | mandatory('`reverseproxy_oauth2proxy_cookie_secret` definition is mandatory') }}"
