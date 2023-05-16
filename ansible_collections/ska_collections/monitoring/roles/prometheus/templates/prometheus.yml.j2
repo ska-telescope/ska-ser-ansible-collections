@@ -6,7 +6,9 @@ global:
   {{ prometheus_global | to_nice_yaml(indent=2) | indent(2, False) }}
   external_labels:
     datacentre: '{{ prometheus_datacentre }}'
+{% if ansible_play_hosts | length > 1 %}
     shard: {{ shard_index }}  # This is the {{ shard_index }} shard. This prevents clashes between shards.
+{% endif %}
 
 {% if prometheus_remote_write != [] %}
 remote_write:
@@ -159,12 +161,13 @@ scrape_configs:
         action: replace
         target_label: 'datacentre'
         replacement: "{{ prometheus_datacentre }}"
-      - source_labels: ['namespace']
+{% if ansible_play_hosts | length > 1 %}
+      - source_labels: ['instance']
         modulus:       {{ ansible_play_hosts | length }} # ansible_play_hosts length shards
         target_label:  __tmp_hash
         action:        hashmod
       - source_labels: [__tmp_hash]
         regex:         ^{{ shard_index }}$  # This is the {{ shard_index }}nd shard
         action:        keep
-
+{% endif %}
 {% endif %}
