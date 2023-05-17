@@ -1,9 +1,0 @@
-[
-  {
-    "labels": {
-      "job": "kube-proxy"
-    },
-    "targets": [
-    ]
-  }
-]
