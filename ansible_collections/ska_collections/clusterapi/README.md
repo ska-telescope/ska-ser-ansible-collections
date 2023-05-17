@@ -169,6 +169,26 @@ These targets use a target kubeconfig where to perform actions, in the following
 * `KUBECONFIG` environment variable of the HOST - Settable with `KUBECONFIG=<path to kubeconfig> make playbooks k8s install`
 * `/etc/kubernetes/admin.conf` is the default value
 
+### Kubeconfig
+
+To retrieve the kubeconfig, we can simply call:
+```
+make playbooks clusterapi get-workload-kubeconfig PLAYBOOKS_HOSTS=management_cluster
+```
+
+By default, the kubeconfig file is retrieved to the localhost, but can be sent to any other host in the inventory:
+```
+make playbooks clusterapi get-workload-kubeconfig PLAYBOOKS_HOSTS=management_cluster DELEGATE_HOSTS=<hosts to place the kubeconfig>
+```
+
+We can modify the output directory for each host/group, by specifying:
+```
+capi_kubeconfig_output_dir: <output directory>
+capi_kubeconfig_mode: '<ownership mode>'
+capi_kubeconfig_owner: <owner of the file>
+capi_kubeconfig_group: <group owner of the file>
+```
+
 # Testing
 
 ## Tested with Ansible
