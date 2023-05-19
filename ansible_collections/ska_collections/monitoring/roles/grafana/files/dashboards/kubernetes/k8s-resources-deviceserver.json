@@ -24,18 +24,323 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 43,
-  "iteration": 1676891811378,
+  "id": 52,
+  "iteration": 1684491524716,
   "links": [],
   "liveNow": false,
   "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 66,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "expr": "setupdb_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000",
+          "refId": "A"
+        }
+      ],
+      "title": "Setup DB Waiting Time (Seconds)",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "device_server_name"
+            ],
+            "valueLabel": "device_server_name"
+          }
+        }
+      ],
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 62,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "explain",
+          "expr": "databaseds_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "DatabaseDS Wait Time (Seconds)",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "valueLabel": "device_server_name"
+          }
+        }
+      ],
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 64,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "text": {}
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "expr": "dependson_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Depends On Waiting Time (Seconds)",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "device_server_name"
+            ],
+            "mode": "columns",
+            "valueLabel": "device_server_name"
+          }
+        }
+      ],
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 60,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "expr": "image_pulling{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Image Pulling Time (Seconds)",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "device_server_name"
+            ],
+            "mode": "columns",
+            "valueLabel": "device_server_name"
+          }
+        }
+      ],
+      "type": "bargauge"
+    },
     {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 16
       },
       "id": 53,
       "panels": [],
@@ -84,7 +389,7 @@
         "h": 9,
         "w": 18,
         "x": 0,
-        "y": 1
+        "y": 17
       },
       "id": 45,
       "options": {
@@ -104,7 +409,7 @@
             "type": "prometheus",
             "uid": "P5DCFC7561CCDE821"
           },
-          "editorMode": "code",
+          "editorMode": "explain",
           "exemplar": false,
           "expr": "startup_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000",
           "format": "time_series",
@@ -149,7 +454,7 @@
         "h": 4,
         "w": 3,
         "x": 18,
-        "y": 1
+        "y": 17
       },
       "id": 47,
       "options": {
@@ -212,7 +517,7 @@
         "h": 4,
         "w": 3,
         "x": 21,
-        "y": 1
+        "y": 17
       },
       "id": 48,
       "options": {
@@ -276,7 +581,7 @@
         "h": 5,
         "w": 3,
         "x": 18,
-        "y": 5
+        "y": 21
       },
       "id": 50,
       "options": {
@@ -347,7 +652,7 @@
         "h": 5,
         "w": 3,
         "x": 21,
-        "y": 5
+        "y": 21
       },
       "id": 51,
       "options": {
@@ -419,7 +724,7 @@
         "h": 9,
         "w": 18,
         "x": 0,
-        "y": 10
+        "y": 26
       },
       "id": 57,
       "options": {
@@ -492,7 +797,7 @@
         "h": 5,
         "w": 3,
         "x": 18,
-        "y": 10
+        "y": 26
       },
       "id": 49,
       "options": {
@@ -559,7 +864,7 @@
         "h": 5,
         "w": 3,
         "x": 21,
-        "y": 10
+        "y": 26
       },
       "id": 58,
       "options": {
@@ -599,7 +904,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 35
       },
       "id": 55,
       "panels": [],
@@ -639,7 +944,7 @@
         "h": 5,
         "w": 3,
         "x": 0,
-        "y": 20
+        "y": 36
       },
       "id": 29,
       "options": {
@@ -706,7 +1011,7 @@
         "h": 5,
         "w": 3,
         "x": 3,
-        "y": 20
+        "y": 36
       },
       "id": 56,
       "options": {
@@ -773,7 +1078,7 @@
         "h": 5,
         "w": 3,
         "x": 6,
-        "y": 20
+        "y": 36
       },
       "id": 31,
       "options": {
@@ -812,7 +1117,7 @@
         "type": "prometheus",
         "uid": "P5DCFC7561CCDE821"
       },
-      "description": "",
+      "description": "This shows how many instances of Databaseds were not found in the cluster.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -840,7 +1145,7 @@
         "h": 5,
         "w": 3,
         "x": 9,
-        "y": 20
+        "y": 36
       },
       "id": 32,
       "options": {
@@ -907,7 +1212,7 @@
         "h": 5,
         "w": 3,
         "x": 12,
-        "y": 20
+        "y": 36
       },
       "id": 35,
       "options": {
@@ -974,7 +1279,7 @@
         "h": 5,
         "w": 3,
         "x": 15,
-        "y": 20
+        "y": 36
       },
       "id": 37,
       "options": {
@@ -1041,7 +1346,7 @@
         "h": 5,
         "w": 3,
         "x": 18,
-        "y": 20
+        "y": 36
       },
       "id": 34,
       "options": {
@@ -1092,7 +1397,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1107,7 +1413,7 @@
         "h": 5,
         "w": 3,
         "x": 0,
-        "y": 25
+        "y": 41
       },
       "id": 30,
       "options": {
@@ -1158,7 +1464,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1173,7 +1480,7 @@
         "h": 5,
         "w": 3,
         "x": 3,
-        "y": 25
+        "y": 41
       },
       "id": 41,
       "options": {
@@ -1224,7 +1531,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1239,7 +1547,7 @@
         "h": 5,
         "w": 3,
         "x": 6,
-        "y": 25
+        "y": 41
       },
       "id": 33,
       "options": {
@@ -1290,7 +1598,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1305,7 +1614,7 @@
         "h": 5,
         "w": 3,
         "x": 9,
-        "y": 25
+        "y": 41
       },
       "id": 40,
       "options": {
@@ -1356,7 +1665,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1371,7 +1681,7 @@
         "h": 5,
         "w": 3,
         "x": 12,
-        "y": 25
+        "y": 41
       },
       "id": 36,
       "options": {
@@ -1415,7 +1725,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 46
       },
       "id": 17,
       "panels": [
@@ -1434,7 +1744,7 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 17
+            "y": 31
           },
           "hiddenSeries": false,
           "id": 1,
@@ -1568,7 +1878,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 47
       },
       "id": 18,
       "panels": [
@@ -1688,7 +1998,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 32
+        "y": 48
       },
       "id": 19,
       "panels": [
@@ -1959,7 +2269,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 33
+        "y": 49
       },
       "id": 20,
       "panels": [
@@ -2101,7 +2411,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 50
       },
       "id": 21,
       "panels": [
@@ -2423,7 +2733,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 35
+        "y": 51
       },
       "id": 22,
       "panels": [
@@ -2441,7 +2751,7 @@
             "h": 7,
             "w": 12,
             "x": 0,
-            "y": 22
+            "y": 36
           },
           "hiddenSeries": false,
           "id": 6,
@@ -2528,7 +2838,7 @@
             "h": 7,
             "w": 12,
             "x": 12,
-            "y": 22
+            "y": 36
           },
           "hiddenSeries": false,
           "id": 7,
@@ -2615,7 +2925,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 36
+        "y": 52
       },
       "id": 23,
       "panels": [
@@ -2633,7 +2943,7 @@
             "h": 7,
             "w": 12,
             "x": 0,
-            "y": 23
+            "y": 37
           },
           "hiddenSeries": false,
           "id": 8,
@@ -2720,7 +3030,7 @@
             "h": 7,
             "w": 12,
             "x": 12,
-            "y": 23
+            "y": 37
           },
           "hiddenSeries": false,
           "id": 9,
@@ -2807,7 +3117,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 37
+        "y": 53
       },
       "id": 24,
       "panels": [
@@ -2999,7 +3309,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 54
       },
       "id": 25,
       "panels": [
@@ -3208,7 +3518,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 39
+        "y": 55
       },
       "id": 26,
       "panels": [
@@ -3401,7 +3711,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 40
+        "y": 56
       },
       "id": 27,
       "panels": [
@@ -3666,7 +3976,7 @@
       "type": "row"
     }
   ],
-  "refresh": false,
+  "refresh": "",
   "schemaVersion": 36,
   "style": "dark",
   "tags": [],
@@ -3694,8 +4004,8 @@
       {
         "current": {
           "selected": false,
-          "text": "stfc-dp-ska-monitor",
-          "value": "stfc-dp-ska-monitor"
+          "text": "stfc-ska-monitor",
+          "value": "stfc-ska-monitor"
         },
         "datasource": {
           "type": "prometheus",
@@ -3723,8 +4033,8 @@
       {
         "current": {
           "selected": false,
-          "text": "binderhub",
-          "value": "binderhub"
+          "text": "ci-ska-skampi-4308374341-low",
+          "value": "ci-ska-skampi-4308374341-low"
         },
         "datasource": {
           "type": "prometheus",
@@ -3751,10 +4061,9 @@
       },
       {
         "current": {
-          "isNone": true,
           "selected": false,
-          "text": "None",
-          "value": ""
+          "text": "alveo-default",
+          "value": "alveo-default"
         },
         "datasource": {
           "type": "prometheus",
@@ -3781,10 +4090,9 @@
       },
       {
         "current": {
-          "isNone": true,
           "selected": false,
-          "text": "None",
-          "value": ""
+          "text": "deviceserver-alveo-default-0",
+          "value": "deviceserver-alveo-default-0"
         },
         "datasource": {
           "type": "prometheus",
@@ -3809,7 +4117,7 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-24h",
     "to": "now"
   },
   "timepicker": {
@@ -3839,7 +4147,7 @@
   },
   "timezone": "UTC",
   "title": "Kubernetes / Compute Resources / DeviceServer",
-  "uid": "e0tiv654k",
-  "version": 28,
+  "uid": "e0tiv654z",
+  "version": 10,
   "weekStart": ""
 }
