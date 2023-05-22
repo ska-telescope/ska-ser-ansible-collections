@@ -41,5 +41,9 @@
   ansible.builtin.include_tasks: grafana_alerts.yml
   when: grafana_alerts_enabled
 
+- name: Task grafana_postgres_exporter
+  ansible.builtin.include_tasks: grafana_postgres_exporter.yml
+  when: grafana_postgres_exporter_enabled
+
 - name: Grafana task
   ansible.builtin.include_tasks: grafana.yml
