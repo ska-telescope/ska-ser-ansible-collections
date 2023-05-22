@@ -1,0 +1,12 @@
+---
+
+- name: Deploy Postgres exporter
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: Deploy Postgres exporter
+      ansible.builtin.import_role:
+        name: postgres_exporter
+        

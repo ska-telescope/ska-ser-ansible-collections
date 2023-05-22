@@ -1,0 +1,1 @@
+To Integrate PostgresSQL exporter with your Database first you need to follow this page : https://confluence.skatelescope.org/display/SE/PostgreSQL+exporter. And create the pgmon User. To connect use psql -U admin -h \<hostname> postgres.
