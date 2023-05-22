@@ -9,4 +9,3 @@
     - name: Deploy Postgres exporter
       ansible.builtin.import_role:
         name: postgres_exporter
-        
