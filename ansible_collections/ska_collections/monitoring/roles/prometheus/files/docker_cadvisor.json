@@ -1,9 +1,0 @@
-[
-    {
-      "labels": {
-        "job": "docker_cadvisor"
-      },
-      "targets": [
-      ]
-    }
-  ]
