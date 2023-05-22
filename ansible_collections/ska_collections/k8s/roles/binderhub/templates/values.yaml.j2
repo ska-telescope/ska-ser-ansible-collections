@@ -53,6 +53,7 @@ ingress:
   pathType: Prefix
   annotations:
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 
 jupyterhub:
   proxy:
@@ -183,3 +184,4 @@ jupyterhub:
     pathType: Prefix
     annotations:
       kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
