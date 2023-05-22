@@ -1,6 +1,6 @@
 ---
 postgres_exporter_version: v0.12.0
-postgres_exporter_password: "{{ lookup('ansible.builtin.env', 'POSTGRES_EXPORTER_PASSWORD', default=secrets['ca_cert_password']) | mandatory }}"
+postgres_exporter_password: "{{ lookup('ansible.builtin.env', 'POSTGRES_EXPORTER_PASSWORD', default=secrets['postgres_exporter_password']) | mandatory }}"
 postgres_exporter_user: pgmon
 postgres_exporter_hostname: ""
 postgres_exporter_port: 5432

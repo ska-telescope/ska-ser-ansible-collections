@@ -149,7 +149,6 @@ postgres-exporter: check_hosts ## Install Prometheus postgres exporter - pass IN
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_postgres_exporter.yml \
 	-i $(INVENTORY) \
 	-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
-	-e "postgres_exporter_password=$(POSTGRES_EXPORTER_PASSWORD)" \
 	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
 	-e 'ansible_python_interpreter=/usr/bin/python3' \
 	--limit $(NODES)
