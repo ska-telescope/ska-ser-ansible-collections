@@ -9,6 +9,7 @@ certificate_subject_alt_names:
   - "IP:{{ ansible_default_ipv4.address }}"
 certificate_validity_days: 365
 certificate_recreate: false
+certificate_ca_vault_secret:
 
 ca_host: ca
 

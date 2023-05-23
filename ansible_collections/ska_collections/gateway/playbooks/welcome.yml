@@ -1,11 +1,13 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: Apply roles
+- name: Configure welcome script
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
   become: true
+  gather_facts: true
   tasks:
-    - name: Apply init role
+    - name: Configure welcome
       ansible.builtin.include_role:
-        name: ska_collections.instance_common.init
+        name: users
+        tasks_from: welcome

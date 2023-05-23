@@ -7,6 +7,8 @@ ANSIBLE_EXTRA_VARS ?=
 PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
 TESTS_DIR ?= ./ansible_collections/ska_collections/clusterapi/tests
 
+DELEGATE_HOSTS ?= localhost
+
 -include $(BASE_PATH)/PrivateRules.mak
 
 check-hosts:
@@ -77,7 +79,8 @@ create-workload-cluster: check-hosts  ## Template workload manifest and deploy t
 get-workload-kubeconfig: check-hosts  ## Get workload cluster kubeconfig
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/get-workload-kubeconfig.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--extra-vars "delegate_hosts=$(DELEGATE_HOSTS)"
 
 get-workload-inventory: check-hosts  ## Get workload cluster inventory
 	ansible-playbook $(PLAYBOOKS_DIR)/clusterapi/playbooks/get-workload-inventory.yml \

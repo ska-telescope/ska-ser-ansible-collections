@@ -1,0 +1,20 @@
+#!/bin/bash
+echo '{{ users_welcome_header }}'
+export KUBECONFIG="{{ users_welcome_kubeconfig_path }}"
+
+echo "$ KUBECONFIG has been set to: $KUBECONFIG"
+if [ -f "$KUBECONFIG" ]; then
+    CURRENT_CONTEXT=$(kubectl config view -o jsonpath='{.current-context}')
+    if [ ! -z $CURRENT_CONTEXT ]; then
+        CLUSTER=$(kubectl config view -o jsonpath="{.contexts[?(@.name == '$CURRENT_CONTEXT')].context.cluster}")
+        SERVER=$(kubectl config view -o jsonpath="{.clusters[?(@.name == '$CLUSTER')].cluster.server}")
+        echo "* Cluster: $CLUSTER"
+        echo "* Server: $SERVER"
+        source <(kubectl completion bash)
+        source <(helm completion bash)
+    else
+        echo "ERROR: Failed to load kubeconfig"
+    fi
+else
+    echo "ERROR: Failed to load kubeconfig"
+fi

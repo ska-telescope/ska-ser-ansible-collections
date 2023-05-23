@@ -78,8 +78,8 @@
 
 - name: Synchronize user directories
   ansible.posix.synchronize:
-    src: "/home/{{ item }}"
-    dest: "{{ restore_dir }}/{{ item }}"
+    src: "{{ restore_dir }}/{{ item }}/{{ item }}"
+    dest: "/home"
     mode: push
     compress: true
     delete: false

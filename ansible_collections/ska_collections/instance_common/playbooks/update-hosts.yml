@@ -1,13 +1,5 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: Gather facts on full inventory
-  hosts: "{{ groups['all'] }}"
-  tasks:
-    - name: Show node info
-      ansible.builtin.debug:
-        msg: "{{ inventory_hostname }} at {{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
-      when: debug
-
 - name: Update hosts on target nodes
   hosts: "{{ target_hosts }}"
   vars:
