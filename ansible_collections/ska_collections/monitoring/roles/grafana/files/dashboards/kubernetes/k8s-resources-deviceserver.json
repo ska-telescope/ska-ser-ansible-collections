@@ -25,7 +25,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": 52,
-  "iteration": 1684491524716,
+  "iteration": 1684851836101,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -34,6 +34,7 @@
         "type": "prometheus",
         "uid": "P5DCFC7561CCDE821"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -41,7 +42,7 @@
           },
           "mappings": [],
           "thresholds": {
-            "mode": "percentage",
+            "mode": "absolute",
             "steps": [
               {
                 "color": "green",
@@ -49,7 +50,7 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 1
               }
             ]
           },
@@ -64,6 +65,30 @@
         "y": 0
       },
       "id": 66,
+      "libraryPanel": {
+        "description": "",
+        "meta": {
+          "connectedDashboards": 1,
+          "created": "2023-05-23T13:33:54Z",
+          "createdBy": {
+            "avatarUrl": "/grafana/avatar/0682a77aa61cc93515b42dc7351bacc6",
+            "id": 20,
+            "name": "james.sawdy@cgi.com"
+          },
+          "folderName": "kubernetes-dashboard",
+          "folderUid": "x8Ddhe1Vk",
+          "updated": "2023-05-23T13:58:58Z",
+          "updatedBy": {
+            "avatarUrl": "/grafana/avatar/0682a77aa61cc93515b42dc7351bacc6",
+            "id": 20,
+            "name": "james.sawdy@cgi.com"
+          }
+        },
+        "name": "Setup DB Waiting Time (Seconds)",
+        "type": "bargauge",
+        "uid": "H4IO7IQVk",
+        "version": 2
+      },
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 10,
@@ -108,6 +133,7 @@
         "type": "prometheus",
         "uid": "P5DCFC7561CCDE821"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -138,6 +164,30 @@
         "y": 0
       },
       "id": 62,
+      "libraryPanel": {
+        "description": "",
+        "meta": {
+          "connectedDashboards": 1,
+          "created": "2023-05-23T13:34:14Z",
+          "createdBy": {
+            "avatarUrl": "/grafana/avatar/0682a77aa61cc93515b42dc7351bacc6",
+            "id": 20,
+            "name": "james.sawdy@cgi.com"
+          },
+          "folderName": "kubernetes-dashboard",
+          "folderUid": "x8Ddhe1Vk",
+          "updated": "2023-05-23T13:34:14Z",
+          "updatedBy": {
+            "avatarUrl": "/grafana/avatar/0682a77aa61cc93515b42dc7351bacc6",
+            "id": 20,
+            "name": "james.sawdy@cgi.com"
+          }
+        },
+        "name": "DatabaseDS Wait Time (Seconds)",
+        "type": "bargauge",
+        "uid": "LuldnIw4k",
+        "version": 1
+      },
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 10,
@@ -159,7 +209,7 @@
             "type": "prometheus",
             "uid": "P5DCFC7561CCDE821"
           },
-          "editorMode": "explain",
+          "editorMode": "code",
           "expr": "databaseds_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000",
           "legendFormat": "__auto",
           "range": true,
@@ -189,6 +239,379 @@
           },
           "mappings": [],
           "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 0,
+        "y": 8
+      },
+      "id": 69,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "expr": "avg(setupdb_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "refId": "A"
+        }
+      ],
+      "title": "Mean Setup DB Wait Time (S)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 3,
+        "y": 8
+      },
+      "id": 72,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "expr": "max(setupdb_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "refId": "A"
+        }
+      ],
+      "title": "Max Setup DB Wait Time (S)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 6,
+        "y": 8
+      },
+      "id": 76,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "expr": "min(setupdb_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "refId": "A"
+        }
+      ],
+      "title": "Min Setup DB Wait Time (S)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 12,
+        "y": 8
+      },
+      "id": 71,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "expr": "avg(databaseds_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}/1000000000)",
+          "refId": "A"
+        }
+      ],
+      "title": "Mean DatabaseDS Wait Time (S)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 15,
+        "y": 8
+      },
+      "id": 73,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "expr": "max(databaseds_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "refId": "A"
+        }
+      ],
+      "title": "Max DatabaseDS Wait Time (S)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 18,
+        "y": 8
+      },
+      "id": 78,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "expr": "min(databaseds_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "refId": "A"
+        }
+      ],
+      "title": "Min Setup DB Wait Time (S)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
             "mode": "percentage",
             "steps": [
               {
@@ -209,9 +632,33 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 13
       },
       "id": 64,
+      "libraryPanel": {
+        "description": "",
+        "meta": {
+          "connectedDashboards": 1,
+          "created": "2023-05-23T13:34:06Z",
+          "createdBy": {
+            "avatarUrl": "/grafana/avatar/0682a77aa61cc93515b42dc7351bacc6",
+            "id": 20,
+            "name": "james.sawdy@cgi.com"
+          },
+          "folderName": "kubernetes-dashboard",
+          "folderUid": "x8Ddhe1Vk",
+          "updated": "2023-05-23T13:34:06Z",
+          "updatedBy": {
+            "avatarUrl": "/grafana/avatar/0682a77aa61cc93515b42dc7351bacc6",
+            "id": 20,
+            "name": "james.sawdy@cgi.com"
+          }
+        },
+        "name": "Dependencies Waiting Time (Seconds)",
+        "type": "bargauge",
+        "uid": "pfxd7IQ4z",
+        "version": 1
+      },
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 10,
@@ -241,7 +688,7 @@
           "refId": "A"
         }
       ],
-      "title": "Depends On Waiting Time (Seconds)",
+      "title": "Dependencies Waiting Time (Seconds)",
       "transformations": [
         {
           "id": "labelsToFields",
@@ -261,6 +708,7 @@
         "type": "prometheus",
         "uid": "P5DCFC7561CCDE821"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -268,7 +716,7 @@
           },
           "mappings": [],
           "thresholds": {
-            "mode": "percentage",
+            "mode": "absolute",
             "steps": [
               {
                 "color": "green",
@@ -276,7 +724,7 @@
               },
               {
                 "color": "red",
-                "value": 50
+                "value": 30
               }
             ]
           },
@@ -288,9 +736,33 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 8
+        "y": 13
       },
       "id": 60,
+      "libraryPanel": {
+        "description": "",
+        "meta": {
+          "connectedDashboards": 1,
+          "created": "2023-05-23T13:34:23Z",
+          "createdBy": {
+            "avatarUrl": "/grafana/avatar/0682a77aa61cc93515b42dc7351bacc6",
+            "id": 20,
+            "name": "james.sawdy@cgi.com"
+          },
+          "folderName": "kubernetes-dashboard",
+          "folderUid": "x8Ddhe1Vk",
+          "updated": "2023-05-23T13:34:23Z",
+          "updatedBy": {
+            "avatarUrl": "/grafana/avatar/0682a77aa61cc93515b42dc7351bacc6",
+            "id": 20,
+            "name": "james.sawdy@cgi.com"
+          }
+        },
+        "name": "Image Pulling Time (Seconds)",
+        "type": "bargauge",
+        "uid": "nsZK7IwVk",
+        "version": 1
+      },
       "options": {
         "displayMode": "gradient",
         "minVizHeight": 10,
@@ -335,12 +807,411 @@
       "type": "bargauge"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 0,
+        "y": 21
+      },
+      "id": 70,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "expr": "avg(dependson_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "refId": "A"
+        }
+      ],
+      "title": "Mean Dependency Wait Time (S)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 3,
+        "y": 21
+      },
+      "id": 75,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "expr": "max(dependson_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "refId": "A"
+        }
+      ],
+      "title": "Max Dependency Wait Time (S)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 6,
+        "y": 21
+      },
+      "id": 77,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "expr": "min(dependson_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "refId": "A"
+        }
+      ],
+      "title": "Min Setup DB Wait Time (S)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 12,
+        "y": 21
+      },
+      "id": 67,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "avg(image_pulling{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "format": "table",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{device_server_name}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Mean Image Pulling (S) ",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 15,
+        "y": 21
+      },
+      "id": 79,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "max(image_pulling{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "format": "table",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{device_server_name}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Max Image Pulling (S) ",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 18,
+        "y": 21
+      },
+      "id": 80,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "min(image_pulling{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "format": "table",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{device_server_name}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Min Image Pulling (S) ",
+      "type": "stat"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 26
       },
       "id": 53,
       "panels": [],
@@ -389,7 +1260,7 @@
         "h": 9,
         "w": 18,
         "x": 0,
-        "y": 17
+        "y": 27
       },
       "id": 45,
       "options": {
@@ -454,7 +1325,7 @@
         "h": 4,
         "w": 3,
         "x": 18,
-        "y": 17
+        "y": 27
       },
       "id": 47,
       "options": {
@@ -517,7 +1388,7 @@
         "h": 4,
         "w": 3,
         "x": 21,
-        "y": 17
+        "y": 27
       },
       "id": 48,
       "options": {
@@ -581,7 +1452,7 @@
         "h": 5,
         "w": 3,
         "x": 18,
-        "y": 21
+        "y": 31
       },
       "id": 50,
       "options": {
@@ -652,7 +1523,7 @@
         "h": 5,
         "w": 3,
         "x": 21,
-        "y": 21
+        "y": 31
       },
       "id": 51,
       "options": {
@@ -724,7 +1595,7 @@
         "h": 9,
         "w": 18,
         "x": 0,
-        "y": 26
+        "y": 36
       },
       "id": 57,
       "options": {
@@ -797,7 +1668,7 @@
         "h": 5,
         "w": 3,
         "x": 18,
-        "y": 26
+        "y": 36
       },
       "id": 49,
       "options": {
@@ -864,7 +1735,7 @@
         "h": 5,
         "w": 3,
         "x": 21,
-        "y": 26
+        "y": 36
       },
       "id": 58,
       "options": {
@@ -904,7 +1775,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 35
+        "y": 45
       },
       "id": 55,
       "panels": [],
@@ -944,7 +1815,7 @@
         "h": 5,
         "w": 3,
         "x": 0,
-        "y": 36
+        "y": 46
       },
       "id": 29,
       "options": {
@@ -1011,7 +1882,7 @@
         "h": 5,
         "w": 3,
         "x": 3,
-        "y": 36
+        "y": 46
       },
       "id": 56,
       "options": {
@@ -1078,7 +1949,7 @@
         "h": 5,
         "w": 3,
         "x": 6,
-        "y": 36
+        "y": 46
       },
       "id": 31,
       "options": {
@@ -1145,7 +2016,7 @@
         "h": 5,
         "w": 3,
         "x": 9,
-        "y": 36
+        "y": 46
       },
       "id": 32,
       "options": {
@@ -1212,7 +2083,7 @@
         "h": 5,
         "w": 3,
         "x": 12,
-        "y": 36
+        "y": 46
       },
       "id": 35,
       "options": {
@@ -1279,7 +2150,7 @@
         "h": 5,
         "w": 3,
         "x": 15,
-        "y": 36
+        "y": 46
       },
       "id": 37,
       "options": {
@@ -1346,7 +2217,7 @@
         "h": 5,
         "w": 3,
         "x": 18,
-        "y": 36
+        "y": 46
       },
       "id": 34,
       "options": {
@@ -1413,7 +2284,7 @@
         "h": 5,
         "w": 3,
         "x": 0,
-        "y": 41
+        "y": 51
       },
       "id": 30,
       "options": {
@@ -1480,7 +2351,7 @@
         "h": 5,
         "w": 3,
         "x": 3,
-        "y": 41
+        "y": 51
       },
       "id": 41,
       "options": {
@@ -1547,7 +2418,7 @@
         "h": 5,
         "w": 3,
         "x": 6,
-        "y": 41
+        "y": 51
       },
       "id": 33,
       "options": {
@@ -1614,7 +2485,7 @@
         "h": 5,
         "w": 3,
         "x": 9,
-        "y": 41
+        "y": 51
       },
       "id": 40,
       "options": {
@@ -1681,7 +2552,7 @@
         "h": 5,
         "w": 3,
         "x": 12,
-        "y": 41
+        "y": 51
       },
       "id": 36,
       "options": {
@@ -1725,7 +2596,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 46
+        "y": 56
       },
       "id": 17,
       "panels": [
@@ -1878,7 +2749,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 47
+        "y": 57
       },
       "id": 18,
       "panels": [
@@ -1998,7 +2869,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 48
+        "y": 58
       },
       "id": 19,
       "panels": [
@@ -2269,7 +3140,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 49
+        "y": 59
       },
       "id": 20,
       "panels": [
@@ -2411,7 +3282,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 50
+        "y": 60
       },
       "id": 21,
       "panels": [
@@ -2733,7 +3604,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 51
+        "y": 61
       },
       "id": 22,
       "panels": [
@@ -2925,7 +3796,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 52
+        "y": 62
       },
       "id": 23,
       "panels": [
@@ -3117,7 +3988,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 53
+        "y": 63
       },
       "id": 24,
       "panels": [
@@ -3309,7 +4180,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 54
+        "y": 64
       },
       "id": 25,
       "panels": [
@@ -3518,7 +4389,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 55
+        "y": 65
       },
       "id": 26,
       "panels": [
@@ -3711,7 +4582,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 56
+        "y": 66
       },
       "id": 27,
       "panels": [
@@ -4148,6 +5019,6 @@
   "timezone": "UTC",
   "title": "Kubernetes / Compute Resources / DeviceServer",
   "uid": "e0tiv654z",
-  "version": 10,
+  "version": 32,
   "weekStart": ""
 }
