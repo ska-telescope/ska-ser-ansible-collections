@@ -4,7 +4,6 @@
   hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
-  become: true
   tasks:
     - name: Add new gitlab user
       ansible.builtin.import_role:
