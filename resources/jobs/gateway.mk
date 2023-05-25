@@ -22,6 +22,11 @@ users: check_hosts ## Add ubuntu users and configure jumphost
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
+welcome: check_hosts ## Add welcome script
+	ansible-playbook $(PLAYBOOKS_DIR)/welcome.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
 users-backup: check_hosts ## Backup users
 	ansible-playbook $(PLAYBOOKS_DIR)/backup_users.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \

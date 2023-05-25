@@ -77,7 +77,7 @@
       OPENSTACK_MANAGED_NETWORK_NODE_CIDR: "{{ capi_capo_openstack_managed_network_cidr | default(omit) }}"
       OPENSTACK_SECURITY_GROUPS: "{{ capi_capo_openstack_security_groups | default([]) }}"
       CONTROL_PLANE_MACHINE_COUNT: "{{ capi_controlplane_count }}"
-      APISERVER_EXTRA_SANS: "{{ capi_apiserver_extra_sans | unique }}"
+      APISERVER_EXTRA_SANS: "{{ (capi_apiserver_extra_sans | default([])) | unique }}"
       SERVICE_DOMAIN: "{{ capi_service_domain }}"
       DNS_IMAGE_NAME: "{{ capi_dns_image_name }}"
       DNS_IMAGE_TAG: "{{ capi_dns_image_tag }}"

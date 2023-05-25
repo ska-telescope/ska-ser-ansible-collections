@@ -28,7 +28,6 @@ display = Display()
 
 class ActionModule(ActionBase):
     def run(self, tmp=None, task_vars=None):
-
         super(ActionModule, self).run(tmp, task_vars)
         module_args = self._task.args.copy()
         module_return = self._execute_module(

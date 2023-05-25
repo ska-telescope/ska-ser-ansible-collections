@@ -1,13 +1,14 @@
-import re
 import argparse
-import json
-import sys
 import datetime
-import socket
-import yaml
-import os
-import logging
 import glob
+import json
+import logging
+import os
+import re
+import socket
+import sys
+
+import yaml
 from ansible.inventory.manager import InventoryManager
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars.manager import VariableManager
@@ -45,9 +46,9 @@ def generate_targets_from_inventory(inventory):
         for filename in os.listdir(inventory):
             file_complete_path = os.path.join(inventory, filename)
             if (
-                os.path.isfile(file_complete_path) and
-                filename.endswith("yml") and
-                not os.path.islink(file_complete_path)
+                os.path.isfile(file_complete_path)
+                and filename.endswith("yml")
+                and not os.path.islink(file_complete_path)
             ):
                 sources.append(file_complete_path)
     else:
@@ -63,24 +64,26 @@ def generate_targets_from_inventory(inventory):
                 print(host)
                 host_vars = variable_manager.get_vars(host=host)
 
-                hostname = host_vars['inventory_hostname']
-                IP = host_vars['ip']
+                hostname = host_vars["inventory_hostname"]
+                host_ip = host_vars.get(
+                    "ip", host_vars.get("ansible_host", None)
+                )
+                if host_ip is None:
+                    continue
 
                 for exporter_name, details in EXPORTERS.items():
-                    result_of_check = check_port(IP, details["port"])
+                    result_of_check = check_port(host_ip, details["port"])
                     if result_of_check == 0:
-                        print(
-                            f"{exporter_name} {hostname}:{details['port']}"
-                        )
+                        print(f"{exporter_name} {hostname}:{details['port']}")
                         if exporter_name not in targets:
                             targets[exporter_name] = []
                         targets[exporter_name].append(
-                            f"{IP}:{str(details['port'])}"
+                            f"{host_ip}:{str(details['port'])}"
                         )
                         hostrelabelling[RELABEL_KEY].append(
                             {
                                 "source_labels": ["instance"],
-                                "regex": re.escape(IP)
+                                "regex": re.escape(host_ip)
                                 + ":"
                                 + str(details["port"]),
                                 "action": "replace",
@@ -120,7 +123,6 @@ def write_json_files():
 start_time = datetime.datetime.now()
 
 logging.basicConfig(level=logging.INFO)
-
 LOG = logging.getLogger(__name__)
 
 if os.environ.get("http_proxy") or os.environ.get("https_proxy"):
@@ -149,7 +151,7 @@ if not args.inventory and not args.glob:
     print(
         (
             "Please provide an inventory file",
-            "or folder with the --inventory option"
+            "or folder with the --inventory option",
         )
     )
     sys.exit(1)

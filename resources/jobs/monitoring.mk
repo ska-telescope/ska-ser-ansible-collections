@@ -145,6 +145,14 @@ ironic-exporter: check_hosts ## Install Prometheus ironic exporter - pass INVENT
 	-e 'ansible_python_interpreter=/usr/bin/python3' \
 	--limit $(NODES)
 
+postgres-exporter: check_hosts ## Install Prometheus postgres exporter - pass INVENTORY and NODES
+	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_postgres_exporter.yml \
+	-i $(INVENTORY) \
+	-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
+	$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+	-e 'ansible_python_interpreter=/usr/bin/python3' \
+	--limit $(NODES)
+
 generate-targets: check_hosts ## Update json file for prometheus targets definition
 	@ansible-playbook $(PLAYBOOKS_DIR)/generate_targets.yml \
 	-i $(INVENTORY) \

@@ -24,8 +24,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 43,
-  "iteration": 1676891811378,
+  "id": 52,
+  "iteration": 1684854261661,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -104,7 +104,7 @@
             "type": "prometheus",
             "uid": "P5DCFC7561CCDE821"
           },
-          "editorMode": "code",
+          "editorMode": "explain",
           "exemplar": false,
           "expr": "startup_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000",
           "format": "time_series",
@@ -601,9 +601,9 @@
         "x": 0,
         "y": 19
       },
-      "id": 55,
+      "id": 82,
       "panels": [],
-      "title": "Details - Operator Information",
+      "title": "Timing Information",
       "type": "row"
     },
     {
@@ -611,14 +611,13 @@
         "type": "prometheus",
         "uid": "P5DCFC7561CCDE821"
       },
-      "description": "Tango-operator reconcile count for device server",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "mappings": [],
-          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -628,7 +627,204 @@
               },
               {
                 "color": "red",
-                "value": 5
+                "value": 1
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "id": 66,
+      "libraryPanel": {
+        "description": "",
+        "meta": {
+          "connectedDashboards": 1,
+          "created": "2023-05-23T13:33:54Z",
+          "createdBy": {
+            "avatarUrl": "/grafana/avatar/0682a77aa61cc93515b42dc7351bacc6",
+            "id": 20,
+            "name": "james.sawdy@cgi.com"
+          },
+          "folderName": "kubernetes-dashboard",
+          "folderUid": "x8Ddhe1Vk",
+          "updated": "2023-05-23T13:58:58Z",
+          "updatedBy": {
+            "avatarUrl": "/grafana/avatar/0682a77aa61cc93515b42dc7351bacc6",
+            "id": 20,
+            "name": "james.sawdy@cgi.com"
+          }
+        },
+        "name": "Setup DB Waiting Time (Seconds)",
+        "type": "bargauge",
+        "uid": "H4IO7IQVk",
+        "version": 2
+      },
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "expr": "setupdb_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000",
+          "refId": "A"
+        }
+      ],
+      "title": "Setup DB Waiting Time (Seconds)",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "device_server_name"
+            ],
+            "valueLabel": "device_server_name"
+          }
+        }
+      ],
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "id": 62,
+      "libraryPanel": {
+        "description": "",
+        "meta": {
+          "connectedDashboards": 1,
+          "created": "2023-05-23T13:34:14Z",
+          "createdBy": {
+            "avatarUrl": "/grafana/avatar/0682a77aa61cc93515b42dc7351bacc6",
+            "id": 20,
+            "name": "james.sawdy@cgi.com"
+          },
+          "folderName": "kubernetes-dashboard",
+          "folderUid": "x8Ddhe1Vk",
+          "updated": "2023-05-23T13:34:14Z",
+          "updatedBy": {
+            "avatarUrl": "/grafana/avatar/0682a77aa61cc93515b42dc7351bacc6",
+            "id": 20,
+            "name": "james.sawdy@cgi.com"
+          }
+        },
+        "name": "DatabaseDS Wait Time (Seconds)",
+        "type": "bargauge",
+        "uid": "LuldnIw4k",
+        "version": 1
+      },
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "expr": "databaseds_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "DatabaseDS Wait Time (Seconds)",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "valueLabel": "device_server_name"
+          }
+        }
+      ],
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
               }
             ]
           }
@@ -639,9 +835,9 @@
         "h": 5,
         "w": 3,
         "x": 0,
-        "y": 20
+        "y": 28
       },
-      "id": 29,
+      "id": 69,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -663,14 +859,11 @@
             "type": "prometheus",
             "uid": "P5DCFC7561CCDE821"
           },
-          "editorMode": "code",
-          "expr": "reconcile_count{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
-          "legendFormat": "__auto",
-          "range": true,
+          "expr": "avg(setupdb_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
           "refId": "A"
         }
       ],
-      "title": "Reconcile Count",
+      "title": "Mean Setup DB Wait Time (S)",
       "type": "stat"
     },
     {
@@ -678,14 +871,12 @@
         "type": "prometheus",
         "uid": "P5DCFC7561CCDE821"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "mappings": [],
-          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -695,7 +886,7 @@
               },
               {
                 "color": "red",
-                "value": 1
+                "value": 80
               }
             ]
           }
@@ -706,9 +897,9 @@
         "h": 5,
         "w": 3,
         "x": 3,
-        "y": 20
+        "y": 28
       },
-      "id": 56,
+      "id": 72,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -730,14 +921,11 @@
             "type": "prometheus",
             "uid": "P5DCFC7561CCDE821"
           },
-          "editorMode": "code",
-          "expr": "reconcile_failures{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
-          "legendFormat": "__auto",
-          "range": true,
+          "expr": "max(setupdb_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
           "refId": "A"
         }
       ],
-      "title": "Reconcile failures",
+      "title": "Max Setup DB Wait Time (S)",
       "type": "stat"
     },
     {
@@ -745,14 +933,12 @@
         "type": "prometheus",
         "uid": "P5DCFC7561CCDE821"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "mappings": [],
-          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -762,7 +948,7 @@
               },
               {
                 "color": "red",
-                "value": 5
+                "value": 80
               }
             ]
           }
@@ -773,9 +959,9 @@
         "h": 5,
         "w": 3,
         "x": 6,
-        "y": 20
+        "y": 28
       },
-      "id": 31,
+      "id": 76,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -797,14 +983,11 @@
             "type": "prometheus",
             "uid": "P5DCFC7561CCDE821"
           },
-          "editorMode": "code",
-          "expr": "startup_time{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}/1000000000",
-          "legendFormat": "__auto",
-          "range": true,
+          "expr": "min(setupdb_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
           "refId": "A"
         }
       ],
-      "title": "Start up time (ss)",
+      "title": "Min Setup DB Wait Time (S)",
       "type": "stat"
     },
     {
@@ -812,14 +995,12 @@
         "type": "prometheus",
         "uid": "P5DCFC7561CCDE821"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "mappings": [],
-          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -829,74 +1010,7 @@
               },
               {
                 "color": "red",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 3,
-        "x": 9,
-        "y": 20
-      },
-      "id": 32,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P5DCFC7561CCDE821"
-          },
-          "editorMode": "code",
-          "expr": "not_found_databaseds{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Not found Databaseds",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "P5DCFC7561CCDE821"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
+                "value": 80
               }
             ]
           }
@@ -907,9 +1021,9 @@
         "h": 5,
         "w": 3,
         "x": 12,
-        "y": 20
+        "y": 28
       },
-      "id": 35,
+      "id": 71,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -931,14 +1045,11 @@
             "type": "prometheus",
             "uid": "P5DCFC7561CCDE821"
           },
-          "editorMode": "code",
-          "expr": "config_job_failed{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
-          "legendFormat": "__auto",
-          "range": true,
+          "expr": "avg(databaseds_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}/1000000000)",
           "refId": "A"
         }
       ],
-      "title": "Configuration job failures",
+      "title": "Mean DatabaseDS Wait Time (S)",
       "type": "stat"
     },
     {
@@ -946,14 +1057,12 @@
         "type": "prometheus",
         "uid": "P5DCFC7561CCDE821"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "mappings": [],
-          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -963,7 +1072,7 @@
               },
               {
                 "color": "red",
-                "value": 1
+                "value": 80
               }
             ]
           }
@@ -974,9 +1083,9 @@
         "h": 5,
         "w": 3,
         "x": 15,
-        "y": 20
+        "y": 28
       },
-      "id": 37,
+      "id": 73,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -998,14 +1107,466 @@
             "type": "prometheus",
             "uid": "P5DCFC7561CCDE821"
           },
+          "expr": "max(databaseds_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "refId": "A"
+        }
+      ],
+      "title": "Max DatabaseDS Wait Time (S)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 18,
+        "y": 28
+      },
+      "id": 78,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "expr": "min(databaseds_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "refId": "A"
+        }
+      ],
+      "title": "Min Setup DB Wait Time (S)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 33
+      },
+      "id": 64,
+      "libraryPanel": {
+        "description": "",
+        "meta": {
+          "connectedDashboards": 1,
+          "created": "2023-05-23T13:34:06Z",
+          "createdBy": {
+            "avatarUrl": "/grafana/avatar/0682a77aa61cc93515b42dc7351bacc6",
+            "id": 20,
+            "name": "james.sawdy@cgi.com"
+          },
+          "folderName": "kubernetes-dashboard",
+          "folderUid": "x8Ddhe1Vk",
+          "updated": "2023-05-23T13:34:06Z",
+          "updatedBy": {
+            "avatarUrl": "/grafana/avatar/0682a77aa61cc93515b42dc7351bacc6",
+            "id": 20,
+            "name": "james.sawdy@cgi.com"
+          }
+        },
+        "name": "Dependencies Waiting Time (Seconds)",
+        "type": "bargauge",
+        "uid": "pfxd7IQ4z",
+        "version": 1
+      },
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "text": {}
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
           "editorMode": "code",
-          "expr": "tempfile_allocate_problem{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"} + tempfile_close_problem{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"} + tempfile_write_problem{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
+          "expr": "dependson_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Temporary file problems count",
+      "title": "Dependencies Waiting Time (Seconds)",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "device_server_name"
+            ],
+            "mode": "columns",
+            "valueLabel": "device_server_name"
+          }
+        }
+      ],
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 30
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 33
+      },
+      "id": 60,
+      "libraryPanel": {
+        "description": "",
+        "meta": {
+          "connectedDashboards": 1,
+          "created": "2023-05-23T13:34:23Z",
+          "createdBy": {
+            "avatarUrl": "/grafana/avatar/0682a77aa61cc93515b42dc7351bacc6",
+            "id": 20,
+            "name": "james.sawdy@cgi.com"
+          },
+          "folderName": "kubernetes-dashboard",
+          "folderUid": "x8Ddhe1Vk",
+          "updated": "2023-05-23T13:34:23Z",
+          "updatedBy": {
+            "avatarUrl": "/grafana/avatar/0682a77aa61cc93515b42dc7351bacc6",
+            "id": 20,
+            "name": "james.sawdy@cgi.com"
+          }
+        },
+        "name": "Image Pulling Time (Seconds)",
+        "type": "bargauge",
+        "uid": "nsZK7IwVk",
+        "version": 1
+      },
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "expr": "image_pulling{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Image Pulling Time (Seconds)",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "keepLabels": [
+              "device_server_name"
+            ],
+            "mode": "columns",
+            "valueLabel": "device_server_name"
+          }
+        }
+      ],
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 0,
+        "y": 41
+      },
+      "id": 70,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "expr": "avg(dependson_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "refId": "A"
+        }
+      ],
+      "title": "Mean Dependency Wait Time (S)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 3,
+        "y": 41
+      },
+      "id": 75,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "expr": "max(dependson_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "refId": "A"
+        }
+      ],
+      "title": "Max Dependency Wait Time (S)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 6,
+        "y": 41
+      },
+      "id": 77,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "expr": "min(dependson_wait_time{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "refId": "A"
+        }
+      ],
+      "title": "Min Setup DB Wait Time (S)",
       "type": "stat"
     },
     {
@@ -1030,204 +1591,6 @@
               },
               {
                 "color": "red",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 3,
-        "x": 18,
-        "y": 20
-      },
-      "id": 34,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P5DCFC7561CCDE821"
-          },
-          "editorMode": "code",
-          "expr": "not_found_error{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Not found error",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "P5DCFC7561CCDE821"
-      },
-      "description": "Tango-operator reconcile count for device server after success",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 3,
-        "x": 0,
-        "y": 25
-      },
-      "id": 30,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P5DCFC7561CCDE821"
-          },
-          "editorMode": "code",
-          "expr": "reconcile_count_after_success{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Reconcile Count after success",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "P5DCFC7561CCDE821"
-      },
-      "description": "could not apply DeviceServer configuration",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 3,
-        "x": 3,
-        "y": 25
-      },
-      "id": 41,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P5DCFC7561CCDE821"
-          },
-          "editorMode": "code",
-          "expr": "config_applied{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Configuration applied count",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "P5DCFC7561CCDE821"
-      },
-      "description": "Reschedule for pending databaseds",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
                 "value": 5
               }
             ]
@@ -1238,10 +1601,10 @@
       "gridPos": {
         "h": 5,
         "w": 3,
-        "x": 6,
-        "y": 25
+        "x": 12,
+        "y": 41
       },
-      "id": 33,
+      "id": 67,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -1249,7 +1612,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "last"
           ],
           "fields": "",
           "values": false
@@ -1264,79 +1627,17 @@
             "uid": "P5DCFC7561CCDE821"
           },
           "editorMode": "code",
-          "expr": "pending_databaseds{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
-          "legendFormat": "__auto",
+          "exemplar": false,
+          "expr": "avg(image_pulling{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "format": "table",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{device_server_name}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Pending databaseds count",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "P5DCFC7561CCDE821"
-      },
-      "description": "Reschedule for Pending dependency on device name",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 3,
-        "x": 9,
-        "y": 25
-      },
-      "id": 40,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P5DCFC7561CCDE821"
-          },
-          "editorMode": "code",
-          "expr": "sum(pending_dependency{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"})",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Pending dependencies",
+      "title": "Mean Image Pulling (S) ",
       "type": "stat"
     },
     {
@@ -1356,11 +1657,12 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
-                "value": 1
+                "value": 5
               }
             ]
           }
@@ -1370,10 +1672,10 @@
       "gridPos": {
         "h": 5,
         "w": 3,
-        "x": 12,
-        "y": 25
+        "x": 15,
+        "y": 41
       },
-      "id": 36,
+      "id": 79,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -1381,7 +1683,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "last"
           ],
           "fields": "",
           "values": false
@@ -1396,14 +1698,907 @@
             "uid": "P5DCFC7561CCDE821"
           },
           "editorMode": "code",
-          "expr": "invalid_configuration{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
-          "legendFormat": "__auto",
+          "exemplar": false,
+          "expr": "max(image_pulling{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "format": "table",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{device_server_name}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Invalid configuration",
+      "title": "Max Image Pulling (S) ",
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 18,
+        "y": 41
+      },
+      "id": 80,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "min(image_pulling{datacentre=\"$cluster\", namespace=\"$namespace\"}/1000000000)",
+          "format": "table",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{device_server_name}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Min Image Pulling (S) ",
+      "type": "stat"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 46
+      },
+      "id": 55,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "description": "Tango-operator reconcile count for device server",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "noValue": "0",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 5
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 0,
+            "y": 28
+          },
+          "id": 29,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P5DCFC7561CCDE821"
+              },
+              "editorMode": "code",
+              "expr": "reconcile_count{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Reconcile Count",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "noValue": "0",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 3,
+            "y": 28
+          },
+          "id": 56,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P5DCFC7561CCDE821"
+              },
+              "editorMode": "code",
+              "expr": "reconcile_failures{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Reconcile failures",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "noValue": "0",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 5
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 6,
+            "y": 28
+          },
+          "id": 31,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P5DCFC7561CCDE821"
+              },
+              "editorMode": "code",
+              "expr": "startup_time{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}/1000000000",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Start up time (ss)",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "description": "This shows how many instances of Databaseds were not found in the cluster.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "noValue": "0",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 9,
+            "y": 28
+          },
+          "id": 32,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P5DCFC7561CCDE821"
+              },
+              "editorMode": "code",
+              "expr": "not_found_databaseds{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Not found Databaseds",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "noValue": "0",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 12,
+            "y": 28
+          },
+          "id": 35,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P5DCFC7561CCDE821"
+              },
+              "editorMode": "code",
+              "expr": "config_job_failed{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Configuration job failures",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "noValue": "0",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 15,
+            "y": 28
+          },
+          "id": 37,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P5DCFC7561CCDE821"
+              },
+              "editorMode": "code",
+              "expr": "tempfile_allocate_problem{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"} + tempfile_close_problem{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"} + tempfile_write_problem{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Temporary file problems count",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "noValue": "0",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 18,
+            "y": 28
+          },
+          "id": 34,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P5DCFC7561CCDE821"
+              },
+              "editorMode": "code",
+              "expr": "not_found_error{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Not found error",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "description": "Tango-operator reconcile count for device server after success",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "noValue": "0",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 0,
+            "y": 33
+          },
+          "id": 30,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P5DCFC7561CCDE821"
+              },
+              "editorMode": "code",
+              "expr": "reconcile_count_after_success{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Reconcile Count after success",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "description": "could not apply DeviceServer configuration",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "noValue": "0",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 3,
+            "y": 33
+          },
+          "id": 41,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P5DCFC7561CCDE821"
+              },
+              "editorMode": "code",
+              "expr": "config_applied{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Configuration applied count",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "description": "Reschedule for pending databaseds",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "noValue": "0",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 5
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 6,
+            "y": 33
+          },
+          "id": 33,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P5DCFC7561CCDE821"
+              },
+              "editorMode": "code",
+              "expr": "pending_databaseds{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Pending databaseds count",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "description": "Reschedule for Pending dependency on device name",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "noValue": "0",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 9,
+            "y": 33
+          },
+          "id": 40,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P5DCFC7561CCDE821"
+              },
+              "editorMode": "code",
+              "expr": "sum(pending_dependency{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"})",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Pending dependencies",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "noValue": "0",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 12,
+            "y": 33
+          },
+          "id": 36,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P5DCFC7561CCDE821"
+              },
+              "editorMode": "code",
+              "expr": "invalid_configuration{datacentre=\"$cluster\", namespace=\"$namespace\", device_server_name=\"$DeviceServer\"}",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Invalid configuration",
+          "type": "stat"
+        }
+      ],
+      "title": "Details - Operator Information",
+      "type": "row"
     },
     {
       "collapsed": true,
@@ -1415,7 +2610,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 47
       },
       "id": 17,
       "panels": [
@@ -1434,7 +2629,7 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 17
+            "y": 31
           },
           "hiddenSeries": false,
           "id": 1,
@@ -1568,7 +2763,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 48
       },
       "id": 18,
       "panels": [
@@ -1688,7 +2883,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 32
+        "y": 49
       },
       "id": 19,
       "panels": [
@@ -1959,7 +3154,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 33
+        "y": 50
       },
       "id": 20,
       "panels": [
@@ -2101,7 +3296,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 51
       },
       "id": 21,
       "panels": [
@@ -2423,7 +3618,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 35
+        "y": 52
       },
       "id": 22,
       "panels": [
@@ -2441,7 +3636,7 @@
             "h": 7,
             "w": 12,
             "x": 0,
-            "y": 22
+            "y": 36
           },
           "hiddenSeries": false,
           "id": 6,
@@ -2528,7 +3723,7 @@
             "h": 7,
             "w": 12,
             "x": 12,
-            "y": 22
+            "y": 36
           },
           "hiddenSeries": false,
           "id": 7,
@@ -2615,7 +3810,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 36
+        "y": 53
       },
       "id": 23,
       "panels": [
@@ -2633,7 +3828,7 @@
             "h": 7,
             "w": 12,
             "x": 0,
-            "y": 23
+            "y": 37
           },
           "hiddenSeries": false,
           "id": 8,
@@ -2720,7 +3915,7 @@
             "h": 7,
             "w": 12,
             "x": 12,
-            "y": 23
+            "y": 37
           },
           "hiddenSeries": false,
           "id": 9,
@@ -2807,7 +4002,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 37
+        "y": 54
       },
       "id": 24,
       "panels": [
@@ -2999,7 +4194,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 55
       },
       "id": 25,
       "panels": [
@@ -3208,7 +4403,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 39
+        "y": 56
       },
       "id": 26,
       "panels": [
@@ -3401,7 +4596,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 40
+        "y": 57
       },
       "id": 27,
       "panels": [
@@ -3666,7 +4861,7 @@
       "type": "row"
     }
   ],
-  "refresh": false,
+  "refresh": "",
   "schemaVersion": 36,
   "style": "dark",
   "tags": [],
@@ -3694,8 +4889,8 @@
       {
         "current": {
           "selected": false,
-          "text": "stfc-dp-ska-monitor",
-          "value": "stfc-dp-ska-monitor"
+          "text": "stfc-ska-monitor",
+          "value": "stfc-ska-monitor"
         },
         "datasource": {
           "type": "prometheus",
@@ -3723,8 +4918,8 @@
       {
         "current": {
           "selected": false,
-          "text": "binderhub",
-          "value": "binderhub"
+          "text": "ci-ska-skampi-4308374341-low",
+          "value": "ci-ska-skampi-4308374341-low"
         },
         "datasource": {
           "type": "prometheus",
@@ -3751,10 +4946,9 @@
       },
       {
         "current": {
-          "isNone": true,
           "selected": false,
-          "text": "None",
-          "value": ""
+          "text": "alveo-default",
+          "value": "alveo-default"
         },
         "datasource": {
           "type": "prometheus",
@@ -3781,10 +4975,9 @@
       },
       {
         "current": {
-          "isNone": true,
           "selected": false,
-          "text": "None",
-          "value": ""
+          "text": "deviceserver-alveo-default-0",
+          "value": "deviceserver-alveo-default-0"
         },
         "datasource": {
           "type": "prometheus",
@@ -3809,7 +5002,7 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-24h",
     "to": "now"
   },
   "timepicker": {
@@ -3839,7 +5032,7 @@
   },
   "timezone": "UTC",
   "title": "Kubernetes / Compute Resources / DeviceServer",
-  "uid": "e0tiv654k",
-  "version": 28,
+  "uid": "e0tiv654z",
+  "version": 33,
   "weekStart": ""
 }

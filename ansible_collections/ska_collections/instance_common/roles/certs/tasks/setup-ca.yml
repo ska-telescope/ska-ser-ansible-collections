@@ -5,6 +5,33 @@
     state: directory
     mode: 0700
 
+- name: Pull certificates from vault
+  when: vault_config is defined and certificate_ca_vault_secret
+  block:
+    - name: Get secret from vault
+      community.hashi_vault.vault_kv2_get:
+        url: "{{ vault_config.address }}"
+        engine_mount_point: "{{ vault_config.mount_point }}"
+        path: "{{ certificate_ca_vault_secret }}"
+        token: "{{ vault_config.token }}"
+        token_validate: true
+      become: false
+      register: ca_vault_secret
+      delegate_to: localhost
+
+    - name: Create ca pki
+      ansible.builtin.copy:
+        content: "{{ ca_vault_secret.secret[item.secret] | b64decode }}"
+        dest: "{{ certificates_dir }}/{{ item.secret }}"
+        owner: root
+        group: root
+        mode: "{{ item.mode }}"
+        force: false
+      with_items: [
+        {"secret": "ca-certificate.crt", "mode": '0644' },
+        {"secret": "ca-certificate.key", "mode": '0600' }
+      ]
+
 - name: Check if private key file exists
   ansible.builtin.stat:
     path: "{{ certificates_dir }}/ca-certificate.key"

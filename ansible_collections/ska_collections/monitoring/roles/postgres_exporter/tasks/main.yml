@@ -1,0 +1,30 @@
+---
+
+- name: Pull postgres exporter image {{ postgres_exporter_version }}
+  community.docker.docker_image:
+    name: quay.io/prometheuscommunity/postgres-exporter
+    tag: "{{ postgres_exporter_version }}"
+    source: pull
+
+- name: Stop postgres exporter container
+  community.docker.docker_container:
+    name: postgres_exporter
+    stop_timeout: 180
+    state: absent
+
+- name: Start postgres_exporter container
+  community.docker.docker_container:
+    name: postgres_exporter
+    image: "quay.io/prometheuscommunity/postgres-exporter:{{ postgres_exporter_version }}"
+    state: started
+    user: root
+    restart: true
+    restart_policy: always
+    cpus: "{{ postgres_exporter_version_cpu | default(omit) }}"
+    memory: "{{ postgres_exporter_version_memory | default(omit) }}"
+    memory_swap: "{{ postgres_exporter_version_swap | default(omit) }}"
+    memory_swappiness: "{{ postgres_exporter_version_swapiness | default(omit) }}"
+    ports:
+      - "9187:9187"
+    env:
+      DATA_SOURCE_NAME: "postgresql://{{ postgres_exporter_user }}:{{ postgres_exporter_password }}@{{ postgres_exporter_hostname }}:{{ postgres_exporter_port }}/postgres?sslmode=require"

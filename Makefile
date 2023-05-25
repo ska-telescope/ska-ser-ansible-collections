@@ -13,12 +13,18 @@ ANSIBLE_LINT_PARAMETERS=--exclude ./ansible_collections/ska_collections/monitori
 	--exclude ./ansible_collections/stackhpc \
 	--skip-list "yaml[line-length],galaxy[no-changelog]"
 PLAYBOOKS_HOSTS ?=
+DELEGATE_HOSTS ?=
 ANSIBLE_CONFIG ?=
 ANSIBLE_SSH_ARGS ?=
 ANSIBLE_EXTRA_VARS ?=
 
 -include .make/base.mk
 -include .make/ansible.mk
+-include .make/python.mk
+
+PYTHON_LINT_TARGET=./ansible_collections/ska_collections/clusterapi/playbooks/filter_plugins \
+					./ansible_collections/ska_collections/clusterapi/plugins
+PYTHON_SWITCHES_FOR_BLACK=--exclude .yml --exclude .yaml
 
 -include $(BASE_PATH)/PrivateRules.mak
 

@@ -3,5 +3,20 @@ jump_user: jump
 add_jump_ssh_keys: []
 add_ssh_keys_admin: []
 remove_ssh_keys: []
-groups_to_add: "adm,dialout,cdrom,floppy,sudo,audio,dip,video,plugdev,lxd,netdev,docker"
+groups_to_add: "root,adm,dialout,cdrom,floppy,sudo,audio,dip,video,plugdev,lxd,netdev,docker"
 users_default_restore_file: "/tmp/users-backup.tgz"
+users_config_location: "/srv/config"
+users_welcome_header: |
+  ################################################################################################################
+       ___________    ____  _______.___________._______ .___  ___.    .___________._______     ___      .___  ___.
+      /       \   \  /   / /       |           |   ____||   \/   |    |           |   ____|   /   \     |   \/   |
+     |   (----`\   \/   / |   (----`---|  |----|  |__   |  \  /  |    `---|  |----|  |__     /  ^  \    |  \  /  |
+      \   \     \_    _/   \   \       |  |    |   __|  |  |\/|  |        |  |    |   __|   /  /_\  \   |  |\/|  |
+  .----)   |      |  | .----)   |      |  |    |  |____ |  |  |  |        |  |    |  |____ /  _____  \  |  |  |  |
+  |_______/       |__| |_______/       |__|    |_______||__|  |__|        |__|    |_______/__/     \__\ |__|  |__|
+
+  $ Welcome traveler, to the command line realm.
+  $ Seek out help in #team-system-support, if any issues you face.
+  $ The power of this command line and its responsabilities, you must embrace.
+  $ May your login be swift, your commands true, may the gateway be with you!
+users_welcome_kubeconfig_path: "{{ users_config_location }}/kubeconfig"

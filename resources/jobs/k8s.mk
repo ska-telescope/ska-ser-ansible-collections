@@ -6,7 +6,7 @@ PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
 ANSIBLE_COLLECTIONS_PATHS ?=
 TESTS_DIR ?= ./ansible_collections/ska_collections/k8s/tests
 
-TAGS ?= all,metallb,externaldns,ping,ingress,rookio,standardprovisioner,metrics,binderhub,nvidia ## Ansible tags to run in post deployment processing
+TAGS ?= all,metallb,externaldns,ping,ingress,rookio,standardprovisioner,metrics,binderhub,nvidia,vault,ska_tango_operator ## Ansible tags to run in post deployment processing
 
 -include $(BASE_PATH)/PrivateRules.mak
 

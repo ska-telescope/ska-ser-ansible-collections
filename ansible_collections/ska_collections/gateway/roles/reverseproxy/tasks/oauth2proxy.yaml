@@ -33,7 +33,7 @@
     source: pull
     name: "{{ reverseproxy_oauth2proxy_image }}"
 
-- name: Run oauth2proxy container
+- name: Run azuread oauth2proxy container
   community.general.docker_container:
     name: "{{ reverseproxy_oauth2proxy_name }}"
     image: "{{ reverseproxy_oauth2proxy_image }}"
@@ -70,3 +70,43 @@
     labels: "{{ reverseproxy_labels }}"
     log_driver: "json-file"
     log_options: "{{ reverseproxy_oauth2proxy_log_options }}"
+  when: reverseproxy_oauth2proxy_azuread_enabled | bool
+
+- name: Run gitlab oauth2proxy container
+  community.general.docker_container:
+    name: "{{ reverseproxy_oauth2proxy_name }}"
+    image: "{{ reverseproxy_oauth2proxy_image }}"
+    pull: true
+    command:
+      - /bin/oauth2-proxy
+      - --provider=gitlab
+      - --client-id={{ reverseproxy_oauth2proxy_client_id }}
+      - --client-secret={{ reverseproxy_oauth2proxy_client_secret }}
+      - --gitlab-group={{ reverseproxy_oauth2proxy_gitlab_allowed_groups }}
+      - --upstream=file:///dev/null
+      - --http-address=0.0.0.0:{{ reverseproxy_oauth2proxy_port }}
+      - --cookie-secure=true
+      - --redirect-url=https://{{ reverseproxy_dns_name }}/oauth2/callback
+      - --skip-provider-button=true
+      - --set-xauthrequest=true
+      - --skip-auth-preflight=false
+      - --email-domain=*
+      - --pass-access-token
+      - --pass-authorization-header
+      - --session-store-type=redis
+      - --redis-connection-url=redis://{{ inventory_hostname }}:6379
+    env:
+      OAUTH2_PROXY_CLIENT_ID: "{{ reverseproxy_oauth2proxy_client_id }}"
+      OAUTH2_PROXY_CLIENT_SECRET: "{{ reverseproxy_oauth2proxy_client_secret }}"
+      OAUTH2_PROXY_COOKIE_SECRET: "{{ reverseproxy_oauth2proxy_cookie_secret }}"
+    recreate: true
+    restart_policy: always
+    state: started
+    privileged: true
+    network_mode: host
+    exposed_ports:
+      - "{{ reverseproxy_oauth2proxy_port }}"
+    labels: "{{ reverseproxy_labels }}"
+    log_driver: "json-file"
+    log_options: "{{ reverseproxy_oauth2proxy_log_options }}"
+  when: not reverseproxy_oauth2proxy_azuread_enabled | bool

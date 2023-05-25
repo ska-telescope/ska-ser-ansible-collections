@@ -27,7 +27,7 @@ metrics:
 
 service:
   enabled: true
-  type: NodePort
+  type: LoadBalancer
   metrics:
     nodePort: "{{ gitlab_runner_k8s_metrics_port }}"
 
