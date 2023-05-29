@@ -12,7 +12,9 @@ bind-interfaces
 # Use open source DNS servers
 server=1.1.1.1
 server=1.0.0.1
-server=/svc.cluster.local/{{ svc_cluster_local_dns_address }}
+{% for cluster in dns_k8s_clusters %}
+server=/{{ cluster.domain }}/{{ cluster.address }}
+{% endfor %}
 
 # Create custom 'domains'.
 # Custom 'domains' can also be added in /etc/hosts
