@@ -28,3 +28,5 @@ openvpn_clients_dir: "{{ openvpn_dir }}/client-configs"
 openvpn_server_ip: "{{ _ | mandatory('openvpn_server_ip definition is mandatory') }}"
 openvpn_server_interface: ens3
 openvpn_default_restore_file: "/tmp/openvpn-backup.tgz"
+openvpn_dns_servers: "{{ _ | mandatory('openvpn_dns_servers definition is mandatory') }}"
+openvpn_search_domains: "{{ _ | mandatory('openvpn_search_domains definition is mandatory') }}"

@@ -210,8 +210,12 @@ push "route {{ route.ip }} {{ route.mask }}"
 # http://openvpn.net/faq.html#dhcpcaveats
 # The addresses below refer to the public
 # DNS servers provided by opendns.com.
-push "dhcp-option DNS {{ dns_advertise_address }}"
-push "dhcp-option DOMAIN {{ dns_advertise_domain }}"
+{% for dns_server in openvpn_dns_servers %}
+push "dhcp-option DNS {{ dns_server }}"
+{% endfor %}
+{% for domain in openvpn_search_domains %}
+push "dhcp-option DOMAIN {{ domain }}"
+{% endfor %}
 ;push "dhcp-option DNSSEC yes"
 
 # Uncomment this directive to allow different

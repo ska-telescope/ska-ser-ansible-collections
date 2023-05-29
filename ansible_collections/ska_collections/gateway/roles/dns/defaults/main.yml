@@ -1,5 +1,6 @@
-dns_advertise_domain: a.b
+dns_advertise_domain: "{{ _ | mandatory('dns_advertise_domain definition is mandatory') }}"
 dns_server_addresses: []
+# Backwards compatibility
 dns_k8s_clusters:
   - domain: svc.cluster.local
-    address: 10.200.10.1
+    address: "{{ svc_cluster_local_dns_address | default('10.200.10.1') }}"
