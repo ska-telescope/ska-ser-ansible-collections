@@ -1,12 +1,14 @@
 .DEFAULT_GOAL := help
 MAKEFLAGS += --no-print-directory
 SECRETS_ROOT_VAR?=secrets
-.PHONY: ac-check-env vars ac-vars-recursive ac-ping ac-get-info ac-install-dependencies common oci logging reverseproxy monitoring ceph gitlab-runner nexus ac-print-targets help
+.PHONY: ac-check-env vars ac-vars-recursive ac-ping ac-get-info ac-install-dependencies common oci logging \
+reverseproxy monitoring ceph gitlab-runner nexus ac-print-targets help
 
 INVENTORY?=$(PLAYBOOKS_ROOT_DIR)
 JOBS_DIR=resources/jobs
 ANSIBLE_COLLECTIONS ?= ./ansible_collections/ska_collections/
 ANSIBLE_COLLECTIONS_PATHS ?=
+ANSIBLE_FILTER_PLUGINS ?= ./ansible_plugins/filter/:/usr/share/ansible/plugins/filter
 PLAYBOOKS_ROOT_DIR ?=
 ANSIBLE_LINT_PARAMETERS=--exclude ./ansible_collections/ska_collections/monitoring/roles/prometheus/files \
 	--exclude ./ansible_collections/ansible-thoteam.nexus3-oss \
@@ -17,6 +19,7 @@ DELEGATE_HOSTS ?=
 ANSIBLE_CONFIG ?=
 ANSIBLE_SSH_ARGS ?=
 ANSIBLE_EXTRA_VARS ?=
+ANSIBLE_PLAYBOOK_VARS ?=
 
 -include .make/base.mk
 -include .make/ansible.mk
@@ -27,6 +30,19 @@ PYTHON_LINT_TARGET=./ansible_collections/ska_collections/clusterapi/playbooks/fi
 PYTHON_SWITCHES_FOR_BLACK=--exclude .yml --exclude .yaml
 
 -include $(BASE_PATH)/PrivateRules.mak
+
+MAKEFILE_CONTEXT_SEP?=MKCTX_
+MAKEFILE_CONTEXT := $(shell echo -n "$(shell \
+    $(foreach v,$(.VARIABLES), \
+        $(if $(filter-out $(v),MAKEFILE_CONTEXT), \
+            $(if $(and $(filter file, $(origin $(v)))), \
+                echo '$(MAKEFILE_CONTEXT_SEP)$(v)=$($(v))' \
+            ) \
+        ) \
+    ) \
+)" | sed "s#echo $(MAKEFILE_CONTEXT_SEP)#$(MAKEFILE_CONTEXT_SEP)#g" | base64 -w0 )
+
+ANSIBLE_PLAYBOOK_VARS += ANSIBLE_VAR_CONTEXT=$(MAKEFILE_CONTEXT) ANSIBLE_VAR_CONTEXT_SEP=$(MAKEFILE_CONTEXT_SEP)
 
 ac-check-env:
 ifndef DATACENTRE
@@ -77,11 +93,17 @@ ac-vars-recursive:
 		sed 's#.*_s_\(.*\)_e_.*#\1#'); \
 	done
 
+ac-test-var: ac-check-env ## Test the value of an ansible variable
+ifndef PLAYBOOKS_HOSTS
+	$(error PLAYBOOKS_HOSTS is undefined)
+endif
+	$(ANSIBLE_PLAYBOOK_VARS) ansible $(PLAYBOOKS_HOSTS) -i $(INVENTORY) -m debug $(ANSIBLE_PLAYBOOK_ARGUMENTS)
+
 ac-ping: ac-check-env ## Ping Ansible targets
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
 endif
-	@ansible $(PLAYBOOKS_HOSTS) -i $(INVENTORY) -m ping $(ANSIBLE_PLAYBOOK_ARGUMENTS)
+	@$(ANSIBLE_PLAYBOOK_VARS) ansible $(PLAYBOOKS_HOSTS) -i $(INVENTORY) -m ping $(ANSIBLE_PLAYBOOK_ARGUMENTS)
 
 ac-info: ac-check-env ## Get Ansible targets' info
 ifndef PLAYBOOKS_HOSTS
@@ -93,7 +115,7 @@ endif
 		ansible_fqdn \
 		ansible_default_ipv4" | \
 		sed 's/ /,/g'); \
-	ansible $(PLAYBOOKS_HOSTS) -i $(INVENTORY) -m ansible.builtin.gather_facts -a "filter=$$FACTS" $(ANSIBLE_PLAYBOOK_ARGUMENTS)
+	$(ANSIBLE_PLAYBOOK_VARS) ansible $(PLAYBOOKS_HOSTS) -i $(INVENTORY) -m ansible.builtin.gather_facts -a "filter=$$FACTS" $(ANSIBLE_PLAYBOOK_ARGUMENTS)
 
 ac-ssh: ac-check-env ## Open ssh shell on target
 ifndef PLAYBOOKS_HOSTS
@@ -109,7 +131,7 @@ endif
 ifndef ANSIBLE_PLAYBOOK_ARGUMENTS
 	$(error ANSIBLE_PLAYBOOK_ARGUMENTS is undefined)
 endif
-	ansible $(PLAYBOOKS_HOSTS) -i $(INVENTORY) -m ansible.builtin.shell $(ANSIBLE_PLAYBOOK_ARGUMENTS)
+	@$(ANSIBLE_PLAYBOOK_VARS) ansible $(PLAYBOOKS_HOSTS) -i $(INVENTORY) -m ansible.builtin.shell $(ANSIBLE_PLAYBOOK_ARGUMENTS)
 
 ac-install-dependencies:  ## Install dependent ansible collections and roles
 	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
