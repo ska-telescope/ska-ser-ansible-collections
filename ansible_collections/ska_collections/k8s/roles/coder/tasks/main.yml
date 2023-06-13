@@ -1,0 +1,96 @@
+- name: Add bitnami chart repo
+  kubernetes.core.helm_repository:
+    name: bitnami
+    repo_url: "https://charts.bitnami.com/bitnami"
+
+- name: Deploy PostgreSQL chart
+  kubernetes.core.helm:
+    name: coder-db
+    chart_ref: bitnami/postgresql
+    chart_version: "{{ k8s_postgresql_helm_version }}"
+    release_namespace: "{{ k8s_coder_namespace }}"
+    create_namespace: true
+    update_repo_cache: true
+    values:
+      global:
+        storageClass: nfss1
+      auth:
+        username: "{{ k8s_coder_postgresql_username }}"
+        password: "{{ k8s_coder_postgresql_password }}"
+        database: "{{ k8s_coder_postgresql_db_name }}"
+      persistance:
+        enabled: true
+
+- name: Secret for communication coder-postgresql
+  block:
+    - name: Template coder values yaml
+      ansible.builtin.template:
+        src: coder_secret.yaml.j2
+        dest: "/tmp/coder_secret.yaml"
+        mode: "0644"
+
+    - name: Apply secret
+      kubernetes.core.k8s:
+        state: present
+        src: "/tmp/coder_secret.yaml"
+  always:
+    - name: Remove coder_secret
+      ansible.builtin.file:
+        path: "/tmp/coder_secret.yaml"
+        state: absent
+
+- name: Add coder-v2 chart repo
+  kubernetes.core.helm_repository:
+    name: coder-v2
+    repo_url: "https://helm.coder.com/v2"
+
+- name: Deploy binderhub chart with values
+  block:
+    - name: Template coder values yaml
+      ansible.builtin.template:
+        src: coder.values.yaml.j2
+        dest: "/tmp/coder.values.yaml"
+        mode: "0644"
+
+    - name: Deploy coder chart with values
+      kubernetes.core.helm:
+        name: coder
+        chart_ref: coder-v2/coder
+        chart_version: "{{ k8s_coder_helm_version }}"
+        release_namespace: "{{ k8s_coder_namespace }}"
+        create_namespace: true
+        values_files: "/tmp/coder.values.yaml"
+        update_repo_cache: true
+
+    - name: Template ingress to coder
+      ansible.builtin.template:
+        src: coder_ing.yaml.j2
+        dest: "/tmp/coder_ing.yaml"
+        mode: "0644"
+
+    - name: Apply ingress
+      kubernetes.core.k8s:
+        state: present
+        src: "/tmp/coder_ing.yaml"
+  always:
+    - name: Remove tmp files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - "/tmp/coder_secret.yaml"
+        - "/tmp/coder.values.yaml"
+
+
+# - name: Create Role, Rolebinding, etc
+#   block:
+#     - name: Template coder_auth.yaml
+#       ansible.builtin.template:
+#         src: coder_auth.yaml.j2
+#         dest: "/tmp/coder_auth.yaml"
+#         mode: "0644"
+
+#     - name: Apply coder_auth.yaml
+#       kubernetes.core.k8s:
+#         state: present
+#         src: "/tmp/coder_auth.yaml"

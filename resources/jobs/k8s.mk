@@ -6,7 +6,7 @@ PLAYBOOKS_DIR ?= ./ansible_collections/ska_collections
 ANSIBLE_COLLECTIONS_PATHS ?=
 TESTS_DIR ?= ./ansible_collections/ska_collections/k8s/tests
 
-TAGS ?= all,metallb,externaldns,ping,ingress,rookio,standardprovisioner,metrics,binderhub,nvidia,vault,ska_tango_operator ## Ansible tags to run in post deployment processing
+TAGS ?= all,metallb,externaldns,ping,ingress,rookio,standardprovisioner,metrics,binderhub,nvidia,vault,ska_tango_operator,coder ## Ansible tags to run in post deployment processing
 
 -include $(BASE_PATH)/PrivateRules.mak
 
@@ -218,6 +218,13 @@ ifneq (,$(findstring ska_tango_operator,$(TAGS)))
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
 	--tags "$(TAGS)" \
 	-vv
+endif
+
+ifneq (,$(findstring coder,$(TAGS)))
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/coder.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--tags "$(TAGS)"
 endif
 
 test: check-hosts  # Test service deployments

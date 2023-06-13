@@ -1,0 +1,8 @@
+k8s_coder_postgresql_username: "coder"
+k8s_coder_postgresql_db_name: "coder"
+k8s_coder_postgresql_password: "{{ lookup('ansible.builtin.env', 'K8S_CODER_POSTGRESQL_PASSWORD', default=secrets['k8s_coder_postgresql_password']) | mandatory }}"
+k8s_coder_persistence_size: "10Gi"
+k8s_coder_namespace: "coder"
+k8s_coder_helm_version: "0.24.0"
+k8s_postgresql_helm_version: "12.5.7"
+k8s_coder_cluster_domain: "cluster.local"
