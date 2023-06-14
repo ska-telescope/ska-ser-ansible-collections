@@ -159,53 +159,52 @@ ifneq ($(filter $(JOBLIST),$(firstword $(MAKECMDGOALS))),)
 endif
 
 gitlab-management:
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/gitlab-management.mk
+	@$(ANSIBLE_PLAYBOOK_VARS) $(MAKE) $(TARGET_ARGS) -f ./resources/jobs/gitlab-management.mk
 
 clusterapi: ac-check-env ## clusterapi targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/clusterapi.mk
+	@$(ANSIBLE_PLAYBOOK_VARS) $(MAKE) $(TARGET_ARGS) -f ./resources/jobs/clusterapi.mk
 
 common: ac-check-env ## common targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/common.mk
-
+	@$(ANSIBLE_PLAYBOOK_VARS) $(MAKE) $(TARGET_ARGS) -f ./resources/jobs/common.mk
 
 k8s: ac-check-env ## k8s targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/k8s.mk
+	@$(ANSIBLE_PLAYBOOK_VARS) $(MAKE) $(TARGET_ARGS) -f ./resources/jobs/k8s.mk
 
 oci: ac-check-env ## oci targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/oci.mk
+	@$(ANSIBLE_PLAYBOOK_VARS) $(MAKE) $(TARGET_ARGS) -f ./resources/jobs/oci.mk
 
 logging: ac-check-env ## logging targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/logging.mk
+	@$(ANSIBLE_PLAYBOOK_VARS) $(MAKE) $(TARGET_ARGS) -f ./resources/jobs/logging.mk
 
 reverseproxy: ac-check-env ## reverseproxy targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/reverseproxy.mk
+	@$(ANSIBLE_PLAYBOOK_VARS) $(MAKE) $(TARGET_ARGS) -f ./resources/jobs/reverseproxy.mk
 
 monitoring: ac-check-env ## monitoring targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/monitoring.mk
+	@$(ANSIBLE_PLAYBOOK_VARS) $(MAKE) $(TARGET_ARGS) -f ./resources/jobs/monitoring.mk
 
 ceph: ac-check-env ## ceph targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/ceph.mk
+	@$(ANSIBLE_PLAYBOOK_VARS) $(MAKE) $(TARGET_ARGS) -f ./resources/jobs/ceph.mk
 
 gitlab-runner: ac-check-env ## gitlab_runner targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/gitlab-runner.mk
+	@$(ANSIBLE_PLAYBOOK_VARS) $(MAKE) $(TARGET_ARGS) -f ./resources/jobs/gitlab-runner.mk
 
 nexus: ac-check-env ## nexus targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/nexus.mk
+	@$(ANSIBLE_PLAYBOOK_VARS) $(MAKE) $(TARGET_ARGS) -f ./resources/jobs/nexus.mk
 
 metallb: ac-check-env ## metallb targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/metallb.mk
+	@$(ANSIBLE_PLAYBOOK_VARS) $(MAKE) $(TARGET_ARGS) -f ./resources/jobs/metallb.mk
 
 dns: ac-check-env ## dns targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/dns.mk
+	@$(ANSIBLE_PLAYBOOK_VARS) $(MAKE) $(TARGET_ARGS) -f ./resources/jobs/dns.mk
 
 openvpn: ac-check-env ## openvpn targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/openvpn.mk
+	@$(ANSIBLE_PLAYBOOK_VARS) $(MAKE) $(TARGET_ARGS) -f ./resources/jobs/openvpn.mk
 
 gateway: ac-check-env ## gateway targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/gateway.mk
+	@$(ANSIBLE_PLAYBOOK_VARS) $(MAKE) $(TARGET_ARGS) -f ./resources/jobs/gateway.mk
 
 binderhub: ac-check-env ## binderhub targets
-	@$(MAKE) $(TARGET_ARGS) -f ./resources/jobs/binderhub.mk
+	@$(ANSIBLE_PLAYBOOK_VARS) $(MAKE) $(TARGET_ARGS) -f ./resources/jobs/binderhub.mk
 
 ac-print-targets: ## Show Help
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {p=index($$1,":")} {printf "\033[36m%-30s\033[0m %s\n", substr($$1,p+1), $$2}';
