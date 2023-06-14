@@ -3,8 +3,6 @@
   vars:
     target_hosts: localhost
     minio_namespace: "{{ gitlab_runner_minio_namespace | default('gitlab') }}"
-    gitlab_runner_minio_access_key: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_ACCESS_KEY', default=secrets['gitlab_runner_minio_access_key']) | mandatory }}"
-    gitlab_runner_minio_secret_key: "{{ lookup('ansible.builtin.env', 'GITLAB_RUNNER_MINIO_SECRET_KEY', default=secrets['gitlab_runner_minio_secret_key']) | mandatory }}"
   pre_tasks:
     - name: Check k8s_kubeconfig
       ansible.builtin.debug:
