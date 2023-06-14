@@ -20,6 +20,7 @@
         database: "{{ k8s_coder_postgresql_db_name }}"
       persistance:
         enabled: true
+        size: "{{ k8s_coder_persistence_size }}"
 
 - name: Secret for communication coder-postgresql
   block:
