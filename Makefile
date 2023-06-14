@@ -32,15 +32,25 @@ PYTHON_SWITCHES_FOR_BLACK=--exclude .yml --exclude .yaml
 -include $(BASE_PATH)/PrivateRules.mak
 
 MAKEFILE_CONTEXT_SEP?=MKCTX_
-MAKEFILE_CONTEXT := $(shell echo -n "$(shell \
-    $(foreach v,$(.VARIABLES), \
-        $(if $(filter-out $(v),MAKEFILE_CONTEXT), \
-            $(if $(and $(filter file, $(origin $(v)))), \
-                echo '$(MAKEFILE_CONTEXT_SEP)$(v)=$($(v))' \
-            ) \
-        ) \
-    ) \
-)" | sed "s#echo $(MAKEFILE_CONTEXT_SEP)#$(MAKEFILE_CONTEXT_SEP)#g" | base64 -w0 )
+MAKEFILE_CONTEXT?=/tmp/anisble-context-vars.$(shell echo "$(DATACENTRE)-$(ENVORNMENT)" | md5sum | head -c 8).tmp
+# This collects all variables defined in the Makefile context so that they can be used
+# by the get_env() filter defined in /ansible_plugins. It creates a string separated by
+# $(MAKEFILE_CONTEXT_SEP) so that we can split it accurately and create a clean key=value file.
+# It is outputted to a datacentre-environment specific file. Variables must be defined above this
+# code.
+
+# Be aware, this file, as environment variables, are unprotected, and can expose secret
+# information.
+$(shell echo -n "$(shell \
+	$(foreach v,$(.VARIABLES), \
+		$(if $(and $(filter-out undefined, $(origin $(v))), $(filter-out default, $(origin $(v))), $(filter-out automatic, $(origin $(v)))), \
+			echo '$(MAKEFILE_CONTEXT_SEP)$(v)=$($(v))' \
+		) \
+	) \
+)" | \
+sed "s#echo $(MAKEFILE_CONTEXT_SEP)#$(MAKEFILE_CONTEXT_SEP)#g" | \
+sed "s# $(MAKEFILE_CONTEXT_SEP)#\n#g" | \
+sed "s#$(MAKEFILE_CONTEXT_SEP)##g" > $(MAKEFILE_CONTEXT))
 
 ANSIBLE_PLAYBOOK_VARS += ANSIBLE_VAR_CONTEXT=$(MAKEFILE_CONTEXT) ANSIBLE_VAR_CONTEXT_SEP=$(MAKEFILE_CONTEXT_SEP)
 
@@ -92,12 +102,6 @@ ac-vars-recursive:
 		$(ANSIBLE_EXTRA_VARS) localhost 2>/dev/null | grep -v "FAILED" | \
 		sed 's#.*_s_\(.*\)_e_.*#\1#'); \
 	done
-
-ac-test-var: ac-check-env ## Test the value of an ansible variable
-ifndef PLAYBOOKS_HOSTS
-	$(error PLAYBOOKS_HOSTS is undefined)
-endif
-	$(ANSIBLE_PLAYBOOK_VARS) ansible $(PLAYBOOKS_HOSTS) -i $(INVENTORY) -m debug $(ANSIBLE_PLAYBOOK_ARGUMENTS)
 
 ac-ping: ac-check-env ## Ping Ansible targets
 ifndef PLAYBOOKS_HOSTS

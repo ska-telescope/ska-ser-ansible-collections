@@ -1,24 +1,22 @@
 """
 filters.py provides custom ansible filters usable in all collections
 """
-from ansible.template import AnsibleUndefined, AnsibleUndefinedVariable
+from ansible.template import AnsibleUndefined
 from typing import Any
 import os
-import base64
 
 def get_variable_context():
-    context = os.environ.get("ANSIBLE_VAR_CONTEXT", None)
-    if context is None:
+    context_path = os.environ.get("ANSIBLE_VAR_CONTEXT", None)
+    if context_path is None:
         return {}
     
-    sep = os.environ.get("ANSIBLE_VAR_CONTEXT_SEP", "CTX$")
-    context_vars = {}
-    for context_var in base64.b64decode(context.encode("utf-8")).decode("utf-8").split(sep):
-        if context_var.strip(" "):
-            var, value = context_var.split("=", 1)
-            context_vars[var] = value.rstrip(" ")
+    context = {}
+    with open(context_path, "r", encoding="utf-8") as file:
+        for line in file:
+            name, var = line.split("=", 1)
+            context[name.strip()] = var.rstrip("\n")
 
-    return context_vars
+    return context
 
 class FilterModule:
     """
@@ -28,22 +26,17 @@ class FilterModule:
         """
         Export filters
         """
-        return {"get_env": self.get_env}
+        return {"default_to_env": self.get_env}
 
     def get_env(self, value: Any, env_var: str, required: bool = True, default: Any = None):
         """
         gets the value of an environment variable or looks into other places
         """
-
         if not isinstance(value, AnsibleUndefined):
             return value
 
-        var_value = os.environ.get(env_var, None)
-        if var_value is not None:
-            return var_value
-
-        var_value = get_variable_context().get(env_var, default)
+        var_value = get_variable_context().get(env_var, os.environ.get(env_var, default))
         if var_value is None and required:
-            raise AnsibleUndefinedVariable("as")
+            raise ValueError(f"Unable to find default variable value")
 
         return var_value
