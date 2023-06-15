@@ -46,52 +46,51 @@ lint: ## Lint playbooks
 
 prometheus: check_hosts ## Install Prometheus Server
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_prometheus.yml \
-		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'"
 
 grafana: check_hosts ## Install Grafana Server
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_grafana.yml \
-		-i $(INVENTORY) $(ANSIBLE_EXTRA_VARS) \
-		$(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 		-e @$(PROM_CONFIGS_PATH)/prometheus_node_metric_relabel_configs.yaml \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'"
 
 alertmanager: check_hosts ## Install Prometheus Server
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_alertmanager.yml \
-		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'"
 
 thanos: check_hosts ## Install Thanos query and query front-end
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_thanos.yml \
-		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'"
 
 node-exporter: check_hosts ## Install Prometheus node exporter
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_node_exporter.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	-e "target_hosts='$(PLAYBOOKS_HOSTS)'"
 
 generate-targets: check_hosts ## Update json file for prometheus targets definition
 	@ansible-playbook $(PLAYBOOKS_DIR)/generate_targets.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	-e "target_hosts='$(PLAYBOOKS_HOSTS)'"
 
 ironic-exporter: check_hosts ## Install Prometheus ironic exporter - pass INVENTORY and NODES
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_ironic_exporter.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 	--limit $(NODES)
 
 postgres-exporter: check_hosts ## Install Prometheus postgres exporter - pass INVENTORY and NODES
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_postgres_exporter.yml \
-	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 	--limit $(NODES)
 
 snmp_exporter: check_hosts ## Install snmp_exporter
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_snmp_exporter.yml \
-		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 		-e "snmp_dell_idrac_auth_community=$(SNMP_DELL_IDRAC_AUTH_COMMUNITY)" \
 		-e "snmp_riello_ups_auth_community=$(SNMP_RIELLO_UPS_AUTH_COMMUNITY)" \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
@@ -99,7 +98,7 @@ snmp_exporter: check_hosts ## Install snmp_exporter
 
 snmp_install: check_hosts ## Install snmp_install
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_snmp.yml \
-		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 		-e "snmp_dell_idrac_auth_community=$(SNMP_DELL_IDRAC_AUTH_COMMUNITY)" \
 		-e "snmp_riello_ups_auth_community=$(SNMP_RIELLO_UPS_AUTH_COMMUNITY)" \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
@@ -107,7 +106,7 @@ snmp_install: check_hosts ## Install snmp_install
 
 snmp_destroy: check_hosts ## Destroy snmp services
 	@ansible-playbook $(PLAYBOOKS_DIR)/destroy_snmp.yml \
-		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
 		-e 'ansible_python_interpreter=/usr/bin/python3'
 
