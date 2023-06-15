@@ -139,5 +139,26 @@
   notify:
     - Restart cron
 
+- name: Run cadvisor container
+  community.docker.docker_container:
+    name: cadvisor
+    image: "gcr.io/cadvisor/cadvisor:{{ docker_cadvisor_version }}"
+    state: started
+    restart_policy: always
+    detach: true
+    privileged: true
+    devices:
+      - /dev/kmsg
+    published_ports:
+      - "8080:8080"
+    volumes:
+      - "/:/rootfs:ro"
+      - "/var/run:/var/run:ro"
+      - "/sys:/sys:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
+      - "/dev/disk/:/dev/disk:ro"
+  when:
+    - docker_install_cadvisor | bool
+
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers
