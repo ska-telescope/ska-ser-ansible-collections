@@ -3,47 +3,51 @@
 
 - name: Task grafana_ceph
   ansible.builtin.include_tasks: grafana_ceph.yml
-  when: grafana_ceph_enabled
+  when: grafana_ceph_enabled | bool
 
 - name: Task grafana_elasticstack
   ansible.builtin.include_tasks: grafana_elasticstack.yml
-  when: grafana_elasticstack_enabled
+  when: grafana_elasticstack_enabled | bool
 
 - name: Task grafana_kubernetes
   ansible.builtin.include_tasks: grafana_kubernetes.yml
-  when: grafana_kubernetes_enabled
+  when: grafana_kubernetes_enabled | bool
 
 - name: Task grafana_gitlab_runners
   ansible.builtin.include_tasks: grafana_gitlab_runners.yml
-  when: grafana_gitlab_runners_enabled
+  when: grafana_gitlab_runners_enabled | bool
 
 - name: Task grafana_cadvisor
   ansible.builtin.include_tasks: grafana_cadvisor.yml
-  when: grafana_cadvisor_enabled
+  when: grafana_cadvisor_enabled | bool
 
 - name: Task grafana_nodexporter
   ansible.builtin.include_tasks: grafana_nodexporter.yml
-  when: grafana_node_exporter_enabled
+  when: grafana_node_exporter_enabled | bool
 
 - name: Task grafana_openstack_exporter
   ansible.builtin.include_tasks: grafana_openstack_exporter.yml
-  when: grafana_openstack_exporter_enabled
+  when: grafana_openstack_exporter_enabled | bool
 
 - name: Task grafana_idrac_exporter
   ansible.builtin.include_tasks: grafana_idrac_exporter.yml
-  when: grafana_idrac_exporter_enabled
+  when: grafana_idrac_exporter_enabled | bool
 
 - name: Task grafana_riello_ups_exporter
   ansible.builtin.include_tasks: grafana_riello_ups_exporter.yml
-  when: grafana_riello_ups_exporter_enabled
+  when: grafana_riello_ups_exporter_enabled | bool
 
 - name: Task grafana_alerts
   ansible.builtin.include_tasks: grafana_alerts.yml
-  when: grafana_alerts_enabled
+  when: grafana_alerts_enabled | bool
 
 - name: Task grafana_postgres_exporter
   ansible.builtin.include_tasks: grafana_postgres_exporter.yml
-  when: grafana_postgres_exporter_enabled
+  when: grafana_postgres_exporter_enabled | bool
+
+- name: Task grafana_versions
+  ansible.builtin.include_tasks: grafana_versions.yml
+  when: grafana_versions_enabled | bool
 
 - name: Grafana task
   ansible.builtin.include_tasks: grafana.yml
