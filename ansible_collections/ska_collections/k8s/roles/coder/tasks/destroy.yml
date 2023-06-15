@@ -1,0 +1,11 @@
+- name: Delete postgresql helm chart
+  kubernetes.core.helm:
+    release_namespace: "{{ k8s_coder_namespace }}"
+    release_name: "coder-db"
+    state: absent
+
+- name: Delete coder helm chart
+  kubernetes.core.helm:
+    release_namespace: "{{ k8s_coder_namespace }}"
+    release_name: "coder"
+    state: absent

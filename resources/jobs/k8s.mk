@@ -75,6 +75,14 @@ ifneq (,$(findstring binderhub,$(TAGS)))
 	--tags "$(TAGS)"
 endif
 
+ifneq (,$(findstring coder,$(TAGS)))
+	ansible-playbook $(PLAYBOOKS_DIR)/k8s/playbooks/coder_destroy.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)" \
+	--tags "$(TAGS)"
+endif
+
+
 install: check-hosts  ## Post installations for a kubernetes cluster
 
 ifneq (,$(findstring labels,$(TAGS)))

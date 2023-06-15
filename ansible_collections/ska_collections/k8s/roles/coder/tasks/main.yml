@@ -11,6 +11,7 @@
     release_namespace: "{{ k8s_coder_namespace }}"
     create_namespace: true
     update_repo_cache: true
+    wait: true
     values:
       global:
         storageClass: nfss1
@@ -62,6 +63,7 @@
         create_namespace: true
         values_files: "/tmp/coder.values.yaml"
         update_repo_cache: true
+        wait: true
 
     - name: Template ingress to coder
       ansible.builtin.template:
@@ -82,16 +84,16 @@
         - "/tmp/coder_secret.yaml"
         - "/tmp/coder.values.yaml"
 
+- name: Configure coder
+  block:
+    - name: Template configuration job
+      ansible.builtin.template:
+        src: configure_job.yaml.j2
+        dest: "/tmp/configure_job.yaml"
+        mode: "0644"
 
-# - name: Create Role, Rolebinding, etc
-#   block:
-#     - name: Template coder_auth.yaml
-#       ansible.builtin.template:
-#         src: coder_auth.yaml.j2
-#         dest: "/tmp/coder_auth.yaml"
-#         mode: "0644"
-
-#     - name: Apply coder_auth.yaml
-#       kubernetes.core.k8s:
-#         state: present
-#         src: "/tmp/coder_auth.yaml"
+    - name: Apply configuration job
+      kubernetes.core.k8s:
+        state: present
+        src: "/tmp/configure_job.yaml"
+  when: k8s_coder_cli_auth is defined
