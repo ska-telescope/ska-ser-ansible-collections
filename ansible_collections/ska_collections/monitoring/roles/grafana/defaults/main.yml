@@ -38,6 +38,7 @@ grafana_idrac_exporter_enabled: true
 grafana_riello_ups_exporter_enabled: true
 grafana_alerts_enabled: true
 grafana_postgres_exporter_enabled: true
+grafana_versions_enabled: true
 
 grafana_docker_tags: '9.0.0'
 
