@@ -121,6 +121,14 @@ endif
 		sed 's/ /,/g'); \
 	$(ANSIBLE_PLAYBOOK_VARS) ansible $(PLAYBOOKS_HOSTS) -i $(INVENTORY) -m ansible.builtin.gather_facts -a "filter=$$FACTS" $(ANSIBLE_PLAYBOOK_ARGUMENTS)
 
+# Pass the relevant host using PLAYBOOKS_HOSTS=<group name or host name>
+# Pass the relevat variable using ANSIBLE_PLAYBOOK_ARGUMENTS="'-a var=<variable name>'"
+ac-debug-var: ac-check-env ## Debug the value of a variable
+ifndef PLAYBOOKS_HOSTS
+	$(error PLAYBOOKS_HOSTS is undefined)
+endif
+	@$(ANSIBLE_PLAYBOOK_VARS) ansible $(PLAYBOOKS_HOSTS) -i $(INVENTORY) -m debug $(ANSIBLE_PLAYBOOK_ARGUMENTS)
+
 ac-ssh: ac-check-env ## Open ssh shell on target
 ifndef PLAYBOOKS_HOSTS
 	$(error PLAYBOOKS_HOSTS is undefined)
@@ -137,7 +145,7 @@ ifndef ANSIBLE_PLAYBOOK_ARGUMENTS
 endif
 	@$(ANSIBLE_PLAYBOOK_VARS) ansible $(PLAYBOOKS_HOSTS) -i $(INVENTORY) -m ansible.builtin.shell $(ANSIBLE_PLAYBOOK_ARGUMENTS)
 
-ac-install-dependencies:  ## Install dependent ansible collections and roles
+ac-install-dependencies: ## Install dependent ansible collections and roles
 	ANSIBLE_COLLECTIONS_PATHS=$(ANSIBLE_COLLECTIONS_PATHS) \
 	ansible-galaxy collection install \
 	-r requirements.yml --force -p ./ansible_collections
