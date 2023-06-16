@@ -1,0 +1,25 @@
+---
+
+- name: Versions-dashboard make sure grafana configuration directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+  with_items:
+    - "/etc/grafana/provisioning/datasources"
+    - "/etc/grafana/provisioning/dashboards/versions-dashboard"
+    - "/etc/grafana/provisioning/notifiers"
+
+- name: Versions-dashboard Copy up resource files
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/dashboards/versions/{{ item }}"
+    dest: "/etc/grafana/provisioning/dashboards/versions-dashboard/{{ item }}"
+    mode: 0640
+  with_items:
+    - versions.json
+
+- name: Versions-dashboard Write dashboards provisioning config file
+  ansible.builtin.template:
+    src: dashboards-versions-dashboard.yml.j2
+    dest: /etc/grafana/provisioning/dashboards/versions-dashboard.yml
+    mode: 0640

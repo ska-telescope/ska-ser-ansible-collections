@@ -1,0 +1,951 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 42,
+  "iteration": 1686904520958,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "displayMode": "color-text",
+            "filterable": false,
+            "inspect": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "pattern": "(.*):.*",
+                "result": {
+                  "index": 0,
+                  "text": "$1"
+                }
+              },
+              "type": "regex"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "string"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Node"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 203
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "OS Version"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 17,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "node_os_version{datacentre=~\"$datacentre\"}",
+          "format": "table",
+          "instant": true,
+          "interval": "1m",
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "node_uname_info{datacentre=~\"$datacentre\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "interval": "1m",
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "B"
+        }
+      ],
+      "title": "OS/Kernel Versions",
+      "transformations": [
+        {
+          "id": "seriesToColumns",
+          "options": {
+            "byField": "instance"
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Value": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "Value #A": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "Value #B": {
+                "aggregations": []
+              },
+              "instance": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "release": {
+                "aggregations": [],
+                "operation": "groupby"
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "Value #A": "OS Version",
+              "instance": "Node",
+              "release": "Kernel Version"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "desc": false,
+                "field": "instance"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "pattern": ".*:(.*)",
+                "result": {
+                  "index": 0,
+                  "text": "$1"
+                }
+              },
+              "type": "regex"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 17,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "container_last_seen{job=\"monitoring\", datacentre=~\"$datacentre\"}",
+          "format": "table",
+          "instant": true,
+          "interval": "1m",
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Monitoring Services Versions",
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "config": {
+                  "id": "equal",
+                  "options": {
+                    "value": ""
+                  }
+                },
+                "fieldName": "image"
+              }
+            ],
+            "match": "any",
+            "type": "exclude"
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "container_label_name": {
+                "aggregations": []
+              },
+              "container_label_version": {
+                "aggregations": []
+              },
+              "image": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "name": {
+                "aggregations": [],
+                "operation": "groupby"
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "image": 1,
+              "name": 0
+            },
+            "renameByName": {
+              "container_label_name": "Service",
+              "container_label_version": "Version",
+              "image": "Version",
+              "name": "Service"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Service"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Daemon"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 247
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 38,
+        "w": 11,
+        "x": 12,
+        "y": 0
+      },
+      "id": 9,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "ceph_mon_metadata{datacentre=~\"$datacentre\"}",
+          "format": "table",
+          "instant": true,
+          "interval": "1m",
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "ceph_mds_metadata{datacentre=~\"$datacentre\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "interval": "1m",
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "ceph_mgr_metadata{datacentre=~\"$datacentre\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "interval": "1m",
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "ceph_osd_metadata{datacentre=~\"$datacentre\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "interval": "1m",
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "ceph_rgw_metadata{datacentre=~\"$datacentre\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "interval": "1m",
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "E"
+        }
+      ],
+      "title": "Ceph Versions",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "seriesToColumns",
+          "options": {
+            "byField": "hostname"
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "ceph_daemon": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "ceph_daemon 1": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "ceph_version": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "hostname": {
+                "aggregations": []
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "ceph_daemon": "Daemon",
+              "ceph_daemon 1": "Daemon",
+              "ceph_daemon 2": "Daemon",
+              "ceph_version": "Version",
+              "ceph_version 1": "Version",
+              "ceph_version 2": "Version"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Daemon"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "pattern": "[^:]*:(.*)",
+                "result": {
+                  "index": 0,
+                  "text": "$1"
+                }
+              },
+              "type": "regex"
+            },
+            {
+              "options": {
+                "pattern": "(binder|calico|metallb|ingress-nginx|extdns|coredns|gitlab-runner|hub|kube-apiserver|rook-ceph).*",
+                "result": {
+                  "index": 1,
+                  "text": "$1"
+                }
+              },
+              "type": "regex"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Service"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 184
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 6,
+        "x": 0,
+        "y": 17
+      },
+      "id": 7,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "kube_pod_container_info{pod=~\"binder-.*|calico-kube-controllers-.*|metallb-controller-.*|ingress-.*|coredns-.*|extdns-.*|gitlab-runner-.*|hub-.*|rook-.*|kube-apiserver-.*|kube\", datacentre=~\"$datacentre\"}",
+          "format": "table",
+          "instant": true,
+          "interval": "1m",
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Kubernetes Services Versions",
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Value": {
+                "aggregations": []
+              },
+              "__name__": {
+                "aggregations": []
+              },
+              "container": {
+                "aggregations": []
+              },
+              "container_id": {
+                "aggregations": []
+              },
+              "id": {
+                "aggregations": []
+              },
+              "image": {
+                "aggregations": []
+              },
+              "image_spec": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "instance": {
+                "aggregations": []
+              },
+              "job": {
+                "aggregations": []
+              },
+              "name": {
+                "aggregations": []
+              },
+              "namespace": {
+                "aggregations": []
+              },
+              "node": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "pod": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "uid": {
+                "aggregations": []
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Value": false
+            },
+            "indexByName": {
+              "image_spec": 2,
+              "namespace": 0,
+              "pod": 1
+            },
+            "renameByName": {
+              "container": "Container",
+              "image": "Version",
+              "image_spec": "Version",
+              "instance": "Node",
+              "namespace": "Namespace",
+              "pod": "Service"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Service"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P5DCFC7561CCDE821"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "pattern": "containerd://(.*)",
+                "result": {
+                  "index": 0,
+                  "text": "$1"
+                }
+              },
+              "type": "regex"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Kubelet Version"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 122
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 6,
+        "x": 6,
+        "y": 17
+      },
+      "id": 5,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P5DCFC7561CCDE821"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "kube_node_info{datacentre=~\"$datacentre\"}",
+          "format": "table",
+          "instant": true,
+          "interval": "1m",
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Kubelet Version",
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "container_runtime_version": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "instance": {
+                "aggregations": []
+              },
+              "kubelet_version": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "node": {
+                "aggregations": [],
+                "operation": "groupby"
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "container_runtime_version": 2,
+              "kubelet_version": 1,
+              "node": 0
+            },
+            "renameByName": {
+              "container_runtime_version": "Containerd Version",
+              "kubelet_version": "Kubelet Version",
+              "node": "Node"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Node"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "low-itf-monitor",
+          "value": "low-itf-monitor"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "P5DCFC7561CCDE821"
+        },
+        "definition": "label_values(up{job=\"cadvisor\"}, datacentre)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "",
+        "multi": false,
+        "name": "datacentre",
+        "options": [],
+        "query": {
+          "query": "label_values(up{job=\"cadvisor\"}, datacentre)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Versions",
+  "uid": "6ds1iguVk",
+  "version": 8,
+  "weekStart": ""
+}
