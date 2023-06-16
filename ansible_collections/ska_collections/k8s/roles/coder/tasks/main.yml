@@ -46,7 +46,7 @@
     name: coder-v2
     repo_url: "https://helm.coder.com/v2"
 
-- name: Deploy binderhub chart with values
+- name: Deploy coder chart with values
   block:
     - name: Template coder values yaml
       ansible.builtin.template:
@@ -75,6 +75,17 @@
       kubernetes.core.k8s:
         state: present
         src: "/tmp/coder_ing.yaml"
+
+    - name: Template coder dev cluster role
+      ansible.builtin.template:
+        src: coder_dev_auth.yaml.j2
+        dest: "/tmp/coder_dev_auth.yaml"
+        mode: "0644"
+
+    - name: Apply coder dev cluster role
+      kubernetes.core.k8s:
+        state: present
+        src: "/tmp/coder_dev_auth.yaml"
   always:
     - name: Remove tmp files
       ansible.builtin.file:
@@ -91,6 +102,11 @@
         src: configure_job.yaml.j2
         dest: "/tmp/configure_job.yaml"
         mode: "0644"
+
+    - name: Remove existing job
+      kubernetes.core.k8s:
+        state: absent
+        src: "/tmp/configure_job.yaml"
 
     - name: Apply configuration job
       kubernetes.core.k8s:

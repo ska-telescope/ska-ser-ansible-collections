@@ -106,12 +106,8 @@ resource "coder_agent" "main" {
   startup_script         = <<-EOT
     set -e
 
-    # install and start code-server
-    curl -fsSL https://code-server.dev/install.sh | sh -s -- --method=standalone --prefix=/tmp/code-server --version 4.11.0
     /tmp/code-server/bin/code-server --auth none --port 13337 >/tmp/code-server.log 2>&1 &
 
-    # install jupyter lab
-    pip3 install jupyterlab
     $HOME/.local/bin/jupyter lab --ServerApp.base_url=${local.jupyter_base_path} --ServerApp.token='' --ip='*' >/tmp/jupyter.log 2>&1 &
   EOT
 }
@@ -122,7 +118,7 @@ resource "coder_app" "code-server" {
   slug         = "code-server"
   display_name = "code-server"
   icon         = "/icon/code.svg"
-  url          = "http://localhost:13337?folder=/home/coder"
+  url          = "http://localhost:13337?folder=/app"
   subdomain    = false
   share        = "owner"
 
@@ -179,6 +175,7 @@ resource "kubernetes_persistent_volume_claim" "home" {
   }
 }
 
+
 resource "kubernetes_pod" "main" {
   count = data.coder_workspace.me.start_count
   metadata {
@@ -200,13 +197,14 @@ resource "kubernetes_pod" "main" {
     }
   }
   spec {
+    service_account_name = "coder-dev"
     security_context {
       run_as_user = "1000"
       fs_group    = "1000"
     }
     container {
       name              = "dev"
-      image             = "artefact.skao.int/ska-tango-images-pytango-builder:9.3.35"
+      image             = "{{ k8s_coder_dev_image }}"
       image_pull_policy = "Always"
       command           = ["sh", "-c", coder_agent.main.init_script]
       security_context {
@@ -227,7 +225,7 @@ resource "kubernetes_pod" "main" {
         }
       }
       volume_mount {
-        mount_path = "/home/coder"
+        mount_path = "/app"
         name       = "home"
         read_only  = false
       }

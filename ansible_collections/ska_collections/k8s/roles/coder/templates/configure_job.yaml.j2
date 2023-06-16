@@ -7,13 +7,13 @@ metadata:
 data:
   configure.sh: |
     echo '{{ k8s_coder_cli_auth }}' | coder login http://coder.{{ k8s_coder_namespace }}.svc.{{ k8s_coder_cluster_domain }}
-    mkdir -p templates/kubernetes
-    cd templates/kubernetes
+    mkdir -p templates
+    cd templates
     echo 'coder templates init'
-    coder templates init --id kubernetes || true
+    coder templates init --id kubernetes
     cp /tmp/data/main.tf ./main.tf
     echo 'coder templates create or push'
-    coder templates create kubernetes || coder templates push kubernetes || true
+    coder templates create kubernetes || coder templates push kubernetes -y || true
 
   main.tf: |    
 {% filter indent(width=4) %}
