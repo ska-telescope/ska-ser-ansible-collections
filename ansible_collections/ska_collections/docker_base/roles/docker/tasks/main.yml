@@ -143,11 +143,12 @@
   community.docker.docker_container:
     name: cadvisor
     image: "gcr.io/cadvisor/cadvisor:{{ docker_cadvisor_version }}"
+    cpus: 0.1
+    memory: 48M
     state: started
     restart: true
     restart_policy: always
     detach: true
-    privileged: true
     published_ports:
       - "9080:8080"
     command:
