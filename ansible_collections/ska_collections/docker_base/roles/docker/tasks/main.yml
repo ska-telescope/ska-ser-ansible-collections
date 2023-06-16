@@ -149,7 +149,7 @@
     detach: true
     privileged: true
     published_ports:
-      - "8080:8080"
+      - "9080:8080"
     command:
       - "--enable_metrics=app"
     volumes:
