@@ -2,8 +2,9 @@
 debug: false
 
 k8s_operator_chart_url: https://artefact.skao.int/repository/helm-internal
-k8s_operator_chart_version: 0.1.1
+k8s_operator_chart_version: 0.1.4
 k8s_operator_chart_reference: ska-tango-operator
 k8s_operator_namespace: ska-tango-operator
 k8s_operator_release_name: ska-tango-operator0
+k8s_operator_replicas: 3
 k8s_operator_set_class: false
