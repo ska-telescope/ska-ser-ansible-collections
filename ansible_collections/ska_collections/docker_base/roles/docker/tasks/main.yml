@@ -144,13 +144,14 @@
     name: cadvisor
     image: "gcr.io/cadvisor/cadvisor:{{ docker_cadvisor_version }}"
     state: started
+    restart: true
     restart_policy: always
     detach: true
     privileged: true
-    devices:
-      - /dev/kmsg
     published_ports:
       - "8080:8080"
+    command:
+      - "--enable_metrics=app"
     volumes:
       - "/:/rootfs:ro"
       - "/var/run:/var/run:ro"
