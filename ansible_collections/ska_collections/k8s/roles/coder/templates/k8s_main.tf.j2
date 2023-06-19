@@ -205,7 +205,7 @@ resource "kubernetes_pod" "main" {
     container {
       name              = "dev"
       image             = "{{ k8s_coder_dev_image }}"
-      image_pull_policy = "Always"
+      image_pull_policy = "IfNotPresent"
       command           = ["sh", "-c", coder_agent.main.init_script]
       security_context {
         run_as_user = "1000"
