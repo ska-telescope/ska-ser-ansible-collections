@@ -16,6 +16,7 @@ Each role encompasses a individual component/service/integration to be deployed 
 | ---- | ----------- | ------- | --- |
 | [k8s.binderhub](./roles/binderhub) | Install and configure Binderhub | 1.0.0-0.dev.git.3025.h276be90 | 1.25.5+ |
 | [k8s.cloudprovider](./roles/cloudprovider) | Install and configure OpenStack Cloud Provider | master | 1.25.5+ |
+| [k8s.coder](./roles/coder) | Install and configure [Coder](https://github.com/coder/coder) | 0.24.0 | 1.25.5+ |
 | [k8s.externaldns](./roles/externaldns) | Install and configure External DNS CoreDNS| chart 1.19.0 | 1.25.5+ |
 | [k8s.ingress](./roles/ingress) | Install and configure NGINX Ingress Controller | 1.6.6 | 1.25.5+ |
 | [k8s.join](./roles/join) | Bootstrap and Join nodes to a Kubernetes cluster | 1.25.5+/Ubuntu 22.04 | 1.25.5+ |
