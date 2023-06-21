@@ -44,6 +44,7 @@ runners:
             # kubectl config use-context ${SKA_AGENT_URL}:${SKA_AGENT_NAME}
             # kubectl config set-context --current --namespace=${KUBE_NAMESPACE}
             cp ${{ gitlab_runner_k8s_kubeconfig_name }} $KUBECONFIG # kubeconfig_name - Gitlab SKAO Group CI/CD file
+            chmod 600 $ KUBECONFIG
             fi
             if [[ ${CI_PROJECT_NAME} == "ska-skampi" ]] && [[ ${KUBE_NAMESPACE} == ci-* || ${KUBE_NAMESPACE} == integration-* ]]; then
                 echo "Applying Quotas to the SKAMPI pipeline namespace ${KUBE_NAMESPACE}."
