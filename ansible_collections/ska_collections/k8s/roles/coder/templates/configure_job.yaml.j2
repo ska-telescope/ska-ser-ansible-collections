@@ -11,9 +11,10 @@ data:
     cd templates
     echo 'coder templates init'
     coder templates init --id kubernetes
+    cd kubernetes
     cp /tmp/data/main.tf ./main.tf
     echo 'coder templates create or push'
-    coder templates create kubernetes || coder templates push kubernetes -y || true
+    coder templates create kubernetes --variable namespace={{ k8s_coder_namespace }} -y || coder templates push kubernetes -y || true
 
   main.tf: |    
 {% filter indent(width=4) %}
