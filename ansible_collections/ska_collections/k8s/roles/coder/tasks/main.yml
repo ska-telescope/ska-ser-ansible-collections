@@ -112,4 +112,4 @@
       kubernetes.core.k8s:
         state: present
         src: "/tmp/configure_job.yaml"
-  when: k8s_coder_cli_auth is defined
+  when: secrets.k8s_coder_cli_auth is defined
