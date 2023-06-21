@@ -14,7 +14,7 @@
     wait: true
     values:
       global:
-        storageClass: nfss1
+        storageClass: "{{ k8s_coder_postgresql_storage_class }}"
       auth:
         username: "{{ k8s_coder_postgresql_username }}"
         password: "{{ k8s_coder_postgresql_password }}"
@@ -71,10 +71,10 @@
         dest: "/tmp/coder_ing.yaml"
         mode: "0644"
 
-    - name: Apply ingress
-      kubernetes.core.k8s:
-        state: present
-        src: "/tmp/coder_ing.yaml"
+    # - name: Apply ingress
+    #   kubernetes.core.k8s:
+    #     state: present
+    #     src: "/tmp/coder_ing.yaml"
 
     - name: Template coder dev cluster role
       ansible.builtin.template:
