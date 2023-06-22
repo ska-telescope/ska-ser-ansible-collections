@@ -8,6 +8,18 @@
   kubernetes.core.k8s:
     template: "multus-daemonset-thick-plugin.yml"
 
+# Whereabouts is an IPAM CNI plugin that assigns IP addresses from cluster-scoped pools.
+# The IP range for a particular network is defined as part of the network's CNI config,
+# usually in a NetworkAttachmentDefinition. Think of whereabouts as a kind of mesh DHCP.
+# Read more at https://github.com/k8snetworkplumbingwg/whereabouts
+- name: Install whereabouts IPAM CNI
+  kubernetes.core.helm:
+    atomic: true
+    name: whereabouts
+    chart_ref: oci://registry-1.docker.io/bitnamicharts/whereabouts
+    chart_version: "0.4.1"
+    release_namespace: kube-system
+
 # SR-IOV CNI is a CNI plugin that handles attaching SR-IOV virtual functions to pods.
 # Similar to the host-device CNI plugin, but with a bit of extra VF sauce. In fact
 # host-device works fine to move VF network interfaces into Pods, but sriov-cni offers
