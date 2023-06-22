@@ -65,16 +65,22 @@
 # CNI plugin so that it knows which device to attach. Whew, what a ride!
 #
 # This task expects a multihoming_network_defs var to be a dict where keys are network
-# names, and the values are a standard CNI config, with the "name" field defaulting
-# to the dict key, and "cniVersion" defaulting to 0.3.1, e.g.:
+# names, and the values are a dict with the following fields:
+#   - "config", a standard CNI config but with "name" and "cniVersion" optional
+#   - "annotations", k8s annotations to be added to the NetworkAttachmentDefinition
+#
+# Example:
 #
 # multihoming_network_defs:
 #   my-second-network:
-#    type: macvlan
-#    master: eno1
-#    ipam:
-#      type: whereabouts
-#      range: 10.0.10.4-10.0.10-32/24
+#    annotations:
+#      k8s.v1.cni.cncf.io/nodeSelector: kubernetes.io/hostname=minikube
+#    config:
+#      type: macvlan
+#      master: eth0
+#      ipam:
+#        type: whereabouts
+#        range: 10.0.10.4-10.0.10-32/24
 - name: create NetworkAttachmentDefinitions
   kubernetes.core.k8s:
     name: "{{ item.key }}"
@@ -82,7 +88,9 @@
     definition:
       apiVersion: k8s.cni.cncf.io/v1
       kind: NetworkAttachmentDefinition
+      metadata:
+        annotations: "{{ item.value.annotations | default(omit) }}"
       spec:
         config: |
-          {{ {'name': item.key, 'cniVersion': '0.3.1'} | ansible.builtin.combine(item.value) | to_json(indent=4) }}
+          {{ {'name': item.key, 'cniVersion': '0.3.1'} | ansible.builtin.combine(item.value.config) | to_json(indent=4) }}
   loop: "{{ multihoming_network_defs|default({})|dict2items }}"
