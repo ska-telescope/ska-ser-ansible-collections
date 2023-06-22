@@ -10,3 +10,6 @@
     namespace: "{{ k8s_operator_namespace }}"
     name: "{{ k8s_operator_release_name }}"
     wait: true
+    values:
+      controllerManager:
+        replicas: "{{ k8s_operator_replicas }}"

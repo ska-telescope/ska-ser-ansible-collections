@@ -1,0 +1,50 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k8s-main
+  namespace: {{ k8s_coder_namespace }}
+data:
+  configure.sh: |
+    echo '{{ k8s_coder_cli_auth }}' | coder login http://coder.{{ k8s_coder_namespace }}.svc.{{ k8s_coder_cluster_domain }}
+    mkdir -p templates
+    cd templates
+    echo 'coder templates init'
+    coder templates init --id kubernetes
+    cd kubernetes
+    cp /tmp/data/main.tf ./main.tf
+    echo 'coder templates create or push'
+    coder templates create kubernetes --variable namespace={{ k8s_coder_namespace }} -y || coder templates push kubernetes -y || true
+
+  main.tf: |    
+{% filter indent(width=4) %}
+    {% include "k8s_main.tf.j2" %}
+{% endfilter %}
+
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: configure-k8s-template
+  namespace: {{ k8s_coder_namespace }}
+spec:
+  template:
+    spec:
+      volumes:
+      - name: config-volume
+        configMap:
+          name: k8s-main
+          defaultMode: 0777
+      containers:
+      - image: ghcr.io/coder/coder:v0.24.0
+        name: configure
+        command: 
+        - sh
+        args:
+        - -c
+        - "/tmp/data/configure.sh"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /tmp/data
+      restartPolicy: Never

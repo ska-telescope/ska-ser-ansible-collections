@@ -1,0 +1,21 @@
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: coder-ingress
+  namespace: "{{ k8s_coder_namespace }}"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /coder/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: coder
+            port:
+              name: "http"
