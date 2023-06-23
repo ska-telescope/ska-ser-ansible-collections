@@ -1,0 +1,29 @@
+---
+releases_notifier_image: registry.gitlab.com/ska-telescope/sdi/ska-releases-notifier/ska-releases-notifier
+releases_notifier_tag: v1.0.0
+
+releases_notifier_github_auth_token: "{{ _ | mandatory('`releases_notifier_github_auth_token` definition is mandatory') }}"
+releases_notifier_gitlab_auth_token: "{{ _ | mandatory('`releases_notifier_gitlab_auth_token` definition is mandatory') }}"
+releases_notifier_slack_hook: "{{ _ | mandatory('`releases_notifier_slack_hook` definition is mandatory') }}"
+releases_notifier_interval: 1h
+releases_notifier_log_level: info
+releases_notifier_ignore_nonstable: false
+releases_notifier_watch_list:
+  - github.com/kubernetes/kubernetes
+  - github.com/kubernetes/minikube
+  - github.com/kubernetes/ingress-nginx
+  - github.com/rook/rook
+  - github.com/prometheus/prometheus
+  - github.com/prometheus/node_exporter
+  - github.com/prometheus/alertmanager
+  - github.com/grafana/grafana
+  - github.com/projectcalico/calico
+  - github.com/metallb/metallb
+  - github.com/timescale/timescaledb
+  - github.com/containerd/containerd
+  - github.com/containers/podman
+  - github.com/NVIDIA/k8s-device-plugin
+  - github.com/ceph/ceph
+  - gitlab.com/gitlab-org/gitlab-runner
+
+releases_notifier_kubernetes_namespace: ska-releases-notifier

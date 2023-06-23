@@ -1,0 +1,31 @@
+---
+
+- name: Pull releases-notifier image {{ releases_notifier_tag }}
+  community.docker.docker_image:
+    name: "{{ releases_notifier_image }}"
+    tag: "{{ releases_notifier_tag }}"
+    source: pull
+
+- name: Stop releases-notifier container
+  community.docker.docker_container:
+    name: releases-notifier
+    stop_timeout: 180
+    state: absent
+
+- name: Start releases-notifier container
+  community.docker.docker_container:
+    name: releases-notifier
+    image: "{{ releases_notifier_image }}:{{ releases_notifier_tag }}"
+    state: started
+    user: root
+    restart: true
+    restart_policy: always
+    env:
+      GITHUB_AUTH_TOKEN={{ releases_notifier_github_auth_token }}
+      GITLAB_AUTH_TOKEN={{ releases_notifier_gitlab_auth_token }}
+      SLACK_HOOK={{ releases_notifier_slack_hook }}
+      INTERVAL={{ releases_notifier_interval }}
+      LOG_LEVEL={{ releases_notifier_log_level }}
+      IGNORE_NONSTABLE={{releases_notifier_ignore_nonstable}}
+    #command:  "{{ releases_notifier_watch_list | join(' ') }}"
+    command: "{{ releases_notifier_watch_list | map('regex_replace', '^(.*)$', '-r=\\1') | join(' ') }}"

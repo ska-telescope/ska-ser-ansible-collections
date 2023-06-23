@@ -1,0 +1,5 @@
+---
+- name: Apply ska-release-notifier manifests
+  kubernetes.core.k8s:
+    state: present
+    template: metallb-config.yaml.j2
