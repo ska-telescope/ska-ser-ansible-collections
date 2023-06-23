@@ -1,5 +1,10 @@
 ---
-- name: Apply ska-release-notifier manifests
+
+- name: "Create namespace {{ releases_notifier_kubernetes_namespace }}"
   kubernetes.core.k8s:
     state: present
-    template: manifests.yaml.j2
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ releases_notifier_kubernetes_namespace }}"

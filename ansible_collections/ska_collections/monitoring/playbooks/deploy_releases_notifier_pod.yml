@@ -1,13 +1,17 @@
 ---
 
-- name: Deploy Releases Notifier chart
+- name: Deploy Releases Notifier pod
+  hosts: "{{ target_hosts }}"
   vars:
     target_hosts: localhost
   become: true
   gather_facts: false
 
   tasks:
-    - name: Deploy Releases Notifier chart
+    - name: Deploy Releases Notifier pod
       ansible.builtin.import_role:
         name: releases_notifier
         tasks_from: deploy_pod
+      tags:
+        - releases-notifier
+        
