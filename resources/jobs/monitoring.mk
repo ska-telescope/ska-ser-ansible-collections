@@ -186,7 +186,7 @@ releases-notifier-deploy-container: check_hosts ## Install releases_notifier con
 
 releases-notifier-deploy-pod: check_hosts ## Install releases_notifier in k8s
 	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_releases_notifier_pod.yml \
-		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
+		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 		-e "releases_notifier_github_auth_token=$(RELEASES_NOTIFIER_GITHUB_AUTH_TOKEN)" \
 		-e "releases_notifier_gitlab_auth_token=$(RELEASES_NOTIFIER_GITLAB_AUTH_TOKEN)" \
 		-e "releases_notifier_slack_hook=$(RELEASES_NOTIFIER_SLACK_HOOK)" \

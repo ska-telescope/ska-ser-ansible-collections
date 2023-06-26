@@ -21,10 +21,15 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  labels:
+    app: ska-releases-notifier
   name: ska-releases-notifier
   namespace: {{ releases_notifier_kubernetes_namespace }}
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: ska-releases-notifier 
   revisionHistoryLimit: 10
   strategy:
     rollingUpdate:
@@ -63,12 +68,12 @@ spec:
         - name: LOG_LEVEL
           value: {{ releases_notifier_log_level }}
         - name: IGNORE_NONSTABLE
-          value: {{ releases_notifier_ignore_nonstable }}                    
+          value: "{{ releases_notifier_ignore_nonstable }}"                    
         command:
         - '/bin/ska-releases-notifier'
         args:
         {% for item in releases_notifier_watch_list %}
-        - 'r={{ item }}'
+        - '-r={{ item }}'
         {% endfor %}        
         resources:
           limits:
