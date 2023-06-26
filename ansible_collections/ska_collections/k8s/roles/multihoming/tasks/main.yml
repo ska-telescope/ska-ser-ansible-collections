@@ -92,5 +92,9 @@
         annotations: "{{ item.value.annotations | default(omit) }}"
       spec:
         config: |
-          {{ {'name': item.key, 'cniVersion': '0.3.1'} | ansible.builtin.combine(item.value.config) | to_json(indent=4) }}
+          {{
+            {'name': item.key, 'cniVersion': multihoming_default_cni_version}
+            | ansible.builtin.combine(item.value.config)
+            | to_json(indent=4)
+          }}
   loop: "{{ multihoming_network_defs|dict2items }}"
