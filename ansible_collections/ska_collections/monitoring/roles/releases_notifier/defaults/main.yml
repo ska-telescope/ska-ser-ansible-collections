@@ -25,4 +25,3 @@ releases_notifier_watch_list:
   - github.com/NVIDIA/k8s-device-plugin
   - github.com/ceph/ceph
   - gitlab.com/gitlab-org/gitlab-runner
-

@@ -4,4 +4,3 @@
   kubernetes.core.k8s:
     state: present
     template: manifests.yaml.j2
-

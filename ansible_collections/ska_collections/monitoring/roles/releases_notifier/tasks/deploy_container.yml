@@ -27,5 +27,5 @@
       INTERVAL={{ releases_notifier_interval }}
       LOG_LEVEL={{ releases_notifier_log_level }}
       IGNORE_NONSTABLE={{releases_notifier_ignore_nonstable}}
-    #command:  "{{ releases_notifier_watch_list | join(' ') }}"
+    # command:  "{{ releases_notifier_watch_list | join(' ') }}"
     command: "{{ releases_notifier_watch_list | map('regex_replace', '^(.*)$', '-r=\\1') | join(' ') }}"
