@@ -14,7 +14,7 @@ for RULE in $DECODED_INPUT; do
 done
 
 echo "Terminating any shared namespaces that have an expired TTL"
-NAMESPACES=$(kubectl get namespaces --field-selector status.phase=Active -o json | jq --arg regex "$SHARED_NAMESPACE_REGEX" -r '.items[] | select (.metadata.annotations.SKA_SHARED_ENV_TTL < now) |  select(.metadata.name | test($regex)).metadata.name')
+NAMESPACES=$(kubectl get namespaces --field-selector status.phase=Active -o json | jq --arg regex "$SHARED_NAMESPACE_REGEX" -r '.items[] | select(.metadata.annotations.SKA_SHARED_ENV_TTL) and (.metadata.annotations.SKA_SHARED_ENV_TTL | fromdateiso8601) < now) |  select(.metadata.name | test($regex)).metadata.name')
 for NS in $NAMESPACES; do
 	kubectl delete namespace $NS
 done
