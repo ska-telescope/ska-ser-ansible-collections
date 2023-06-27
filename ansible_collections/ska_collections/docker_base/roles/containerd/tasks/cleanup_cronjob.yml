@@ -1,0 +1,10 @@
+---
+- name: Add cron job for crictl images prune
+  ansible.builtin.lineinfile:
+    path: /etc/crontab
+    regexp: 'crictl rmi'
+    line: >-
+      45 */2     * * *   root    crictl rmi --prune
+  become: true
+  notify:
+    - Restart cron

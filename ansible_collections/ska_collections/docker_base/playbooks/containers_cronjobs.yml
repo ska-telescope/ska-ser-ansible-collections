@@ -1,0 +1,16 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Add cleanup cronjobs to container runtime roles
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  tasks:
+    - name: Add containerd cleanup cronjob
+      ansible.builtin.import_role:
+        name: ska_collections.docker_base.containerd
+        tasks_from: cleanup_cronjob
+    - name: Add docker cleanup cronjob
+      ansible.builtin.import_role:
+        name: ska_collections.docker_base.docker
+        tasks_from: cleanup_cronjob
