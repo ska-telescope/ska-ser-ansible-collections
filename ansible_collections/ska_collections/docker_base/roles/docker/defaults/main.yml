@@ -13,7 +13,6 @@ docker_allow_version_change: false
 
 docker_activate_nvidia: false
 docker_ignore_nvidia_fail: false
-docker_add_volume_prune_cron: false
 docker_install_cadvisor: false
 docker_cadvisor_version: v0.47.0
 

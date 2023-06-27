@@ -128,17 +128,6 @@
     - Reload systemd
     - Restart docker
 
-- name: Add cron job for docker system prune
-  ansible.builtin.lineinfile:
-    path: /etc/crontab
-    regexp: 'docker system prune'
-    line: >-
-      30 */4     * * *   root    docker system prune -a --volumes -f
-  become: true
-  when: docker_add_volume_prune_cron
-  notify:
-    - Restart cron
-
 - name: Run cadvisor container
   community.docker.docker_container:
     name: cadvisor
