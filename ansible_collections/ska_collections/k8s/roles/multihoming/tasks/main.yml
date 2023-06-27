@@ -8,17 +8,22 @@
   kubernetes.core.k8s:
     template: "multus-daemonset-thick-plugin.yml"
 
-# NetworkAttachmentDefinitions define the CNI configurations that are available to pods
-# to select via the "k8s.v1.cni.cncf.io/networks" annotation. Each net-att-def may bed
-# associated with a specific extended resource via its "k8s.v1.cni.cncf.io/resourceName"
-# annotation. When Multus encounters a pod with the network annotation, it inspects the
-# corresponding net-att-def to see if it has an associated resourceName. If it does, it
-# inspects the resources allocated to the pod via the kubelet pod resources API, and if
-# a resource of that type has been allocated to the pod, passes its deviceID to the
-# CNI plugin so that it knows which device to attach. Whew, what a ride!
-- name: Create NetworkAttachmentDefinitions for SPS and SDN networks
-  kubernetes.core.k8s:
-    template: "sriov-networkattachmentdefinition.yaml"
+# Whereabouts is an IPAM CNI plugin that assigns IP addresses from cluster-scoped pools.
+# The IP range for a particular network is defined as part of the network's CNI config,
+# usually in a NetworkAttachmentDefinition. Think of whereabouts as a kind of mesh DHCP.
+# Read more at https://github.com/k8snetworkplumbingwg/whereabouts
+- name: Install whereabouts IPAM CNI
+  kubernetes.core.helm:
+    atomic: true
+    name: whereabouts
+    chart_ref: oci://registry-1.docker.io/bitnamicharts/whereabouts
+    chart_version: "0.4.1"
+    release_namespace: kube-system
+    values: |
+      {{
+        {'tolerations': [{'operator': 'Exists'}]}
+        | ansible.builtin.combine(multihoming_whereabouts_values)
+      }}
 
 # SR-IOV CNI is a CNI plugin that handles attaching SR-IOV virtual functions to pods.
 # Similar to the host-device CNI plugin, but with a bit of extra VF sauce. In fact
@@ -54,3 +59,47 @@
 - name: Install SR-IOV Network Device Plugin
   kubernetes.core.k8s:
     template: "sriovdp-daemonset.yaml"
+
+# NetworkAttachmentDefinitions define the CNI configurations that are available to pods
+# to select via the "k8s.v1.cni.cncf.io/networks" annotation. Each net-att-def may bed
+# associated with a specific extended resource via its "k8s.v1.cni.cncf.io/resourceName"
+# annotation. When Multus encounters a pod with the network annotation, it inspects the
+# corresponding net-att-def to see if it has an associated resourceName. If it does, it
+# inspects the resources allocated to the pod via the kubelet pod resources API, and if
+# a resource of that type has been allocated to the pod, passes its deviceID to the
+# CNI plugin so that it knows which device to attach. Whew, what a ride!
+#
+# This task expects a multihoming_network_defs var to be a dict where keys are network
+# names, and the values are a dict with the following fields:
+#   - "config", a standard CNI config but with "name" and "cniVersion" optional
+#   - "annotations", k8s annotations to be added to the NetworkAttachmentDefinition
+#
+# Example:
+#
+# multihoming_network_defs:
+#   my-second-network:
+#    annotations:
+#      k8s.v1.cni.cncf.io/nodeSelector: kubernetes.io/hostname=minikube
+#    config:
+#      type: macvlan
+#      master: eth0
+#      ipam:
+#        type: whereabouts
+#        range: 10.0.10.4-10.0.10-32/24
+- name: create NetworkAttachmentDefinitions
+  kubernetes.core.k8s:
+    name: "{{ item.key }}"
+    namespace: kube-system
+    definition:
+      apiVersion: k8s.cni.cncf.io/v1
+      kind: NetworkAttachmentDefinition
+      metadata:
+        annotations: "{{ item.value.annotations | default(omit) }}"
+      spec:
+        config: |
+          {{
+            {'name': item.key, 'cniVersion': multihoming_default_cni_version}
+            | ansible.builtin.combine(item.value.config)
+            | to_json(indent=4)
+          }}
+  loop: "{{ multihoming_network_defs|dict2items }}"
