@@ -60,6 +60,23 @@
   kubernetes.core.k8s:
     template: "sriovdp-daemonset.yaml"
 
+# This admission controller looks for Pods with k8s.v1.cni.cncf.io/networks annotations
+# and patches them based on annotations of the requested NetworkAttachmentDefinition.
+#
+# Notably:
+#   - if the net-att-def has a k8s.v1.cni.cncf.io/resourceName annotation,
+#     NRI will add a corresponding extended resource request to the Pod.
+#   - if the net-att-def has a k8s.v1.cni.cncf.io/nodeSelector annotation,
+#     NRI will apply that nodeSelector to the Pod.
+#
+# See https://github.com/k8snetworkplumbingwg/network-resources-injector for more info.
+- name: Install the Network Resources Injector
+  kubernetes.core.k8s:
+    template: "network-resources-injector-{{ item }}.yaml"
+  loop:
+    - auth
+    - server
+
 # NetworkAttachmentDefinitions define the CNI configurations that are available to pods
 # to select via the "k8s.v1.cni.cncf.io/networks" annotation. Each net-att-def may bed
 # associated with a specific extended resource via its "k8s.v1.cni.cncf.io/resourceName"
