@@ -22,8 +22,13 @@ install: check_hosts ## Install oci stack
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-cleanup_cronjob: check_hosts ## Install oci cleanup cronjob
-	ansible-playbook $(PLAYBOOKS_DIR)/containers_cronjobs.yml \
+cleanup_cronjob_containerd: check_hosts ## Install oci cleanup cronjob
+	ansible-playbook $(PLAYBOOKS_DIR)/containerd_cronjobs.yml \
+	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
+	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
+
+cleanup_cronjob_docker: check_hosts ## Install oci cleanup cronjob
+	ansible-playbook $(PLAYBOOKS_DIR)/docker_cronjobs.yml \
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
