@@ -19,6 +19,11 @@
     chart_ref: oci://registry-1.docker.io/bitnamicharts/whereabouts
     chart_version: "0.4.1"
     release_namespace: kube-system
+    values: |
+      {{
+        {'tolerations': [{'operator': 'Exists'}]}
+        | ansible.builtin.combine(multihoming_whereabouts_values)
+      }}
 
 # SR-IOV CNI is a CNI plugin that handles attaching SR-IOV virtual functions to pods.
 # Similar to the host-device CNI plugin, but with a bit of extra VF sauce. In fact
