@@ -227,15 +227,5 @@
     dest: "/etc/crictl.yaml"
     mode: "0644"
 
-- name: Add cron job for crictl system prune
-  ansible.builtin.lineinfile:
-    path: /etc/crontab
-    regexp: 'crictl rmi'
-    line: >-
-      45 */4     * * *   root    crictl rmi --prune
-  become: true
-  notify:
-    - Restart cron
-
 - name: Flush those handlers
   ansible.builtin.meta: flush_handlers
