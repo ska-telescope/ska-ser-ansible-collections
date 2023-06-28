@@ -40,7 +40,7 @@ grafana_alerts_enabled: true
 grafana_postgres_exporter_enabled: true
 grafana_versions_enabled: true
 
-grafana_docker_tags: '9.0.0'
+grafana_docker_tags: '9.5.5'
 
 grafana_azuread_tenant_id: "{{ _ | mandatory('`grafana_azuread_tenant_id` definition is mandatory') }}"
 grafana_azuread_client_secret: "{{ _ | mandatory('`grafana_azuread_client_secret` definition is mandatory') }}"
