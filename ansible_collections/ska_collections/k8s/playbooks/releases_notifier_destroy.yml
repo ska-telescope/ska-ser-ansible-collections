@@ -1,0 +1,18 @@
+---
+
+- name: Destroy Releases Notifier
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Destroy Releases Notifier
+      ansible.builtin.import_role:
+        name: releases_notifier
+        tasks_from: destroy
+      tags:
+        - releases_notifier
+  environment:
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"

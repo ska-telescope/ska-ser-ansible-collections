@@ -1,0 +1,39 @@
+---
+releases_notifier_image: artefact.skao.int/ska-ser-releases-notifier
+releases_notifier_tag: 1.0.0
+releases_notifier_kubernetes_namespace: ska-ser-releases-notifier
+releases_notifier_github_auth_token: "{{ _ | mandatory('`releases_notifier_github_auth_token` definition is mandatory') }}"
+releases_notifier_gitlab_auth_token: "{{ _ | mandatory('`releases_notifier_gitlab_auth_token` definition is mandatory') }}"
+releases_notifier_slack_hook: "{{ _ | mandatory('`releases_notifier_slack_hook` definition is mandatory') }}"
+releases_notifier_interval: 1h
+releases_notifier_log_level: info
+releases_notifier_ignore_nonstable: false
+releases_notifier_watch_list:
+  - github.com/kubernetes/kubernetes
+  - github.com/kubernetes/minikube
+  - github.com/kubernetes/ingress-nginx
+  - github.com/kubernetes-sigs/external-dns
+  - github.com/helm/helm
+  - github.com/derailed/k9s
+  - github.com/rook/rook
+  - github.com/projectcalico/calico
+  - github.com/metallb/metallb
+  - github.com/coredns/coredns
+  - github.com/prometheus/prometheus
+  - github.com/prometheus/node_exporter
+  - github.com/prometheus/alertmanager
+  - github.com/prometheus-community/postgres_exporter
+  - github.com/grafana/grafana
+  - github.com/timescale/timescaledb
+  - github.com/containerd/containerd
+  - github.com/containers/podman
+  - github.com/NVIDIA/k8s-device-plugin
+  - github.com/ceph/ceph
+  - gitlab.com/gitlab-org/gitlab-runner
+  - github.com/google/cadvisor
+  - github.com/elastic/beats
+  - github.com/mvisonneau/gitlab-ci-pipelines-exporter
+  - github.com/thanos-io/thanos
+  - gitlab.com/tango-controls/cppTango
+  - gitlab.com/tango-controls/pytango
+  - github.com/mikefarah/yq

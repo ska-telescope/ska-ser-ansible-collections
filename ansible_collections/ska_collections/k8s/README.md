@@ -26,6 +26,7 @@ Each role encompasses a individual component/service/integration to be deployed 
 | [k8s.node_labels](./roles/node_labels) | Apply labels to Kubernetes nodes | - | 1.25.5+ |
 | [k8s.node_taints](./roles/node_taints) | Apply taints to Kubernetes nodes | - | 1.25.5+ |
 | [k8s.ping](./roles/ping) | Install ping test endpoint /ping/ | 1.10 | 1.25.5+ |
+| [k8s.releases_notifier](./roles/releases_notifier) | Monitor github/gitlab releses and notify new releases in slack | 1.0.0 | 1.25.5+ |
 | [k8s.rookio](./roles/rookio) | Install and configure Rook/Ceph integration and StorageClasses | release-1.10 | 1.25.5+ |
 | [k8s.singlenode](./roles/singlenode) | Install and configure a singlenode K8s cluster using `kubeadm` | _ | 1.26.4+ |
 | [k8s.standardprovisioner](./roles/standardprovisioner) | Install and configure hostpath provisioner and StorageClasses | v5 | 1.25.5+ |
@@ -66,6 +67,8 @@ Installation playbooks for each component can be found in the [playbooks/](./pla
 | [node_labels.yml](./playbooks/node_labels.yml) | Apply labels to Kubernetes nodes |
 | [node_taints.yml](./playbooks/node_taints.yml) | Apply taints to Kubernetes nodes |
 | [ping.yml](./playbooks/ping.yml) | Install ping tester endpoint |
+| [releases_notifier_destroy.yml](./playbooks/releases_notifier_destroy.yml) | Uninstall Releases Notifier |
+| [releases_notifier.yml](./playbooks/releases_notifier.yml) | Install Releases Notifier|
 | [rookio.yml](./playbooks/rookio.yml) | Install Rook/Ceph integration and StorageClasses |
 | [standardprovisioner.yml](./playbooks/standardprovisioner.yml) | Install hostpath provisioner and StorageClasses |
 | [singlenode.yml](./playbooks/singlenode.yml) | Install single node K8s cluster using `kubeadm` |

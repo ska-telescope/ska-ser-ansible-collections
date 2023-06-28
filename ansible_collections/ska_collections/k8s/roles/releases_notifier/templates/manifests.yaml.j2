@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ releases_notifier_kubernetes_namespace }}
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ska-ser-releases-notifier-secret
+  namespace: {{ releases_notifier_kubernetes_namespace }}
+type: Opaque
+data:
+  github_auth_token: {{ releases_notifier_github_auth_token }}
+  gitlab_auth_token: {{ releases_notifier_gitlab_auth_token }}
+  slack_hook: {{ releases_notifier_slack_hook }}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ska-ser-releases-notifier
+  name: ska-ser-releases-notifier
+  namespace: {{ releases_notifier_kubernetes_namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ska-ser-releases-notifier 
+  revisionHistoryLimit: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: ska-ser-releases-notifier
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+      - name: ska-ser-releases-notifier
+        image: {{ releases_notifier_image }}:{{ releases_notifier_tag }}
+        env:
+        - name: GITHUB_AUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ska-ser-releases-notifier-secret
+              key: github_auth_token
+        - name: GITLAB_AUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ska-ser-releases-notifier-secret
+              key: gitlab_auth_token
+        - name: SLACK_HOOK
+          valueFrom:
+            secretKeyRef:
+              name: ska-ser-releases-notifier-secret
+              key: slack_hook
+        - name: INTERVAL
+          value: {{ releases_notifier_interval }}
+        - name: LOG_LEVEL
+          value: {{ releases_notifier_log_level }}
+        - name: IGNORE_NONSTABLE
+          value: "{{ releases_notifier_ignore_nonstable }}"                    
+        command:
+        - '/bin/ska-ser-releases-notifier'
+        args:
+        {% for item in releases_notifier_watch_list %}
+        - '-r={{ item }}'
+        {% endfor %}        
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 25m
+            memory: 64Mi
+      restartPolicy: Always

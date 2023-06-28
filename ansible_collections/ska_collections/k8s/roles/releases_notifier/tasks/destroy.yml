@@ -1,0 +1,8 @@
+---
+
+- name: Delete the releases notifier namespace and deployment
+  kubernetes.core.k8s:
+    name: "{{ releases_notifier_kubernetes_namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: absent

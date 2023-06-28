@@ -1,0 +1,6 @@
+---
+
+- name: Apply ska-ser-release-notifier manifests
+  kubernetes.core.k8s:
+    state: present
+    template: manifests.yaml.j2
