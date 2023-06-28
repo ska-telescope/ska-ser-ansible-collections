@@ -1,7 +1,7 @@
 ---
-releases_notifier_image: registry.gitlab.com/ska-telescope/sdi/ska-releases-notifier/ska-releases-notifier
-releases_notifier_tag: 0.1.0-dev.cdd0b5c38
-releases_notifier_kubernetes_namespace: ska-releases-notifier
+releases_notifier_image: artefact.skao.int/ska-ser-releases-notifier
+releases_notifier_tag: 1.0.0
+releases_notifier_kubernetes_namespace: ska-ser-releases-notifier
 releases_notifier_github_auth_token: "{{ _ | mandatory('`releases_notifier_github_auth_token` definition is mandatory') }}"
 releases_notifier_gitlab_auth_token: "{{ _ | mandatory('`releases_notifier_gitlab_auth_token` definition is mandatory') }}"
 releases_notifier_slack_hook: "{{ _ | mandatory('`releases_notifier_slack_hook` definition is mandatory') }}"
@@ -37,4 +37,3 @@ releases_notifier_watch_list:
   - gitlab.com/tango-controls/cppTango
   - gitlab.com/tango-controls/pytango
   - github.com/mikefarah/yq
-

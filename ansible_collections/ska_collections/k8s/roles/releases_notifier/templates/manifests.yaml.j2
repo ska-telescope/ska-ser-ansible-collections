@@ -8,7 +8,7 @@ metadata:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: ska-releases-notifier-secret
+  name: ska-ser-releases-notifier-secret
   namespace: {{ releases_notifier_kubernetes_namespace }}
 type: Opaque
 data:
@@ -22,14 +22,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: ska-releases-notifier
-  name: ska-releases-notifier
+    app: ska-ser-releases-notifier
+  name: ska-ser-releases-notifier
   namespace: {{ releases_notifier_kubernetes_namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ska-releases-notifier 
+      app: ska-ser-releases-notifier 
   revisionHistoryLimit: 10
   strategy:
     rollingUpdate:
@@ -39,29 +39,29 @@ spec:
   template:
     metadata:
       labels:
-        app: ska-releases-notifier
+        app: ska-ser-releases-notifier
     spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
       containers:
-      - name: ska-releases-notifier
+      - name: ska-ser-releases-notifier
         image: {{ releases_notifier_image }}:{{ releases_notifier_tag }}
         env:
         - name: GITHUB_AUTH_TOKEN
           valueFrom:
             secretKeyRef:
-              name: ska-releases-notifier-secret
+              name: ska-ser-releases-notifier-secret
               key: github_auth_token
         - name: GITLAB_AUTH_TOKEN
           valueFrom:
             secretKeyRef:
-              name: ska-releases-notifier-secret
+              name: ska-ser-releases-notifier-secret
               key: gitlab_auth_token
         - name: SLACK_HOOK
           valueFrom:
             secretKeyRef:
-              name: ska-releases-notifier-secret
+              name: ska-ser-releases-notifier-secret
               key: slack_hook
         - name: INTERVAL
           value: {{ releases_notifier_interval }}
@@ -70,7 +70,7 @@ spec:
         - name: IGNORE_NONSTABLE
           value: "{{ releases_notifier_ignore_nonstable }}"                    
         command:
-        - '/bin/ska-releases-notifier'
+        - '/bin/ska-ser-releases-notifier'
         args:
         {% for item in releases_notifier_watch_list %}
         - '-r={{ item }}'

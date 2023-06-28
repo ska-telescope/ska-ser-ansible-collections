@@ -175,24 +175,6 @@ test-thanos: check_hosts ## Test elastic cluster
 	-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
 	--extra-vars "target_hosts=$(PLAYBOOKS_HOSTS)"
 
-releases-notifier-deploy-container: check_hosts ## Install releases_notifier container
-	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_releases_notifier_container.yml \
-		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) \
-		-e "releases_notifier_github_auth_token=$(RELEASES_NOTIFIER_GITHUB_AUTH_TOKEN)" \
-		-e "releases_notifier_gitlab_auth_token=$(RELEASES_NOTIFIER_GITLAB_AUTH_TOKEN)" \
-		-e "releases_notifier_slack_hook=$(RELEASES_NOTIFIER_SLACK_HOOK)" \
-		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
-		-e 'ansible_python_interpreter=/usr/bin/python3'
-
-releases-notifier-deploy-pod: check_hosts ## Install releases_notifier in k8s
-	@ansible-playbook $(PLAYBOOKS_DIR)/deploy_releases_notifier_pod.yml \
-		-i $(INVENTORY) $(ANSIBLE_PLAYBOOK_ARGUMENTS) $(ANSIBLE_EXTRA_VARS) \
-		-e "releases_notifier_github_auth_token=$(RELEASES_NOTIFIER_GITHUB_AUTH_TOKEN)" \
-		-e "releases_notifier_gitlab_auth_token=$(RELEASES_NOTIFIER_GITLAB_AUTH_TOKEN)" \
-		-e "releases_notifier_slack_hook=$(RELEASES_NOTIFIER_SLACK_HOOK)" \
-		-e "target_hosts='$(PLAYBOOKS_HOSTS)'" \
-		-e 'ansible_python_interpreter=/usr/bin/python3'
-
 help: ## Show Help
 	@echo "Monitoring targets - make playbooks monitoring <target>:"
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
