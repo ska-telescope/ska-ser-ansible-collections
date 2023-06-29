@@ -8,13 +8,13 @@ stackhpc.cephadm*/
 ansible-thoteam.nexus3-oss/
 **/tests/e2e/ssh.config
 **/tests/e2e/inventory.yml
-ska_collections/monitoring/roles/prometheus/files/*.json
-ska_collections/clusterapi/playbooks/bootstrap*
+ansible_collections/ska_collections/monitoring/roles/prometheus/files/*.json
+ansible_collections/ska_collections/clusterapi/playbooks/bootstrap*
 resources/clusterapi/manifests/*.yaml*
 resources/clusterapi/templates/*.yaml*
 accelize.xilinx_xrt/
 haggaie.mlnx_ofed/
 nvidia.nvidia_driver/
-ska_collections/gitlab_runner/roles/k8s/files/runner_manifest.yaml
-ska_collections/gitlab_runner/roles/k8s/files/runner-metrics.yaml
+ansible_collections/ska_collections/gitlab_runner/roles/k8s/files/runner_manifest.yaml
+ansible_collections/ska_collections/gitlab_runner/roles/k8s/files/runner-metrics.yaml
 build
