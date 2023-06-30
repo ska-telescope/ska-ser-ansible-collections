@@ -1,0 +1,25 @@
+---
+
+- name: PostgreSQL Patroni dashboard make sure grafana configuration directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+  with_items:
+    - "/etc/grafana/provisioning/datasources"
+    - "/etc/grafana/provisioning/dashboards/postgres-patroni-dashboard"
+    - "/etc/grafana/provisioning/notifiers"
+
+- name: PostgreSQL Patroni dashboard Copy up resource files
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/dashboards/postgres-patroni/{{ item }}"
+    dest: "/etc/grafana/provisioning/dashboards/postgres-patroni-dashboard/{{ item }}"
+    mode: 0640
+  with_items:
+    - postgresql-patroni.json
+
+- name: PostgreSQL Patroni dashboard Write dashboards provisioning config file
+  ansible.builtin.template:
+    src: dashboards-postgres-patroni-dashboard.yml.j2
+    dest: /etc/grafana/provisioning/dashboards/postgres-patroni-dashboard.yml
+    mode: 0640
