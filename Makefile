@@ -31,29 +31,6 @@ PYTHON_SWITCHES_FOR_BLACK=--exclude .yml --exclude .yaml
 
 -include $(BASE_PATH)/PrivateRules.mak
 
-MAKEFILE_CONTEXT_SEP?=MKCTX_
-MAKEFILE_CONTEXT?=/tmp/anisble-context-vars.$(shell echo "$(DATACENTRE)-$(ENVORNMENT)" | md5sum | head -c 8).tmp
-# This collects all variables defined in the Makefile context so that they can be used
-# by the get_env() filter defined in /ansible_plugins. It creates a string separated by
-# $(MAKEFILE_CONTEXT_SEP) so that we can split it accurately and create a clean key=value file.
-# It is outputted to a datacentre-environment specific file. Variables must be defined above this
-# code.
-
-# Be aware, this file, as environment variables, are unprotected, and can expose secret
-# information.
-$(shell echo -n "$(shell \
-	$(foreach v,$(.VARIABLES), \
-		$(if $(and $(filter-out undefined, $(origin $(v))), $(filter-out default, $(origin $(v))), $(filter-out automatic, $(origin $(v)))), \
-			echo '$(MAKEFILE_CONTEXT_SEP)$(v)=$($(v))' \
-		) \
-	) \
-)" | \
-sed "s#echo $(MAKEFILE_CONTEXT_SEP)#$(MAKEFILE_CONTEXT_SEP)#g" | \
-sed "s# $(MAKEFILE_CONTEXT_SEP)#\n#g" | \
-sed "s#$(MAKEFILE_CONTEXT_SEP)##g" > $(MAKEFILE_CONTEXT))
-
-ANSIBLE_PLAYBOOK_VARS += ANSIBLE_VAR_CONTEXT=$(MAKEFILE_CONTEXT) ANSIBLE_VAR_CONTEXT_SEP=$(MAKEFILE_CONTEXT_SEP)
-
 ac-check-env:
 ifndef DATACENTRE
 	$(error DATACENTRE is undefined)
@@ -228,3 +205,26 @@ ac-print-targets: ## Show Help
 
 ac-help: ## Show Help
 	@make ac-print-targets
+
+MAKEFILE_CONTEXT_SEP?=MKCTX_
+MAKEFILE_CONTEXT?=/tmp/anisble-context-vars.$(shell echo "$(DATACENTRE)-$(ENVORNMENT)" | md5sum | head -c 8).tmp
+# This collects all variables defined in the Makefile context so that they can be used
+# by the get_env() filter defined in /ansible_plugins. It creates a string separated by
+# $(MAKEFILE_CONTEXT_SEP) so that we can split it accurately and create a clean key=value file.
+# It is outputted to a datacentre-environment specific file. Variables must be defined above this
+# code.
+
+# Be aware, this file, as environment variables, are unprotected, and can expose secret
+# information.
+$(shell echo -n "$(shell \
+	$(foreach v,$(.VARIABLES), \
+		$(if $(and $(filter-out undefined, $(origin $(v))), $(filter-out default, $(origin $(v))), $(filter-out automatic, $(origin $(v)))), \
+			echo '$(MAKEFILE_CONTEXT_SEP)$(v)=$($(v))' \
+		) \
+	) \
+)" | \
+sed "s#echo $(MAKEFILE_CONTEXT_SEP)#$(MAKEFILE_CONTEXT_SEP)#g" | \
+sed "s# $(MAKEFILE_CONTEXT_SEP)#\n#g" | \
+sed "s#$(MAKEFILE_CONTEXT_SEP)##g" > $(MAKEFILE_CONTEXT))
+
+ANSIBLE_PLAYBOOK_VARS += ANSIBLE_VAR_CONTEXT=$(MAKEFILE_CONTEXT) ANSIBLE_VAR_CONTEXT_SEP=$(MAKEFILE_CONTEXT_SEP)

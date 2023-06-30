@@ -11,12 +11,11 @@ This repo contains a set of [Ansible Role Collections](https://docs.ansible.com/
 | [monitoring](./ansible_collections/ska_collections/monitoring/)           | Install prometheus-based metrics services                                              |
 | [minikube](./ansible_collections/ska_collections/minikube/)               | Install minikube and associated tools                                                  |
 | [gitlab_runner](./ansible_collections/ska_collections/gitlab_runner/)     | Install docker-based Gitlab runner                                                     |
+| [gitlab_management](./ansible_collections/ska_collections/gitlab_management/) | Manage Gitlab group                                                                |
 | [ceph](./ansible_collections/ska_collections/ceph/)                       | Ceph roles                                                                             |
 | [nexus](./ansible_collections/ska_collections/nexus/)                     | Install Nexus Repository                                                               |
-| [dns](./ansible_collections/ska_collections/dns/)                         | Install DNS                                                                            |
-| [openvpn](./ansible_collections/ska_collections/openvpn/)                 | Install openvpn                                                                        |
-| [metallb](./ansible_collections/ska_collections/metallb/)                 | Install metallb                                                                        |
-| [cluster](./ansible_collections/ska_collections/clusterapi/)              | Create kubernetes clusters using clusterapi                                            |
+| [gateway](./ansible_collections/ska_collections/gateway/)                 | Install gateway services (DNS, Cron jobs, OpenVPN, reverse proxy, etc)                 |
+| [clusterapi](./ansible_collections/ska_collections/clusterapi/)           | Create kubernetes clusters using clusterapi                                            |
 | [k8s](./ansible_collections/ska_collections/k8s/)                         | Deploy kubernetes and services to a cluster                                            |
 
 ## TLDR
@@ -93,6 +92,27 @@ make <collection> <job> <VARS>
 
 > make
 
+### Secret variable definition
+
+Secrets **should not** be defined in a collection, as well as other mandatory variables. These variables should be declared as such, preferably in `defaults/main.yml`:
+
+```
+some_var: "{{ _ | mandatory('some_var definition is mandatory') }}"
+```
+
+This will ensure a playbook execution fails if they are not defined. Definition should happen in the upstream repository, as follows:
+
+```
+some_var: "{{ another_var | default_to_env('SOME_VAR') }}"
+```
+
+If you don't want environment or Makefile variables to be valid default values, simply remove `default_to_env`. If you **only** want such behavior, use:
+
+```
+some_var: "{{ _ | default_to_env('SOME_VAR') }}"
+```
+
+The value precedence respects Ansible and Makefile conventions. To integrate secret value definition with Vault, take a look at a more complete example at [SKA Infra Machinery](https://gitlab.com/ska-telescope/sdi/ska-ser-infra-machinery#secret-management). In that particular repository, the secrets are pulled from Vault into a `secrets.yml` file, and injected into the Ansible extra variables. Please reach out to [System Team](https://skao.slack.com/archives/CEMF9HXUZ) if you need Vault setup.
 
 ### Mandatory Environment Variables
 
