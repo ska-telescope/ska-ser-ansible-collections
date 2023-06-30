@@ -103,7 +103,7 @@
 #      ipam:
 #        type: whereabouts
 #        range: 10.0.10.4-10.0.10-32/24
-- name: create NetworkAttachmentDefinitions
+- name: Create NetworkAttachmentDefinitions
   kubernetes.core.k8s:
     name: "{{ item.key }}"
     namespace: kube-system
@@ -119,4 +119,4 @@
             | ansible.builtin.combine(item.value.config)
             | to_json(indent=4)
           }}
-  loop: "{{ multihoming_network_defs|dict2items }}"
+  loop: "{{ multihoming_network_defs | dict2items }}"
