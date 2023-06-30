@@ -15,8 +15,8 @@ thanos_query_endpoints:
 thanos_docker_tags: 'v0.30.2'
 
 thanos_s3_server_auth_url: "s3.us-east-1.amazonaws.com"
-thanos_s3_store_access_key: "{{ _ | mandatory('`THANOS_S3_STORE_ACCESS_KEY` definition is mandatory') }}"
-thanos_s3_store_secret_key: "{{ _ | mandatory('`THANOS_S3_STORE_SECRET_KEY` definition is mandatory') }}"
+thanos_s3_store_access_key: "{{ _ | mandatory('`thanos_s3_store_access_key` definition is mandatory') }}"
+thanos_s3_store_secret_key: "{{ _ | mandatory('`thanos_s3_store_secret_key` definition is mandatory') }}"
 thanos_s3_region: "eu-west-2"
 thanos_s3_bucket: "skao-bkp-prometheus-metrics"
 
