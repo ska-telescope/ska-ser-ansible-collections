@@ -13,6 +13,7 @@
       loadBalancerClass: "{{ k8s_metallb_set_class | ternary(k8s_metallb_class, omit) }}"
       speaker:
         tolerations: "{{ k8s_metallb_tolerations }}"
+        affinity: "{{ k8s_metallb_affinity }}"
 
 - name: Apply MetalLB config
   kubernetes.core.k8s:
