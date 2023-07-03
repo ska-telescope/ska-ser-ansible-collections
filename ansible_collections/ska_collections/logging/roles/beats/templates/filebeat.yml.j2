@@ -159,7 +159,7 @@ setup.ilm.policy_file: /etc/filebeat-ilm-policy.json
 setup.template.name: "filebeat-%{[agent.version]}"
 setup.template.pattern: "filebeat-%{[agent.version]}-*"
 setup.template.enabled: true
-setup.template.overwrite: true
+setup.template.overwrite: false
 {% if logging_filebeat_pipeline_enabled|bool %}
 setup.template.settings:
   index.default_pipeline: "{{ logging_filebeat_pipeline_name }}"
