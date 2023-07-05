@@ -117,7 +117,7 @@
   register: cephcluster_check
 
 - name: Install CephCluster
-  when: "not cephcluster_check.resources"
+  when: "k8s_rook_ceph_image_update or not cephcluster_check.resources"
   block:
     - name: Deploy CephCluster
       kubernetes.core.k8s:
