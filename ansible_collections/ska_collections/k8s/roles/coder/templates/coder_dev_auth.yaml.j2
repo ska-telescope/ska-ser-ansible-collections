@@ -1,41 +1,54 @@
 
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: coder-dev
-  namespace: "{{ k8s_coder_namespace }}"
-
----
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: coder-dev-cluster-role
-  namespace: "{{ k8s_coder_namespace }}"
+  name: coder-cluster-role
 rules:
-- apiGroups: ["", "batch", "apps"]
-  resources: ["deployments", "jobs", "pods", "pods/log", "pods/exec", "configmaps",
-              "pods/portforward", "pods/attach", "persistentvolumeclaims", "services", "secrets",
-              "endpoints", "events", "podtemplates", "replicationcontrollers",
-              "daemonsets", "replicasets", "statefulsets", "cronjobs"]
-  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - ""
+  - extensions
+  - apps
+  - rbac.authorization.k8s.io
+  - roles.rbac.authorization.k8s.io
+  - authorization.k8s.io
+  - networking.k8s.io
+  resources: ["*"]
+  verbs: ["*"]
 - apiGroups: [""]
-  resources: ["namespaces", "storageclasses", "serviceaccounts",
-              "resourcequotas", "persistentvolumes", "limitranges",
-              "nodes", "componentstatuses"]
-  verbs: ["get", "list", "watch"]
+  resources: ["pods", "serviceaccounts"]
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: coder
-  namespace: "{{ k8s_coder_namespace }}"
+  name: coder-cluster-role-bind
 subjects:
   - kind: ServiceAccount
-    name: coder-dev
+    name: coder
     namespace: "{{ k8s_coder_namespace }}"
 roleRef:
   kind: ClusterRole
-  name: coder-dev-cluster-role
+  name: coder-cluster-role
   apiGroup: rbac.authorization.k8s.io
+

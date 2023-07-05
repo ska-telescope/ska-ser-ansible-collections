@@ -96,7 +96,7 @@
         - "/tmp/coder.values.yaml"
 
 - name: Configure coder
-  when: secrets.k8s_coder_cli_auth is defined
+  when: k8s_coder_cli_auth is defined
   block:
     - name: Template configuration job
       ansible.builtin.template:

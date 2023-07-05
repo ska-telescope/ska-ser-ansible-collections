@@ -34,16 +34,6 @@ variable "namespace" {
   description = "The Kubernetes namespace to create workspaces in (must exist prior to creating workspaces)"
 }
 
-variable "dotfiles_uri" {
-  description = <<-EOF
-  Dotfiles repo URI (optional)
-
-  see https://dotfiles.github.io
-  EOF
-    # The codercom/enterprise-* images are only built for amd64
-  default = ""
-}
-
 locals {
   jupyter_base_path = "/@${data.coder_workspace.me.owner}/${data.coder_workspace.me.name}/apps/jupyter/"
 }
@@ -90,6 +80,16 @@ data "coder_parameter" "home_disk_size" {
     min = 1
     max = 10
   }
+}
+
+data "coder_parameter" "coder_dev_namespace" {
+  name         = "coder_dev_namespace"
+  display_name = "Kubernetes namespace"
+  description  = "Name of the k8s namespace to inspect"
+  default      = "integration-ska-tango-examples"
+  type         = "string"
+  icon         = "/icon/k8s.png"
+  mutable      = false
 }
 
 provider "kubernetes" {
@@ -147,7 +147,7 @@ resource "coder_app" "jupyter" {
 resource "kubernetes_persistent_volume_claim" "home" {
   metadata {
     name      = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-home"
-    namespace = var.namespace
+    namespace = "${data.coder_parameter.coder_dev_namespace.value}"
     labels = {
       "app.kubernetes.io/name"     = "coder-pvc"
       "app.kubernetes.io/instance" = "coder-pvc-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}"
@@ -175,12 +175,203 @@ resource "kubernetes_persistent_volume_claim" "home" {
   }
 }
 
+resource "kubernetes_service_account" "coder_dev_sa" {
+  metadata {
+    name = "${data.coder_parameter.coder_dev_namespace.value}"
+    namespace = "${data.coder_parameter.coder_dev_namespace.value}"
+  }
+}
+
+resource "kubernetes_role" "coder_dev_role" {
+  metadata {
+    name = "${data.coder_parameter.coder_dev_namespace.value}"
+    namespace = "${data.coder_parameter.coder_dev_namespace.value}"
+  }
+
+  rule {
+    api_groups = ["", "batch", "apps"]
+    resources  = ["deployments", "jobs", "pods", "pods/log", "pods/exec", "configmaps",
+              "pods/portforward", "pods/attach", "persistentvolumeclaims", "services", "secrets",
+              "endpoints", "events", "podtemplates", "replicationcontrollers",
+              "daemonsets", "replicasets", "statefulsets", "cronjobs"]
+    verbs      = ["get", "list", "watch"]
+  }
+}
+
+  
+resource "kubernetes_role_binding" "coder_role_binding" {
+  metadata {
+    name = "${data.coder_parameter.coder_dev_namespace.value}"
+    namespace = "${data.coder_parameter.coder_dev_namespace.value}"
+  }
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "Role"
+    name      = "${data.coder_parameter.coder_dev_namespace.value}"
+  }
+  subject {
+    kind      = "ServiceAccount"
+    name      = "${data.coder_parameter.coder_dev_namespace.value}"
+    namespace = "${data.coder_parameter.coder_dev_namespace.value}"
+  }
+}
+
+resource "kubernetes_network_policy" "pod_np" {
+  metadata {
+    name      = "nf-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}"
+    namespace = "${data.coder_parameter.coder_dev_namespace.value}"
+  }
+
+  spec {
+    pod_selector {
+      match_expressions {
+        key      = "com.coder.workspace.name"
+        operator = "In"
+        values   = ["${lower(data.coder_workspace.me.name)}"]
+      }
+    }
+
+    ingress {
+      ports {
+        port     = "13337"
+        protocol = "TCP"
+      }
+
+      ports {
+        port     = "2113"
+        protocol = "TCP"
+      }
+
+      ports {
+        port     = "2112"
+        protocol = "TCP"
+      }
+
+      ports {
+        port     = "6060"
+        protocol = "TCP"
+      }
+      
+      ports {
+        port     = "8888"
+        protocol = "TCP"
+      }
+
+      ports {
+        port     = "58689"
+        protocol = "TCP"
+      }
+
+      ports {
+        port     = "37649"
+        protocol = "TCP"
+      }
+
+      from {
+        namespace_selector {
+          match_labels = {
+            "kubernetes.io/metadata.name" = "{{ k8s_coder_namespace }}"
+          }
+        }
+      }
+    }
+
+    egress {
+      ports {
+        protocol = "UDP"
+        port     = "53"
+      }
+
+      to {
+        pod_selector {
+          match_labels = {
+            k8s-app = "kube-dns"
+          }
+        }
+
+        namespace_selector {
+          match_labels = {
+            "kubernetes.io/metadata.name" = "kube-system"
+          }
+        }
+      }
+    }
+
+    egress {
+      ports {
+        protocol = "TCP"
+        port     = "443"
+      }
+    }
+
+    egress {
+      ports {
+        protocol = "TCP"
+        port     = "8080"
+      }
+
+      to {
+        namespace_selector {
+          match_labels = {
+            "kubernetes.io/metadata.name" = "coder"
+          }
+        }
+      }
+    }
+
+    egress {
+      ports {
+        protocol = "TCP"
+        port     = "6443"
+      }
+    }
+
+
+    egress {
+
+      ports {
+        port     = "5678"
+        protocol = "TCP"
+      }
+
+      ports {
+        port     = "10000"
+        protocol = "TCP"
+      }
+
+      ports {
+        port     = "45450"
+        protocol = "TCP"
+      }
+
+      ports {
+        port     = "45460"
+        protocol = "TCP"
+      }
+
+      ports {
+        port     = "45470"
+        protocol = "TCP"
+      }
+
+      to {
+        namespace_selector {
+          match_labels = {
+            "kubernetes.io/metadata.name" = "${data.coder_parameter.coder_dev_namespace.value}"
+          }
+        }
+      }
+    }
+
+    policy_types = ["Ingress", "Egress"]
+  }
+}
 
 resource "kubernetes_pod" "main" {
   count = data.coder_workspace.me.start_count
   metadata {
     name      = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}"
-    namespace = var.namespace
+    namespace = "${data.coder_parameter.coder_dev_namespace.value}"
     labels = {
       "app.kubernetes.io/name"     = "coder-workspace"
       "app.kubernetes.io/instance" = "coder-workspace-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}"
@@ -197,7 +388,7 @@ resource "kubernetes_pod" "main" {
     }
   }
   spec {
-    service_account_name = "coder-dev"
+    service_account_name = "${data.coder_parameter.coder_dev_namespace.value}"
     security_context {
       run_as_user = "1000"
       fs_group    = "1000"
