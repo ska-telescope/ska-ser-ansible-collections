@@ -88,13 +88,6 @@ prometheus_scrape_configs:
     metric_relabel_configs: "{{ prometheus_static_node_metric_relabel_configs +
        prometheus_elasticsearch_instance_add_cluster_label + prometheus_node_metric_relabel_configs }}"
 
-  - job_name: "gitlab-runner"
-    file_sd_configs:
-      - files:
-          - 'gitlab_exporter.json'
-    metric_relabel_configs: "{{ prometheus_static_node_metric_relabel_configs +
-       prometheus_elasticsearch_instance_add_cluster_label + prometheus_node_metric_relabel_configs }}"
-
   - job_name: "elasticsearch"
     file_sd_configs:
       - files:

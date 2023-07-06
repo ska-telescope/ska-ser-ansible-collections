@@ -4,6 +4,7 @@
   vars:
     target_hosts: localhost
     mode: "sidecar"
+    kubeconfig: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
   become: true
   roles:
     - prometheus
