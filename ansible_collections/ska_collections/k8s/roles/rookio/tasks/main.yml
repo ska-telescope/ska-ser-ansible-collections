@@ -123,8 +123,8 @@
       kubernetes.core.k8s_info:
         api_version: ceph.rook.io/v1
         kind: CephCluster
-        name: rook-ceph
-        namespace: rook-ceph
+        name: "{{ k8s_rook_namespace }}"
+        namespace: "{{ k8s_rook_namespace }}"
       register: cephcluster
 
     - name: Set ceph_version fact
