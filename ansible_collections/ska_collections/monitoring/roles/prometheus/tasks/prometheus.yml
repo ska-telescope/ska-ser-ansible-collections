@@ -112,7 +112,6 @@
     - ceph-mgr.json
     - docker_exporter.json
     - elasticsearch_exporter.json
-    - gitlab_exporter.json
     - node_exporter.json
     - kube-proxy.json
 
