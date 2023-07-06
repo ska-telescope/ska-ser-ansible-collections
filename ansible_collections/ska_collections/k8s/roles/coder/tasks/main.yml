@@ -46,8 +46,62 @@
     name: coder-v2
     repo_url: "https://helm.coder.com/v2"
 
+- name: Create certificates for client communication
+  become: true
+  ansible.builtin.import_role:
+    name: ska_collections.instance_common.certs
+    tasks_from: sign-cert
+  vars:
+    certificate_name: "coder"
+    certificate_dns_alt_name: "{{ k8s_coder_alt_name }}"
+    certificate_recreate: true
+
+- name: Create certificates directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ certificates_dir }}/coder.key"
+    mode: 0744
+
+- name: Create certificates directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ certificates_dir }}/coder.crt"
+    mode: 0744
+
+- name: Read certificates coder.key # noqa: command-instead-of-module
+  become: true
+  ansible.builtin.shell: |
+    set -o pipefail && \
+    cat {{ certificates_dir + '/coder.key' }}
+  args:
+    executable: /usr/bin/bash
+  changed_when: false
+  register: coder_key
+
+- name: Read certificates coder.crt # noqa: command-instead-of-module
+  become: true
+  ansible.builtin.shell: |
+    set -o pipefail && \
+    cat {{ certificates_dir + '/coder.crt' }}
+  args:
+    executable: /usr/bin/bash
+  changed_when: false
+  register: coder_crt
+
 - name: Deploy coder chart with values
   block:
+    - name: Template coder secrets
+      become: true
+      ansible.builtin.template:
+        src: coder_secrets.yaml.j2
+        dest: "/tmp/coder_secrets.yaml"
+        mode: "0644"
+
+    - name: Apply coder secrets
+      kubernetes.core.k8s:
+        state: present
+        src: "/tmp/coder_secrets.yaml"
+
     - name: Template coder values yaml
       ansible.builtin.template:
         src: coder.values.yaml.j2
@@ -88,12 +142,13 @@
         src: "/tmp/coder_dev_auth.yaml"
   always:
     - name: Remove tmp files
+      become: true
       ansible.builtin.file:
         path: "{{ item }}"
         state: absent
       with_items:
-        - "/tmp/coder_secret.yaml"
         - "/tmp/coder.values.yaml"
+        - "/tmp/coder_secrets.yaml"
 
 - name: Configure coder
   when: k8s_coder_cli_auth is defined
