@@ -1,7 +1,9 @@
 coder:
+{% if k8s_coder_tls_enabled %}
   tls:
     secretNames:
       - coder-secrets
+{% endif %}
   env:
     - name: CODER_BROWSER_ONLY
       value: "true"
@@ -10,7 +12,7 @@ coder:
         secretKeyRef:
           name: coder-db-url
           key: url
-{% if reverseproxy_coder_server is not none %}
+{% if k8s_coder_gitlab_oidc_client_id is not none %}
     - name: CODER_ACCESS_URL
       value: "https://k8s.stfc.skao.int"
     - name: CODER_OIDC_ISSUER_URL

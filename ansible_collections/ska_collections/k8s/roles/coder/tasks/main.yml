@@ -23,24 +23,6 @@
         enabled: true
         size: "{{ k8s_coder_persistence_size }}"
 
-- name: Secret for communication coder-postgresql
-  block:
-    - name: Template coder values yaml
-      ansible.builtin.template:
-        src: coder_secret.yaml.j2
-        dest: "/tmp/coder_secret.yaml"
-        mode: "0644"
-
-    - name: Apply secret
-      kubernetes.core.k8s:
-        state: present
-        src: "/tmp/coder_secret.yaml"
-  always:
-    - name: Remove coder_secret
-      ansible.builtin.file:
-        path: "/tmp/coder_secret.yaml"
-        state: absent
-
 - name: Add coder-v2 chart repo
   kubernetes.core.helm_repository:
     name: coder-v2
@@ -55,18 +37,7 @@
     certificate_name: "coder"
     certificate_dns_alt_name: "{{ k8s_coder_alt_name }}"
     certificate_recreate: true
-
-- name: Create certificates directory
-  become: true
-  ansible.builtin.file:
-    path: "{{ certificates_dir }}/coder.key"
-    mode: 0744
-
-- name: Create certificates directory
-  become: true
-  ansible.builtin.file:
-    path: "{{ certificates_dir }}/coder.crt"
-    mode: 0744
+  when: k8s_coder_tls_enabled
 
 - name: Read certificates coder.key # noqa: command-instead-of-module
   become: true
@@ -77,6 +48,7 @@
     executable: /usr/bin/bash
   changed_when: false
   register: coder_key
+  when: k8s_coder_tls_enabled
 
 - name: Read certificates coder.crt # noqa: command-instead-of-module
   become: true
@@ -87,17 +59,18 @@
     executable: /usr/bin/bash
   changed_when: false
   register: coder_crt
+  when: k8s_coder_tls_enabled
 
 - name: Deploy coder chart with values
   block:
-    - name: Template coder secrets
+    - name: Template secrets
       become: true
       ansible.builtin.template:
         src: coder_secrets.yaml.j2
         dest: "/tmp/coder_secrets.yaml"
         mode: "0644"
 
-    - name: Apply coder secrets
+    - name: Apply secrets
       kubernetes.core.k8s:
         state: present
         src: "/tmp/coder_secrets.yaml"
