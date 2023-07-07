@@ -123,7 +123,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "count(openstack_nova_agent_state{adminState=\"enabled\"})-sum(openstack_nova_agent_state{adminState=\"enabled\"})",
@@ -238,7 +238,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "openstack_nova_agent_state{adminState=\"enabled\"}",
@@ -351,7 +351,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "sum(openstack_nova_agent_state{adminState=\"enabled\"})",
@@ -433,7 +433,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "expr": "count(openstack_cinder_agent_state{adminState=\"enabled\"})-sum(openstack_cinder_agent_state{adminState=\"enabled\"})",
           "format": "time_series",
@@ -548,7 +548,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "openstack_cinder_agent_state",
@@ -744,7 +744,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "expr": "count(openstack_neutron_agent_state{adminState=\"up\"})-sum(openstack_neutron_agent_state{adminState=\"up\"})",
           "format": "time_series",
@@ -860,7 +860,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "openstack_neutron_agent_state",
@@ -972,7 +972,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "expr": "sum(openstack_neutron_agent_state{adminState=\"up\"})",
           "format": "time_series",
@@ -1061,7 +1061,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "expr": "sum(openstack_nova_vcpus_used)",
           "format": "time_series",
@@ -1073,7 +1073,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "sum(openstack_nova_vcpus_available)",
@@ -1169,7 +1169,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "sum(openstack_nova_memory_used_bytes)",
@@ -1182,7 +1182,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "sum(openstack_nova_memory_available_bytes)",
@@ -1280,7 +1280,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "avg(openstack_identity_projects)",
@@ -1346,7 +1346,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "avg(openstack_glance_images)",
@@ -1412,7 +1412,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "avg(openstack_nova_total_vms)",
@@ -1482,7 +1482,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "avg(openstack_neutron_floating_ips_associated_not_active)",
@@ -1548,7 +1548,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "avg(openstack_neutron_networks)",
@@ -1614,7 +1614,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "avg(openstack_neutron_subnets)",
@@ -1680,7 +1680,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "avg(openstack_cinder_volumes)",
@@ -1746,7 +1746,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "avg(openstack_cinder_snapshots)",
@@ -1833,7 +1833,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "openstack_nova_vcpus_used/(openstack_nova_vcpus_available+openstack_nova_vcpus_used)",
@@ -1928,7 +1928,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "exemplar": true,
           "expr": "openstack_nova_memory_used_bytes/(openstack_nova_memory_used_bytes+openstack_nova_memory_available_bytes)",
@@ -2023,7 +2023,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -2142,7 +2142,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "editorMode": "code",
           "expr": "(openstack_cinder_pool_capacity_total_gb-openstack_cinder_pool_capacity_free_gb)/openstack_cinder_pool_capacity_total_gb",
@@ -2234,7 +2234,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "editorMode": "code",
           "expr": "openstack_cinder_pool_capacity_total_gb-openstack_cinder_pool_capacity_free_gb",
@@ -2245,7 +2245,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "P5DCFC7561CCDE821"
           },
           "editorMode": "code",
           "expr": "openstack_cinder_pool_capacity_total_gb",
