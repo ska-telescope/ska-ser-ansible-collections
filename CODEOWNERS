@@ -1,3 +1,4 @@
+# Catch all approval rule for everything (This requires only 1 approval from eligible approvers)
 * @ska-telescope/ska-dev/skao-team-system @ska-telescope/ska-dev/skao-bang-team 
 
 # The following requires an approval from Bang team
