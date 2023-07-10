@@ -1,1 +1,34 @@
-* @ska-telescope/ska-dev/skao-team-system
+* @ska-telescope/ska-dev/skao-team-system @ska-telescope/ska-dev/skao-bang-team 
+
+# The following requires an approval from Bang team
+[Bang Team] @ska-telescope/ska-dev/skao-bang-team 
+# Team specific collections mostly used/controlled by one team
+ansible_collections/ska_collections/ceph/ 
+ansible_collections/ska_collections/k8s/roles/eda/ 
+ansible_collections/ska_collections/k8s/roles/join/ 
+ansible_collections/ska_collections/k8s/roles/releases_notifier/ 
+ansible_collections/ska_collections/k8s/roles/singlenode/ 
+# Common collections that include deployments in each datacentre so we need approval from both teams
+ansible_collections/ska_collections/docker_base/
+ansible_collections/ska_collections/gateway/
+ansible_collections/ska_collections/instance_common/
+ansible_collections/ska_collections/logging/
+ansible_collections/ska_collections/monitoring/
+ansible_collections/ska_collections/nexus/
+ansible_collections/ska_collections/gitlab_runner/roles/k8s 
+
+# The following requires an approval from System team
+[System Team] @ska-telescope/ska-dev/skao-team-system
+# Team specific collections mostly used/controlled by one team
+ansible_collections/ska_collections/clusterapi/ 
+ansible_collections/ska_collections/gitlab_management/ 
+ansible_collections/ska_collections/gitlab_runner/roles/minio 
+ansible_collections/ska_collections/gitlab_runner/roles/runner
+# Common collections that include deployments in each datacentre so we need approval from both teams
+ansible_collections/ska_collections/docker_base/
+ansible_collections/ska_collections/gateway/
+ansible_collections/ska_collections/instance_common/
+ansible_collections/ska_collections/logging/
+ansible_collections/ska_collections/monitoring/
+ansible_collections/ska_collections/nexus/
+ansible_collections/ska_collections/gitlab_runner/roles/k8s 
