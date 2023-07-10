@@ -173,6 +173,9 @@ jupyterhub:
         volumeNameTemplate: vol-{userid}-{servername}
       capacity: 2Gi
       homeMountPath: /home/jovyan/data
+{% if k8s_binderhub_jupyterhub_profiles is defined and k8s_binderhub_jupyterhub_profiles|length > 0 %}
+    profileList: {{ k8s_binderhub_jupyterhub_profiles }}
+{% endif %}
 
   # Explicitly enable egress traffic to Kubernetes services of type ClusterIP
   # required to make it possible to talk to Tango
