@@ -25,7 +25,7 @@ ansible_collections/ska_collections/clusterapi/
 ansible_collections/ska_collections/gitlab_management/ 
 ansible_collections/ska_collections/gitlab_runner/roles/minio 
 ansible_collections/ska_collections/gitlab_runner/roles/runner
-# Common collections that include deployments in each datacentre so we need approval from both teams
+# Common collections that include deployments in each datacentre so we need explicit approval from both teams
 ansible_collections/ska_collections/docker_base/
 ansible_collections/ska_collections/gateway/
 ansible_collections/ska_collections/instance_common/
