@@ -9,7 +9,7 @@ ansible_collections/ska_collections/k8s/roles/eda/
 ansible_collections/ska_collections/k8s/roles/join/ 
 ansible_collections/ska_collections/k8s/roles/releases_notifier/ 
 ansible_collections/ska_collections/k8s/roles/singlenode/ 
-# Common collections that include deployments in each datacentre so we need approval from both teams
+# Common collections that include deployments in each datacentre so we need explicit approval from both teams
 ansible_collections/ska_collections/docker_base/
 ansible_collections/ska_collections/gateway/
 ansible_collections/ska_collections/instance_common/
