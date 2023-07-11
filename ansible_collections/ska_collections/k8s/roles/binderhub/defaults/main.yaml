@@ -28,3 +28,6 @@ k8s_binderhub_gitlab_client_id: "{{ _ | mandatory('`k8s_binderhub_gitlab_client_
 k8s_binderhub_gitlab_client_secret: "{{ _ | mandatory('`k8s_binderhub_gitlab_client_secret` definition is mandatory') }}"
 k8s_binderhub_gitlab_allowed_groups:
   - "ska-telescope"
+
+# https://z2jh.jupyter.org/en/stable/resources/reference.html#singleuser-profilelist
+k8s_binderhub_jupyterhub_profiles: []
