@@ -1,4 +1,9 @@
 coder:
+{% if k8s_coder_tls_enabled %}
+  tls:
+    secretNames:
+      - coder-secrets
+{% endif %}
   env:
     - name: CODER_BROWSER_ONLY
       value: "true"
@@ -7,7 +12,18 @@ coder:
         secretKeyRef:
           name: coder-db-url
           key: url
-
+{% if k8s_coder_gitlab_oidc_client_id is not none %}
+    - name: CODER_ACCESS_URL
+      value: "https://k8s.stfc.skao.int"
+    - name: CODER_OIDC_ISSUER_URL
+      value: "https://gitlab.com"
+    - name: CODER_OIDC_CLIENT_ID
+      value: "{{ k8s_coder_gitlab_oidc_client_id }}"
+    - name: CODER_OIDC_CLIENT_SECRET
+      value: "{{ k8s_coder_gitlab_oidc_client_secret }}"
+    - name: CODER_DISABLE_PASSWORD_AUTH
+      value: "false"
+{% endif %}
   service:
     enable: true
     type: LoadBalancer
@@ -16,3 +32,6 @@ coder:
   ingress:
     # not possible to use a specific prefix
     enable: false
+
+  serviceAccount:
+    workspacePerms: false

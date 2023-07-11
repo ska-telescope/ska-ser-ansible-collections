@@ -23,31 +23,58 @@
         enabled: true
         size: "{{ k8s_coder_persistence_size }}"
 
-- name: Secret for communication coder-postgresql
-  block:
-    - name: Template coder values yaml
-      ansible.builtin.template:
-        src: coder_secret.yaml.j2
-        dest: "/tmp/coder_secret.yaml"
-        mode: "0644"
-
-    - name: Apply secret
-      kubernetes.core.k8s:
-        state: present
-        src: "/tmp/coder_secret.yaml"
-  always:
-    - name: Remove coder_secret
-      ansible.builtin.file:
-        path: "/tmp/coder_secret.yaml"
-        state: absent
-
 - name: Add coder-v2 chart repo
   kubernetes.core.helm_repository:
     name: coder-v2
     repo_url: "https://helm.coder.com/v2"
 
+- name: Create certificates for client communication
+  become: true
+  ansible.builtin.import_role:
+    name: ska_collections.instance_common.certs
+    tasks_from: sign-cert
+  vars:
+    certificate_name: "coder"
+    certificate_dns_alt_name: "{{ k8s_coder_alt_name }}"
+    certificate_recreate: true
+  when: k8s_coder_tls_enabled
+
+- name: Read certificates coder.key # noqa: command-instead-of-module
+  become: true
+  ansible.builtin.shell: |
+    set -o pipefail && \
+    cat {{ certificates_dir + '/coder.key' }}
+  args:
+    executable: /usr/bin/bash
+  changed_when: false
+  register: coder_key
+  when: k8s_coder_tls_enabled
+
+- name: Read certificates coder.crt # noqa: command-instead-of-module
+  become: true
+  ansible.builtin.shell: |
+    set -o pipefail && \
+    cat {{ certificates_dir + '/coder.crt' }}
+  args:
+    executable: /usr/bin/bash
+  changed_when: false
+  register: coder_crt
+  when: k8s_coder_tls_enabled
+
 - name: Deploy coder chart with values
   block:
+    - name: Template secrets
+      become: true
+      ansible.builtin.template:
+        src: coder_secrets.yaml.j2
+        dest: "/tmp/coder_secrets.yaml"
+        mode: "0644"
+
+    - name: Apply secrets
+      kubernetes.core.k8s:
+        state: present
+        src: "/tmp/coder_secrets.yaml"
+
     - name: Template coder values yaml
       ansible.builtin.template:
         src: coder.values.yaml.j2
@@ -88,15 +115,16 @@
         src: "/tmp/coder_dev_auth.yaml"
   always:
     - name: Remove tmp files
+      become: true
       ansible.builtin.file:
         path: "{{ item }}"
         state: absent
       with_items:
-        - "/tmp/coder_secret.yaml"
         - "/tmp/coder.values.yaml"
+        - "/tmp/coder_secrets.yaml"
 
 - name: Configure coder
-  when: secrets.k8s_coder_cli_auth is defined
+  when: k8s_coder_cli_auth is defined
   block:
     - name: Template configuration job
       ansible.builtin.template:
