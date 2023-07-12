@@ -10,3 +10,5 @@
 - name: Cleanup pvc,ep,service leftovers
   ansible.builtin.shell: |
     kubectl delete $(kubectl get pvc,ep,service -l release={{ timescaledb_release_name }} -o name -n {{ timescaledb_namespace }}) -n {{ timescaledb_namespace }}
+  register: output
+  changed_when: output.rc != 0
