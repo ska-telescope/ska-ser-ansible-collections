@@ -3,7 +3,7 @@
 - name: Install ska-tango-archiver-timescaledb Helm chart
   become: true
   kubernetes.core.helm:
-    name: eda
+    name: "{{ timescaledb_release_name }}"
     purge: true
     create_namespace: true
     chart_repo_url: https://artefact.skao.int/repository/helm-internal

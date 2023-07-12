@@ -1,0 +1,22 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: Destroy eda
+  hosts: "{{ target_hosts }}"
+  vars:
+    target_hosts: localhost
+  gather_facts: true
+  pre_tasks:
+    - name: Check k8s_kubeconfig
+      ansible.builtin.debug:
+        var: k8s_kubeconfig
+  tasks:
+    - name: Destroy eda
+      ansible.builtin.import_role:
+        name: eda
+        tasks_from: destroy
+
+  environment:
+    KUBECONFIG: "{{ k8s_kubeconfig | default(lookup('ansible.builtin.env', 'KUBECONFIG', default='/etc/kubernetes/admin.conf')) }}"
+  tags:
+    - eda
