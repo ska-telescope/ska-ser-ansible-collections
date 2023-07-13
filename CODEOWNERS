@@ -17,6 +17,12 @@ ansible_collections/ska_collections/logging/
 ansible_collections/ska_collections/monitoring/
 ansible_collections/ska_collections/nexus/
 ansible_collections/ska_collections/gitlab_runner/roles/k8s 
+ansible_collections/ska_collections/k8s/roles/metallb/
+ansible_collections/ska_collections/k8s/roles/multihoming/
+ansible_collections/ska_collections/k8s/roles/nvidia_device_plugin/
+ansible_collections/ska_collections/k8s/roles/rookio/
+ansible_collections/ska_collections/k8s/roles/taranta/
+ansible_collections/ska_collections/k8s/roles/binderhub/
 
 # The following requires an approval from System team
 [System Team] @ska-telescope/ska-dev/skao-team-system
@@ -33,3 +39,9 @@ ansible_collections/ska_collections/logging/
 ansible_collections/ska_collections/monitoring/
 ansible_collections/ska_collections/nexus/
 ansible_collections/ska_collections/gitlab_runner/roles/k8s 
+ansible_collections/ska_collections/k8s/roles/metallb/
+ansible_collections/ska_collections/k8s/roles/multihoming/
+ansible_collections/ska_collections/k8s/roles/nvidia_device_plugin/
+ansible_collections/ska_collections/k8s/roles/rookio/
+ansible_collections/ska_collections/k8s/roles/taranta/
+ansible_collections/ska_collections/k8s/roles/binderhub/
