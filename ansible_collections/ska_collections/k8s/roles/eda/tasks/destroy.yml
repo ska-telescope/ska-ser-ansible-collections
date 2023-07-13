@@ -1,0 +1,14 @@
+---
+
+- name: Delete ska-tango-archiver-timescaledb Helm chart
+  kubernetes.core.helm:
+    release_namespace: "{{ timescaledb_namespace }}"
+    release_name: "{{ timescaledb_release_name }}"
+    state: absent
+
+# https://developer.skao.int/projects/ska-tango-archiver/en/latest/deployment/admin-guide.html#cleanup
+- name: Cleanup pvc,ep,service leftovers
+  ansible.builtin.shell: |
+    kubectl delete $(kubectl get pvc,ep,service -l release={{ timescaledb_release_name }} -o name -n {{ timescaledb_namespace }}) -n {{ timescaledb_namespace }}
+  register: output
+  changed_when: output.rc != 0

@@ -49,5 +49,9 @@
   ansible.builtin.include_tasks: grafana_versions.yml
   when: grafana_versions_enabled | bool
 
+- name: Task grafana_postgres_patroni
+  ansible.builtin.include_tasks: grafana_postgres_patroni.yml
+  when: grafana_postgres_patroni_enabled | bool
+
 - name: Grafana task
   ansible.builtin.include_tasks: grafana.yml
