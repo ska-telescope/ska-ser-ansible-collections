@@ -47,7 +47,7 @@
           ansible.builtin.get_url:
             url: "https://download.opensuse.org/repositories/devel:kubic:libcontainers:unstable/xUbuntu_{{ podman_ubuntu_release }}/Release.key"
             dest: /tmp/Release.key
-        
+
         - name: Dearmor the gpg key
           ansible.builtin.shell: >
             cat /tmp/Release.key |
