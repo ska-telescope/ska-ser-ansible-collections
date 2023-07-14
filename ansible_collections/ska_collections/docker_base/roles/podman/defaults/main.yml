@@ -7,18 +7,23 @@ nexus_docker_group_port: 9082
 nexus_central_proxy_port: 9084
 nexus_gitlab_proxy_port: 9085
 
+podman_ubuntu_release: 22.04
+podman_ubuntu_arch: amd64
 podman_version: 3
+
+# https://packages.ubuntu.com/search
 podman_v3_deb_pkgs:
   - "crun=0.17+dfsg-1.1"
   - "podman=3.4.4+ds1-1ubuntu1"
   - "buildah=1.23.1+ds1-2"
   - "skopeo=1.4.1+ds1-1"
 
+# https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_22.04/amd64/
 podman_v4_deb_pkgs:
-  - "crun=100:1.7-1"
-  - "podman=100:4.5.0-1"
-  - "buildah=100:1.30.0-1"
-  - "skopeo=100:1.12.0-1"
+  - "crun=101:1.8.4-0ubuntu22.04+obs55.14"
+  - "podman=4:4.5.1-0ubuntu22.04+obs78.12"
+  - "buildah=1.31.0-0ubuntu22.04+obs42.1"
+  - "skopeo=2:1.13.0-0ubuntu22.04+obs28.1"
 
 podman_deb_pkgs: "{{ (podman_version == 3) | ternary(podman_v3_deb_pkgs, podman_v4_deb_pkgs) }}"
 
