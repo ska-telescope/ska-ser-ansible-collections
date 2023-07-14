@@ -42,17 +42,20 @@
         ignoreerrors: true
 
     - name: Enable Kubic apt repository
+      when: podman_version == 4
       block:
         - name: Get the gpg key
           ansible.builtin.get_url:
             url: "https://download.opensuse.org/repositories/devel:kubic:libcontainers:unstable/xUbuntu_{{ podman_ubuntu_release }}/Release.key"
             dest: /tmp/Release.key
+            mode: '0440'
 
         - name: Dearmor the gpg key
           ansible.builtin.shell: >
             cat /tmp/Release.key |
             gpg --dearmor |
             sudo tee /etc/apt/keyrings/devel_kubic_libcontainers_unstable.gpg >/dev/null
+          changed_when: true
 
         - name: Add Kubic apt repository
           ansible.builtin.apt_repository:
@@ -62,7 +65,6 @@
               https://download.opensuse.org/repositories/devel:kubic:libcontainers:unstable/xUbuntu_{{ podman_ubuntu_release }}/ /
             filename: devel:kubic:libcontainers:unstable
             state: present
-      when: podman_version == 4
 
     - name: Install podman CE
       block:
